@@ -1,0 +1,16 @@
+{
+  "name": "umbra",
+  "version": "0.1.0",
+  "description": "Send and receive stealth payments",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "elliptic": "^6.5.2",
+    "ethers": "^5.0.0-beta.184",
+    "js-sha3": "^0.8.0"
+  }
+}
