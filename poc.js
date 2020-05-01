@@ -8,13 +8,14 @@
  *     https://hackernoon.com/utilizing-cryptography-libraries-to-derive-ethereum-addresses-from-private-keys-1bedd1a85bd
  */
 
-const EC = require("elliptic").ec;
-const keccak256 = require("js-sha3").keccak256;
-const ethers = require("ethers");
-const Buffer = require('buffer/').Buffer
+/* eslint-disable no-console */
+const EC = require('elliptic').ec;
+const { Buffer } = require('buffer/');
+const { keccak256 } = require('js-sha3');
+const ethers = require('ethers');
 
-const ec = new EC("secp256k1");
-const utils = ethers.utils;
+const ec = new EC('secp256k1');
+const { utils } = ethers;
 
 /**
  * @notice If value is not 64 characters long, leading zeros were stripped and we should add
@@ -23,41 +24,46 @@ const utils = ethers.utils;
  * @param {String} hex String to pad, without leading 0x
  */
 function pad32ByteHex(hex) {
+  if (!utils.isHexString) throw new Error('Input is not a valid hex string');
+  if (hex.slice(0, 2) === '0x') { throw new Error('Input must not contain 0x prefix'); }
   return hex.padStart(64, 0);
+}
+
+/**
+ * @notice Recover signers public key from signed message
+ */
+function recoverPublicKey(message, signature) {
+  const messageHash = utils.hashMessage(message);
+  const messageHashBytes = utils.arrayify(messageHash);
+  return utils.recoverPublicKey(messageHashBytes, signature);
 }
 
 (async () => {
   // Step 0 ========================================================================================
   // Setup test accounts
 
-  // Generate random wallets
-  const sender = ethers.Wallet.createRandom(); // currently not used
+  // Generate receiver's wallet
   const receiver = ethers.Wallet.createRandom();
-
 
   // Step 1 ========================================================================================
   // Recover recipient's public key from their private key
 
   // Have recipient sign message
-  const message = "I love Umbra!";
+  const message = 'I love Umbra!';
   const signature = await receiver.signMessage(message);
 
   // Recover their public key
-  const messageHash = utils.hashMessage(message);
-  const messageHashBytes = utils.arrayify(messageHash);
-  recoveredPublicKey = utils.recoverPublicKey(messageHashBytes, signature);
+  const recoveredPublicKey = recoverPublicKey(message, signature);
   if (recoveredPublicKey !== receiver.publicKey) {
     throw new Error("Recipient's public key was not properly recovered");
   }
-  console.log("Step 1: Public key successfully recovered from recipient signature");
-
+  console.log('Step 1: Public key successfully recovered from recipient signature');
 
   // Step 2 ========================================================================================
   // Publish recipient's public key as ENS record
 
   // TODO: Not applicable for POC
-  console.log("Step 2: N/A");
-
+  console.log('Step 2: N/A');
 
   // Step 3 ========================================================================================
   // Sender generates random number
@@ -67,8 +73,7 @@ function pad32ByteHex(hex) {
 
   // Convert to BigNumber, represented as Hex, with the 0x prefix removed
   const randomValue = ethers.BigNumber.from(randomArray).toHexString().slice(2);
-  console.log("Step 3: 32-byte random number successfully generated");
-
+  console.log('Step 3: 32-byte random number successfully generated');
 
   // Step 4 ========================================================================================
   // Sender securely sends random number to recipient
@@ -76,8 +81,7 @@ function pad32ByteHex(hex) {
   // We do this before step 5 to ensure recipient receives random number before
   // sending funds to that address
   // TODO: Not applicable for POC
-  console.log("Step 4: N/A");
-
+  console.log('Step 4: N/A');
 
   // Step 5 ========================================================================================
   // Sender computes receiving address and send funds
@@ -86,16 +90,16 @@ function pad32ByteHex(hex) {
   // 0x04 prefix for compatibility with what elliptic expects.
   // Note: The 0x04 prefix is a standard for representing an uncompressed point. For more
   // information see https://github.com/ethereumbook/ethereumbook/blob/develop/04keys-addresses.asciidoc#generating-a-public-key
-  receiverPublicKey = receiver.publicKey.slice(4);
-  receiverPublicKeyX = receiverPublicKey.slice(0,64);
-  receiverPublicKeyY = receiverPublicKey.slice(64);
+  const receiverPublicKey = receiver.publicKey.slice(4);
+  const receiverPublicKeyX = receiverPublicKey.slice(0, 64);
+  const receiverPublicKeyY = receiverPublicKey.slice(64);
 
   if (receiverPublicKey !== receiverPublicKeyX + receiverPublicKeyY) {
     throw new Error("receiver's public key coordinates were incorrectly generated");
   }
 
   // Generate elliptic (EC) instance from this public key
-  receiverPublicKeyEC = ec.keyFromPublic({
+  const receiverPublicKeyEC = ec.keyFromPublic({
     x: receiverPublicKeyX,
     y: receiverPublicKeyY,
   });
@@ -104,15 +108,19 @@ function pad32ByteHex(hex) {
   const stealthPublicKeyEC = receiverPublicKeyEC.getPublic().mul(randomValue);
 
   // Convert stealth public key elliptic instance to hex string
-  const stealthPublicKeyX = pad32ByteHex(stealthPublicKeyEC.getX().toString('hex'));
-  const stealthPublicKeyY = pad32ByteHex(stealthPublicKeyEC.getY().toString('hex'));
+  const stealthPublicKeyX = pad32ByteHex(
+    stealthPublicKeyEC.getX().toString('hex'),
+  );
+  const stealthPublicKeyY = pad32ByteHex(
+    stealthPublicKeyEC.getY().toString('hex'),
+  );
   const stealthPublicKey = stealthPublicKeyX + stealthPublicKeyY; // string concatenation
 
   // Take the hash of that public key
-  const stealthPublicKeyHash = keccak256(new Buffer(stealthPublicKey, 'hex'));
+  const stealthPublicKeyHash = keccak256(Buffer.from(stealthPublicKey, 'hex'));
 
   // Convert hash to buffer, where last 20 bytes are the Ethereum address
-  const stealthAddressBuffer = new Buffer(stealthPublicKeyHash, 'hex');
+  const stealthAddressBuffer = Buffer.from(stealthPublicKeyHash, 'hex');
   const stealthAddress = `0x${stealthAddressBuffer.slice(-20).toString('hex')}`;
   console.log('Step 5: Sender computed receiving address of ', stealthAddress);
 
@@ -123,23 +131,23 @@ function pad32ByteHex(hex) {
 
   // Generate elliptic instance from receiver's private key. We remove the 0x prefix
   // as required by elliptic
-  receiverPrivateKeyEC = ec.keyFromPrivate(receiver.privateKey.slice(2));
+  const receiverPrivateKeyEC = ec.keyFromPrivate(receiver.privateKey.slice(2));
 
   // Check that this public key associated with receiverPrivateKeyEC, which was generated from the
   // recipient's private key, has the same public key as the elliptic instance
   // generated from the public key published by the sender
   if (
-    receiverPublicKeyX !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString("hex")) ||
-    receiverPublicKeyY !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString("hex"))
+    receiverPublicKeyX !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString('hex'))
+    || receiverPublicKeyY !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString('hex'))
   ) {
     console.log('X Components:');
     console.log(receiverPublicKeyX);
-    console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString("hex")));
+    console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString('hex')));
     console.log();
     console.log('Y Components:');
     console.log(receiverPublicKeyY);
-    console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString("hex")));
-    throw new Error("Public keys of the two elliptic instances do not match");
+    console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString('hex')));
+    throw new Error('Public keys of the two elliptic instances do not match');
   }
 
   // Calculate stealth private key by multiplying private key with random value. This
@@ -147,7 +155,7 @@ function pad32ByteHex(hex) {
   // the secp256k1 elliptic curve
   const randomValueBN = ethers.BigNumber.from(`0x${randomValue}`);
   const receiverPrivateKeyBN = ethers.BigNumber.from(
-    `0x${receiverPrivateKeyEC.getPrivate().toString("hex")}`
+    `0x${receiverPrivateKeyEC.getPrivate().toString('hex')}`,
   );
   const stealthPrivateKeyFull = receiverPrivateKeyBN.mul(randomValueBN).toHexString().slice(2);
 
@@ -166,10 +174,10 @@ function pad32ByteHex(hex) {
   const stealthPublicKey2 = stealthPublicKeyX2 + stealthPublicKeyY2;
 
   // Take the hash of that public key
-  const stealthPublicKeyHash2 = keccak256(new Buffer(stealthPublicKey2, 'hex'));
+  const stealthPublicKeyHash2 = keccak256(Buffer.from(stealthPublicKey2, 'hex'));
 
   // Convert hash to buffer, where last 20 bytes are the Ethereum address
-  const stealthAddressBuffer2 = new Buffer(stealthPublicKeyHash2, 'hex');
+  const stealthAddressBuffer2 = Buffer.from(stealthPublicKeyHash2, 'hex');
   const stealthAddress2 = `0x${stealthAddressBuffer2.slice(-20).toString('hex')}`;
 
   // Use private key to generate ethers wallet and check addresses
@@ -179,7 +187,7 @@ function pad32ByteHex(hex) {
   console.log('  Check 2: ', stealthWallet.address === utils.getAddress(stealthAddress2));
 
   if (stealthAddress !== stealthAddress2) {
-    throw new Error('Stealth addresses do not match')
+    throw new Error('Stealth addresses do not match');
   }
 
   console.log();
@@ -190,5 +198,4 @@ function pad32ByteHex(hex) {
   console.log();
 
   // TODO Retrieve funds
-
 })();
