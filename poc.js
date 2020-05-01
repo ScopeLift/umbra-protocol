@@ -11,6 +11,7 @@
 const EC = require("elliptic").ec;
 const keccak256 = require("js-sha3").keccak256;
 const ethers = require("ethers");
+const Buffer = require('buffer/').Buffer
 
 const ec = new EC("secp256k1");
 const utils = ethers.utils;
@@ -48,7 +49,7 @@ function pad32ByteHex(hex) {
   if (recoveredPublicKey !== receiver.publicKey) {
     throw new Error("Recipient's public key was not properly recovered");
   }
-  console.log("Step 1: Public key successfully recovered from signature");
+  console.log("Step 1: Public key successfully recovered from recipient signature");
 
 
   // Step 2 ========================================================================================
