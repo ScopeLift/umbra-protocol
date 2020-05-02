@@ -13,6 +13,7 @@ const EC = require('elliptic').ec;
 const { Buffer } = require('buffer/');
 const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
+const RandomNumber = require('./RandomNumber');
 
 const ec = new EC('secp256k1');
 const { utils } = ethers;
@@ -59,21 +60,21 @@ function recoverPublicKey(message, signature) {
   }
   console.log('Step 1: Public key successfully recovered from recipient signature');
 
+
   // Step 2 ========================================================================================
   // Publish recipient's public key as ENS record
 
   // TODO: Not applicable for POC
   console.log('Step 2: N/A');
 
+
   // Step 3 ========================================================================================
   // Sender generates random number
 
-  // Generate 32-byte random value with randomBytes, shuffle the order for additional randomness
-  const randomArray = utils.shuffled(utils.randomBytes(32)); // returns Uint8Array
-
-  // Convert to BigNumber, represented as Hex, with the 0x prefix removed
-  const randomValue = ethers.BigNumber.from(randomArray).toHexString().slice(2);
+  // Generate 32-byte random value with randomBytes
+  const randomNumber = new RandomNumber();
   console.log('Step 3: 32-byte random number successfully generated');
+
 
   // Step 4 ========================================================================================
   // Sender securely sends random number to recipient
@@ -82,6 +83,7 @@ function recoverPublicKey(message, signature) {
   // sending funds to that address
   // TODO: Not applicable for POC
   console.log('Step 4: N/A');
+
 
   // Step 5 ========================================================================================
   // Sender computes receiving address and send funds
@@ -105,15 +107,11 @@ function recoverPublicKey(message, signature) {
   });
 
   // Get stealth public key by multiplying public key coordinate by the random value
-  const stealthPublicKeyEC = receiverPublicKeyEC.getPublic().mul(randomValue);
+  const stealthPublicKeyEC = receiverPublicKeyEC.getPublic().mul(randomNumber.asHexWithoutPrefix);
 
   // Convert stealth public key elliptic instance to hex string
-  const stealthPublicKeyX = pad32ByteHex(
-    stealthPublicKeyEC.getX().toString('hex'),
-  );
-  const stealthPublicKeyY = pad32ByteHex(
-    stealthPublicKeyEC.getY().toString('hex'),
-  );
+  const stealthPublicKeyX = pad32ByteHex(stealthPublicKeyEC.getX().toString('hex'));
+  const stealthPublicKeyY = pad32ByteHex(stealthPublicKeyEC.getY().toString('hex'));
   const stealthPublicKey = stealthPublicKeyX + stealthPublicKeyY; // string concatenation
 
   // Take the hash of that public key
@@ -153,11 +151,10 @@ function recoverPublicKey(message, signature) {
   // Calculate stealth private key by multiplying private key with random value. This
   // gives us an arbitrarily large number that is not necessarily in the domain of
   // the secp256k1 elliptic curve
-  const randomValueBN = ethers.BigNumber.from(`0x${randomValue}`);
   const receiverPrivateKeyBN = ethers.BigNumber.from(
     `0x${receiverPrivateKeyEC.getPrivate().toString('hex')}`,
   );
-  const stealthPrivateKeyFull = receiverPrivateKeyBN.mul(randomValueBN).toHexString().slice(2);
+  const stealthPrivateKeyFull = receiverPrivateKeyBN.mul(randomNumber.asBigNumber).toHexString().slice(2);
 
   // Modulo operation to get private key to be in correct range, where ec.n gives the
   // order of our curve
