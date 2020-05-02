@@ -14,6 +14,7 @@ const { Buffer } = require('buffer/');
 const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
 const RandomNumber = require('./RandomNumber');
+const PublicKey = require('./Keys');
 
 const ec = new EC('secp256k1');
 const { utils } = ethers;
@@ -88,38 +89,9 @@ function recoverPublicKey(message, signature) {
   // Step 5 ========================================================================================
   // Sender computes receiving address and send funds
 
-  // Convert recipient's public key into x,y coordinates. This requires us to remove the
-  // 0x04 prefix for compatibility with what elliptic expects.
-  // Note: The 0x04 prefix is a standard for representing an uncompressed point. For more
-  // information see https://github.com/ethereumbook/ethereumbook/blob/develop/04keys-addresses.asciidoc#generating-a-public-key
-  const receiverPublicKey = receiver.publicKey.slice(4);
-  const receiverPublicKeyX = receiverPublicKey.slice(0, 64);
-  const receiverPublicKeyY = receiverPublicKey.slice(64);
-
-  if (receiverPublicKey !== receiverPublicKeyX + receiverPublicKeyY) {
-    throw new Error("receiver's public key coordinates were incorrectly generated");
-  }
-
-  // Generate elliptic (EC) instance from this public key
-  const receiverPublicKeyEC = ec.keyFromPublic({
-    x: receiverPublicKeyX,
-    y: receiverPublicKeyY,
-  });
-
-  // Get stealth public key by multiplying public key coordinate by the random value
-  const stealthPublicKeyEC = receiverPublicKeyEC.getPublic().mul(randomNumber.asHexWithoutPrefix);
-
-  // Convert stealth public key elliptic instance to hex string
-  const stealthPublicKeyX = pad32ByteHex(stealthPublicKeyEC.getX().toString('hex'));
-  const stealthPublicKeyY = pad32ByteHex(stealthPublicKeyEC.getY().toString('hex'));
-  const stealthPublicKey = stealthPublicKeyX + stealthPublicKeyY; // string concatenation
-
-  // Take the hash of that public key
-  const stealthPublicKeyHash = keccak256(Buffer.from(stealthPublicKey, 'hex'));
-
-  // Convert hash to buffer, where last 20 bytes are the Ethereum address
-  const stealthAddressBuffer = Buffer.from(stealthPublicKeyHash, 'hex');
-  const stealthAddress = `0x${stealthAddressBuffer.slice(-20).toString('hex')}`;
+  const receiverPublicKey = new PublicKey(receiver.publicKey);
+  const stealthPublicKey = receiverPublicKey.mul(randomNumber.asHexWithoutPrefix);
+  const stealthAddress = stealthPublicKey.address;
   console.log('Step 5: Sender computed receiving address of ', stealthAddress);
 
   // TODO Send funds
@@ -135,15 +107,15 @@ function recoverPublicKey(message, signature) {
   // recipient's private key, has the same public key as the elliptic instance
   // generated from the public key published by the sender
   if (
-    receiverPublicKeyX !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString('hex'))
-    || receiverPublicKeyY !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString('hex'))
+    receiverPublicKey.coordinatesAsHexString.x !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString('hex'))
+    || receiverPublicKey.coordinatesAsHexString.y !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString('hex'))
   ) {
     console.log('X Components:');
-    console.log(receiverPublicKeyX);
+    console.log(receiverPublicKey.coordinatesAsHexString.x);
     console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString('hex')));
     console.log();
     console.log('Y Components:');
-    console.log(receiverPublicKeyY);
+    console.log(receiverPublicKey.coordinatesAsHexString.y);
     console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString('hex')));
     throw new Error('Public keys of the two elliptic instances do not match');
   }
@@ -190,7 +162,7 @@ function recoverPublicKey(message, signature) {
   console.log();
   console.log('Complete! Outputs are below');
   console.log('  Stealth address:      ', stealthAddress);
-  console.log('  Stealth public key:   ', stealthPublicKey);
+  console.log('  Stealth public key:   ', stealthPublicKey.publicKey);
   console.log('  Stealth private key:  ', stealthPrivateKey.toHexString());
   console.log();
 
