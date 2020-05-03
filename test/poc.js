@@ -10,8 +10,8 @@
 
 /* eslint-disable no-console */
 const ethers = require('ethers');
-const RandomNumber = require('./classes/RandomNumber');
-const KeyPair = require('./classes/KeyPair');
+const RandomNumber = require('../classes/RandomNumber');
+const KeyPair = require('../classes/KeyPair');
 
 const { utils } = ethers;
 

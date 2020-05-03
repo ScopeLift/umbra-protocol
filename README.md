@@ -1,11 +1,53 @@
 # Umbra
 
-Send and receive stealth payments
+Send and receive stealth payments.
+
+## Usage
+
+Install the package with `npm install umbra-protocol`. The example shown below
+uses [ethers v5](https://docs-beta.ethers.io/), which is in beta and can be
+installed with `npm install ethers@next`.
+
+```javascript
+const ethers = require('ethers')
+const umbra = require('umbra-protocol');
+
+const { RandomNumber, KeyPair } = umbra
+
+// Setup ----------------------------------------------------------------------
+// Generate a random wallet to simulate the recipient
+wallet = ethers.Wallet.createRandom();
+
+// Sender ---------------------------------------------------------------------
+// Get a random 32-byte number
+const randomNumber = new RandomNumber();
+
+// Generate a KeyPair instance from recipient's public key
+const recipientFromPublic = new KeyPair(wallet.publicKey);
+
+// Multiply public key by the random number to get a new KeyPair instance
+const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
+
+// Send fund's to the recipient's stealth receiving address
+console.log('Stealth recipient address: ', stealthFromPublic.address);
+
+// Recipient ------------------------------------------------------------------
+// Generate a KeyPair instance based on their own private key
+const recipientFromPrivate = new KeyPair(wallet.privateKey);
+
+// Multiply their private key by the random number to get a new KeyPair instance
+const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
+
+// Access funds and confirm addresses match
+console.log(stealthFromPublic.address === stealthFromPrivate.address); // true
+console.log('Private key to access received funds: ', stealthFromPrivate.privateKeyHex);
+```
 
 ## Development
 
 1. Run `npm install`
-2. Run `node poc.js` to run the proof-of-concept file. If successful, you should see logs similar to the ones below in your console. Note that the two checks under step 6 are the most important, and both should be `true` if the script ran successfully
+2. Run `npm test` to run all tests.
+3. Optionally, run `node test/poc.js` to run the proof-of-concept file. If successful, you should see logs similar to the ones below in your console. Note that the two checks under step 6 are the most important, and both should be `true` if the script ran successfully
 
 ```text
 Step 1: Public key successfully recovered from recipient signature
