@@ -28,7 +28,7 @@ class KeyPair {
    */
   constructor(key) {
     // Input checks
-    if (!utils.isHexString(key)) throw new Error('Key must be in hex format');
+    if (!utils.isHexString(key)) throw new Error('Key must be in hex format with 0x prefix');
 
     // Handle input
     if (key.length === 66) {
@@ -39,30 +39,41 @@ class KeyPair {
       this.privateKeyBN = ethers.BigNumber.from(this.privateKeyHex);
 
       // Multiply curve's generator point by private key to get public key
-      this.publicKeyEC = ec.g.mul(this.privateKeyHexSlim);
+      const publicKey = ec.g.mul(this.privateKeyHexSlim);
 
       // Save various forms of public key
       this.publicKeyHexCoords = {
-        x: pad32ByteHex(this.publicKeyEC.getX().toString('hex')),
-        y: pad32ByteHex(this.publicKeyEC.getY().toString('hex')),
+        x: pad32ByteHex(publicKey.getX().toString('hex')),
+        y: pad32ByteHex(publicKey.getY().toString('hex')),
       };
       this.publicKeyHex = `0x04${this.publicKeyHexCoords.x}${this.publicKeyHexCoords.y}`;
-      this.publicKeyHexSlim = `${this.publicKeyHexCoords.x}${this.publicKeyHexCoords.y}`;
     } else if (key.length === 132) {
       // Save various forms of public key
       this.publicKeyHex = key;
-      this.publicKeyHexSlim = this.publicKeyHex.slice(4);
       this.publicKeyHexCoords = {
         x: pad32ByteHex(this.publicKeyHexSlim.slice(0, 64)),
         y: pad32ByteHex(this.publicKeyHexSlim.slice(64)),
       };
-      this.publicKeyEC = ec.keyFromPublic({
-        x: this.publicKeyHexCoords.x,
-        y: this.publicKeyHexCoords.y,
-      });
     } else {
       throw new Error('Key must be a 66 character private key or a 132 character public key');
     }
+  }
+
+  /**
+   * @notice Returns the public key without the 0x prefix
+   */
+  get publicKeyHexSlim() {
+    return this.publicKeyHex.slice(4);
+  }
+
+  /**
+   * @notice Returns an elliptic instance generated from the public key
+   */
+  get publicKeyEC() {
+    return ec.keyFromPublic({
+      x: this.publicKeyHexCoords.x,
+      y: this.publicKeyHexCoords.y,
+    });
   }
 
   /**

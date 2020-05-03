@@ -7,14 +7,18 @@ module.exports = {
   },
 
   env: {
-    browser: true
+    browser: true,
+    mocha: true,
   },
 
   extends: [
     'airbnb-base',
+    'plugin:chai-friendly/recommended',
   ],
 
-  plugins: [],
+  plugins: [
+    'chai-friendly',
+  ],
 
   globals: {
     'ga': true, // Google Analytics
@@ -41,6 +45,6 @@ module.exports = {
     'prefer-promise-reject-errors': 'off',
 
     // allow debugger during development only
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
   }
 }
