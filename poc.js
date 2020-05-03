@@ -9,27 +9,11 @@
  */
 
 /* eslint-disable no-console */
-const EC = require('elliptic').ec;
-const { Buffer } = require('buffer/');
-const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
 const RandomNumber = require('./RandomNumber');
-const PublicKey = require('./Keys');
+const KeyPair = require('./KeyPair');
 
-const ec = new EC('secp256k1');
 const { utils } = ethers;
-
-/**
- * @notice If value is not 64 characters long, leading zeros were stripped and we should add
- * them back. It seems elliptic sometimes strips leading zeros when pulling out x and y
- * coordinates from public keys which can cause errors when checking that keys match
- * @param {String} hex String to pad, without leading 0x
- */
-function pad32ByteHex(hex) {
-  if (!utils.isHexString) throw new Error('Input is not a valid hex string');
-  if (hex.slice(0, 2) === '0x') { throw new Error('Input must not contain 0x prefix'); }
-  return hex.padStart(64, 0);
-}
 
 /**
  * @notice Recover signers public key from signed message
@@ -89,81 +73,55 @@ function recoverPublicKey(message, signature) {
   // Step 5 ========================================================================================
   // Sender computes receiving address and send funds
 
-  const receiverPublicKey = new PublicKey(receiver.publicKey);
-  const stealthPublicKey = receiverPublicKey.mul(randomNumber.asHexWithoutPrefix);
-  const stealthAddress = stealthPublicKey.address;
-  console.log('Step 5: Sender computed receiving address of ', stealthAddress);
+  const receiverPublicKey = new KeyPair(receiver.publicKey);
+  const stealthPublicKey = receiverPublicKey.mulPublicKey(randomNumber);
+  const stealthAddressFromPublic = stealthPublicKey.address;
+  console.log('Step 5: Sender computed receiving address of ', stealthAddressFromPublic);
 
   // TODO Send funds
 
   // Step 6 ========================================================================================
   // Recipient computes required private key and retrieves funds
 
-  // Generate elliptic instance from receiver's private key. We remove the 0x prefix
-  // as required by elliptic
-  const receiverPrivateKeyEC = ec.keyFromPrivate(receiver.privateKey.slice(2));
+  // Get KeyPair instance from receiver's private key
+  const receiverPrivateKey = new KeyPair(receiver.privateKey);
 
-  // Check that this public key associated with receiverPrivateKeyEC, which was generated from the
-  // recipient's private key, has the same public key as the elliptic instance
+  // Ensure that the public key associated with receiverPrivateKey, which was generated from the
+  // recipient's private key, has the same public key as the receiverPublicKey instance
   // generated from the public key published by the sender
   if (
-    receiverPublicKey.coordinatesAsHexString.x !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString('hex'))
-    || receiverPublicKey.coordinatesAsHexString.y !== pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString('hex'))
+    receiverPublicKey.publicKeyHexCoords.x !== receiverPrivateKey.publicKeyHexCoords.x
+    || receiverPublicKey.publicKeyHexCoords.y !== receiverPrivateKey.publicKeyHexCoords.y
   ) {
     console.log('X Components:');
-    console.log(receiverPublicKey.coordinatesAsHexString.x);
-    console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getX().toString('hex')));
+    console.log(receiverPublicKey.publicKeyHexCoords.x);
+    console.log(receiverPrivateKey.publicKeyHexCoords.x);
     console.log();
     console.log('Y Components:');
-    console.log(receiverPublicKey.coordinatesAsHexString.y);
-    console.log(pad32ByteHex(receiverPrivateKeyEC.getPublic().getY().toString('hex')));
+    console.log(receiverPublicKey.publicKeyHexCoords.y);
+    console.log(receiverPrivateKey.publicKeyHexCoords.y);
     throw new Error('Public keys of the two elliptic instances do not match');
   }
 
-  // Calculate stealth private key by multiplying private key with random value. This
-  // gives us an arbitrarily large number that is not necessarily in the domain of
-  // the secp256k1 elliptic curve
-  const receiverPrivateKeyBN = ethers.BigNumber.from(
-    `0x${receiverPrivateKeyEC.getPrivate().toString('hex')}`,
-  );
-  const stealthPrivateKeyFull = receiverPrivateKeyBN.mul(randomNumber.asBigNumber).toHexString().slice(2);
-
-  // Modulo operation to get private key to be in correct range, where ec.n gives the
-  // order of our curve
-  const stealthPrivateKeyBN = ethers.BigNumber.from(`0x${stealthPrivateKeyFull}`);
-  const stealthPrivateKey = stealthPrivateKeyBN.mod(`0x${ec.n.toString('hex')}`);
-
-  // Get stealth public key by multiplying private key (with the 0x prefix removed) by
-  // the curve's generator point, given by ec.g
-  const stealthPublicKeyXY2 = ec.g.mul(stealthPrivateKey.toHexString().slice(2));
-  const stealthPublicKeyX2 = stealthPublicKeyXY2.getX().toString('hex');
-  const stealthPublicKeyY2 = stealthPublicKeyXY2.getY().toString('hex');
-
-  // Public Key = X and Y concatenated
-  const stealthPublicKey2 = stealthPublicKeyX2 + stealthPublicKeyY2;
-
-  // Take the hash of that public key
-  const stealthPublicKeyHash2 = keccak256(Buffer.from(stealthPublicKey2, 'hex'));
-
-  // Convert hash to buffer, where last 20 bytes are the Ethereum address
-  const stealthAddressBuffer2 = Buffer.from(stealthPublicKeyHash2, 'hex');
-  const stealthAddress2 = `0x${stealthAddressBuffer2.slice(-20).toString('hex')}`;
+  // Calculate stealth private key by multiplying private key with random value
+  const stealthPrivateKey = receiverPrivateKey.mulPrivateKey(randomNumber);
+  const stealthAddressFromPrivate = stealthPrivateKey.address;
 
   // Use private key to generate ethers wallet and check addresses
   console.log('Step 6: Checking that receiver computed same receiving address:');
-  const stealthWallet = new ethers.Wallet(stealthPrivateKey);
-  console.log('  Check 1: ', stealthWallet.address === utils.getAddress(stealthAddress));
-  console.log('  Check 2: ', stealthWallet.address === utils.getAddress(stealthAddress2));
+  const stealthWallet = new ethers.Wallet(stealthPrivateKey.privateKeyHex);
+  console.log('  Check 1: ', stealthWallet.address === stealthAddressFromPublic);
+  console.log('  Check 2: ', stealthWallet.address === stealthAddressFromPrivate);
 
-  if (stealthAddress !== stealthAddress2) {
+  if (stealthAddressFromPublic !== stealthAddressFromPrivate) {
     throw new Error('Stealth addresses do not match');
   }
 
   console.log();
   console.log('Complete! Outputs are below');
-  console.log('  Stealth address:      ', stealthAddress);
-  console.log('  Stealth public key:   ', stealthPublicKey.publicKey);
-  console.log('  Stealth private key:  ', stealthPrivateKey.toHexString());
+  console.log('  Stealth address:      ', stealthPrivateKey.address);
+  console.log('  Stealth public key:   ', stealthPrivateKey.publicKeyHex);
+  console.log('  Stealth private key:  ', stealthPrivateKey.privateKeyHex);
   console.log();
 
   // TODO Retrieve funds

@@ -17,7 +17,7 @@ class RandomNumber {
   /**
    * @notice Get random number as a BigNumber
    */
-  get asBigNumber() {
+  get asBN() {
     return ethers.BigNumber.from(this.value);
   }
 
@@ -25,14 +25,14 @@ class RandomNumber {
    * @notice Get random number as hex string
    */
   get asHex() {
-    return ethers.BigNumber.from(this.value).toHexString();
+    return this.asBN.toHexString();
   }
 
   /**
    * @notice Get random number as hex string without 0x prefix
    */
-  get asHexWithoutPrefix() {
-    return ethers.BigNumber.from(this.value).toHexString().slice(2);
+  get asHexSlim() {
+    return this.asHex.slice(2);
   }
 }
 
