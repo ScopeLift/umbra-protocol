@@ -1,6 +1,7 @@
 const chai = require('chai');
 const ethers = require('ethers');
-const KeyPair = require('../KeyPair');
+const KeyPair = require('../classes/KeyPair');
+const RandomNumber = require('../classes/RandomNumber');
 
 const { expect } = chai;
 
@@ -44,5 +45,19 @@ describe('KeyPair class', () => {
     expect(keyPair1.publicKeyHeCoords).to.equal(keyPair2.publicKeyHeCoords);
     expect(keyPair1.publicKeyBN.toHexString()).to.equal(keyPair2.publicKeyBN.toHexString());
     expect(JSON.stringify(keyPair1.publicKeyEC)).to.equal(JSON.stringify(keyPair2.publicKeyEC));
+  });
+
+  it('lets sender generate stealth receiving address that recipient can access', () => {
+    // Generate random number
+    const randomNumber = new RandomNumber();
+    // Sender computes receiving address from random number and recipient's public key
+    const recipientFromPublic = new KeyPair(wallet.publicKey);
+    const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
+    // Recipient computes new private key from random number and derives receiving address
+    const recipientFromPrivate = new KeyPair(wallet.privateKey);
+    const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
+    // Confirm outputs match
+    expect(stealthFromPrivate.address).to.equal(stealthFromPublic.address);
+    expect(stealthFromPrivate.publicKeyHex).to.equal(stealthFromPublic.publicKeyHex);
   });
 });

@@ -1,6 +1,6 @@
 const chai = require('chai');
 const ethers = require('ethers');
-const RandomNumber = require('../RandomNumber');
+const RandomNumber = require('../classes/RandomNumber');
 
 const { expect } = chai;
 const { utils } = ethers;
