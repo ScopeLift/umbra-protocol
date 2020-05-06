@@ -1,0 +1,20 @@
+// app global css in Sass form
+.body--light,
+  .dark-toggle
+    color $dark
+
+  .hyperlink
+    color $primary
+    text-decoration underline
+    cursor pointer
+    display inline-block
+
+.body--dark
+  .dark-toggle
+    color: $light !important
+
+  .hyperlink
+    color $dark
+    text-decoration underline
+    cursor pointer
+    display inline-block
