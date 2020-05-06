@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Contracts for the Umbra Protocol",
   "scripts": {
+    "compile": "oz compile",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
