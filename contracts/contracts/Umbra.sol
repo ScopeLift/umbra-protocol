@@ -1,6 +1,10 @@
 pragma solidity ^0.5.0;
 
-contract Umbra {
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
-    constructor() public { }
+contract Umbra is Ownable {
+
+    constructor() public {
+        initialize(msg.sender);
+    }
 }
