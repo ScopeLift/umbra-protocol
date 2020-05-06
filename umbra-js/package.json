@@ -4,7 +4,7 @@
   "description": "Send and receive stealth payments",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./test/*.test.js --exit --timeout 10000",
+    "test": "mocha ./test/*.test.js --exit --timeout 0",
     "lint": "eslint --ext .js ."
   },
   "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",

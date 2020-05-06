@@ -60,4 +60,44 @@ describe('KeyPair class', () => {
     expect(stealthFromPrivate.address).to.equal(stealthFromPublic.address);
     expect(stealthFromPrivate.publicKeyHex).to.equal(stealthFromPublic.publicKeyHex);
   });
+
+  it('works for any randomly generated number and wallet', () => {
+    /* eslint-disable no-console */
+    let numFailures = 0;
+    const numRuns = 1000;
+    console.log(`Testing ${numRuns} random numbers and wallets to ensure all pass...`);
+    for (let i = 0; i < numRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
+      // Generate random number and wallet
+      const randomNumber = new RandomNumber();
+      const randomWallet = ethers.Wallet.createRandom();
+      // Sender computes receiving address from random number and recipient's public key
+      const recipientFromPublic = new KeyPair(randomWallet.publicKey);
+      const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
+      // Recipient computes new private key from random number and derives receiving address
+      const recipientFromPrivate = new KeyPair(randomWallet.privateKey);
+      const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
+      // Confirm outputs match
+      if (
+        stealthFromPrivate.address !== stealthFromPublic.address
+      || stealthFromPrivate.publicKeyHex !== stealthFromPublic.publicKeyHex
+      ) {
+        numFailures += 1;
+        console.log();
+        console.log(`FAILURE #${numFailures} ========================================`);
+        console.log('Inputs');
+        console.log('  Wallet Private Key:  ', wallet.privateKey);
+        console.log('  Wallet Public Key:   ', wallet.publicKey);
+        console.log('  Wallet Address:      ', wallet.address);
+        console.log('  Random Number:       ', randomNumber.asHex);
+        console.log('Outputs');
+        console.log('  Stealth from Public,  Address:     ', stealthFromPublic.address);
+        console.log('  Stealth from Private, Address:     ', stealthFromPrivate.address);
+        console.log('  Stealth from Public,  Public Key:  ', stealthFromPublic.publicKeyHex);
+        console.log('  Stealth from Private, Public Key:  ', stealthFromPrivate.publicKeyHex);
+      }
+    }
+    expect(numFailures).to.equal(0);
+    /* eslint-disable no-console */
+  });
 });
