@@ -10,9 +10,15 @@ const ec = new EC('secp256k1');
 const { utils } = ethers;
 
 /**
- * @notice If value is not 64 characters long, leading zeros were stripped and we should add
- * them back. It seems elliptic sometimes strips leading zeros when pulling out x and y
- * coordinates from public keys which can cause errors when checking that keys match
+ * @notice Adds leading zeroes to ensure 32-byte hex strings are the expected length.
+ * @dev We always expect a hex value to have the full number of characters for its size,
+ * so we use this tool to ensure no errors occur due to wrong hex character lengths.
+ * Specifically, we need to pad hex values during the following cases:
+ *   1. It seems elliptic strips unnecessary leading zeros when pulling out x and y
+ *      coordinates from public keys.
+ *   2. When computing a new private key from a random number, the new number (i.e. the new
+ *      private key) may not necessarily require all 32-bytes as ethers.js also seems to
+ *      strip leading zeroes.
  * @param {String} hex String to pad, without leading 0x
  */
 function pad32ByteHex(hex) {
@@ -116,10 +122,12 @@ class KeyPair {
     // necessarily in the domain of the secp256k1 elliptic curve
     const privateKeyFull = this.privateKeyBN.mul(value.asHex);
     // Modulo operation to get private key to be in correct range, where ec.n gives the
-    // order of our curve
-    const privateKey = privateKeyFull.mod(`0x${ec.n.toString('hex')}`);
+    // order of our curve. We add the 0x prefix as it's required by ethers.js
+    const privateKeyMod = privateKeyFull.mod(`0x${ec.n.toString('hex')}`);
+    // Remove 0x prefix to pad hex value, then add back 0x prefix
+    const privateKey = `0x${pad32ByteHex(privateKeyMod.toHexString().slice(2))}`;
     // Instantiate and return new instance
-    return new KeyPair(privateKey.toHexString());
+    return new KeyPair(privateKey);
   }
 }
 
