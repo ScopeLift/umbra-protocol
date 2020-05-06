@@ -4,10 +4,11 @@
   "description": "Contracts for the Umbra Protocol",
   "scripts": {
     "compile": "oz compile",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "oz compile && mocha --exit --timeout 0 test/*-test.js"
   },
   "dependencies": {
     "@openzeppelin/contracts-ethereum-package": "^2.5.0",
+    "@truffle/debug-utils": "^4.1.1",
     "dotenv": "^8.2.0",
     "truffle": "^5.1.21",
     "truffle-hdwallet-provider": "^1.0.17"
