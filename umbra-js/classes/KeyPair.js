@@ -8,6 +8,7 @@ const ethers = require('ethers');
 
 const ec = new EC('secp256k1');
 const { utils } = ethers;
+const provider = ethers.getDefaultProvider();
 
 /**
  * @notice Adds leading zeroes to ensure 32-byte hex strings are the expected length.
@@ -27,17 +28,60 @@ function pad32ByteHex(hex) {
   return hex.padStart(64, 0);
 }
 
+/**
+ * @notice Given a transaction hash, return the public key of the transaction's sender
+ * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
+ * recovering public key from a transaction with ethers
+ * @param {String} txHash Transaction hash to recover public key from
+ */
+async function recoverPublicKeyFromTransaction(txHash) {
+  // Get transaction data
+  const tx = await provider.getTransaction(txHash);
+
+  // Get original signature
+  const splitSignature = {
+    r: tx.r,
+    s: tx.s,
+    v: tx.v,
+  };
+  const signature = ethers.utils.joinSignature(splitSignature);
+
+  // Reconstruct transaction data that was originally signed
+  const txData = {
+    chainId: tx.chainId,
+    data: tx.data,
+    gasLimit: tx.gasLimit,
+    gasPrice: tx.gasPrice,
+    nonce: tx.nonce,
+    to: tx.to, // this works for both regular and contract transactions
+    value: tx.value,
+  };
+
+  // Properly format it to get the correct message
+  const resolvedTx = await ethers.utils.resolveProperties(txData);
+  const rawTx = ethers.utils.serializeTransaction(resolvedTx); // returns RLP encoded tx
+  const msgHash = ethers.utils.keccak256(rawTx); // as specified by ECDSA
+  const msgBytes = ethers.utils.arrayify(msgHash); // create binary hash
+
+  // Recover sender's public key and address
+  const publicKey = ethers.utils.recoverPublicKey(msgBytes, signature);
+  return publicKey;
+}
+
 class KeyPair {
   /**
-   * @notice Creates new instance from a public or private key
-   * @param {String} key public or private key to initialize instance with, as hex with prefix
+   * @notice Creates new instance from a public key, private key, or transaction hash
+   * @param {String} key Can be either (1) hex public key with 0x04 prefix, (2) hex private
+   * key with 0x prefix, or (3) transaction hash
+   * @param {Boolean} isTxHash must be true if key is a transaction hash
    */
-  constructor(key) {
+  constructor(key, isTxHash = false) {
     // Input checks
     if (!utils.isHexString(key)) throw new Error('Key must be in hex format with 0x prefix');
 
     // Handle input
-    if (key.length === 66) {
+    if (key.length === 66 && !isTxHash) {
+      // PRIVATE KEY
       // Save off various forms of the private key
       this.privateKeyHex = key;
       this.privateKeyHexSlim = key.slice(2);
@@ -47,22 +91,37 @@ class KeyPair {
       // Multiply curve's generator point by private key to get public key
       const publicKey = ec.g.mul(this.privateKeyHexSlim);
 
-      // Save various forms of public key
-      this.publicKeyHexCoords = {
+      // Save off public key as hex, other forms computed as getters
+      const publicKeyHexCoords = {
         x: pad32ByteHex(publicKey.getX().toString('hex')),
         y: pad32ByteHex(publicKey.getY().toString('hex')),
       };
-      this.publicKeyHex = `0x04${this.publicKeyHexCoords.x}${this.publicKeyHexCoords.y}`;
+      this.publicKeyHex = `0x04${publicKeyHexCoords.x}${publicKeyHexCoords.y}`;
     } else if (key.length === 132) {
-      // Save various forms of public key
+      // PUBLIC KEY
+      // Save off public key as hex, other forms computed as getters
       this.publicKeyHex = key;
-      this.publicKeyHexCoords = {
-        x: pad32ByteHex(this.publicKeyHexSlim.slice(0, 64)),
-        y: pad32ByteHex(this.publicKeyHexSlim.slice(64)),
-      };
+    } else if (key.length === 66 && isTxHash) {
+      // TRANSACTION HASH
+      return (async () => {
+        // Asynchronously recover address and public key from transaction hash,
+        // save off public key as hex, other forms computed as getters
+        this.publicKeyHex = await recoverPublicKeyFromTransaction(key);
+        return this;
+      })();
     } else {
-      throw new Error('Key must be a 66 character private key or a 132 character public key');
+      throw new Error('Key must be a 66 character private key, a 132 character public key, or a transaction hash with isTxHash set to true');
     }
+  }
+
+  /**
+   * @notice Returns the x,y public key coordinates as hex
+   */
+  get publicKeyHexCoords() {
+    return {
+      x: pad32ByteHex(this.publicKeyHexSlim.slice(0, 64)),
+      y: pad32ByteHex(this.publicKeyHexSlim.slice(64)),
+    };
   }
 
   /**

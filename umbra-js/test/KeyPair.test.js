@@ -17,8 +17,10 @@ describe('KeyPair class', () => {
   });
 
   it('initializes an instance with valid private key', () => {
+    // Check against ganache account
     const keyPair = new KeyPair(privateKey);
     expect(keyPair.address).to.equal(address);
+    // Check against random wallet
     const keyPair2 = new KeyPair(wallet.privateKey);
     expect(keyPair2.address).to.equal(wallet.address);
   });
@@ -28,6 +30,33 @@ describe('KeyPair class', () => {
     expect(keyPair.address).to.equal(wallet.address);
   });
 
+  it('initializes an instance from a regular transaction', async () => {
+    // Specify mainnet transaction hash and its sender
+    const txHash = '0x397d8e85b0e78ed48676fdc4cd7c2f5ce55b4844eb087fde532428b0db0bd2cf';
+    const from = '0x1f973B233f5Ebb1E5D7CFe51B9aE4A32415A3A08';
+    // Create instance and check result
+    const keyPair = await new KeyPair(txHash, true);
+    expect(keyPair.address).to.equal(from);
+  });
+
+  it('initializes an instance from a contract interaction transaction', async () => {
+    // Specify mainnet transaction hash and its sender
+    const txHash = '0xed8df05af867112b6ce09df9388632605c42e5af765e61f3b808e9f7662390ee';
+    const from = '0xdc693f2e2192DB72fd92d9F589C904c4f4e6ef56';
+    // Create instance and check result
+    const keyPair = await new KeyPair(txHash, true);
+    expect(keyPair.address).to.equal(from);
+  });
+
+  it('initializes an instance from a contract creation transaction', async () => {
+    // Specify mainnet transaction hash and its sender
+    const txHash = '0x282a980bf2d7500233e4f2c55981e64826938cfe871060bfad9b22842adcb2c8';
+    const from = '0x9862D074e33003726fA05c74F0142995f33A3250';
+    // Create instance and check result
+    const keyPair = await new KeyPair(txHash, true);
+    expect(keyPair.address).to.equal(from);
+  });
+
   it('should not initialize an instance without the 0x prefix', () => {
     expect(() => new KeyPair(privateKey.slice(2)))
       .to.throw('Key must be in hex format with 0x prefix');
@@ -35,7 +64,7 @@ describe('KeyPair class', () => {
       .to.throw('Key must be in hex format with 0x prefix');
   });
 
-  it('properly derives public key parameters with both constructor methods', () => {
+  it('properly derives public key parameters with both key-based constructor methods', () => {
     const keyPair1 = new KeyPair(wallet.privateKey);
     const keyPair2 = new KeyPair(wallet.publicKey);
 

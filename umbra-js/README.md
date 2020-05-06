@@ -43,6 +43,21 @@ console.log(stealthFromPublic.address === stealthFromPrivate.address); // true
 console.log('Private key to access received funds: ', stealthFromPrivate.privateKeyHex);
 ```
 
+Note that a `KeyPair` instance can be created from a public key, private key, or
+transaction hash.
+
+- For private keys, enter the full 66 character key as shown above.
+- For public keys, enter the full 132 character key as shown above.
+- For transaction hashes, we must specify that we are passing a transaction hash. Also note
+that the instance is returned asynchronously as we must first recover the public key from
+the transaction data. Use the syntax below to create a `KeyPair` instances from a transaction hash.
+
+```javascript
+// Create KeyPair instance from tx hash
+const txHash = '0x123.....';
+const recipientFromTxHash = await new KeyPair(txHash, true);
+```
+
 ## Development
 
 1. Run `npm install`
