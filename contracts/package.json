@@ -1,0 +1,23 @@
+{
+  "name": "umbra-contracts",
+  "version": "0.0.1",
+  "description": "Contracts for the Umbra Protocol",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-ethereum-package": "^2.5.0",
+    "dotenv": "^8.2.0",
+    "truffle": "^5.1.21",
+    "truffle-hdwallet-provider": "^1.0.17"
+  },
+  "devDependencies": {
+    "@openzeppelin/cli": "^2.8.0",
+    "@openzeppelin/test-environment": "^0.1.4",
+    "@openzeppelin/test-helpers": "^0.5.5",
+    "chai": "^4.2.0",
+    "mocha": "^7.1.1"
+  },
+  "author": "",
+  "license": "MIT"
+}
