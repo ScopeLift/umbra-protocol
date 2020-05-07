@@ -4,7 +4,7 @@
       class="q-mx-md q-mt-md"
       style="color: #000000; background-color: rgba(0,0,0,0)"
     >
-      <div class="row justify-between items-center no-wrap">
+      <div class="row justify-between items-center no-wrap all-content-format">
         <div class="col-auto">
           <!-- LOGO AND TITLE -->
           <div
@@ -18,13 +18,19 @@
               src="statics/icons/favicon-128x128.png"
               style="max-width: 50px;"
             >
-            <div class="text-h6 dark-toggle">
-              <span class="primary">Umbra</span>
+            <div class="text-h4 dark-toggle">
+              <span class="primary header-black q-ml-md">Umbra</span>
             </div>
           </div>
         </div>
         <!-- ADDRESS AND SETTINGS AND SETTINGS -->
         <div class="col-auto q-mr-md">
+          <div
+            v-if="userAddress"
+            class="text-caption dark-toggle"
+          >
+            Address: {{ userAddress }}
+          </div>
           <div class="row justify-end q-mt-xs">
             <q-icon
               v-if="!$q.dark.isActive"
@@ -45,19 +51,26 @@
       </div>
     </q-header>
 
-    <q-page-container>
+    <q-page-container class="all-content-format">
       <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 
 export default {
   name: 'BaseLayout',
 
   data() {
     return {};
+  },
+
+  computed: {
+    ...mapState({
+      userAddress: (state) => state.user.userAddress,
+    }),
   },
 
   methods: {
