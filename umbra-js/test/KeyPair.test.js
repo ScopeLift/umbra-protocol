@@ -8,8 +8,9 @@ const utils = require('../utils/utils');
 
 const { expect } = chai;
 
-// Address and private key from first deterministic ganache account
+// Address, public key, and private key from first deterministic ganache account
 const address = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1';
+const publicKey = '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
 const privateKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d';
 
 describe('KeyPair class', () => {
@@ -86,6 +87,16 @@ describe('KeyPair class', () => {
     expect(keyPair1.publicKeyHeCoords).to.equal(keyPair2.publicKeyHeCoords);
     expect(keyPair1.publicKeyBN.toHexString()).to.equal(keyPair2.publicKeyBN.toHexString());
     expect(JSON.stringify(keyPair1.publicKeyEC)).to.equal(JSON.stringify(keyPair2.publicKeyEC));
+  });
+
+  it('supports encryption and decryption of the random number', async () => {
+    // Encrypt payload
+    const number = new RandomNumber();
+    const encryptedMessage = await KeyPair.encrypt(publicKey, number);
+    // console.log(encryptedMessage);
+
+    const plaintext = await KeyPair.decrypt(privateKey, encryptedMessage);
+    // console.log(plaintext);
   });
 
   it('lets sender generate stealth receiving address that recipient can access', () => {

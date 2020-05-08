@@ -2,6 +2,7 @@
  * @notice Class for managing keys on secp256k1 curve
  */
 const EC = require('elliptic').ec;
+const eccrypto = require('eccrypto');
 const { Buffer } = require('buffer/');
 const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
@@ -84,6 +85,13 @@ class KeyPair {
   }
 
   /**
+   * @notice Returns the public key as bytes array
+   */
+  get publicKeyBytes() {
+    return utils.arrayify(this.publicKeyHex);
+  }
+
+  /**
    * @notice Returns checksum address derived from this key
    */
   get address() {
@@ -133,6 +141,37 @@ class KeyPair {
   static async instanceFromTransaction(txHash) {
     const publicKeyHex = await recoverPublicKeyFromTransaction(txHash);
     return new KeyPair(publicKeyHex);
+  }
+
+  /**
+   * @notice Encrypt a random number with a public key
+   * @param {String} publicKey Uncompressed hex public key with 0x04 prefix
+   * @param {RandomNumber} randomNumber Random number as instance of RandomNumber class
+   */
+  static async encrypt(publicKey, randomNumber) {
+    // Generate message to encrypt
+    const prefix = 'umbra-protocol-v0';
+    const message = `${prefix}${randomNumber.asHex}`;
+    // Encrypt it
+    const key = Buffer.from(utils.arrayify(publicKey));
+    const result = await eccrypto.encrypt(key, Buffer.from(message));
+    // Return value as hex string
+    return utils.hexlify(result.ciphertext);
+  }
+
+  /**
+   * @notice Decrypt a random number with a private key
+   * @param {String} privateKey Hex private key with 0x prefix
+   * @param {String} message Message to decrypt, as hex string with 0x prefix
+   */
+  static async decrypt(privateKey, message) {
+    const a = eccrypto.generatePrivate();
+    const key = Buffer.from(utils.arrayify(privateKey));
+    console.log(a);
+    console.log(key);
+    const result = await eccrypto.decrypt(key, message);
+    // Return value as hex string
+    // console.log(result);
   }
 }
 

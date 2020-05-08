@@ -30,6 +30,7 @@ describe('RandomNumber class', () => {
   it('returns random value as a hex string', () => {
     const hex = random.asHex;
     expect(utils.isHexString(hex)).to.be.true;
+    // TODO: Sometimes fails with "expected 64 to equal 66"?
     expect(hex.length).to.equal(66); // 32-bytes plus leading 0x prefix
   });
 
