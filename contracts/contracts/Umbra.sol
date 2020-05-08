@@ -13,14 +13,26 @@ contract Umbra is Ownable, ReentrancyGuard {
     event TokenAnnouncement(address indexed receiver, uint256 indexed amount, address indexed token, string note);
 
     uint256 public toll;
+    address public tollCollector;
+    address public tollReceiver;
 
-    constructor(uint256 _toll) public {
+    constructor(uint256 _toll, address _tollCollector, address _tollReceiver) public {
         initialize(msg.sender);
         toll = _toll;
+        tollCollector = _tollCollector;
+        tollReceiver = _tollReceiver;
     }
 
     function setToll(uint256 _newToll) public onlyOwner {
         toll = _newToll;
+    }
+
+    function setTollCollector(address _newTollCollector) public onlyOwner {
+        tollCollector = _newTollCollector;
+    }
+
+    function setTollReceiver(address _newTollReceiver) public onlyOwner {
+        tollReceiver = _newTollReceiver;
     }
 
     function sendEth(address payable _receiver, string memory _announcement) public payable nonReentrant {

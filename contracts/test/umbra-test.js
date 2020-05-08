@@ -10,6 +10,8 @@ const BN = web3.utils.BN;
 describe('Umbra', () => {
     const [
         owner,
+        tollCollector,
+        tollReceiver,
         payer1,
         receiver1,
         payer2,
@@ -25,7 +27,7 @@ describe('Umbra', () => {
     const announcement2 = "How much wood would a wood chuck chuck?";
 
     before(async () => {
-        this.instance = await Umbra.new(deployedToll, {from: owner});
+        this.instance = await Umbra.new(deployedToll, tollCollector, tollReceiver, {from: owner});
         this.token = await TestToken.new('TestToken', 'TT');
 
         await this.token.mint(payer2, tokenAmount);
@@ -41,6 +43,12 @@ describe('Umbra', () => {
     it('should have correct values initialized', async () => {
         const theOwner = await this.instance.owner();
         expect(theOwner).to.equal(owner);
+
+        const theCollector = await this.instance.tollCollector();
+        expect(theCollector).to.equal(tollCollector);
+
+        const theReceiver = await this.instance.tollReceiver();
+        expect(theReceiver).to.equal(tollReceiver);
 
         const toll = await this.instance.toll();
         expect(toll.toString()).to.equal(deployedToll);
