@@ -14,8 +14,12 @@
     <div class="q-mt-lg">
       <base-button
         label="Sign message to finish setup"
+        :loading="isPending"
         @click="signMessage"
       />
+      <div v-if="isPending">
+        Your transaction is processing: {{ pendingTxHash }}
+      </div>
     </div>
   </div>
 </template>
@@ -23,6 +27,10 @@
 <script>
 import { mapState } from 'vuex';
 import ethers from 'ethers';
+
+const namehash = require('eth-ens-namehash');
+const addresses = require('../../../addresses.json');
+const publicResolverAbi = require('../../../abi/PublicResolver.json');
 
 const { utils } = ethers;
 
@@ -33,6 +41,10 @@ export default {
     return {
       message: 'This signature associates my public key with my ENS address for use with Umbra.',
       bytecode: undefined, // currently not used
+      signatureKey: 'vnd.umbra-v0-signature',
+      bytecodeKey: 'vnd.umbra-v0-bytecode',
+      isPending: undefined,
+      pendingTxHash: undefined,
     };
   },
 
@@ -40,12 +52,14 @@ export default {
     ...mapState({
       signer: (state) => state.user.signer,
       userAddress: (state) => state.user.userAddress,
+      userEnsDomain: (state) => state.user.userEnsDomain,
     }),
   },
 
   methods: {
     async signMessage() {
       // Get signature
+      this.isPending = true;
       const signature = await this.signer.signMessage(this.message);
 
       // Recover public key from signature
@@ -61,8 +75,18 @@ export default {
         throw new Error('Something went wrong signing the message. Please try again');
       }
 
+      // Get namehash of the ENS address
+      const node = namehash.hash(this.userEnsDomain);
+
       // Send transaction associating public key and bytecode with ENS address
-      // TODO
+      // THIS CODE HAS NOT BEEN TESTED
+      const publicResolver = new ethers.Contract(
+        addresses.ENS_PUBLIC_RESOLVER, publicResolverAbi, this.signer,
+      );
+      const tx = await publicResolver.setText(node, this.signatureKey, signature);
+      this.pendingTxHash = tx.hash;
+      await tx.wait();
+      this.isPending = false;
     },
   },
 };

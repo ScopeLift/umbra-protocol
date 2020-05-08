@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
+    "eth-ens-namehash": "^2.0.8",
     "ethers": "^5.0.0-beta.185",
     "quasar": "^1.0.0",
     "umbra-protocol": "0.0.1"
