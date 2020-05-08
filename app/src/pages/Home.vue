@@ -20,6 +20,7 @@
       <q-card
         class="col-auto card-border action-card"
         :class="{'not-logged-in': !userAddress}"
+        @click="$router.push({name: 'send'})"
       >
         <q-card-section class="text-h6 header-black card-header">
           Send
@@ -30,6 +31,7 @@
       <q-card
         class="col-auto card-border action-card"
         :class="{'not-logged-in': !userAddress}"
+        @click="$router.push({name: 'receive'})"
       >
         <q-card-section class="text-h6 header-black card-header">
           Receive

@@ -18,7 +18,7 @@
               src="statics/icons/favicon-128x128.png"
               style="max-width: 50px;"
             >
-            <div class="text-h4 dark-toggle">
+            <div class="text-h5 dark-toggle">
               <span class="primary header-black q-ml-md">Umbra</span>
             </div>
           </div>

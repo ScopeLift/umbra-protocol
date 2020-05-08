@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "quasar": "^1.0.0"
+    "ethers": "^5.0.0-beta.185",
+    "quasar": "^1.0.0",
+    "umbra-protocol": "0.0.1"
   },
   "devDependencies": {
     "@quasar/app": "^1.0.0",
