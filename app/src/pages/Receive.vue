@@ -37,7 +37,3 @@ export default {
   name: 'Receive',
 };
 </script>
-
-<style lang="sass" scoped>
-
-</style>
