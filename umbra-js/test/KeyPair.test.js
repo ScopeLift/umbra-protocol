@@ -35,7 +35,7 @@ describe('KeyPair class', () => {
     const txHash = '0x397d8e85b0e78ed48676fdc4cd7c2f5ce55b4844eb087fde532428b0db0bd2cf';
     const from = '0x1f973B233f5Ebb1E5D7CFe51B9aE4A32415A3A08';
     // Create instance and check result
-    const keyPair = await new KeyPair(txHash, true);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -44,7 +44,7 @@ describe('KeyPair class', () => {
     const txHash = '0xed8df05af867112b6ce09df9388632605c42e5af765e61f3b808e9f7662390ee';
     const from = '0xdc693f2e2192DB72fd92d9F589C904c4f4e6ef56';
     // Create instance and check result
-    const keyPair = await new KeyPair(txHash, true);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -53,8 +53,17 @@ describe('KeyPair class', () => {
     const txHash = '0x282a980bf2d7500233e4f2c55981e64826938cfe871060bfad9b22842adcb2c8';
     const from = '0x9862D074e33003726fA05c74F0142995f33A3250';
     // Create instance and check result
-    const keyPair = await new KeyPair(txHash, true);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash);
     expect(keyPair.address).to.equal(from);
+  });
+
+  it('will recover the private key from an arbitrary transaction', async () => {
+    // Specify mainnet transaction hash and its sender
+    const txHash = '0x282a980bf2d7500233e4f2c55981e64826938cfe871060bfad9b22842adcb2c8';
+    const sendersPublicKey = '0x04ef3718f57c441836d3adf7920b041c30b1394e00fd9be3eae0a3b5ff71709d6b93cc818a889a5ea1b9742d577b603e0d7a87feb9da4d49f0260d73f72af91dd9';
+    // Create instance and check result
+    const recoveredPublicKey = await KeyPair.recoverPublicKeyFromTransaction(txHash);
+    expect(recoveredPublicKey).to.equal(sendersPublicKey);
   });
 
   it('should not initialize an instance without the 0x prefix', () => {

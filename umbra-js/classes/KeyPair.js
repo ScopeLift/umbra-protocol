@@ -28,59 +28,18 @@ function pad32ByteHex(hex) {
   return hex.padStart(64, 0);
 }
 
-/**
- * @notice Given a transaction hash, return the public key of the transaction's sender
- * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
- * recovering public key from a transaction with ethers
- * @param {String} txHash Transaction hash to recover public key from
- */
-async function recoverPublicKeyFromTransaction(txHash) {
-  // Get transaction data
-  const tx = await provider.getTransaction(txHash);
-
-  // Get original signature
-  const splitSignature = {
-    r: tx.r,
-    s: tx.s,
-    v: tx.v,
-  };
-  const signature = ethers.utils.joinSignature(splitSignature);
-
-  // Reconstruct transaction data that was originally signed
-  const txData = {
-    chainId: tx.chainId,
-    data: tx.data,
-    gasLimit: tx.gasLimit,
-    gasPrice: tx.gasPrice,
-    nonce: tx.nonce,
-    to: tx.to, // this works for both regular and contract transactions
-    value: tx.value,
-  };
-
-  // Properly format it to get the correct message
-  const resolvedTx = await ethers.utils.resolveProperties(txData);
-  const rawTx = ethers.utils.serializeTransaction(resolvedTx); // returns RLP encoded tx
-  const msgHash = ethers.utils.keccak256(rawTx); // as specified by ECDSA
-  const msgBytes = ethers.utils.arrayify(msgHash); // create binary hash
-
-  // Recover sender's public key and address
-  const publicKey = ethers.utils.recoverPublicKey(msgBytes, signature);
-  return publicKey;
-}
-
 class KeyPair {
   /**
-   * @notice Creates new instance from a public key, private key, or transaction hash
+   * @notice Creates new instance from a public key or private key
    * @param {String} key Can be either (1) hex public key with 0x04 prefix, (2) hex private
-   * key with 0x prefix, or (3) transaction hash
-   * @param {Boolean} isTxHash must be true if key is a transaction hash
+   * key with 0x prefix
    */
-  constructor(key, isTxHash = false) {
+  constructor(key) {
     // Input checks
     if (!utils.isHexString(key)) throw new Error('Key must be in hex format with 0x prefix');
 
     // Handle input
-    if (key.length === 66 && !isTxHash) {
+    if (key.length === 66) {
       // PRIVATE KEY
       // Save off various forms of the private key
       this.privateKeyHex = key;
@@ -101,14 +60,6 @@ class KeyPair {
       // PUBLIC KEY
       // Save off public key as hex, other forms computed as getters
       this.publicKeyHex = key;
-    } else if (key.length === 66 && isTxHash) {
-      // TRANSACTION HASH
-      return (async () => {
-        // Asynchronously recover address and public key from transaction hash,
-        // save off public key as hex, other forms computed as getters
-        this.publicKeyHex = await recoverPublicKeyFromTransaction(key);
-        return this;
-      })();
     } else {
       throw new Error('Key must be a 66 character private key, a 132 character public key, or a transaction hash with isTxHash set to true');
     }
@@ -187,6 +138,55 @@ class KeyPair {
     const privateKey = `0x${pad32ByteHex(privateKeyMod.toHexString().slice(2))}`;
     // Instantiate and return new instance
     return new KeyPair(privateKey);
+  }
+
+  /**
+  * @notice Given a transaction hash, return the public key of the transaction's sender
+  * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
+  * recovering public key from a transaction with ethers
+  * @param {String} txHash Transaction hash to recover public key from
+  */
+  static async recoverPublicKeyFromTransaction(txHash) {
+    // Get transaction data
+    const tx = await provider.getTransaction(txHash);
+
+    // Get original signature
+    const splitSignature = {
+      r: tx.r,
+      s: tx.s,
+      v: tx.v,
+    };
+    const signature = ethers.utils.joinSignature(splitSignature);
+
+    // Reconstruct transaction data that was originally signed
+    const txData = {
+      chainId: tx.chainId,
+      data: tx.data,
+      gasLimit: tx.gasLimit,
+      gasPrice: tx.gasPrice,
+      nonce: tx.nonce,
+      to: tx.to, // this works for both regular and contract transactions
+      value: tx.value,
+    };
+
+    // Properly format it to get the correct message
+    const resolvedTx = await ethers.utils.resolveProperties(txData);
+    const rawTx = ethers.utils.serializeTransaction(resolvedTx);
+    const msgHash = ethers.utils.keccak256(rawTx);
+    const msgBytes = ethers.utils.arrayify(msgHash);
+
+    // Recover sender's public key and address
+    const publicKey = ethers.utils.recoverPublicKey(msgBytes, signature);
+    return publicKey;
+  }
+
+  /**
+   * @notice Generate KeyPair instance asynchronously from a transaction hash
+   * @param {String} txHash Transaction hash to recover public key from
+   */
+  static async instanceFromTransaction(txHash) {
+    const publicKeyHex = await this.recoverPublicKeyFromTransaction(txHash);
+    return new KeyPair(publicKeyHex);
   }
 }
 
