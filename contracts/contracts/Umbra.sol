@@ -4,6 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
 contract Umbra is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
@@ -36,7 +37,6 @@ contract Umbra is Ownable, ReentrancyGuard {
 
         emit TokenAnnouncement(_receiver, _amount, _tokenAddr, _announcement);
 
-        IERC20 token = IERC20(_tokenAddr);
-        token.transferFrom(msg.sender, _receiver, _amount);
+        SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, _receiver, _amount);
     }
 }
