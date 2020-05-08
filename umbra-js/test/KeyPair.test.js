@@ -1,7 +1,10 @@
 const chai = require('chai');
 const ethers = require('ethers');
+
+// umbra-js components
 const KeyPair = require('../classes/KeyPair');
 const RandomNumber = require('../classes/RandomNumber');
+const utils = require('../utils/utils');
 
 const { expect } = chai;
 
@@ -62,7 +65,7 @@ describe('KeyPair class', () => {
     const txHash = '0x282a980bf2d7500233e4f2c55981e64826938cfe871060bfad9b22842adcb2c8';
     const sendersPublicKey = '0x04ef3718f57c441836d3adf7920b041c30b1394e00fd9be3eae0a3b5ff71709d6b93cc818a889a5ea1b9742d577b603e0d7a87feb9da4d49f0260d73f72af91dd9';
     // Create instance and check result
-    const recoveredPublicKey = await KeyPair.recoverPublicKeyFromTransaction(txHash);
+    const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash);
     expect(recoveredPublicKey).to.equal(sendersPublicKey);
   });
 
