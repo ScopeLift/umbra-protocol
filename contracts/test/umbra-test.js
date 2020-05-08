@@ -2,6 +2,7 @@ const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const Umbra = contract.fromArtifact('Umbra');
+const TestToken = contract.fromArtifact('TestToken');
 
 const toWei = web3.utils.toWei;
 const BN = web3.utils.BN;
@@ -21,11 +22,14 @@ describe('Umbra', () => {
 
     before(async () => {
         this.instance = await Umbra.new(deployedToll, {from: owner});
+        this.token = await TestToken.new();
     });
 
     it('should see the deployed Umbra contract', async () => {
         expect(this.instance.address.startsWith('0x')).to.be.true;
         expect(this.instance.address.length).to.equal(42);
+        expect(this.token.address.startsWith('0x')).to.be.true;
+        expect(this.token.address.length).to.equal(42);
     });
 
     it('should have correct values initialized', async () => {
