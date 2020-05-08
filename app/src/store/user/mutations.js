@@ -7,4 +7,5 @@ export function setWallet(state, wallet) {
   state.provider = wallet.provider;
   state.ethersProvider = wallet.ethersProvider;
   state.userAddress = wallet.userAddress;
+  state.userEnsDomain = wallet.userEnsDomain;
 }

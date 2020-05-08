@@ -59,21 +59,3 @@ export default {
   },
 };
 </script>
-
-<style lang="sass" scoped>
-.action-card
-  cursor: pointer
-  margin: 1rem
-  max-width: 200px
-  min-width: 150px
-  padding: 1rem
-
-.card-header
-  color: $primary
-  text-align: center
-
-.not-logged-in
-  opacity: 0.35
-  cursor: not-allowed
-
-</style>

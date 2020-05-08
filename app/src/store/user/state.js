@@ -7,5 +7,6 @@ export default function () {
     provider: undefined,
     ethersProvider: undefined,
     userAddress: undefined,
+    userEnsDomain: undefined,
   };
 }

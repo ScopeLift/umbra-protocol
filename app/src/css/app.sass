@@ -38,7 +38,27 @@
 
 h1, h2, h3, h4, h5, h6 { margin-bottom: 0 }
 h4 { margin-top: 0 }
+p, div
+  hyphens: none
+  text-align: justify
 
+// Card styling
+.action-card
+  cursor: pointer
+  margin: 1rem
+  max-width: 200px
+  min-width: 150px
+  padding: 1rem
+
+.card-header
+  color: $primary
+  text-align: center
+
+.not-logged-in
+  opacity: 0.35
+  cursor: not-allowed
+
+// Generic
 .page-title
   @extend .header-black
   margin-top: 1rem
@@ -49,12 +69,13 @@ h4 { margin-top: 0 }
   max-width: 500px
   margin: 0 auto
 
+// Dark mode config
 .body--light,
   .dark-toggle
     color: $dark
 
   .hyperlink
-    color: $primary
+    color: $primarydark
     text-decoration: underline
     cursor: pointer
     display: inline-block
@@ -64,7 +85,7 @@ h4 { margin-top: 0 }
     color: $light
 
   .hyperlink
-    color: $dark
+    color: $primaryreg
     text-decoration: underline
     cursor: pointer
     display: inline-block

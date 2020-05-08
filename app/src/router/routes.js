@@ -7,6 +7,8 @@ const routes = [
       { name: 'home', path: '', component: () => import('pages/Home.vue') },
       { name: 'send', path: '/send', component: () => import('pages/Send.vue') },
       { name: 'receive', path: '/receive', component: () => import('pages/Receive.vue') },
+      { name: 'setup', path: '/setup', component: () => import('pages/Setup.vue') },
+      { name: 'withdraw', path: '/withdraw', component: () => import('pages/Withdraw.vue') },
     ],
   },
 ];
