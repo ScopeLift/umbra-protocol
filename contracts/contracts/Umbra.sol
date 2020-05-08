@@ -1,9 +1,11 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/Utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 contract Umbra is Ownable, ReentrancyGuard {
+    using SafeMath for uint256;
 
     event Announcement(address indexed receiver, uint256 indexed amount, string note);
 
@@ -21,7 +23,7 @@ contract Umbra is Ownable, ReentrancyGuard {
     function sendEth(address payable _receiver, string memory _announcement) public payable nonReentrant {
         require(msg.value > toll, "Umbra: Must pay more than the toll");
 
-        uint256 payment = msg.value - toll;
+        uint256 payment = msg.value.sub(toll);
         emit Announcement(_receiver, payment, _announcement);
 
         _receiver.transfer(payment);
