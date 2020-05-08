@@ -17,6 +17,7 @@ describe('Umbra', () => {
     const deployedToll = toWei('0.01', 'ether');
     const updatedToll = toWei('0.001', 'ether');
     const ethPayment = toWei('1.6', 'ether');
+    const announcement1 = "Now is the time for all good men to come to the aid of their country";
 
     before(async () => {
         this.instance = await Umbra.new(deployedToll, {from: owner});
@@ -49,15 +50,33 @@ describe('Umbra', () => {
         );
     });
 
+    it('should not allow someone to pay less than the toll amount', async () => {
+        const toll = await this.instance.toll()
+        const paymentAmount = toll.sub(new BN('1'));
+
+        await expectRevert(
+            this.instance.sendEth(receiver1, announcement1, {from: payer1, value: paymentAmount}),
+            "Umbra: Must pay more than the toll",
+        );
+    });
+
+    it('should not allow someone to pay exactly the toll amount', async () => {
+        const toll = await this.instance.toll()
+
+        await expectRevert(
+            this.instance.sendEth(receiver1, announcement1, {from: payer1, value: toll}),
+            "Umbra: Must pay more than the toll",
+        );
+    });
+
     it('should allow someone to pay in eth', async () => {
         const receiverInitBalance = new BN(await web3.eth.getBalance(receiver1));
-        const announcement = "Now is the time for all good men to come to the aid of their country";
 
         const toll = await this.instance.toll()
         const payment = new BN(ethPayment);
         const actualPayment = payment.sub(toll);
 
-        const receipt = await this.instance.sendEth(receiver1, announcement, {from: payer1, value: ethPayment})
+        const receipt = await this.instance.sendEth(receiver1, announcement1, {from: payer1, value: ethPayment})
 
         const receiverPostBalance = new BN(await web3.eth.getBalance(receiver1));
         const amountReceived = receiverPostBalance.sub(receiverInitBalance);
@@ -67,7 +86,7 @@ describe('Umbra', () => {
         expectEvent(receipt, "Announcement", {
             receiver: receiver1,
             amount: actualPayment.toString(),
-            note: announcement,
+            note: announcement1,
         });
     });
 });
