@@ -154,4 +154,24 @@ describe('Umbra', () => {
             note: announcement2,
         });
     });
+
+    it('should not allow someone else to move tolls to toll receiver', async () => {
+        await expectRevert(
+            this.instance.collectTolls({from: other}),
+            'Umbra: Not Toll Collector'
+        );
+    });
+
+    it('should allow the toll collector to move tolls to toll receiver', async () => {
+        const toll = await this.instance.toll();
+        const expectedCollection = toll.mul(new BN('2'));
+        const receiverInitBalance = new BN(await web3.eth.getBalance(tollReceiver));
+
+        await this.instance.collectTolls({from: tollCollector});
+
+        const receiverPostBalance = new BN(await web3.eth.getBalance(tollReceiver));
+        const tollsReceived = receiverPostBalance.sub(receiverInitBalance);
+
+        expect(tollsReceived.toString()).to.equal(expectedCollection.toString());
+    });
 });

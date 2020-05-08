@@ -14,9 +14,9 @@ contract Umbra is Ownable, ReentrancyGuard {
 
     uint256 public toll;
     address public tollCollector;
-    address public tollReceiver;
+    address payable public tollReceiver;
 
-    constructor(uint256 _toll, address _tollCollector, address _tollReceiver) public {
+    constructor(uint256 _toll, address _tollCollector, address payable _tollReceiver) public {
         initialize(msg.sender);
         toll = _toll;
         tollCollector = _tollCollector;
@@ -31,7 +31,7 @@ contract Umbra is Ownable, ReentrancyGuard {
         tollCollector = _newTollCollector;
     }
 
-    function setTollReceiver(address _newTollReceiver) public onlyOwner {
+    function setTollReceiver(address payable _newTollReceiver) public onlyOwner {
         tollReceiver = _newTollReceiver;
     }
 
@@ -50,5 +50,14 @@ contract Umbra is Ownable, ReentrancyGuard {
         emit TokenAnnouncement(_receiver, _amount, _tokenAddr, _announcement);
 
         SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, _receiver, _amount);
+    }
+
+    function collectTolls() public onlyCollector nonReentrant {
+        tollReceiver.transfer(address(this).balance);
+    }
+
+    modifier onlyCollector() {
+        require(msg.sender == tollCollector, "Umbra: Not Toll Collector");
+        _;
     }
 }
