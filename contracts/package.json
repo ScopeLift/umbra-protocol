@@ -4,7 +4,8 @@
   "description": "Contracts for the Umbra Protocol",
   "scripts": {
     "compile": "npx oz compile",
-    "test": "npx oz compile && mocha --exit --timeout 0 test/*-test.js"
+    "test": "npx oz compile && mocha --exit --timeout 0 test/*-test.js",
+    "gas": "npx oz compile && mocha --exit --timeout 0 test/gastests.js"
   },
   "dependencies": {
     "@openzeppelin/contracts-ethereum-package": "^2.5.0",
