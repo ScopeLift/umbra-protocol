@@ -5,7 +5,8 @@
   "scripts": {
     "compile": "npx oz compile",
     "test": "npx oz compile && mocha --exit --timeout 0 test/*-test.js",
-    "gas": "npx oz compile && mocha --exit --timeout 0 test/gastests.js"
+    "gas": "npx oz compile && mocha --exit --timeout 0 test/gastests.js",
+    "gas-optimized": "npx oz compile --optimizer on --optimizer-runs 1 && mocha --exit --timeout 0 test/gastests.js"
   },
   "dependencies": {
     "@openzeppelin/contracts-ethereum-package": "^2.5.0",
