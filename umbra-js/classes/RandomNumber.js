@@ -2,6 +2,7 @@
  * @notice Class for managing random numbers
  */
 const ethers = require('ethers');
+const { padHex } = require('../utils/utils');
 
 const { utils } = ethers;
 
@@ -11,6 +12,7 @@ class RandomNumber {
    * @param {Number} length Number of bytes random number should have
    */
   constructor(length = 32) {
+    this.length = length;
     this.value = utils.shuffled(utils.randomBytes(length));
   }
 
@@ -25,14 +27,14 @@ class RandomNumber {
    * @notice Get random number as hex string
    */
   get asHex() {
-    return this.asBN.toHexString();
+    return `0x${padHex(this.asBN.toHexString().slice(2), this.length)}`;
   }
 
   /**
    * @notice Get random number as hex string without 0x prefix
    */
   get asHexSlim() {
-    return this.asHex.slice(2);
+    return padHex(this.asHex.slice(2), this.length);
   }
 }
 

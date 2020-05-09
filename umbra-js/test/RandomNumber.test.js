@@ -19,8 +19,12 @@ describe('RandomNumber class', () => {
   });
 
   it('allows random number instances to be initialized with different sizes', () => {
-    const random16 = new RandomNumber(16);
-    expect(random16.value.length).to.equal(16);
+    for (let i = 0; i < 1000; i += 1) {
+      const random16 = new RandomNumber(16);
+      expect(random16.value.length).to.equal(16);
+      expect(random16.asHex.length).to.equal(34);
+      expect(random16.asHexSlim.length).to.equal(32);
+    }
   });
 
   it('returns random value as an ethers BigNumber', () => {
@@ -28,15 +32,19 @@ describe('RandomNumber class', () => {
   });
 
   it('returns random value as a hex string', () => {
-    const hex = random.asHex;
-    expect(utils.isHexString(hex)).to.be.true;
-    // TODO: Sometimes fails with "expected 64 to equal 66"?
-    expect(hex.length).to.equal(66); // 32-bytes plus leading 0x prefix
+    for (let i = 0; i < 1000; i += 1) {
+      random = new RandomNumber();
+      const hex = random.asHex;
+      expect(utils.isHexString(hex)).to.be.true;
+      expect(hex.length).to.equal(66); // 32-bytes plus leading 0x prefix
+    }
   });
 
   it('returns random value as a hex string without the 0x prefix', () => {
-    const hex = random.asHexSlim;
-    // TODO: Sometimes fails with "expected 62 to equal 64"?
-    expect(hex.length).to.equal(64); // 32-bytes plus without 0x prefix
+    for (let i = 0; i < 1000; i += 1) {
+      random = new RandomNumber();
+      const hex = random.asHexSlim;
+      expect(hex.length).to.equal(64); // 32-bytes plus without 0x prefix
+    }
   });
 });

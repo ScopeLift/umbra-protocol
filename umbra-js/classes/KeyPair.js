@@ -8,7 +8,7 @@ const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
 const {
   hexStringToBuffer,
-  pad32ByteHex,
+  padHex,
   recoverPublicKeyFromTransaction,
 } = require('../utils/utils');
 
@@ -40,8 +40,8 @@ class KeyPair {
 
       // Save off public key as hex, other forms computed as getters
       const publicKeyHexCoords = {
-        x: pad32ByteHex(publicKey.getX().toString('hex')),
-        y: pad32ByteHex(publicKey.getY().toString('hex')),
+        x: padHex(publicKey.getX().toString('hex')),
+        y: padHex(publicKey.getY().toString('hex')),
       };
       this.publicKeyHex = `0x04${publicKeyHexCoords.x}${publicKeyHexCoords.y}`;
     } else if (key.length === 132) {
@@ -59,8 +59,8 @@ class KeyPair {
    */
   get publicKeyHexCoords() {
     return {
-      x: pad32ByteHex(this.publicKeyHexSlim.slice(0, 64)),
-      y: pad32ByteHex(this.publicKeyHexSlim.slice(64)),
+      x: padHex(this.publicKeyHexSlim.slice(0, 64)),
+      y: padHex(this.publicKeyHexSlim.slice(64)),
     };
   }
 
@@ -157,8 +157,8 @@ class KeyPair {
     // Perform multiplication
     const publicKey = this.publicKeyEC.getPublic().mul(value.asHexSlim);
     // Get x,y hex strings
-    const x = pad32ByteHex(publicKey.getX().toString('hex'));
-    const y = pad32ByteHex(publicKey.getY().toString('hex'));
+    const x = padHex(publicKey.getX().toString('hex'));
+    const y = padHex(publicKey.getY().toString('hex'));
     // Instantiate and return new instance
     return new KeyPair(`0x04${x}${y}`);
   }
@@ -175,7 +175,7 @@ class KeyPair {
     // order of our curve. We add the 0x prefix as it's required by ethers.js
     const privateKeyMod = privateKeyFull.mod(`0x${ec.n.toString('hex')}`);
     // Remove 0x prefix to pad hex value, then add back 0x prefix
-    const privateKey = `0x${pad32ByteHex(privateKeyMod.toHexString().slice(2))}`;
+    const privateKey = `0x${padHex(privateKeyMod.toHexString().slice(2))}`;
     // Instantiate and return new instance
     return new KeyPair(privateKey);
   }
