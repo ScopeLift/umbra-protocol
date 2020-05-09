@@ -1,5 +1,5 @@
 {
-  "name": "umbra-protocol",
+  "name": "umbra-js",
   "version": "0.0.1",
   "description": "Send and receive stealth payments",
   "main": "index.js",
