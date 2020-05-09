@@ -22,6 +22,12 @@ module.exports.pad32ByteHex = (hex) => {
 };
 
 /**
+ * @notice Convert hex string with 0x prefix into Buffer
+ * @param {String} data Hex string to convert
+ */
+module.exports.hexStringToBuffer = (data) => Buffer.from(utils.arrayify(data));
+
+/**
   * @notice Given a transaction hash, return the public key of the transaction's sender
   * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
   * recovering public key from a transaction with ethers

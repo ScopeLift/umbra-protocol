@@ -36,6 +36,7 @@ describe('RandomNumber class', () => {
 
   it('returns random value as a hex string without the 0x prefix', () => {
     const hex = random.asHexSlim;
+    // TODO: Sometimes fails with "expected 62 to equal 64"?
     expect(hex.length).to.equal(64); // 32-bytes plus without 0x prefix
   });
 });

@@ -3,10 +3,14 @@
  */
 const EC = require('elliptic').ec;
 const eccrypto = require('eccrypto');
-const { Buffer } = require('buffer/');
+// const { Buffer } = require('buffer/'); // TODO make sure this works in browser and node
 const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
-const { pad32ByteHex, recoverPublicKeyFromTransaction } = require('../utils/utils');
+const {
+  hexStringToBuffer,
+  pad32ByteHex,
+  recoverPublicKeyFromTransaction,
+} = require('../utils/utils');
 
 const ec = new EC('secp256k1');
 const { utils } = ethers;
@@ -101,6 +105,49 @@ class KeyPair {
     return utils.getAddress(address);
   }
 
+  // ENCRYPTION / DECRYPTION =======================================================================
+  /**
+   * @notice Encrypt a random number with the instance's public key
+   * @param {RandomNumber} number Random number as instance of RandomNumber class
+   * @returns {Object} With fields: 16 byte iv, 65 byte ephemeralPublicKey, 96-byte
+   * ciphertext (assuming 32 byte random number), and 32 byte mac
+   */
+  async encrypt(number) {
+    // Generate message to encrypt
+    const prefix = 'umbra-protocol-v0';
+    const message = `${prefix}${number.asHex}`;
+    // Encrypt it
+    const key = hexStringToBuffer(this.publicKeyHex);
+    const output = await eccrypto.encrypt(key, Buffer.from(message));
+    // Return ciphertext and public key (include MAC?)
+    const result = {
+      iv: utils.hexlify(output.iv),
+      ephemeralPublicKey: utils.hexlify(output.ephemPublicKey),
+      ciphertext: utils.hexlify(output.ciphertext),
+      mac: utils.hexlify(output.mac),
+    };
+    return result;
+  }
+
+  /**
+   * @notice Decrypt a random number with the instance's private key and return the plaintext
+   * @param {String} output Output from the encrypt method
+   */
+  async decrypt(output) {
+    // Format output into buffers for eccrypto
+    const formattedOutput = {
+      iv: hexStringToBuffer(output.iv),
+      ephemPublicKey: hexStringToBuffer(output.ephemeralPublicKey),
+      ciphertext: hexStringToBuffer(output.ciphertext),
+      mac: hexStringToBuffer(output.mac),
+    };
+    // Decrypt data
+    const key = hexStringToBuffer(this.privateKeyHex);
+    const plaintext = await eccrypto.decrypt(key, formattedOutput);
+    // Return value as string
+    return plaintext.toString();
+  }
+
   // ELLIPTIC CURVE MATH ===========================================================================
   /**
    * @notice Returns new KeyPair instance after multiplying this public key by some value
@@ -141,37 +188,6 @@ class KeyPair {
   static async instanceFromTransaction(txHash) {
     const publicKeyHex = await recoverPublicKeyFromTransaction(txHash);
     return new KeyPair(publicKeyHex);
-  }
-
-  /**
-   * @notice Encrypt a random number with a public key
-   * @param {String} publicKey Uncompressed hex public key with 0x04 prefix
-   * @param {RandomNumber} randomNumber Random number as instance of RandomNumber class
-   */
-  static async encrypt(publicKey, randomNumber) {
-    // Generate message to encrypt
-    const prefix = 'umbra-protocol-v0';
-    const message = `${prefix}${randomNumber.asHex}`;
-    // Encrypt it
-    const key = Buffer.from(utils.arrayify(publicKey));
-    const result = await eccrypto.encrypt(key, Buffer.from(message));
-    // Return value as hex string
-    return utils.hexlify(result.ciphertext);
-  }
-
-  /**
-   * @notice Decrypt a random number with a private key
-   * @param {String} privateKey Hex private key with 0x prefix
-   * @param {String} message Message to decrypt, as hex string with 0x prefix
-   */
-  static async decrypt(privateKey, message) {
-    const a = eccrypto.generatePrivate();
-    const key = Buffer.from(utils.arrayify(privateKey));
-    console.log(a);
-    console.log(key);
-    const result = await eccrypto.decrypt(key, message);
-    // Return value as hex string
-    // console.log(result);
   }
 }
 

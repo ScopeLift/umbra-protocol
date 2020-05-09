@@ -90,13 +90,19 @@ describe('KeyPair class', () => {
   });
 
   it('supports encryption and decryption of the random number', async () => {
-    // Encrypt payload
-    const number = new RandomNumber();
-    const encryptedMessage = await KeyPair.encrypt(publicKey, number);
-    // console.log(encryptedMessage);
-
-    const plaintext = await KeyPair.decrypt(privateKey, encryptedMessage);
-    // console.log(plaintext);
+    for (let i = 0; i < 20; i += 1) {
+      // Do a bunch of tests with random wallets and numbers
+      wallet = ethers.Wallet.createRandom();
+      // Encrypt payload
+      const number = new RandomNumber();
+      const payload = `umbra-protocol-v0${number.asHex}`;
+      const keyPairFromPublic = new KeyPair(wallet.publicKey);
+      const output = await keyPairFromPublic.encrypt(number); // eslint-disable-line no-await-in-loop
+      // Decrypt payload
+      const keyPairFromPrivate = new KeyPair(wallet.privateKey);
+      const plaintext = await keyPairFromPrivate.decrypt(output); // eslint-disable-line no-await-in-loop
+      expect(plaintext).to.equal(payload);
+    }
   });
 
   it('lets sender generate stealth receiving address that recipient can access', () => {
