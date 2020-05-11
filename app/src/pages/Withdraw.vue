@@ -4,8 +4,8 @@
       Withdraw
     </h3>
 
-    <div class="form">
-      <!-- TODO -->
+    <div class="form text-center">
+      TODO
     </div>
   </q-page>
 </template>

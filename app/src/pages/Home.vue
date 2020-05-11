@@ -21,21 +21,32 @@
       <q-card
         class="col-auto card-border action-card"
         :class="{'not-logged-in': !userAddress}"
-        @click="$router.push({name: 'send'})"
+        @click="navigateToPage('send')"
       >
         <q-card-section class="text-h6 header-black card-header">
           Send
         </q-card-section>
       </q-card>
 
-      <!-- Receive -->
+      <!-- Withdraw -->
       <q-card
         class="col-auto card-border action-card"
         :class="{'not-logged-in': !userAddress}"
-        @click="$router.push({name: 'receive'})"
+        @click="navigateToPage('withdraw')"
       >
         <q-card-section class="text-h6 header-black card-header">
-          Receive
+          Withdraw
+        </q-card-section>
+      </q-card>
+
+      <!-- ENS Setup -->
+      <q-card
+        class="col-auto card-border action-card"
+        :class="{'not-logged-in': !userAddress}"
+        @click="navigateToPage('setup')"
+      >
+        <q-card-section class="text-h6 header-black card-header">
+          ENS Setup
         </q-card-section>
       </q-card>
     </div>
@@ -52,6 +63,12 @@ export default {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
     }),
+  },
+
+  methods: {
+    navigateToPage(name) {
+      if (this.userAddress) this.$router.push({ name });
+    },
   },
 };
 </script>
