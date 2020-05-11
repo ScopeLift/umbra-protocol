@@ -9,8 +9,18 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 contract Umbra is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
 
-    event EthAnnouncement(address indexed receiver, uint256 indexed amount, string note);
-    event TokenAnnouncement(address indexed receiver, uint256 indexed amount, address indexed token, string note);
+    event Announcement(
+        address indexed receiver,
+        uint256 indexed amount,
+        address indexed token,
+        bytes16 iv,  // Inivitalization Vector
+        bytes32 pk0, // Ephemeral Public Key
+        bytes32 pk1,
+        bytes32 ct0, // Ciphertext
+        bytes32 ct1,
+        bytes32 ct2,
+        bytes32 mac // Message Authetnication Code
+    );
 
     uint256 public toll;
     address public tollCollector;
@@ -35,19 +45,47 @@ contract Umbra is Ownable, ReentrancyGuard {
         tollReceiver = _newTollReceiver;
     }
 
-    function sendEth(address payable _receiver, string memory _announcement) public payable nonReentrant {
+    function sendEth(
+            address payable _receiver,
+            bytes16 _iv,  // Inivitalization Vector
+            bytes32 _pk0, // Ephemeral Public Key
+            bytes32 _pk1,
+            bytes32 _ct0, // Ciphertext
+            bytes32 _ct1,
+            bytes32 _ct2,
+            bytes32 _mac // Message Authetnication Code
+        )
+        public
+        payable
+        nonReentrant
+    {
         require(msg.value > toll, "Umbra: Must pay more than the toll");
 
         uint256 amount = msg.value.sub(toll);
-        emit EthAnnouncement(_receiver, amount, _announcement);
+        emit Announcement(_receiver, amount, address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), _iv, _pk0, _pk1, _ct0, _ct1, _ct2, _mac);
 
         _receiver.transfer(amount);
     }
 
-    function sendToken(address _receiver, string memory _announcement, address _tokenAddr, uint256 _amount) public payable nonReentrant {
+    function sendToken(
+            address _receiver,
+            address _tokenAddr,
+            uint256 _amount,
+            bytes16 _iv,  // Inivitalization Vector
+            bytes32 _pk0, // Ephemeral Public Key
+            bytes32 _pk1,
+            bytes32 _ct0, // Ciphertext
+            bytes32 _ct1,
+            bytes32 _ct2,
+            bytes32 _mac // Message Authetnication Code
+        )
+        public
+        payable
+        nonReentrant
+    {
         require(msg.value == toll, "Umbra: Must pay the exact toll");
 
-        emit TokenAnnouncement(_receiver, _amount, _tokenAddr, _announcement);
+        emit Announcement(_receiver, _amount, _tokenAddr, _iv, _pk0, _pk1, _ct0, _ct1, _ct2, _mac);
 
         SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, _receiver, _amount);
     }
