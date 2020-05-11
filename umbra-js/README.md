@@ -12,7 +12,8 @@ installed with `npm install ethers@next`.
 const ethers = require('ethers')
 const umbra = require('umbra-js');
 
-const { RandomNumber, KeyPair } = umbra
+// utils and ens are not used below, but their APIs can be found in utils.js and ens.js
+const { RandomNumber, KeyPair, utils, ens } = umbra
 
 // Setup ----------------------------------------------------------------------
 // Generate a random wallet to simulate the recipient
@@ -61,9 +62,15 @@ const recipientFromTxHash = await KeyPair.instanceFromTransaction(txHash, provid
 
 ## Development
 
-1. Run `npm install`
-2. Run `npm test` to run all tests.
-3. Optionally, run `node test/poc.js` to run the proof-of-concept file. If successful, you should see logs similar to the ones below in your console. Note that the two checks under step 6 are the most important, and both should be `true` if the script ran successfully
+
+1. Create a file in this directory called `.env` that looks like the one below.
+    ```bash
+    INFURA_ID=yourInfuraId
+    TEST_ADDRESS=0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD
+    ```
+2. Run `npm install`
+3. Run `npm test` to run all tests.
+4. Optionally, run `node test/poc.js` to run the proof-of-concept file. If successful, you should see logs similar to the ones below in your console. Note that the two checks under step 6 are the most important, and both should be `true` if the script ran successfully
 
 ```text
 Step 1: Public key successfully recovered from recipient signature

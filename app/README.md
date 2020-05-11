@@ -1,26 +1,13 @@
 # Umbra App (umbra-app)
 
-Send and receive stealth payments with the Umbra protocol
+Send and receive stealth payments with the Umbra protocol.
 
-## Install the dependencies
-```bash
-npm install
-```
+## Setup
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
+Current development version requires using the local umbra-js package in this repository.
 
-### Lint the files
-```bash
-npm run lint
-```
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
+1. Install dependencies with `npm install`
+2. Navigate to the `umbra-js` folder and run `npm link`
+3. Navigate back to the `app` folder and run `npm link umbra-js`
+4. Build the app with `npm run dev`
+5.
