@@ -27,13 +27,19 @@ describe('ENS functions', () => {
     expect(publicKey).to.equal(namePublicKey);
   });
 
+  it('recovers the public key from a signature', async () => {
+    const publicKey = await ens.getPublicKeyFromSignature(nameSignature);
+    expect(publicKey).to.equal(namePublicKey);
+  });
+
   it('gets the bytecode associated with an ENS address', async () => {
     const bytecode = await ens.getBytecode(name, provider);
     expect(bytecode).to.equal(nameBytecode);
   });
 
   it.skip('sets the signature', async () => {
-    // TODO currently fails since provider account is not the msolomon.eth account
+    // TODO currently fails since provider account is not the msolomon.eth account, so
+    // to implement this test we need to have the ganache account register an ENS domain
     const dummySignature = '0x123';
     await ens.setSignature(name, provider, dummySignature);
     const signature = await ens.getSignature(name, provider);
@@ -41,7 +47,7 @@ describe('ENS functions', () => {
   });
 
   it.skip('sets the bytecode', async () => {
-    // TODO currently fails since provider account is not the msolomon.eth account
+    // TODO same as above test
     const dummyBytecode = '0x456';
     await ens.setBytecode(name, provider, dummyBytecode);
     const bytecode = await ens.setBytecode(name, provider);

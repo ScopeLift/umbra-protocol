@@ -53,11 +53,22 @@ async function getSignature(name, provider) {
 async function getPublicKey(name, provider) {
   // Get signature
   const signature = await getSignature(name, provider);
+  if (!signature) return undefined;
   // Get digest
   const msgHash = ethers.utils.hashMessage(umbraMessage);
   const msgHashBytes = ethers.utils.arrayify(msgHash);
   // Perform recovery
   const publicKey = ethers.utils.recoverPublicKey(msgHashBytes, signature);
+  return publicKey;
+}
+
+/**
+ * @notice For a given ENS domain, recovers and returns the public key from its signature
+ */
+async function getPublicKeyFromSignature(signature) {
+  const msgHash = ethers.utils.hashMessage(umbraMessage);
+  const msgHashBytes = ethers.utils.arrayify(msgHash);
+  const publicKey = await ethers.utils.recoverPublicKey(msgHashBytes, signature);
   return publicKey;
 }
 
@@ -103,10 +114,16 @@ async function setBytecode(name, provider, bytecode) {
 }
 
 module.exports = {
+  // Functions
   namehash,
   getSignature,
   getPublicKey,
+  getPublicKeyFromSignature,
   getBytecode,
   setSignature,
   setBytecode,
+  // Constants
+  umbraKeySignature,
+  umbraKeyBytecode,
+  umbraMessage,
 };
