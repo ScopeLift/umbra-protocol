@@ -184,9 +184,10 @@ class KeyPair {
   /**
    * @notice Generate KeyPair instance asynchronously from a transaction hash
    * @param {String} txHash Transaction hash to recover public key from
+   * @param {*} provider raw web3 provider to use (not an ethers instance)
    */
-  static async instanceFromTransaction(txHash) {
-    const publicKeyHex = await recoverPublicKeyFromTransaction(txHash);
+  static async instanceFromTransaction(txHash, provider) {
+    const publicKeyHex = await recoverPublicKeyFromTransaction(txHash, provider);
     return new KeyPair(publicKeyHex);
   }
 }

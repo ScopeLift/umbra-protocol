@@ -4,13 +4,13 @@ JavaScipt library for interacting with the Umbra Protocol
 
 ## Usage
 
-Install the package with `npm install umbra-protocol`. The example shown below
+Install the package with `npm install umbra-js`. The example shown below
 uses [ethers v5](https://docs-beta.ethers.io/), which is in beta and can be
 installed with `npm install ethers@next`.
 
 ```javascript
 const ethers = require('ethers')
-const umbra = require('umbra-protocol');
+const umbra = require('umbra-js');
 
 const { RandomNumber, KeyPair } = umbra
 
@@ -56,7 +56,7 @@ below to create a `KeyPair` instances from a transaction hash.
 ```javascript
 // Create KeyPair instance from tx hash
 const txHash = '0x123.....';
-const recipientFromTxHash = await KeyPair.instanceFromTransaction(txHash);
+const recipientFromTxHash = await KeyPair.instanceFromTransaction(txHash, provider);
 ```
 
 ## Development

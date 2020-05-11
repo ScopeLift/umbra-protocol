@@ -1,7 +1,7 @@
 const ethers = require('ethers');
 const ensNamehash = require('eth-ens-namehash');
-const addresses = require('../../addresses.json');
-const publicResolverAbi = require('../../abi/PublicResolver.json');
+const addresses = require('../addresses.json');
+const publicResolverAbi = require('../abi/PublicResolver.json');
 
 const { ENS_PUBLIC_RESOLVER } = addresses;
 
