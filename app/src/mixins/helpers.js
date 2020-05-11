@@ -1,6 +1,7 @@
 /**
  * @notice This mixin contains generic helper functions
  */
+import ethers from 'ethers';
 import { Notify } from 'quasar';
 
 
@@ -10,6 +11,25 @@ export default {
   },
 
   methods: {
+    /**
+     * @notice Returns the transaction hash of the first transaction sent by this address, or
+     * undefined if none was found
+     * @param {String} address address to lookup
+     */
+    async getSentTransaction(address) {
+      const provider = new ethers.providers.EtherscanProvider('ropsten');
+      const history = await provider.getHistory(address);
+      let txHash;
+      for (let i = 0; i < history.length; i += 1) {
+        const tx = history[i];
+        if (tx.from === address) {
+          txHash = tx.hash;
+          break;
+        }
+      }
+      return txHash;
+    },
+
     /**
      * Present notification alert to the user
      * @param {string} color alert color, choose positive, negative, warning, info, or others

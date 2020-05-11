@@ -2,53 +2,121 @@
   <div>
     Enter the identifier provided by the recipient.
     This can be an ENS domain, transaction hash, address, or public key.
+
     <base-input
       v-model="identifier"
       label="Recipient Identifier"
-      :rules="isValidIdentifierMethod"
+      :rules="isValidIdentifier"
+      :disabled="!provider"
     />
-    <div v-if="isValidIdentifier">
+    <div
+      v-if="identifierType"
+      class="row justify-start items-center"
+    >
       <q-icon
+        left
         color="positive"
         name="fas fa-check"
-        style="margin-top: -2rem"
       />
+      <span class="text-caption">
+        Recipient identified with
+        <span v-if="identifierType === 'publicKey'">public key</span>
+        <span v-else-if="identifierType === 'txHash'">transaction hash</span>
+        <span v-else-if="identifierType === 'address'">address</span>
+        <span v-else-if="identifierType === 'ens'">ENS domain</span>
+      </span>
     </div>
-
-    <div class="negative text-bold">
-      This page is a work in progress, and right now only public keys are supported
+    <div
+      v-if="!provider"
+      class="text-caption text-bold"
+    >
+      Please login to get started
     </div>
   </div>
 </template>
 
 <script>
-const ethers = require('ethers');
-// const umbra = require('umbra-protocol');
+import { mapState } from 'vuex';
+import helpers from 'src/mixins/helpers';
 
-const { utils } = ethers;
-// const { KeyPair } = umbra;
+const ethers = require('ethers');
+const umbra = require('umbra-js');
+
+const { isHexString } = ethers.utils;
+const { ens, utils } = umbra;
 
 export default {
   name: 'LookupRecipient',
+
+  mixins: [helpers],
+
   data() {
     return {
       identifier: undefined,
+      identifierType: undefined,
     };
   },
 
   computed: {
-    isValidIdentifier() {
-      const val = this.identifier;
-      if (!val) return false;
-      const isValidPublicKey = val.length === 132 && utils.isHexString(val) && val.slice(0, 4) === '0x04';
-      const isValid = isValidPublicKey;
-      return isValid;
-    },
+    ...mapState({
+      provider: (state) => state.user.provider,
+    }),
   },
 
   methods: {
-    isValidIdentifierMethod() {
-      return this.isValidIdentifier ? true : 'Please enter a valid identifier';
+    isValidIdentifier() {
+      return new Promise((resolve) => {
+        this.getIdentifierType().then((result) => {
+          resolve(!!result || 'Please enter a valid identifier');
+        });
+      });
+    },
+
+    async getIdentifierType() {
+      const val = this.identifier;
+      if (!val || !this.provider) {
+        this.identifierType = undefined;
+        return this.identifierType;
+      }
+
+      // Check if this is a valid public key
+      const isValidPublicKey = val.length === 132 && isHexString(val) && val.slice(0, 4) === '0x04';
+      if (isValidPublicKey) {
+        this.identifierType = 'publicKey';
+        return this.identifierType;
+      }
+
+      // Check if this is a valid transaction hash
+      const isValidTxHash = val.length === 66 && isHexString(val) && val.slice(0, 2) === '0x';
+      if (isValidTxHash) {
+        // If tx hash is valid, ensure a public key can be recovered from it
+        const publicKey = await utils.recoverPublicKeyFromTransaction(val, this.provider);
+        if (publicKey) {
+          this.identifierType = 'txHash';
+          return this.identifierType;
+        }
+      }
+
+      // Check if this is a valid address
+      const isValidAddress = val.length === 42 && isHexString(val) && val.slice(0, 2) === '0x';
+      if (isValidAddress) {
+        // Get last transaction hash sent by that address
+        const txHash = await this.getSentTransaction(val);
+        if (txHash) {
+          this.identifierType = 'address';
+          return this.identifierType;
+        }
+      }
+
+      // Check if this is a valid ENS domain
+      const isValidEnsAddress = await ens.getSignature(val, this.provider);
+      if (isValidEnsAddress) {
+        this.identifierType = 'ens';
+        return this.identifierType;
+      }
+
+      this.identifierType = undefined;
+      return this.identifierType;
     },
   },
 };

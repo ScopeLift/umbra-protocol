@@ -31,7 +31,7 @@
           >
             Address: {{ userAddress }}
           </div>
-          <div class="row justify-end q-mt-xs">
+          <div class="row justify-end items-center q-mt-xs">
             <q-icon
               v-if="!$q.dark.isActive"
               class="col-auto dark-toggle"
@@ -46,6 +46,11 @@
               style="cursor: pointer;"
               @click="toggleNightMode()"
             />
+            <connect-wallet
+              v-if="!userAddress"
+              class="q-ml-lg"
+              label="Login"
+            />
           </div>
         </div>
       </div>
@@ -59,9 +64,14 @@
 
 <script>
 import { mapState } from 'vuex';
+import ConnectWallet from 'components/ConnectWallet';
 
 export default {
   name: 'BaseLayout',
+
+  components: {
+    ConnectWallet,
+  },
 
   data() {
     return {};

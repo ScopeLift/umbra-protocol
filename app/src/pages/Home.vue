@@ -9,11 +9,12 @@
       </h4>
     </div>
 
-    <connect-wallet
+    <div
       v-if="!userAddress"
       class="text-center"
-      label="Login with MetaMask to continue"
-    />
+    >
+      Please login to continue
+    </div>
 
     <!-- Send -->
     <div class="row justify-center">
@@ -43,14 +44,9 @@
 
 <script>
 import { mapState } from 'vuex';
-import ConnectWallet from 'src/components/ConnectWallet';
 
 export default {
   name: 'Home',
-
-  components: {
-    ConnectWallet,
-  },
 
   computed: {
     ...mapState({
