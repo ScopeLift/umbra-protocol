@@ -32,6 +32,12 @@
             Address: {{ userAddress }}
           </div>
           <div class="row justify-end items-center q-mt-xs">
+            <div
+              v-if="userAddress && !isCorrectNetwork"
+              class="negative text-bold q-mr-md"
+            >
+              You must be on the Ropsten network to use this app
+            </div>
             <q-icon
               v-if="!$q.dark.isActive"
               class="col-auto dark-toggle"
@@ -80,7 +86,15 @@ export default {
   computed: {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
+      provider: (state) => state.user.provider,
     }),
+
+    isCorrectNetwork() {
+      if (!this.provider) return true; // assume valid if not connected
+      const { chainId } = this.provider;
+      if (chainId === '0x3' || chainId === '0x03' || chainId === '3' || chainId === 3) return true;
+      return false;
+    },
   },
 
   methods: {

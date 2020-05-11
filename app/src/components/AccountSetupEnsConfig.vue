@@ -5,20 +5,49 @@
       Now we will associate your signature with this ENS address by asking you to sign
       a message. This will result in two prompts&mdash;one to get your
       signature, and one to send the transaction associating that signature with
-      your ENS address.
+      your ENS address. You will need ETH to complete this transaction.
       <br><br>
       Once complete, you will be able to simply give someone your ENS
       address and they can use that to send you funds on Umbra.
     </p>
     <!-- ENS Check -->
-    <div class="q-mt-lg">
+    <div
+      v-if="isLoading"
+      class="text-center"
+    >
+      <q-spinner
+        color="primary"
+        size="2rem"
+      />
+      <div class="text-center texxt-italic">
+        Loading...
+      </div>
+    </div>
+    <div
+      v-else-if="isEnsConfigured"
+      class="q-mt-xl"
+    >
+      <q-icon
+        left
+        color="positive"
+        name="fas fa-check"
+      />
+      Your ENS domain is propery configured!
+    </div>
+    <div
+      v-else
+      class="q-mt-lg"
+    >
       <base-button
         label="Sign message to finish setup"
         :loading="isPending"
         @click="signMessage"
       />
-      <div v-if="isPending">
-        Your transaction is processing: {{ pendingTxHash }}
+      <div
+        v-if="isPending"
+        class="text-left text-italic q-mt-md"
+      >
+        Your transaction is processing...
       </div>
     </div>
   </div>
@@ -28,64 +57,67 @@
 import { mapState } from 'vuex';
 import ethers from 'ethers';
 
-const namehash = require('eth-ens-namehash');
-const addresses = require('../../../addresses.json');
-const publicResolverAbi = require('../../../abi/PublicResolver.json');
+const umbra = require('umbra-js');
 
 const { utils } = ethers;
+const { ens } = umbra;
 
 export default {
   name: 'AccountSetupEnsConfig',
 
   data() {
     return {
-      message: 'This signature associates my public key with my ENS address for use with Umbra.',
+      isLoading: undefined,
       bytecode: undefined, // currently not used
-      signatureKey: 'vnd.umbra-v0-signature',
-      bytecodeKey: 'vnd.umbra-v0-bytecode',
-      isPending: undefined,
+      isPending: true,
       pendingTxHash: undefined,
+      userEnsPublicKey: undefined,
     };
   },
 
   computed: {
     ...mapState({
+      provider: (state) => state.user.provider,
       signer: (state) => state.user.signer,
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
     }),
+
+    isEnsConfigured() {
+      return !!this.userEnsPublicKey;
+    },
+  },
+
+  async mounted() {
+    this.isLoading = true;
+    if (this.userEnsDomain) {
+      this.userEnsPublicKey = await ens.getPublicKey(this.userEnsDomain, this.provider);
+    }
+    this.isLoading = false;
   },
 
   methods: {
     async signMessage() {
-      // Get signature
+      // Get user's signature
       this.isPending = true;
-      const signature = await this.signer.signMessage(this.message);
+      const signature = await this.signer.signMessage(ens.umbraMessage);
 
       // Recover public key from signature
-      const msgHash = utils.hashMessage(this.message);
-      const msgHashBytes = utils.arrayify(msgHash);
-      const publicKey = await utils.recoverPublicKey(msgHashBytes, signature);
+      const publicKey = await ens.getPublicKeyFromSignature(signature);
 
       // Verify that recovered public key corresponds to user's address
       const recoveredAddress = utils.computeAddress(publicKey);
       const check1 = recoveredAddress === this.userAddress;
-      const check2 = recoveredAddress === await utils.verifyMessage(this.message, signature);
+      const check2 = recoveredAddress === await utils.verifyMessage(ens.umbraMessage, signature);
       if (!check1 || !check2) {
         throw new Error('Something went wrong signing the message. Please try again');
       }
 
-      // Get namehash of the ENS address
-      const node = namehash.hash(this.userEnsDomain);
-
       // Send transaction associating public key and bytecode with ENS address
-      // THIS CODE HAS NOT BEEN TESTED
-      const publicResolver = new ethers.Contract(
-        addresses.ENS_PUBLIC_RESOLVER, publicResolverAbi, this.signer,
-      );
-      const tx = await publicResolver.setText(node, this.signatureKey, signature);
-      this.pendingTxHash = tx.hash;
-      await tx.wait();
+      await ens.setSignature(this.userEnsDomain, this.provider, signature);
+
+      // Get updated public key to confirm signature was updated
+      this.userEnsPublicKey = await ens.getPublicKey(this.userEnsDomain, this.provider);
       this.isPending = false;
     },
   },

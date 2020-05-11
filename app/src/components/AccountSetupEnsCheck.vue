@@ -25,7 +25,7 @@
         <br>
         <span class="text-caption">The ENS domain
           <span class="text-bold">{{ userEnsDomain }}</span>
-          resolves to this address
+          resolves to this address. Please continue to Step 2.
         </span>
       </div>
       <div v-else>
@@ -34,7 +34,8 @@
           color="negative"
           name="fas fa-exclamation-triangle"
         />
-        This address does not have an associated ENS domain.
+        An ENS domain was not found for this address. If you do have an address, make
+        sure the reverse record is set.
         <br>
         <span class="text-caption">
           Either navigate to the home page, refresh, and login with a different address,
