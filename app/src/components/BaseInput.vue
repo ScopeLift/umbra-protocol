@@ -5,7 +5,7 @@
       class="q-my-sm"
       filled
       :label="label"
-      lazy-rules
+      :lazy-rules="lazyRules"
       :rules="[val => rules(val)]"
       :type="type"
       @input="handleInput"
@@ -39,6 +39,12 @@ export default {
       type: String,
       required: true,
       default: undefined,
+    },
+
+    lazyRules: {
+      type: Boolean,
+      required: false,
+      default: true,
     },
 
     rules: {

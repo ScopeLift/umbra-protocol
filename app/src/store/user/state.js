@@ -8,5 +8,6 @@ export default function () {
     ethersProvider: undefined,
     userAddress: undefined,
     userEnsDomain: undefined,
+    privateKey: undefined,
   };
 }
