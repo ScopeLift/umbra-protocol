@@ -69,7 +69,7 @@ export default {
     return {
       isLoading: undefined,
       bytecode: undefined, // currently not used
-      isPending: true,
+      isPending: undefined,
       pendingTxHash: undefined,
       userEnsPublicKey: undefined,
     };

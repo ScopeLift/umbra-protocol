@@ -9,6 +9,9 @@ const umbraKeySignature = 'vnd.umbra-v0-signature';
 const umbraKeyBytecode = 'vnd.umbra-v0-bytecode';
 const umbraMessage = 'This signature associates my public key with my ENS address for use with Umbra.';
 
+// Turn of ethers warnings since it warns about overloaded functions in PublicResolver ABI
+ethers.utils.Logger.setLogLevel('error');
+
 /**
  * @notice Creates and returns a contract instance
  * @param {String} address contract address
