@@ -14,8 +14,8 @@ contract Umbra is Ownable, ReentrancyGuard {
         uint256 indexed amount,
         address indexed token,
         bytes16 iv,  // Inivitalization Vector
-        bytes32 pk0, // Ephemeral Public Key
-        bytes32 pk1,
+        bytes32 pkx, // Ephemeral Public Key
+        bytes32 pky,
         bytes32 ct0, // Ciphertext
         bytes32 ct1,
         bytes32 ct2,
@@ -48,8 +48,8 @@ contract Umbra is Ownable, ReentrancyGuard {
     function sendEth(
             address payable _receiver,
             bytes16 _iv,  // Inivitalization Vector
-            bytes32 _pk0, // Ephemeral Public Key
-            bytes32 _pk1,
+            bytes32 _pkx, // Ephemeral Public Key
+            bytes32 _pky,
             bytes32 _ct0, // Ciphertext
             bytes32 _ct1,
             bytes32 _ct2,
@@ -62,7 +62,7 @@ contract Umbra is Ownable, ReentrancyGuard {
         require(msg.value > toll, "Umbra: Must pay more than the toll");
 
         uint256 amount = msg.value.sub(toll);
-        emit Announcement(_receiver, amount, address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), _iv, _pk0, _pk1, _ct0, _ct1, _ct2, _mac);
+        emit Announcement(_receiver, amount, address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
 
         _receiver.transfer(amount);
     }
@@ -72,8 +72,8 @@ contract Umbra is Ownable, ReentrancyGuard {
             address _tokenAddr,
             uint256 _amount,
             bytes16 _iv,  // Inivitalization Vector
-            bytes32 _pk0, // Ephemeral Public Key
-            bytes32 _pk1,
+            bytes32 _pkx, // Ephemeral Public Key
+            bytes32 _pky,
             bytes32 _ct0, // Ciphertext
             bytes32 _ct1,
             bytes32 _ct2,
@@ -85,7 +85,7 @@ contract Umbra is Ownable, ReentrancyGuard {
     {
         require(msg.value == toll, "Umbra: Must pay the exact toll");
 
-        emit Announcement(_receiver, _amount, _tokenAddr, _iv, _pk0, _pk1, _ct0, _ct1, _ct2, _mac);
+        emit Announcement(_receiver, _amount, _tokenAddr, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
 
         SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, _receiver, _amount);
     }
