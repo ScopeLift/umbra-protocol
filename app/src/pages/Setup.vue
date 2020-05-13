@@ -16,7 +16,7 @@
       <account-setup-ens-check />
 
       <!-- Step 2 -->
-      <h5 class="header-bold primary">
+      <h5 class="header-bold primary q-mt-xl">
         Step 2
       </h5>
       <account-setup-ens-config />
