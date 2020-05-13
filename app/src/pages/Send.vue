@@ -9,6 +9,9 @@
       class="text-center"
     >
       Please login to send funds
+      <div class="row justify-center">
+        <connect-wallet />
+      </div>
     </div>
     <div
       v-else
@@ -71,12 +74,14 @@
 
 <script>
 import { mapState } from 'vuex';
+import ConnectWallet from 'components/ConnectWallet';
 import LookupRecipient from 'components/LookupRecipient';
 
 export default {
   name: 'Send',
 
   components: {
+    ConnectWallet,
     LookupRecipient,
   },
 

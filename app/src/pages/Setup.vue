@@ -4,7 +4,20 @@
       Account Setup
     </h3>
 
-    <div class="form">
+    <div
+      v-if="!userAddress"
+      class="text-center"
+    >
+      Please login to send funds
+      <div class="row justify-center">
+        <connect-wallet />
+      </div>
+    </div>
+
+    <div
+      v-else
+      class="form"
+    >
       <div class="text-caption text-center text-italic">
         Although this setup is optional, it is recommended for added privacy.
       </div>
@@ -25,15 +38,24 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import AccountSetupEnsCheck from 'components/AccountSetupEnsCheck';
 import AccountSetupEnsConfig from 'components/AccountSetupEnsConfig';
+import ConnectWallet from 'components/ConnectWallet';
 
 export default {
   name: 'Setup',
 
   components: {
+    ConnectWallet,
     AccountSetupEnsCheck,
     AccountSetupEnsConfig,
+  },
+
+  computed: {
+    ...mapState({
+      userAddress: (state) => state.user.userAddress,
+    }),
   },
 };
 </script>

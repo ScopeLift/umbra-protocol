@@ -4,7 +4,20 @@
       Withdraw
     </h3>
 
-    <div class="form text-center">
+    <div
+      v-if="!userAddress"
+      class="text-center"
+    >
+      Please login to withdraw funds funds
+      <div class="row justify-center">
+        <connect-wallet />
+      </div>
+    </div>
+
+    <div
+      v-else
+      class="form text-center"
+    >
       <div>
         Enter the private key associated with your public identifier, and we'll
         scan the blockchain for funds sent to a stealth address you control.
@@ -38,6 +51,7 @@
 
 <script>
 import { mapState } from 'vuex';
+import ConnectWallet from 'components/ConnectWallet';
 import InputPrivateKey from 'components/InputPrivateKey';
 import umbra from 'umbra-js';
 
@@ -47,6 +61,7 @@ export default {
   name: 'Withdraw',
 
   components: {
+    ConnectWallet,
     InputPrivateKey,
   },
 
@@ -58,6 +73,7 @@ export default {
 
   computed: {
     ...mapState({
+      userAddress: (state) => state.user.userAddress,
       privateKey: (state) => state.user.privateKey,
     }),
 

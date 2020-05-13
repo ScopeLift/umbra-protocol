@@ -58,7 +58,6 @@
                 <connect-wallet
                   v-if="!userAddress"
                   class="q-ml-lg"
-                  label="Login"
                 />
               </div>
             </div>
