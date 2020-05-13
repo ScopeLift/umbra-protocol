@@ -66,7 +66,8 @@
         <!-- Alpha warning -->
         <div
           id="alpha"
-          class="text-center q-mt-lg"
+          class="text-justify q-mt-lg"
+          style="hyphens: manual"
         >
           WARNING: This is alpha software and is only available on Ropsten. For security,
           do NOT use this site with an account that holds real funds on the mainnet.

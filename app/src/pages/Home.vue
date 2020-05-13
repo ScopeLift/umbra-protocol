@@ -9,19 +9,11 @@
       </h4>
     </div>
 
-    <div
-      v-if="!userAddress"
-      class="text-center"
-    >
-      Please login to continue
-    </div>
-
     <!-- Main Action -->
-    <div class="row justify-center">
+    <div class="row justify-evenly">
       <!-- Send -->
       <q-card
-        class="col-auto card-border action-card"
-        :class="{'not-logged-in': !userAddress}"
+        class="col-xs-7 col-sm-3 card-border action-card"
         @click="navigateToPage('send')"
       >
         <q-card-section class="text-h6 header-black card-header">
@@ -31,8 +23,7 @@
 
       <!-- Withdraw -->
       <q-card
-        class="col-auto card-border action-card"
-        :class="{'not-logged-in': !userAddress}"
+        class="col-xs-7 col-sm-3 card-border action-card"
         @click="navigateToPage('withdraw')"
       >
         <q-card-section class="text-h6 header-black card-header">
@@ -42,8 +33,7 @@
 
       <!-- ENS Setup -->
       <q-card
-        class="col-auto card-border action-card"
-        :class="{'not-logged-in': !userAddress}"
+        class="col-xs-7 col-sm-3 card-border action-card"
         @click="navigateToPage('setup')"
       >
         <q-card-section class="text-h6 header-black card-header">
@@ -53,11 +43,8 @@
     </div>
 
     <!-- Tutorial -->
-    <div class="q-pt-xl">
-      <the-tutorial
-        id="tutorial"
-        class="q-mt-xl q-pt-lg"
-      />
+    <div class="q-mt-xl q-pt-xl q-mx-md">
+      <the-tutorial id="tutorial" />
     </div>
   </q-page>
 </template>
@@ -81,7 +68,7 @@ export default {
 
   methods: {
     navigateToPage(name) {
-      if (this.userAddress) this.$router.push({ name });
+      this.$router.push({ name });
     },
   },
 };
@@ -91,5 +78,5 @@ export default {
 #tutorial
   border: 1px solid $primary
   border-radius: 15px
-  padding-bottom: 3rem
+  padding: 1rem 0
 </style>

@@ -4,7 +4,10 @@
       Tutorial
     </h3>
 
-    <div style="max-width: 800px; margin: 0 auto;">
+    <div
+      class="text-left"
+      style="max-width: 800px; margin: 0 auto; padding: 1rem;"
+    >
       <!-- To Receive Funds -->
       <h5>
         To Receive Funds
@@ -21,7 +24,8 @@
                 href="https://docs.ethhub.io/guides/guide-to-ens/"
                 target="_blank"
                 class="hyperlink"
-              >this guide</a> for instructions on configuring your ENS domain
+              >this guide</a>
+              for instructions on purchasing and configuring your ENS domain
             </li>
             <li> Make sure to set the resolver to the Public Resolver </li>
             <li> Make sure to set the reverse record </li>
