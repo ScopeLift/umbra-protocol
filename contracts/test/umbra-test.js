@@ -125,6 +125,13 @@ describe('Umbra', () => {
         );
     });
 
+    it('should not let the eth receiver withdraw tokens', async () => {
+        await expectRevert(
+            this.instance.withdrawToken({from: receiver1}),
+            "Umbra: No tokens available for withdrawl",
+        );
+    });
+
     it('should let the receiver withdraw their eth', async () => {
         const receiverInitBalance = new BN(await web3.eth.getBalance(receiver1));
 
@@ -185,9 +192,9 @@ describe('Umbra', () => {
         await this.token.approve(this.instance.address, tokenAmount, {from: payer2});
         const receipt = await this.instance.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2, value: toll});
 
-        const receiverBalance = await this.token.balanceOf(receiver2);
+        const contractBalance = await this.token.balanceOf(this.instance.address);
 
-        expect(receiverBalance.toString()).to.equal(tokenAmount);
+        expect(contractBalance.toString()).to.equal(tokenAmount);
 
         expectEvent(receipt, "Announcement", {
             receiver: receiver2,
@@ -201,6 +208,34 @@ describe('Umbra', () => {
             ct2: argumentBytes[5],
             mac: argumentBytes[6],
         });
+    });
+
+    it('should not allow a non-receiver to withdraw tokens', async () => {
+        await expectRevert(
+            this.instance.withdrawToken({from: other}),
+            "Umbra: No tokens available for withdrawl",
+        );
+    });
+
+    it('should allow receiver to withdraw their token', async () => {
+        const receipt = await this.instance.withdrawToken({from: receiver2});
+
+        const receiverBalance = await this.token.balanceOf(receiver2);
+
+        expect(receiverBalance.toString()).to.equal(tokenAmount);
+
+        expectEvent(receipt, "Withdrawl", {
+            receiver: receiver2,
+            amount: tokenAmount,
+            token: this.token.address,
+        });
+    });
+
+    it('should not allow a receiver to withdraw their tokens twice', async () => {
+        await expectRevert(
+            this.instance.withdrawToken({from: receiver2}),
+            "Umbra: No tokens available for withdraw",
+        );
     });
 
     it('should not allow someone else to move tolls to toll receiver', async () => {

@@ -83,7 +83,7 @@ contract Umbra is Ownable, ReentrancyGuard {
 
     function withdrawEth() public nonReentrant {
         require(
-            payments[msg.sender].token == ETH_TOKEN_PLACHOLDER && payments[msg.sender].amount > 0,
+            (payments[msg.sender].token == ETH_TOKEN_PLACHOLDER) && (payments[msg.sender].amount > 0),
             "Umbra: No ETH funds available for withdrawl"
         );
 
@@ -113,9 +113,25 @@ contract Umbra is Ownable, ReentrancyGuard {
     {
         require(msg.value == toll, "Umbra: Must pay the exact toll");
 
+        payments[_receiver] = Payment({token: _tokenAddr, amount: _amount});
         emit Announcement(_receiver, _amount, _tokenAddr, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
 
-        SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, _receiver, _amount);
+        SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, address(this), _amount);
+    }
+
+    function withdrawToken() public nonReentrant {
+        uint256 amount = payments[msg.sender].amount;
+        address tokenAddr = payments[msg.sender].token;
+
+        require(
+            (amount > 0) && (tokenAddr != address(0)) && (tokenAddr != ETH_TOKEN_PLACHOLDER),
+            "Umbra: No tokens available for withdrawl"
+        );
+
+        delete payments[msg.sender];
+        emit Withdrawl(msg.sender, amount, tokenAddr);
+
+        SafeERC20.safeTransfer(IERC20(tokenAddr), msg.sender, amount);
     }
 
     function collectTolls() public onlyCollector nonReentrant {
