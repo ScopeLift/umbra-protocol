@@ -1,12 +1,13 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
 
-contract Umbra is Ownable, ReentrancyGuard {
+contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
     using SafeMath for uint256;
 
     struct Payment {
@@ -41,7 +42,7 @@ contract Umbra is Ownable, ReentrancyGuard {
     mapping (address => Payment) payments;
 
     constructor(uint256 _toll, address _tollCollector, address payable _tollReceiver) public {
-        initialize(msg.sender);
+        __Ownable_init();
         toll = _toll;
         tollCollector = _tollCollector;
         tollReceiver = _tollReceiver;
@@ -71,7 +72,7 @@ contract Umbra is Ownable, ReentrancyGuard {
         )
         public
         payable
-        nonReentrant
+        //nonReentrant
     {
         require(msg.value > toll, "Umbra: Must pay more than the toll");
 
@@ -81,18 +82,18 @@ contract Umbra is Ownable, ReentrancyGuard {
         emit Announcement(_receiver, amount, ETH_TOKEN_PLACHOLDER, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
     }
 
-    function withdrawEth() public nonReentrant {
+    function withdrawEth() public { //nonReentrant {
         require(
-            (payments[msg.sender].token == ETH_TOKEN_PLACHOLDER) && (payments[msg.sender].amount > 0),
+            (payments[_msgSender()].token == ETH_TOKEN_PLACHOLDER) && (payments[_msgSender()].amount > 0),
             "Umbra: No ETH funds available for withdrawl"
         );
 
-        uint256 amount = payments[msg.sender].amount;
+        uint256 amount = payments[_msgSender()].amount;
 
-        delete payments[msg.sender];
-        emit Withdrawl(msg.sender, amount, ETH_TOKEN_PLACHOLDER);
+        delete payments[_msgSender()];
+        emit Withdrawl(_msgSender(), amount, ETH_TOKEN_PLACHOLDER);
 
-        msg.sender.transfer(amount);
+        _msgSender().transfer(amount);
     }
 
     function sendToken(
@@ -109,37 +110,41 @@ contract Umbra is Ownable, ReentrancyGuard {
         )
         public
         payable
-        nonReentrant
+        //nonReentrant
     {
         require(msg.value == toll, "Umbra: Must pay the exact toll");
 
         payments[_receiver] = Payment({token: _tokenAddr, amount: _amount});
         emit Announcement(_receiver, _amount, _tokenAddr, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
 
-        SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, address(this), _amount);
+        SafeERC20.safeTransferFrom(IERC20(_tokenAddr), _msgSender(), address(this), _amount);
     }
 
-    function withdrawToken() public nonReentrant {
-        uint256 amount = payments[msg.sender].amount;
-        address tokenAddr = payments[msg.sender].token;
+    function withdrawToken() public { //nonReentrant {
+        uint256 amount = payments[_msgSender()].amount;
+        address tokenAddr = payments[_msgSender()].token;
 
         require(
             (amount > 0) && (tokenAddr != address(0)) && (tokenAddr != ETH_TOKEN_PLACHOLDER),
             "Umbra: No tokens available for withdrawl"
         );
 
-        delete payments[msg.sender];
-        emit Withdrawl(msg.sender, amount, tokenAddr);
+        delete payments[_msgSender()];
+        emit Withdrawl(_msgSender(), amount, tokenAddr);
 
-        SafeERC20.safeTransfer(IERC20(tokenAddr), msg.sender, amount);
+        SafeERC20.safeTransfer(IERC20(tokenAddr), _msgSender(), amount);
     }
 
-    function collectTolls() public onlyCollector nonReentrant {
+    function _msgSender() internal override(ContextUpgradeSafe, BaseRelayRecipient) view returns (address payable) {
+        return BaseRelayRecipient._msgSender();
+    }
+
+    function collectTolls() public onlyCollector { //nonReentrant {
         tollReceiver.transfer(address(this).balance);
     }
 
     modifier onlyCollector() {
-        require(msg.sender == tollCollector, "Umbra: Not Toll Collector");
+        require(_msgSender() == tollCollector, "Umbra: Not Toll Collector");
         _;
     }
 }
