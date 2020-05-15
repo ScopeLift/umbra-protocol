@@ -9,6 +9,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 contract Umbra is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
 
+    struct Payment {
+        address token;
+        uint256 amount;
+    }
+
     event Announcement(
         address indexed receiver,
         uint256 indexed amount,
@@ -22,9 +27,18 @@ contract Umbra is Ownable, ReentrancyGuard {
         bytes32 mac // Message Authetnication Code
     );
 
+    event Withdrawl(
+        address indexed receiver,
+        uint256 indexed amount,
+        address indexed token
+    );
+
+    address constant ETH_TOKEN_PLACHOLDER = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+
     uint256 public toll;
     address public tollCollector;
     address payable public tollReceiver;
+    mapping (address => Payment) payments;
 
     constructor(uint256 _toll, address _tollCollector, address payable _tollReceiver) public {
         initialize(msg.sender);
@@ -62,9 +76,23 @@ contract Umbra is Ownable, ReentrancyGuard {
         require(msg.value > toll, "Umbra: Must pay more than the toll");
 
         uint256 amount = msg.value.sub(toll);
-        emit Announcement(_receiver, amount, address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
+        payments[_receiver] = Payment({token: ETH_TOKEN_PLACHOLDER, amount: amount});
 
-        _receiver.transfer(amount);
+        emit Announcement(_receiver, amount, ETH_TOKEN_PLACHOLDER, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
+    }
+
+    function withdrawEth() public nonReentrant {
+        require(
+            payments[msg.sender].token == ETH_TOKEN_PLACHOLDER && payments[msg.sender].amount > 0,
+            "Umbra: No ETH funds available for withdrawl"
+        );
+
+        uint256 amount = payments[msg.sender].amount;
+
+        delete payments[msg.sender];
+        emit Withdrawl(msg.sender, amount, ETH_TOKEN_PLACHOLDER);
+
+        msg.sender.transfer(amount);
     }
 
     function sendToken(
