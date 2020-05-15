@@ -1,8 +1,8 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 
-contract TestToken is ERC20 {
+contract TestToken is ERC20UpgradeSafe {
 
     function mint(address account, uint256 amount) public {
         _mint(account, amount);
