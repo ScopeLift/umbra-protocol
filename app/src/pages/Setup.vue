@@ -4,41 +4,99 @@
       Account Setup
     </h3>
 
+    <!-- IF WALLET IS NOT CONNECTED -->
     <div
       v-if="!userAddress"
       class="text-center"
     >
-      Please login to send funds
+      Please login and connect to Ropsten to setup your account
       <div class="row justify-center">
         <connect-wallet />
       </div>
     </div>
 
+    <!-- IF NOT ON THE CORRECT NETWORK -->
     <div
-      v-else
-      class="form"
+      v-else-if="chainId !== '0x3'"
+      class="text-center"
     >
-      <div class="text-caption text-center text-italic">
-        Although this setup is optional, it is recommended for added privacy.
+      Please switch to the Ropsten network to continue
+    </div>
+
+    <!-- OTHERWISE, SHOW SETUP WIZARD -->
+    <div v-else>
+      <div class="q-pa-md">
+        <q-stepper
+          ref="stepper"
+          v-model="step"
+          alternative-labels
+          color="primary"
+          animated
+        >
+          <q-step
+            :name="1"
+            title="ENS Domain Check"
+            icon="fas fa-tools"
+            :done="step > 1"
+          >
+            <account-setup-ens-check />
+          </q-step>
+
+          <q-step
+            :name="2"
+            title="Choose Password"
+            icon="fas fa-lock"
+            :done="step > 2"
+          >
+            <account-setup-choose-password />
+          </q-step>
+
+          <q-step
+            :name="3"
+            title="ENS Domain Setup"
+            icon="fas fa-user-cog"
+            disable
+          >
+            <account-setup-ens-config />
+          </q-step>
+
+          <q-step
+            :name="4"
+            title="Create an ad"
+            icon="add_comment"
+          >
+            Try out different ad text to see what brings in the most customers, and learn how to
+            enhance your ads using features like ad extensions. If you run into any problems with
+            your ads, find out how to tell if they're running and how to resolve approval issues.
+          </q-step>
+
+          <template v-slot:navigation>
+            <q-stepper-navigation class="row justify-start">
+              <base-button
+                color="primary"
+                :disable="!isStepComplete"
+                :label="step === 4 ? 'Finish' : 'Continue'"
+                @click="$refs.stepper.next()"
+              />
+              <base-button
+                v-if="step > 1"
+                flat
+                color="primary"
+                label="Back"
+                class="q-ml-sm"
+                @click="$refs.stepper.previous()"
+              />
+            </q-stepper-navigation>
+          </template>
+        </q-stepper>
       </div>
-
-      <!-- Step 1 -->
-      <h5 class="header-bold primary">
-        Step 1
-      </h5>
-      <account-setup-ens-check />
-
-      <!-- Step 2 -->
-      <h5 class="header-bold primary q-mt-xl">
-        Step 2
-      </h5>
-      <account-setup-ens-config />
     </div>
   </q-page>
 </template>
 
 <script>
 import { mapState } from 'vuex';
+import AccountSetupChoosePassword from 'components/AccountSetupChoosePassword';
 import AccountSetupEnsCheck from 'components/AccountSetupEnsCheck';
 import AccountSetupEnsConfig from 'components/AccountSetupEnsConfig';
 import ConnectWallet from 'components/ConnectWallet';
@@ -48,14 +106,44 @@ export default {
 
   components: {
     ConnectWallet,
+    AccountSetupChoosePassword,
     AccountSetupEnsCheck,
     AccountSetupEnsConfig,
+  },
+
+  data() {
+    return {
+      isAccountSetupComplete: undefined,
+      step: 1,
+    };
   },
 
   computed: {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
+      userEnsDomain: (state) => state.user.userEnsDomain,
+      chainId: (state) => state.user.provider.chainId,
     }),
+
+    isStepComplete() {
+      if (this.step === 1) {
+        return !!this.userEnsDomain;
+      }
+      return false;
+    },
+  },
+
+  mounted() {
+    // Check localStorage for encrypted data
+    const encryptedData = this.$q.localStorage.getItem('umbra-data');
+
+    if (!encryptedData) {
+      // Setup has not been completed
+      this.isAccountSetupComplete = false;
+      return;
+    }
+    console.log(1);
+    // this.$q.localStorage.set('umbra-data', 123);
   },
 };
 </script>

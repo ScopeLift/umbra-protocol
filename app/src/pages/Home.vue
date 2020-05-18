@@ -37,7 +37,7 @@
         @click="navigateToPage('setup')"
       >
         <q-card-section class="text-h6 header-black card-header">
-          ENS Setup
+          Account Setup
         </q-card-section>
       </q-card>
     </div>

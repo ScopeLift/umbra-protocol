@@ -25,7 +25,7 @@
         <br>
         <span class="text-caption">The ENS domain
           <span class="text-bold">{{ userEnsDomain }}</span>
-          resolves to this address. Please continue to Step 2.
+          resolves to this address. Please continue to the next step.
         </span>
       </div>
       <div v-else>
@@ -38,7 +38,7 @@
         sure the reverse record is set.
         <br>
         <span class="text-caption">
-          Either navigate to the home page, refresh, and login with a different address,
+          Either login with a different address and refresh the page,
           or follow
           <a
             class="hyperlink"
@@ -46,7 +46,7 @@
             target="_blank"
           >this guide</a>
           to learn how to purchase a domain and configure it to resolve to
-          your Ethereum address.
+          your Ethereum address. Be sure to use the Public Resolver and set the reverse record
         </span>
       </div>
     </div>

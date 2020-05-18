@@ -4,6 +4,7 @@
       class="q-my-sm"
       :class="{'full-width': fullWidth}"
       :color="color"
+      :disable="disable"
       :dense="dense"
       :flat="flat"
       :label="label"
@@ -26,6 +27,12 @@ export default {
     },
 
     dense: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+
+    disable: {
       type: Boolean,
       required: false,
       default: false,
