@@ -53,21 +53,18 @@
 
           <q-step
             :name="3"
-            title="ENS Domain Setup"
-            icon="fas fa-user-cog"
-            disable
+            title="Save Key"
+            icon="fas fa-key"
           >
-            <account-setup-ens-config />
+            TODO
           </q-step>
 
           <q-step
             :name="4"
-            title="Create an ad"
-            icon="add_comment"
+            title="ENS Domain Setup"
+            icon="fas fa-user-cog"
           >
-            Try out different ad text to see what brings in the most customers, and learn how to
-            enhance your ads using features like ad extensions. If you run into any problems with
-            your ads, find out how to tell if they're running and how to resolve approval issues.
+            <account-setup-ens-config />
           </q-step>
 
           <template v-slot:navigation>
@@ -123,11 +120,14 @@ export default {
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
       chainId: (state) => state.user.provider.chainId,
+      sensitive: (state) => state.user.sensitive,
     }),
 
     isStepComplete() {
       if (this.step === 1) {
         return !!this.userEnsDomain;
+      } if (this.step === 2) {
+        return !!this.sensitive.password;
       }
       return false;
     },

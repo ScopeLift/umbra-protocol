@@ -8,6 +8,10 @@ export default function () {
     ethersProvider: undefined,
     userAddress: undefined,
     userEnsDomain: undefined,
-    privateKey: undefined,
+    // Sensitive info
+    sensitive: {
+      password: undefined,
+      privateKey: undefined,
+    },
   };
 }

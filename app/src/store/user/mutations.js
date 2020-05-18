@@ -19,6 +19,10 @@ export function setPrivateKey(state, key) {
   const startsWith0x = key.slice(0, 2) === '0x';
   const isCorrectLength = key.length === 66;
   const isValid = isHex && startsWith0x && isCorrectLength;
-  if (isValid) state.privateKey = key;
-  else state.privateKey = undefined;
+  if (isValid) state.sensitive.privateKey = key;
+  else state.sensitive.privateKey = undefined;
+}
+
+export function setPassword(state, password) {
+  state.sensitive.password = password;
 }
