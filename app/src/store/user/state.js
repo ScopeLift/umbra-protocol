@@ -12,6 +12,7 @@ export default function () {
     sensitive: {
       password: undefined,
       privateKey: undefined,
+      wasPrivateKeyDownloaded: undefined,
     },
   };
 }

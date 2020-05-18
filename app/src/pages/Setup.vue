@@ -55,8 +55,9 @@
             :name="3"
             title="Save Key"
             icon="fas fa-key"
+            :done="step > 3"
           >
-            TODO
+            <account-setup-private-key />
           </q-step>
 
           <q-step
@@ -96,6 +97,7 @@ import { mapState } from 'vuex';
 import AccountSetupChoosePassword from 'components/AccountSetupChoosePassword';
 import AccountSetupEnsCheck from 'components/AccountSetupEnsCheck';
 import AccountSetupEnsConfig from 'components/AccountSetupEnsConfig';
+import AccountSetupPrivateKey from 'components/AccountSetupPrivateKey';
 import ConnectWallet from 'components/ConnectWallet';
 
 export default {
@@ -106,6 +108,7 @@ export default {
     AccountSetupChoosePassword,
     AccountSetupEnsCheck,
     AccountSetupEnsConfig,
+    AccountSetupPrivateKey,
   },
 
   data() {
@@ -124,11 +127,9 @@ export default {
     }),
 
     isStepComplete() {
-      if (this.step === 1) {
-        return !!this.userEnsDomain;
-      } if (this.step === 2) {
-        return !!this.sensitive.password;
-      }
+      if (this.step === 1) return !!this.userEnsDomain;
+      if (this.step === 2) return !!this.sensitive.password;
+      if (this.step === 3) return !!this.sensitive.wasPrivateKeyDownloaded;
       return false;
     },
   },
@@ -142,8 +143,7 @@ export default {
       this.isAccountSetupComplete = false;
       return;
     }
-    console.log(1);
-    // this.$q.localStorage.set('umbra-data', 123);
+    this.isAccountSetupComplete = true;
   },
 };
 </script>

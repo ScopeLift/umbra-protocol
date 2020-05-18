@@ -26,3 +26,7 @@ export function setPrivateKey(state, key) {
 export function setPassword(state, password) {
   state.sensitive.password = password;
 }
+
+export function setFileDownloadStatus(state, wasPrivateKeyDownloaded) {
+  state.sensitive.wasPrivateKeyDownloaded = wasPrivateKeyDownloaded;
+}
