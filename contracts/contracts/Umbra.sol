@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
+import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 
 contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
     using SafeMath for uint256;
@@ -58,6 +59,10 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgrade
 
     function setTollReceiver(address payable _newTollReceiver) public onlyOwner {
         tollReceiver = _newTollReceiver;
+    }
+
+    function setForwarder(address _forwarder) public onlyOwner {
+        trustedForwarder = _forwarder;
     }
 
     function sendEth(

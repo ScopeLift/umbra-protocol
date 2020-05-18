@@ -18,9 +18,9 @@ contract UmbraPaymaster is BasePaymaster {
 	) external view override returns (bytes memory context) {
 		(approvalData, maxPossibleGas);  // avoid a warning
 
-		require(relayRequest.target == umbraAddr);
+		require(relayRequest.target == umbraAddr, "UmbraPaymaster: Not Target");
 
-		return abi.encode(now);
+		return abi.encode(0x0);
 	}
 
     function preRelayedCall(
