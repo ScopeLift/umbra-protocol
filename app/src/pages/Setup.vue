@@ -4,6 +4,18 @@
       Account Setup
     </h3>
 
+    <div
+      class="text-center text-bold"
+      style="margin:0 auto"
+    >
+      Because this is alpha software, these steps must be completed in one sitting. If you
+      leave mid-setup, you must start the process over.
+    </div>
+
+    <div class="text-center q-my-md">
+      The whole setup process will only take 1&ndash;2 minutes.
+    </div>
+
     <!-- IF WALLET IS NOT CONNECTED -->
     <div
       v-if="!userAddress"
@@ -71,10 +83,18 @@
           <template v-slot:navigation>
             <q-stepper-navigation class="row justify-start">
               <base-button
+                v-if="step < 4"
                 color="primary"
                 :disable="!isStepComplete"
-                :label="step === 4 ? 'Finish' : 'Continue'"
+                label="Continue"
                 @click="$refs.stepper.next()"
+              />
+              <base-button
+                v-else-if="step === 4"
+                color="primary"
+                :disable="!isStepComplete"
+                label="Finish"
+                @click="$router.push({name: 'home'})"
               />
               <base-button
                 v-if="step > 1"
@@ -122,6 +142,7 @@ export default {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
+      isEnsConfigured: (state) => state.user.isEnsConfigured,
       chainId: (state) => state.user.provider.chainId,
       sensitive: (state) => state.user.sensitive,
     }),
@@ -130,6 +151,7 @@ export default {
       if (this.step === 1) return !!this.userEnsDomain;
       if (this.step === 2) return !!this.sensitive.password;
       if (this.step === 3) return !!this.sensitive.wasPrivateKeyDownloaded;
+      if (this.step === 4) return !!this.isEnsConfigured;
       return false;
     },
   },

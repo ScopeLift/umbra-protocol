@@ -30,3 +30,7 @@ export function setPassword(state, password) {
 export function setFileDownloadStatus(state, wasPrivateKeyDownloaded) {
   state.sensitive.wasPrivateKeyDownloaded = wasPrivateKeyDownloaded;
 }
+
+export function setEnsStatus(state, isEnsConfigured) {
+  state.isEnsConfigured = isEnsConfigured;
+}

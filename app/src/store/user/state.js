@@ -8,6 +8,7 @@ export default function () {
     ethersProvider: undefined,
     userAddress: undefined,
     userEnsDomain: undefined,
+    isEnsConfigured: undefined,
     // Sensitive info
     sensitive: {
       password: undefined,

@@ -2,13 +2,11 @@
   <div>
     <!-- Instructions -->
     <p>
-      Now we will associate your signature with this ENS address by asking you to sign
-      a message. This will result in two prompts&mdash;one to get your
-      signature, and one to send the transaction associating that signature with
-      your ENS address. You will need ETH to complete this transaction.
+      Now we will associate the public key of your Umbra account with your ENS address.
+      You will need ETH in your wallet to complete this transaction.
       <br><br>
-      Once complete, you will be able to simply give someone your ENS
-      address and they can use that to send you funds on Umbra.
+      Once complete, anyone who knows your ENS address will be able to send you
+      funds to an address not associated with your wallet.
     </p>
     <!-- ENS Check -->
     <div
@@ -32,7 +30,7 @@
         color="positive"
         name="fas fa-check"
       />
-      Your ENS domain is propery configured!
+      Your account is propery configured and ready to use!
     </div>
     <div
       v-else
@@ -55,15 +53,18 @@
 
 <script>
 import { mapState } from 'vuex';
-import ethers from 'ethers';
+import { ethers } from 'ethers';
+import helpers from 'src/mixins/helpers';
 
 const umbra = require('umbra-js');
 
 const { utils } = ethers;
-const { ens } = umbra;
+const { ens, KeyPair } = umbra;
 
 export default {
   name: 'AccountSetupEnsConfig',
+
+  mixins: [helpers],
 
   data() {
     return {
@@ -81,6 +82,7 @@ export default {
       signer: (state) => state.user.signer,
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
+      privateKey: (state) => state.user.sensitive.privateKey,
     }),
 
     isEnsConfigured() {
@@ -97,28 +99,56 @@ export default {
   },
 
   methods: {
+    /**
+     * @notice Get user's signature and associate it with their ENS address
+     */
     async signMessage() {
-      // Get user's signature
-      this.isPending = true;
-      const signature = await this.signer.signMessage(ens.umbraMessage);
+      try {
+        this.isPending = true;
 
-      // Recover public key from signature
-      const publicKey = await ens.getPublicKeyFromSignature(signature);
+        // TODO Read from local storage and prompt user for password instead of using state?
+        let signature;
+        let expectedAddress;
+        if (!this.privateKey) {
+          // User is not using an Umbra-specific key, so prompt them to sign message
+          console.log("Using user's web3 wallet"); // eslint-disable-line no-console
+          signature = await this.signer.signMessage(ens.umbraMessage);
+          expectedAddress = this.userAddress;
+        } else {
+          // User is using an Umbra-specific key, so signing is automated
+          console.log('Using Umbra-specific key'); // eslint-disable-line no-console
+          const signer = new ethers.Wallet(this.privateKey);
+          signature = await signer.signMessage(ens.umbraMessage);
+          expectedAddress = (new KeyPair(this.privateKey)).address;
+        }
 
-      // Verify that recovered public key corresponds to user's address
-      const recoveredAddress = utils.computeAddress(publicKey);
-      const check1 = recoveredAddress === this.userAddress;
-      const check2 = recoveredAddress === await utils.verifyMessage(ens.umbraMessage, signature);
-      if (!check1 || !check2) {
-        throw new Error('Something went wrong signing the message. Please try again');
+        // Recover public key from signature
+        const publicKey = await ens.getPublicKeyFromSignature(signature);
+
+        // Verify that recovered public key corresponds to user's address
+        const recoveredAddress = utils.computeAddress(publicKey);
+        const check1 = recoveredAddress === expectedAddress;
+        const check2 = recoveredAddress === await utils.verifyMessage(ens.umbraMessage, signature);
+        if (!check1 || !check2) {
+          throw new Error('Something went wrong signing the message. Please try again');
+        }
+
+        // Send transaction associating public key and bytecode with ENS address
+        await ens.setSignature(this.userEnsDomain, this.provider, signature);
+
+        // Get updated public key to confirm signature was updated
+        this.userEnsPublicKey = await ens.getPublicKey(this.userEnsDomain, this.provider);
+        if (this.userEnsPublicKey !== publicKey) {
+          throw new Error('Something went wrong associating your signature with your ENS domain. Please refresh the page and try the setup process again');
+        }
+
+        // Everything ok, so we can update state
+        this.$store.commit('user/setEnsStatus', true);
+        this.isPending = false;
+      } catch (err) {
+        this.isPending = false;
+        this.showError(err);
       }
-
-      // Send transaction associating public key and bytecode with ENS address
-      await ens.setSignature(this.userEnsDomain, this.provider, signature);
-
-      // Get updated public key to confirm signature was updated
-      this.userEnsPublicKey = await ens.getPublicKey(this.userEnsDomain, this.provider);
-      this.isPending = false;
     },
   },
 };
