@@ -4,6 +4,8 @@
       v-model="content"
       class="q-my-sm"
       filled
+      :dense="dense"
+      :hide-bottom-space="hideBottomSpace"
       :label="label"
       :lazy-rules="lazyRules"
       :rules="[val => rules(val)]"
@@ -29,10 +31,22 @@ export default {
   name: 'BaseInput',
 
   props: {
+    dense: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+
     iconAppend: {
       type: String,
       required: false,
       default: undefined,
+    },
+
+    hideBottomSpace: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
 
     label: {

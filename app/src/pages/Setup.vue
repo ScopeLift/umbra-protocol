@@ -4,18 +4,6 @@
       Account Setup
     </h3>
 
-    <div
-      class="text-center text-bold"
-      style="margin:0 auto"
-    >
-      Because this is alpha software, these steps must be completed in one sitting. If you
-      leave mid-setup, you must start the process over.
-    </div>
-
-    <div class="text-center q-my-md">
-      The whole setup process will only take 1&ndash;2 minutes.
-    </div>
-
     <!-- IF WALLET IS NOT CONNECTED -->
     <div
       v-if="!userAddress"
@@ -35,8 +23,64 @@
       Please switch to the Ropsten network to continue
     </div>
 
+    <!-- IF PRIVATE KEY IS IN LOCAL STORAGE -->
+    <div
+      v-else-if="isAccountSetupComplete"
+      class="text-center"
+    >
+      Your account may have already been setup. Please enter your password below to confirm.
+      <div class="row justify-center items-center">
+        <div class="col-auto q-mr-sm">
+          <base-input
+            v-model="password"
+            :dense="true"
+            :hide-bottom-space="true"
+            label="Enter Password"
+            style="min-width: 300px"
+            type="password"
+          />
+        </div>
+        <div>
+          <base-button
+            class="col-auto q-ml-sm"
+            label="Check"
+            :disabled="!password"
+            :loading="isCheckingStatus"
+            @click="checkSetupStatus"
+          />
+        </div>
+      </div>
+
+      <div
+        v-if="isAccountSetupConfirmed"
+        class="q-mt-xl"
+      >
+        <div class="positive-border">
+          <q-icon
+            left
+            color="positive"
+            name="fas fa-check"
+          />
+          You are good to go! Simply share the ENS address
+          <span class="text-bold">{{ userEnsDomain }}</span>
+          with someone and they can use it to send you funds
+        </div>
+      </div>
+    </div>
+
     <!-- OTHERWISE, SHOW SETUP WIZARD -->
     <div v-else>
+      <div
+        class="text-center text-bold"
+        style="margin:0 auto"
+      >
+        Because this is alpha software, these steps must be completed in one sitting. If you
+        leave mid-setup, you must start the process over.
+      </div>
+
+      <div class="text-center q-my-md">
+        The whole setup process will only take 1&ndash;2 minutes.
+      </div>
       <div class="q-pa-md">
         <q-stepper
           ref="stepper"
@@ -119,6 +163,12 @@ import AccountSetupEnsCheck from 'components/AccountSetupEnsCheck';
 import AccountSetupEnsConfig from 'components/AccountSetupEnsConfig';
 import AccountSetupPrivateKey from 'components/AccountSetupPrivateKey';
 import ConnectWallet from 'components/ConnectWallet';
+import cryptography from 'src/mixins/cryptography';
+import helpers from 'src/mixins/helpers';
+
+const umbra = require('umbra-js');
+
+const { ens, KeyPair } = umbra;
 
 export default {
   name: 'Setup',
@@ -131,15 +181,22 @@ export default {
     AccountSetupPrivateKey,
   },
 
+  mixins: [cryptography, helpers],
+
   data() {
     return {
+      isCheckingStatus: undefined,
       isAccountSetupComplete: undefined,
+      isAccountSetupConfirmed: undefined,
       step: 1,
+      password: undefined,
+      encryptedData: undefined,
     };
   },
 
   computed: {
     ...mapState({
+      provider: (state) => state.user.provider,
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
       isEnsConfigured: (state) => state.user.isEnsConfigured,
@@ -158,14 +215,59 @@ export default {
 
   mounted() {
     // Check localStorage for encrypted data
-    const encryptedData = this.$q.localStorage.getItem('umbra-data');
+    this.encryptedData = this.$q.localStorage.getItem('umbra-data');
 
-    if (!encryptedData) {
+    if (!this.encryptedData) {
       // Setup has not been completed
       this.isAccountSetupComplete = false;
       return;
     }
     this.isAccountSetupComplete = true;
   },
+
+  methods: {
+    async checkSetupStatus() {
+      try {
+        this.isCheckingStatus = true;
+        // Decrypt data
+        const data = await this.decryptPrivateKey(this.password, this.encryptedData);
+
+        // Ensure addresses match
+        if (this.userAddress !== data.expectedWeb3Address) {
+          throw new Error('Wrong web3 account detected. Please switch to the correct web3 account and try again.');
+        }
+
+        // Get public key from the private key in local storage
+        const keyPair = new KeyPair(data.privateKey);
+        const publicKey1 = keyPair.publicKeyHex;
+
+        // Get public key from the ENS address
+        if (!this.userEnsDomain) {
+          throw new Error('No ENS Account configured for the connected web3 account.');
+        }
+        const publicKey2 = await ens.getPublicKey(this.userEnsDomain, this.provider);
+        this.isCheckingStatus = false;
+
+        // Compare public keys
+        if (publicKey1 !== publicKey2) {
+          throw new Error('The locally saved key does not match the key associated with the ENS address.');
+        }
+
+        // Everything checks out
+        this.isAccountSetupConfirmed = true;
+      } catch (err) {
+        this.showError(err);
+        this.isCheckingStatus = false;
+      }
+    },
+  },
 };
 </script>
+
+<style lang="sass" scoped>
+.positive-border
+  border: 1px solid $positive
+  border-radius: 15px
+  padding: 1rem
+  text-align: center
+</style>
