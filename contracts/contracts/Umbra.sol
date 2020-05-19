@@ -1,14 +1,13 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.2;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
 import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 
-contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgradeSafe {
+contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
     using SafeMath for uint256;
 
     struct Payment {
@@ -77,28 +76,13 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         )
         public
         payable
-        //nonReentrant
     {
         require(msg.value > toll, "Umbra: Must pay more than the toll");
 
         uint256 amount = msg.value.sub(toll);
-        payments[_receiver] = Payment({token: ETH_TOKEN_PLACHOLDER, amount: amount});
-
         emit Announcement(_receiver, amount, ETH_TOKEN_PLACHOLDER, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
-    }
 
-    function withdrawEth() public { //nonReentrant {
-        require(
-            (payments[_msgSender()].token == ETH_TOKEN_PLACHOLDER) && (payments[_msgSender()].amount > 0),
-            "Umbra: No ETH funds available for withdrawl"
-        );
-
-        uint256 amount = payments[_msgSender()].amount;
-
-        delete payments[_msgSender()];
-        emit Withdrawl(_msgSender(), amount, ETH_TOKEN_PLACHOLDER);
-
-        _msgSender().transfer(amount);
+        _receiver.transfer(amount);
     }
 
     function sendToken(
@@ -115,7 +99,6 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         )
         public
         payable
-        //nonReentrant
     {
         require(msg.value == toll, "Umbra: Must pay the exact toll");
 
@@ -125,7 +108,7 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         SafeERC20.safeTransferFrom(IERC20(_tokenAddr), _msgSender(), address(this), _amount);
     }
 
-    function withdrawToken() public { //nonReentrant {
+    function withdrawToken() public {
         uint256 amount = payments[_msgSender()].amount;
         address tokenAddr = payments[_msgSender()].token;
 
@@ -144,7 +127,7 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe, ReentrancyGuardUpgrade
         return BaseRelayRecipient._msgSender();
     }
 
-    function collectTolls() public onlyCollector { //nonReentrant {
+    function collectTolls() public onlyCollector {
         tollReceiver.transfer(address(this).balance);
     }
 
