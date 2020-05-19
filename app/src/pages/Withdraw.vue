@@ -20,12 +20,12 @@
       </div>
       <unlock-account @unlocked="searchForFunds" />
 
-      <div class="row justify-end q-mt-xl">
+      <div class="row justify-center q-mt-xl">
         <div
           class="text-caption hyperlink"
           @click="toggleInputMethod"
         >
-          Login with Umbra password
+          Login with private key
         </div>
       </div>
     </div>
@@ -50,12 +50,12 @@
         />
       </div>
 
-      <div class="row justify-end q-mt-xl">
+      <div class="row justify-center q-mt-xl">
         <div
-          class="text-caption hyperlink"
+          class="text-caption text-center hyperlink"
           @click="toggleInputMethod"
         >
-          Manually enter private key
+          Login with Umbra password
         </div>
       </div>
     </div>
