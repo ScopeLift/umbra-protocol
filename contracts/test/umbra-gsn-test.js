@@ -1,5 +1,5 @@
 const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
-const { expectEvent } = require('@openzeppelin/test-helpers');
+const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const Umbra = contract.fromArtifact('Umbra');
 const UmbraPaymaster = contract.fromArtifact('UmbraPaymaster');
@@ -23,6 +23,7 @@ describe('Umbra GSN', () => {
         payer,
         receiver,
         acceptor,
+        other,
         ] = accounts;
 
     const deployedToll = toWei('0.001', 'ether');
@@ -100,6 +101,18 @@ describe('Umbra GSN', () => {
         });
     });
 
+    it('should not allow a non-receiver to withdraw tokens with GSN', async () => {
+        Umbra.web3.setProvider(this.gsnProvider);
+
+        await expectRevert(
+            this.umbra.withdrawToken(acceptor, {
+                from: other,
+                forwarder: this.forwarder,
+            }),
+            "Umbra: No tokens available for withdrawl",
+        );
+    });
+
     it('should allow receiver to withdraw their tokens with GSN', async () => {
         Umbra.web3.setProvider(this.gsnProvider);
 
@@ -119,4 +132,16 @@ describe('Umbra GSN', () => {
             token: this.token.address,
         });
     });
+
+    it('should not allow a receiver to withdraw tokens twice with GSN', async () => {
+        Umbra.web3.setProvider(this.gsnProvider);
+
+        await expectRevert(
+            this.umbra.withdrawToken(acceptor, {
+                from: receiver,
+                forwarder: this.forwarder,
+            }),
+            "Umbra: No tokens available for withdrawl",
+        );
+    })
 });
