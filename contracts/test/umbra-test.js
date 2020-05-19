@@ -17,6 +17,7 @@ describe('Umbra', () => {
         receiver1,
         payer2,
         receiver2,
+        acceptor,
         other,
         ] = accounts;
 
@@ -119,7 +120,7 @@ describe('Umbra', () => {
 
     it('should not let the eth receiver withdraw tokens', async () => {
         await expectRevert(
-            this.instance.withdrawToken({from: receiver1}),
+            this.instance.withdrawToken(acceptor, {from: receiver1}),
             "Umbra: No tokens available for withdrawl",
         );
     });
@@ -176,20 +177,21 @@ describe('Umbra', () => {
 
     it('should not allow a non-receiver to withdraw tokens', async () => {
         await expectRevert(
-            this.instance.withdrawToken({from: other}),
+            this.instance.withdrawToken(acceptor, {from: other}),
             "Umbra: No tokens available for withdrawl",
         );
     });
 
     it('should allow receiver to withdraw their token', async () => {
-        const receipt = await this.instance.withdrawToken({from: receiver2});
+        const receipt = await this.instance.withdrawToken(acceptor, {from: receiver2});
 
-        const receiverBalance = await this.token.balanceOf(receiver2);
+        const acceptorBalance = await this.token.balanceOf(acceptor);
 
-        expect(receiverBalance.toString()).to.equal(tokenAmount);
+        expect(acceptorBalance.toString()).to.equal(tokenAmount);
 
-        expectEvent(receipt, "Withdrawl", {
+        expectEvent(receipt, "TokenWithdrawl", {
             receiver: receiver2,
+            acceptor: acceptor,
             amount: tokenAmount,
             token: this.token.address,
         });
@@ -197,7 +199,7 @@ describe('Umbra', () => {
 
     it('should not allow a receiver to withdraw their tokens twice', async () => {
         await expectRevert(
-            this.instance.withdrawToken({from: receiver2}),
+            this.instance.withdrawToken(acceptor, {from: receiver2}),
             "Umbra: No tokens available for withdraw",
         );
     });
