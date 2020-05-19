@@ -1,12 +1,10 @@
 <template>
-  <div>
-    <base-input
-      v-model="privateKey"
-      label="Your Private Key"
-      :lazy-rules="false"
-      :rules="isValidPrivateKey"
-    />
-  </div>
+  <base-input
+    v-model="privateKey"
+    label="Enter Private Key"
+    :lazy-rules="false"
+    :rules="isValidPrivateKey"
+  />
 </template>
 
 <script>

@@ -1,26 +1,18 @@
 <template>
   <div>
-    <div class="row justify-center items-center">
-      <div class="col-auto q-mr-sm">
-        <base-input
-          v-model="password"
-          :dense="true"
-          :hide-bottom-space="true"
-          label="Enter Password"
-          style="min-width: 300px"
-          type="password"
-        />
-      </div>
-      <div>
-        <base-button
-          class="col-auto q-ml-sm"
-          label="Check"
-          :disabled="!password"
-          :loading="isCheckingStatus"
-          @click="checkSetupStatus"
-        />
-      </div>
-    </div>
+    <base-input
+      v-model="password"
+      label="Enter Password"
+      style="min-width: 300px"
+      type="password"
+    />
+    <base-button
+      :label="buttonLabel"
+      :disabled="!password"
+      :full-width="true"
+      :loading="isCheckingStatus"
+      @click="checkSetupStatus"
+    />
   </div>
 </template>
 
@@ -37,6 +29,14 @@ export default {
   name: 'UnlockAccount',
 
   mixins: [cryptography, helpers],
+
+  props: {
+    buttonLabel: {
+      type: String,
+      required: false,
+      default: 'Check',
+    },
+  },
 
   data() {
     return {

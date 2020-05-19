@@ -30,10 +30,10 @@
     >
       <div
         v-if="!sensitive.privateKey"
-        class="text-center"
+        class="form text-justify"
       >
-        Your account may have already been setup. Please enter your password below to confirm.
-        <unlock-account />
+        Your account may have already been setup. To confirm, please enter your password below.
+        <unlock-account button-label="Check" />
       </div>
 
       <div

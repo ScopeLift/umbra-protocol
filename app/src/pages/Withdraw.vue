@@ -15,10 +15,14 @@
     </div>
 
     <div v-else-if="isUmbraPrivateKeyLogin && !isScanning">
-      <div class="text-center">
-        Enter your password to continue
+      <div class="form text-justify">
+        Enter your password and we'll scan the blockchain for funds
+        sent to a stealth address you control.
+        <unlock-account
+          button-label="Search for Funds"
+          @unlocked="searchForFunds"
+        />
       </div>
-      <unlock-account @unlocked="searchForFunds" />
 
       <div class="row justify-center q-mt-xl">
         <div
@@ -36,7 +40,7 @@
     >
       <div class="form">
         <div>
-          Enter the private key associated with your public identifier, and we'll
+          Enter the private key associated with your public identifier and we'll
           scan the blockchain for funds sent to a stealth address you control.
         </div>
         <input-private-key />
