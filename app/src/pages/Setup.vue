@@ -28,31 +28,16 @@
       v-else-if="isAccountSetupComplete"
       class="text-center"
     >
-      Your account may have already been setup. Please enter your password below to confirm.
-      <div class="row justify-center items-center">
-        <div class="col-auto q-mr-sm">
-          <base-input
-            v-model="password"
-            :dense="true"
-            :hide-bottom-space="true"
-            label="Enter Password"
-            style="min-width: 300px"
-            type="password"
-          />
-        </div>
-        <div>
-          <base-button
-            class="col-auto q-ml-sm"
-            label="Check"
-            :disabled="!password"
-            :loading="isCheckingStatus"
-            @click="checkSetupStatus"
-          />
-        </div>
+      <div
+        v-if="!sensitive.privateKey"
+        class="text-center"
+      >
+        Your account may have already been setup. Please enter your password below to confirm.
+        <unlock-account />
       </div>
 
       <div
-        v-if="isAccountSetupConfirmed"
+        v-if="sensitive.privateKey"
         class="q-mt-xl"
       >
         <div class="positive-border">
@@ -163,12 +148,7 @@ import AccountSetupEnsCheck from 'components/AccountSetupEnsCheck';
 import AccountSetupEnsConfig from 'components/AccountSetupEnsConfig';
 import AccountSetupPrivateKey from 'components/AccountSetupPrivateKey';
 import ConnectWallet from 'components/ConnectWallet';
-import cryptography from 'src/mixins/cryptography';
-import helpers from 'src/mixins/helpers';
-
-const umbra = require('umbra-js');
-
-const { ens, KeyPair } = umbra;
+import UnlockAccount from 'components/UnlockAccount';
 
 export default {
   name: 'Setup',
@@ -179,17 +159,13 @@ export default {
     AccountSetupEnsCheck,
     AccountSetupEnsConfig,
     AccountSetupPrivateKey,
+    UnlockAccount,
   },
-
-  mixins: [cryptography, helpers],
 
   data() {
     return {
-      isCheckingStatus: undefined,
       isAccountSetupComplete: undefined,
-      isAccountSetupConfirmed: undefined,
       step: 1,
-      password: undefined,
       encryptedData: undefined,
     };
   },
@@ -222,44 +198,9 @@ export default {
       this.isAccountSetupComplete = false;
       return;
     }
+
+    // Setup was completed
     this.isAccountSetupComplete = true;
-  },
-
-  methods: {
-    async checkSetupStatus() {
-      try {
-        this.isCheckingStatus = true;
-        // Decrypt data
-        const data = await this.decryptPrivateKey(this.password, this.encryptedData);
-
-        // Ensure addresses match
-        if (this.userAddress !== data.expectedWeb3Address) {
-          throw new Error('Wrong web3 account detected. Please switch to the correct web3 account and try again.');
-        }
-
-        // Get public key from the private key in local storage
-        const keyPair = new KeyPair(data.privateKey);
-        const publicKey1 = keyPair.publicKeyHex;
-
-        // Get public key from the ENS address
-        if (!this.userEnsDomain) {
-          throw new Error('No ENS Account configured for the connected web3 account.');
-        }
-        const publicKey2 = await ens.getPublicKey(this.userEnsDomain, this.provider);
-        this.isCheckingStatus = false;
-
-        // Compare public keys
-        if (publicKey1 !== publicKey2) {
-          throw new Error('The locally saved key does not match the key associated with the ENS address.');
-        }
-
-        // Everything checks out
-        this.isAccountSetupConfirmed = true;
-      } catch (err) {
-        this.showError(err);
-        this.isCheckingStatus = false;
-      }
-    },
   },
 };
 </script>
