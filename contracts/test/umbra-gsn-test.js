@@ -22,6 +22,7 @@ describe('Umbra GSN', () => {
         tollReceiver,
         payer,
         receiver,
+        acceptor,
         ] = accounts;
 
     const deployedToll = toWei('0.001', 'ether');
@@ -102,17 +103,18 @@ describe('Umbra GSN', () => {
     it('should allow receiver to withdraw their tokens with GSN', async () => {
         Umbra.web3.setProvider(this.gsnProvider);
 
-        const receipt = await this.umbra.withdrawToken({
+        const receipt = await this.umbra.withdrawToken(acceptor, {
             from: receiver,
             forwarder: this.forwarder,
         });
 
-        const receiverBalance = await this.token.balanceOf(receiver);
+        const acceptorBalance = await this.token.balanceOf(acceptor);
 
-        expect(receiverBalance.toString()).to.equal(tokenAmount);
+        expect(acceptorBalance.toString()).to.equal(tokenAmount);
 
-        expectEvent(receipt, "Withdrawl", {
+        expectEvent(receipt, "TokenWithdrawl", {
             receiver: receiver,
+            acceptor: acceptor,
             amount: tokenAmount,
             token: this.token.address,
         });
