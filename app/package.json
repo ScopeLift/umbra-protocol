@@ -16,7 +16,8 @@
     "@quasar/extras": "^1.0.0",
     "browser-passworder": "^2.0.3",
     "ethers": "^5.0.0-beta.185",
-    "quasar": "^1.0.0"
+    "quasar": "^1.0.0",
+    "vue-async-computed": "^3.8.2"
   },
   "devDependencies": {
     "@quasar/app": "^1.0.0",

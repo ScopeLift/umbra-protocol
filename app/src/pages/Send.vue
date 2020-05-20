@@ -59,6 +59,7 @@
         v-model.number="tokenAmount"
         type="number"
         label="Enter Amount"
+        :lazy-rules="false"
         :rules="isValidAmount"
       />
 
@@ -74,8 +75,13 @@
 
 <script>
 import { mapState } from 'vuex';
+import { ethers } from 'ethers';
 import ConnectWallet from 'components/ConnectWallet';
 import LookupRecipient from 'components/LookupRecipient';
+
+const addresses = require('../../../addresses.json');
+
+const { utils } = ethers;
 
 export default {
   name: 'Send',
@@ -98,10 +104,10 @@ export default {
           symbol: 'DAI',
           image: 'statics/tokens/dai.png',
         },
-        {
-          symbol: 'USDC',
-          image: 'statics/tokens/usdc.png',
-        },
+        // {
+        //   symbol: 'USDC',
+        //   image: 'statics/tokens/usdc.png',
+        // },
       ],
     };
   },
@@ -109,12 +115,42 @@ export default {
   computed: {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
+      provider: (state) => state.user.ethersProvider,
     }),
+
+    balance() {
+      if (!this.balanceBN) return undefined;
+      return utils.formatEther(this.balanceBN);
+    },
+
+    isDataValid() {
+      const isRecipientValid = false;
+      const isTokenValid = false;
+      const isAmountValid = false;
+      return isRecipientValid && isTokenValid && isAmountValid;
+    },
+  },
+
+  asyncComputed: {
+    balanceBN() {
+      // Get balance of the selected currency
+      if (!this.selectedToken) return undefined;
+      if (this.selectedToken === 'ETH') {
+        return this.provider.getBalance(this.userAddress);
+      }
+      const abi = require(`../../../abi/${this.selectedToken}.json`); // eslint-disable-line
+      const address = addresses[this.selectedToken];
+      const contract = new ethers.Contract(address, abi, this.provider);
+      return contract.balanceOf(this.userAddress);
+    },
   },
 
   methods: {
     isValidAmount(val) {
-      return val > 0 ? true : 'Please enter a valid amount';
+      if (!this.selectedToken) return 'Please select a token first.';
+      const balance = parseFloat(this.balance);
+      const message = `Please enter a valid amount. You have ${balance} ${this.selectedToken}.`;
+      return balance >= val ? true : message;
     },
   },
 };
