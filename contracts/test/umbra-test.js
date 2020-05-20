@@ -27,30 +27,30 @@ describe('Umbra', () => {
     const tokenAmount = toWei('100', 'ether');
 
     before(async () => {
-        this.instance = await Umbra.new(deployedToll, tollCollector, tollReceiver, {from: owner});
+        this.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, {from: owner});
         this.token = await TestToken.new('TestToken', 'TT');
 
         await this.token.mint(payer2, tokenAmount);
     });
 
     it('should see the deployed Umbra contract', async () => {
-        expect(this.instance.address.startsWith('0x')).to.be.true;
-        expect(this.instance.address.length).to.equal(42);
+        expect(this.umbra.address.startsWith('0x')).to.be.true;
+        expect(this.umbra.address.length).to.equal(42);
         expect(this.token.address.startsWith('0x')).to.be.true;
         expect(this.token.address.length).to.equal(42);
     });
 
     it('should have correct values initialized', async () => {
-        const theOwner = await this.instance.owner();
+        const theOwner = await this.umbra.owner();
         expect(theOwner).to.equal(owner);
 
-        const theCollector = await this.instance.tollCollector();
+        const theCollector = await this.umbra.tollCollector();
         expect(theCollector).to.equal(tollCollector);
 
-        const theReceiver = await this.instance.tollReceiver();
+        const theReceiver = await this.umbra.tollReceiver();
         expect(theReceiver).to.equal(tollReceiver);
 
-        const toll = await this.instance.toll();
+        const toll = await this.umbra.toll();
         expect(toll.toString()).to.equal(deployedToll);
 
         const tokenBalance = await this.token.balanceOf(payer2);
@@ -58,34 +58,34 @@ describe('Umbra', () => {
     });
 
     it('should let the owner update the toll', async () => {
-        await this.instance.setToll(updatedToll, {from: owner});
-        const toll = await this.instance.toll();
+        await this.umbra.setToll(updatedToll, {from: owner});
+        const toll = await this.umbra.toll();
 
         expect(toll.toString()).to.equal(updatedToll);
     });
 
     it('should not allow someone other than the owner to upate the toll', async () => {
         await expectRevert(
-            this.instance.setToll(deployedToll, {from: other}),
+            this.umbra.setToll(deployedToll, {from: other}),
             "Ownable: caller is not the owner"
         );
     });
 
     it('should not allow someone to pay less than the toll amount', async () => {
-        const toll = await this.instance.toll()
+        const toll = await this.umbra.toll()
         const paymentAmount = toll.sub(new BN('1'));
 
         await expectRevert(
-            this.instance.sendEth(receiver1, ...argumentBytes, {from: payer1, value: paymentAmount}),
+            this.umbra.sendEth(receiver1, ...argumentBytes, {from: payer1, value: paymentAmount}),
             "Umbra: Must pay more than the toll",
         );
     });
 
     it('should not allow someone to pay exactly the toll amount', async () => {
-        const toll = await this.instance.toll()
+        const toll = await this.umbra.toll()
 
         await expectRevert(
-            this.instance.sendEth(receiver1, ...argumentBytes, {from: payer1, value: toll}),
+            this.umbra.sendEth(receiver1, ...argumentBytes, {from: payer1, value: toll}),
             "Umbra: Must pay more than the toll",
         );
     });
@@ -93,11 +93,11 @@ describe('Umbra', () => {
     it('should allow someone to pay in eth', async () => {
         const receiverInitBalance = new BN(await web3.eth.getBalance(receiver1));
 
-        const toll = await this.instance.toll()
+        const toll = await this.umbra.toll()
         const payment = new BN(ethPayment);
         const actualPayment = payment.sub(toll);
 
-        const receipt = await this.instance.sendEth(receiver1, ...argumentBytes, {from: payer1, value: ethPayment})
+        const receipt = await this.umbra.sendEth(receiver1, ...argumentBytes, {from: payer1, value: ethPayment})
 
         const receiverPostBalance = new BN(await web3.eth.getBalance(receiver1));
         const amountReceived = receiverPostBalance.sub(receiverInitBalance);
@@ -120,44 +120,44 @@ describe('Umbra', () => {
 
     it('should not let the eth receiver withdraw tokens', async () => {
         await expectRevert(
-            this.instance.withdrawToken(acceptor, {from: receiver1}),
+            this.umbra.withdrawToken(acceptor, {from: receiver1}),
             "Umbra: No tokens available for withdrawl",
         );
     });
 
     it('should not allow someone to pay with a token without sending the toll', async () => {
         await expectRevert(
-            this.instance.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2}),
+            this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2}),
             "Umbra: Must pay the exact toll"
         );
     });
 
     it('should not allow someone to pay with a token without sending the full toll', async () => {
-        const toll = await this.instance.toll();
+        const toll = await this.umbra.toll();
         const lessToll = toll.sub(new BN('1'));
 
         await expectRevert(
-            this.instance.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2, value: lessToll}),
+            this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2, value: lessToll}),
             "Umbra: Must pay the exact toll"
         );
     });
 
     it('should not allow someone to pay with a token sending more than the toll', async () => {
-        const toll = await this.instance.toll();
+        const toll = await this.umbra.toll();
         const moreToll = toll.add(new BN('1'));
 
         await expectRevert(
-            this.instance.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2, value: moreToll}),
+            this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2, value: moreToll}),
             "Umbra: Must pay the exact toll"
         );
     });
 
     it('should allow someone to pay with a token', async () => {
-        const toll = await this.instance.toll();
-        await this.token.approve(this.instance.address, tokenAmount, {from: payer2});
-        const receipt = await this.instance.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2, value: toll});
+        const toll = await this.umbra.toll();
+        await this.token.approve(this.umbra.address, tokenAmount, {from: payer2});
+        const receipt = await this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {from: payer2, value: toll});
 
-        const contractBalance = await this.token.balanceOf(this.instance.address);
+        const contractBalance = await this.token.balanceOf(this.umbra.address);
 
         expect(contractBalance.toString()).to.equal(tokenAmount);
 
@@ -177,13 +177,13 @@ describe('Umbra', () => {
 
     it('should not allow a non-receiver to withdraw tokens', async () => {
         await expectRevert(
-            this.instance.withdrawToken(acceptor, {from: other}),
+            this.umbra.withdrawToken(acceptor, {from: other}),
             "Umbra: No tokens available for withdrawl",
         );
     });
 
     it('should allow receiver to withdraw their token', async () => {
-        const receipt = await this.instance.withdrawToken(acceptor, {from: receiver2});
+        const receipt = await this.umbra.withdrawToken(acceptor, {from: receiver2});
 
         const acceptorBalance = await this.token.balanceOf(acceptor);
 
@@ -199,24 +199,24 @@ describe('Umbra', () => {
 
     it('should not allow a receiver to withdraw their tokens twice', async () => {
         await expectRevert(
-            this.instance.withdrawToken(acceptor, {from: receiver2}),
+            this.umbra.withdrawToken(acceptor, {from: receiver2}),
             "Umbra: No tokens available for withdraw",
         );
     });
 
     it('should not allow someone else to move tolls to toll receiver', async () => {
         await expectRevert(
-            this.instance.collectTolls({from: other}),
+            this.umbra.collectTolls({from: other}),
             'Umbra: Not Toll Collector'
         );
     });
 
     it('should allow the toll collector to move tolls to toll receiver', async () => {
-        const toll = await this.instance.toll();
+        const toll = await this.umbra.toll();
         const expectedCollection = toll.mul(new BN('2'));
         const receiverInitBalance = new BN(await web3.eth.getBalance(tollReceiver));
 
-        await this.instance.collectTolls({from: tollCollector});
+        await this.umbra.collectTolls({from: tollCollector});
 
         const receiverPostBalance = new BN(await web3.eth.getBalance(tollReceiver));
         const tollsReceived = receiverPostBalance.sub(receiverInitBalance);
