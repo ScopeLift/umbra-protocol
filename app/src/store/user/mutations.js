@@ -34,3 +34,7 @@ export function setFileDownloadStatus(state, wasPrivateKeyDownloaded) {
 export function setEnsStatus(state, isEnsConfigured) {
   state.isEnsConfigured = isEnsConfigured;
 }
+
+export function setRecipientPublicKey(state, key) {
+  state.send.recipientPublicKey = key;
+}

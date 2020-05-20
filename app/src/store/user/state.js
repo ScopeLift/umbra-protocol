@@ -15,5 +15,9 @@ export default function () {
       privateKey: undefined,
       wasPrivateKeyDownloaded: undefined,
     },
+    // For sending funds
+    send: {
+      recipientPublicKey: undefined,
+    },
   };
 }

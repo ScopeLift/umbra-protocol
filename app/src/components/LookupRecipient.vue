@@ -11,7 +11,8 @@
     />
     <div
       v-if="identifierType"
-      class="row justify-start items-center"
+      class="row justify-start items-center q-mb-md"
+      style="margin-top: -1rem"
     >
       <q-icon
         left
@@ -72,6 +73,14 @@ export default {
       });
     },
 
+    /**
+     * @notice Updates the recipient public key value stored in the state, since this
+     * component is only used when sending funds
+     */
+    updateRecipientPublicKey(key) {
+      this.$store.commit('user/setRecipientPublicKey', key);
+    },
+
     async getIdentifierType() {
       const val = this.identifier;
       if (!val || !this.provider) {
@@ -83,6 +92,7 @@ export default {
       const isValidPublicKey = val.length === 132 && isHexString(val) && val.slice(0, 4) === '0x04';
       if (isValidPublicKey) {
         this.identifierType = 'publicKey';
+        this.updateRecipientPublicKey(val);
         return this.identifierType;
       }
 
@@ -92,6 +102,7 @@ export default {
         // If tx hash is valid, ensure a public key can be recovered from it
         const publicKey = await utils.recoverPublicKeyFromTransaction(val, this.provider);
         if (publicKey) {
+          this.updateRecipientPublicKey(publicKey);
           this.identifierType = 'txHash';
           return this.identifierType;
         }
@@ -103,18 +114,25 @@ export default {
         // Get last transaction hash sent by that address
         const txHash = await this.getSentTransaction(val);
         if (txHash) {
-          this.identifierType = 'address';
-          return this.identifierType;
+          // Get public key from that transaction
+          const publicKey = await utils.recoverPublicKeyFromTransaction(txHash, this.provider);
+          if (publicKey) {
+            this.updateRecipientPublicKey(publicKey);
+            this.identifierType = 'address';
+            return this.identifierType;
+          }
         }
       }
 
       // Check if this is a valid ENS domain
-      const isValidEnsAddress = await ens.getSignature(val, this.provider);
-      if (isValidEnsAddress) {
+      const publicKey = await ens.getPublicKey(val, this.provider);
+      if (publicKey) {
+        this.updateRecipientPublicKey(publicKey);
         this.identifierType = 'ens';
         return this.identifierType;
       }
 
+      this.updateRecipientPublicKey(undefined);
       this.identifierType = undefined;
       return this.identifierType;
     },

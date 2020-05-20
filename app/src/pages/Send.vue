@@ -65,7 +65,7 @@
 
       <!-- Approve/Send Button -->
       <base-button
-        :disabled="true"
+        :disabled="!isDataValid"
         :full-width="true"
         label="TODO: Approve or Send Tx"
       />
@@ -116,6 +116,7 @@ export default {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
       provider: (state) => state.user.ethersProvider,
+      recipientPublicKey: (state) => state.user.send.recipientPublicKey,
     }),
 
     balance() {
@@ -124,9 +125,9 @@ export default {
     },
 
     isDataValid() {
-      const isRecipientValid = false;
-      const isTokenValid = false;
-      const isAmountValid = false;
+      const isRecipientValid = !!this.recipientPublicKey;
+      const isTokenValid = !!this.selectedToken;
+      const isAmountValid = parseFloat(this.balance) >= parseFloat(this.tokenAmount);
       return isRecipientValid && isTokenValid && isAmountValid;
     },
   },
@@ -150,7 +151,7 @@ export default {
       if (!this.selectedToken) return 'Please select a token first.';
       const balance = parseFloat(this.balance);
       const message = `Please enter a valid amount. You have ${balance} ${this.selectedToken}.`;
-      return balance >= val ? true : message;
+      return balance >= parseFloat(val) ? true : message;
     },
   },
 };
