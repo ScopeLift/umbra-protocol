@@ -42,11 +42,12 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
     address payable public tollReceiver;
     mapping (address => TokenPayment) tokenPayments;
 
-    constructor(uint256 _toll, address _tollCollector, address payable _tollReceiver) public {
+    constructor(uint256 _toll, address _tollCollector, address payable _tollReceiver, address _gsnForwarder) public {
         __Ownable_init();
         toll = _toll;
         tollCollector = _tollCollector;
         tollReceiver = _tollReceiver;
+        trustedForwarder = _gsnForwarder;
     }
 
     function setToll(uint256 _newToll) public onlyOwner {

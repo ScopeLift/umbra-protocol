@@ -29,7 +29,7 @@ describe('Umbra GSN', () => {
     const deployedToll = toWei('0.001', 'ether');
 
     before(async () => {
-        this.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, {from: owner});
+        this.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, other, {from: owner});
         this.token = await TestToken.new('TestToken', 'TT');
 
         await this.token.mint(payer, tokenAmount);
