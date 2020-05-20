@@ -125,7 +125,7 @@ describe('Umbra', () => {
   it('should not let the eth receiver withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: receiver1 }),
-      'Umbra: No tokens available for withdrawl',
+      'Umbra: No tokens available for withdrawal',
     );
   });
 
@@ -206,7 +206,7 @@ describe('Umbra', () => {
   it('should not allow a non-receiver to withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: other }),
-      'Umbra: No tokens available for withdrawl',
+      'Umbra: No tokens available for withdrawal',
     );
   });
 
@@ -217,7 +217,7 @@ describe('Umbra', () => {
 
     expect(acceptorBalance.toString()).to.equal(tokenAmount);
 
-    expectEvent(receipt, 'TokenWithdrawl', {
+    expectEvent(receipt, 'TokenWithdrawal', {
       receiver: receiver2,
       acceptor,
       amount: tokenAmount,

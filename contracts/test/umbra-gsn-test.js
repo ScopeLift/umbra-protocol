@@ -141,7 +141,7 @@ describe('Umbra GSN', () => {
         from: other,
         forwarder: this.forwarder,
       }),
-      'Umbra: No tokens available for withdrawl',
+      'Umbra: No tokens available for withdrawal',
     );
   });
 
@@ -161,7 +161,7 @@ describe('Umbra GSN', () => {
 
     expect(acceptorBalance.toString()).to.equal(tokenAmount);
 
-    expectEvent(receipt, 'TokenWithdrawl', {
+    expectEvent(receipt, 'TokenWithdrawal', {
       receiver,
       acceptor,
       amount: tokenAmount,
@@ -177,7 +177,7 @@ describe('Umbra GSN', () => {
         from: receiver,
         forwarder: this.forwarder,
       }),
-      'Umbra: No tokens available for withdrawl',
+      'Umbra: No tokens available for withdrawal',
     );
   });
 });

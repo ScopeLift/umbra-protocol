@@ -29,7 +29,7 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
     bytes32 mac // Message Authetnication Code
   );
 
-  event TokenWithdrawl(
+  event TokenWithdrawal(
     address indexed receiver,
     address indexed acceptor,
     uint256 amount,
@@ -125,10 +125,10 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
     uint256 amount = tokenPayments[_msgSender()].amount;
     address tokenAddr = tokenPayments[_msgSender()].token;
 
-    require(amount > 0, "Umbra: No tokens available for withdrawl");
+    require(amount > 0, "Umbra: No tokens available for withdrawal");
 
     delete tokenPayments[_msgSender()];
-    emit TokenWithdrawl(_msgSender(), _acceptor, amount, tokenAddr);
+    emit TokenWithdrawal(_msgSender(), _acceptor, amount, tokenAddr);
 
     SafeERC20.safeTransfer(IERC20(tokenAddr), _acceptor, amount);
   }
