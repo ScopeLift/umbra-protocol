@@ -1,33 +1,29 @@
 module.exports = {
+  // https://eslint.org/docs/user-guide/configuring#configuration-cascading-and-hierarchy
+  // This option interrupts the configuration hierarchy at this file
+  // Remove this if you have an higher level ESLint config file (it usually happens in monorepos)
   root: true,
 
   parserOptions: {
     parser: 'babel-eslint',
-    sourceType: 'module'
+    ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
+    sourceType: 'module', // Allows for the use of imports
   },
 
   env: {
     browser: true,
+    es6: true,
     mocha: true,
   },
 
+  // Rules order is important,
   extends: [
     'airbnb-base',
     'plugin:chai-friendly/recommended',
   ],
 
   plugins: [
-    'chai-friendly',
   ],
-
-  globals: {
-    'ga': true, // Google Analytics
-    'cordova': true,
-    '__statics': true,
-    'process': true,
-    'Capacitor': true,
-    'chrome': true
-  },
 
   // add your custom rules here
   rules: {
@@ -50,5 +46,5 @@ module.exports = {
     // Max line length of 100 characters, except for lines with comments
     // Long strings on one line are ok and allowed by the airbnb rules
     'max-len': ['error', { code: 100, ignoreComments: true, ignoreTrailingComments: true }],
-  }
-}
+  },
+};
