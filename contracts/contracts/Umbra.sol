@@ -113,10 +113,7 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
         uint256 amount = payments[_msgSender()].amount;
         address tokenAddr = payments[_msgSender()].token;
 
-        require(
-            (amount > 0) && (tokenAddr != address(0)) && (tokenAddr != ETH_TOKEN_PLACHOLDER),
-            "Umbra: No tokens available for withdrawl"
-        );
+        require(amount > 0, "Umbra: No tokens available for withdrawl");
 
         delete payments[_msgSender()];
         emit TokenWithdrawl(_msgSender(), _acceptor, amount, tokenAddr);
