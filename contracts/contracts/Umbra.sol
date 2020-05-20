@@ -10,7 +10,7 @@ import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
     using SafeMath for uint256;
 
-    struct Payment {
+    struct TokenPayment {
         address token;
         uint256 amount;
     }
@@ -40,7 +40,7 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
     uint256 public toll;
     address public tollCollector;
     address payable public tollReceiver;
-    mapping (address => Payment) payments;
+    mapping (address => TokenPayment) tokenPayments;
 
     constructor(uint256 _toll, address _tollCollector, address payable _tollReceiver) public {
         __Ownable_init();
@@ -103,19 +103,19 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
     {
         require(msg.value == toll, "Umbra: Must pay the exact toll");
 
-        payments[_receiver] = Payment({token: _tokenAddr, amount: _amount});
+        tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});
         emit Announcement(_receiver, _amount, _tokenAddr, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
 
         SafeERC20.safeTransferFrom(IERC20(_tokenAddr), _msgSender(), address(this), _amount);
     }
 
     function withdrawToken(address _acceptor) public {
-        uint256 amount = payments[_msgSender()].amount;
-        address tokenAddr = payments[_msgSender()].token;
+        uint256 amount = tokenPayments[_msgSender()].amount;
+        address tokenAddr = tokenPayments[_msgSender()].token;
 
         require(amount > 0, "Umbra: No tokens available for withdrawl");
 
-        delete payments[_msgSender()];
+        delete tokenPayments[_msgSender()];
         emit TokenWithdrawl(_msgSender(), _acceptor, amount, tokenAddr);
 
         SafeERC20.safeTransfer(IERC20(tokenAddr), _acceptor, amount);
