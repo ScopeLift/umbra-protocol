@@ -223,12 +223,12 @@ export default {
           const receipt = await event.getTransactionReceipt();
           const block = await event.getBlock();
           const { timestamp } = block;
-          console.log('receipt: ', receipt);
-
+          const from = await this.provider.lookupAddress(receipt.from)
+            || `${receipt.from.slice(0, 6)}...${receipt.from.slice(38, 42)}`;
           const tokenName = this.tokenMappings[event.token] || 'Unknown';
 
           const data = {
-            from: receipt.from,
+            from,
             to: event.receiver,
             txHash: event.transactionHash,
             timestamp,
@@ -238,17 +238,14 @@ export default {
             tokenName,
             amount: ethers.utils.formatEther(event.amount),
           };
-
           tableData.push(data);
         }
-
         this.tableData = tableData;
 
         // Scan for funds is complete
         this.isScanComplete = true;
         this.areFundsAvailable = userEvents.length > 0;
 
-        console.log('userEvents: ', userEvents);
 
         // Save off block number of the last scanned block in localstorage
         // this.$q.localStorage.set('lastBlock', endBlock);
