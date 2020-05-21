@@ -6,8 +6,8 @@ const { expect } = chai;
 
 // Truth parameters to test against
 const name = 'msolomon.eth';
-const nameSignature = '0xe1c9e3302fa20eae15f2416280520dd1a1cc812b98a49fb5e910cd97961cbeb17f54e4cec77bac4b194e1058085175b77c046e3b53c0fd0a87fe24c9dbcf3c691b';
-const namePublicKey = '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
+const nameSignature = '0x833b3846cf69f8667db746624661f7b5d85c131be9b9844c8f52d3d056fb81137fff198ad9eac9f63fb7469ef5d844737dedf27e75653d1b133554777f7384bd1b';
+const namePublicKey = '0x0483393469b6042c8ab2626258b95031edc4b4fa6ed637a81f23861e2e28901bbe20fcdae2dd56aa1998e8beb3a7537a5927f95c0456fad9694e042e9cce67d607';
 const nameBytecode = ''; // currently not set
 
 describe('ENS functions', () => {

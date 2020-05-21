@@ -39,11 +39,11 @@ class KeyPair {
       const publicKey = ec.g.mul(this.privateKeyHexSlim);
 
       // Save off public key as hex, other forms computed as getters
-      const publicKeyHexCoords = {
+      const publicKeyHexCoordsSlim = {
         x: padHex(publicKey.getX().toString('hex')),
         y: padHex(publicKey.getY().toString('hex')),
       };
-      this.publicKeyHex = `0x04${publicKeyHexCoords.x}${publicKeyHexCoords.y}`;
+      this.publicKeyHex = `0x04${publicKeyHexCoordsSlim.x}${publicKeyHexCoordsSlim.y}`;
     } else if (key.length === 132) {
       // PUBLIC KEY
       // Save off public key as hex, other forms computed as getters
@@ -55,9 +55,19 @@ class KeyPair {
 
   // GETTERS =======================================================================================
   /**
-   * @notice Returns the x,y public key coordinates as hex
+   * @notice Returns the x,y public key coordinates as hex with 0x prefix
    */
   get publicKeyHexCoords() {
+    return {
+      x: `0x${padHex(this.publicKeyHexSlim.slice(0, 64))}`,
+      y: `0x${padHex(this.publicKeyHexSlim.slice(64))}`,
+    };
+  }
+
+  /**
+   * @notice Returns the x,y public key coordinates as hex without 0x prefix
+   */
+  get publicKeyHexCoordsSlim() {
     return {
       x: padHex(this.publicKeyHexSlim.slice(0, 64)),
       y: padHex(this.publicKeyHexSlim.slice(64)),
@@ -76,8 +86,8 @@ class KeyPair {
    */
   get publicKeyEC() {
     return ec.keyFromPublic({
-      x: this.publicKeyHexCoords.x,
-      y: this.publicKeyHexCoords.y,
+      x: this.publicKeyHexCoordsSlim.x,
+      y: this.publicKeyHexCoordsSlim.y,
     });
   }
 
