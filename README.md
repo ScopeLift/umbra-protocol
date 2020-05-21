@@ -18,4 +18,10 @@
 	<br />
 </div>
 
+## Contributions
 
+Contributions to Umbra are welcome! Fork the project, create a new branch from master, and open a PR. Ensure the project can be fast-forward merged by rebasing if necessary.
+
+## License
+
+Umbra is available under the [MIT](LICENSE.txt) license.
