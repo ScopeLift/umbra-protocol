@@ -120,6 +120,31 @@ describe('KeyPair class', () => {
     expect(stealthFromPrivate.publicKeyHex).to.equal(stealthFromPublic.publicKeyHex);
   });
 
+  it('lets multiplication be performed with RandomNumber class or hex string', () => {
+    const numRuns = 100;
+    for (let i = 0; i < numRuns; i += 1) {
+      // Generate random number and wallet
+      const randomNumber = new RandomNumber();
+      const randomWallet = ethers.Wallet.createRandom();
+      const randomFromPublic = new KeyPair(randomWallet.publicKey);
+      const randomFromPrivate = new KeyPair(randomWallet.privateKey);
+
+      // Compare public key multiplication
+      const stealthFromClassPublic = randomFromPublic.mulPublicKey(randomNumber);
+      const stealthFromStringPublic = randomFromPublic.mulPublicKey(randomNumber.asHex);
+      expect(stealthFromClassPublic.address).to.equal(stealthFromStringPublic.address);
+
+      // Compare private key multiplication
+      const stealthFromClassPrivate = randomFromPrivate.mulPrivateKey(randomNumber);
+      const stealthFromStringPrivate = randomFromPrivate.mulPrivateKey(randomNumber.asHex);
+      expect(stealthFromClassPrivate.address).to.equal(stealthFromStringPrivate.address);
+
+      const stealthFromClassPrivate2 = randomFromPrivate.mulPublicKey(randomNumber);
+      const stealthFromStringPrivate2 = randomFromPrivate.mulPublicKey(randomNumber.asHex);
+      expect(stealthFromClassPrivate2.address).to.equal(stealthFromStringPrivate2.address);
+    }
+  })
+
   it('works for any randomly generated number and wallet', () => {
     /* eslint-disable no-console */
     let numFailures = 0;

@@ -161,11 +161,13 @@ class KeyPair {
   // ELLIPTIC CURVE MATH ===========================================================================
   /**
    * @notice Returns new KeyPair instance after multiplying this public key by some value
-   * @param {RandomNumber} value number to multiply by, as class RandomNumber
+   * @param {RandomNumber, String} value number to multiply by, as class RandomNumber or hex
+   * string with 0x prefix
    */
   mulPublicKey(value) {
     // Perform multiplication
-    const publicKey = this.publicKeyEC.getPublic().mul(value.asHexSlim);
+    const number = utils.isHexString(value) ? value.slice(2) : value.asHexSlim;
+    const publicKey = this.publicKeyEC.getPublic().mul(number);
     // Get x,y hex strings
     const x = padHex(publicKey.getX().toString('hex'));
     const y = padHex(publicKey.getY().toString('hex'));
@@ -175,12 +177,14 @@ class KeyPair {
 
   /**
    * @notice Returns new KeyPair instance after multiplying this private key by some value
-   * @param {RandomNumber} value number to multiply by, as class RandomNumber
+   * @param {RandomNumber, String} value number to multiply by, as class RandomNumber or hex
+   * string with 0x prefix
    */
   mulPrivateKey(value) {
     // Get new private key. This gives us an arbitrarily large number that is not
     // necessarily in the domain of the secp256k1 elliptic curve
-    const privateKeyFull = this.privateKeyBN.mul(value.asHex);
+    const number = utils.isHexString(value) ? value : value.asHex;
+    const privateKeyFull = this.privateKeyBN.mul(number);
     // Modulo operation to get private key to be in correct range, where ec.n gives the
     // order of our curve. We add the 0x prefix as it's required by ethers.js
     const privateKeyMod = privateKeyFull.mod(`0x${ec.n.toString('hex')}`);
