@@ -3,12 +3,14 @@
     Enter the identifier provided by the recipient.
     This can be an ENS domain, transaction hash, address, or public key.
 
-    <base-input
-      v-model="identifier"
-      label="Recipient Identifier"
-      :rules="isValidIdentifier"
-      :disabled="!provider"
-    />
+    <q-form ref="lookupRecipientForm">
+      <base-input
+        v-model="identifier"
+        label="Recipient Identifier"
+        :rules="isValidIdentifier"
+        :disabled="!provider"
+      />
+    </q-form>
     <div
       v-if="identifierType"
       class="row justify-start items-center q-mb-md"
@@ -79,6 +81,17 @@ export default {
      */
     updateRecipientPublicKey(key) {
       this.$store.commit('user/setRecipientPublicKey', key);
+    },
+
+    /**
+     * @notice Resets identifier and identifierType to their defaults. This is called by
+     * the Send page after sending a transaction
+     */
+    resetIdentifier() {
+      this.identifier = undefined;
+      this.identifierType = undefined;
+      this.updateRecipientPublicKey(undefined);
+      this.$refs.lookupRecipientForm.resetValidation();
     },
 
     async getIdentifierType() {

@@ -88,6 +88,16 @@ export default {
     };
   },
 
+  watch: {
+    /**
+     * @notice This is required for two-way binding when programtically updating the input
+     * in the parent component using BaseInput
+     */
+    value(val) {
+      this.content = val;
+    },
+  },
+
   methods: {
     handleInput() {
       this.$emit('input', this.content);

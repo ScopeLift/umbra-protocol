@@ -13,12 +13,13 @@
         <connect-wallet />
       </div>
     </div>
-    <div
+    <q-form
       v-else
+      ref="sendForm"
       class="form"
     >
       <!-- Choose recipient -->
-      <lookup-recipient />
+      <lookup-recipient ref="recipientInput" />
 
       <!-- Select token -->
       <div>
@@ -67,9 +68,10 @@
       <base-button
         :disabled="!isDataValid"
         :full-width="true"
-        label="TODO: Approve or Send Tx"
+        label="Send"
+        @click="sendFunds"
       />
-    </div>
+    </q-form>
   </q-page>
 </template>
 
@@ -78,6 +80,7 @@ import { mapState } from 'vuex';
 import { ethers } from 'ethers';
 import ConnectWallet from 'components/ConnectWallet';
 import LookupRecipient from 'components/LookupRecipient';
+import helpers from 'src/mixins/helpers';
 
 const addresses = require('../../../addresses.json');
 
@@ -90,6 +93,8 @@ export default {
     ConnectWallet,
     LookupRecipient,
   },
+
+  mixins: [helpers],
 
   data() {
     return {
@@ -148,10 +153,23 @@ export default {
 
   methods: {
     isValidAmount(val) {
-      if (!this.selectedToken) return 'Please select a token first.';
+      if (!this.selectedToken) return true;
       const balance = parseFloat(this.balance);
       const message = `Please enter a valid amount. You have ${balance} ${this.selectedToken}.`;
       return balance >= parseFloat(val) ? true : message;
+    },
+
+    async sendFunds() {
+      // Create contract instance
+
+      // Send transaction
+
+      // Notify user on success
+      this.notifyUser('positive', 'Your payment was successfully sent!');
+      this.tokenAmount = undefined;
+      this.selectedToken = undefined;
+      this.$refs.recipientInput.resetIdentifier();
+      this.$refs.sendForm.resetValidation();
     },
   },
 };
