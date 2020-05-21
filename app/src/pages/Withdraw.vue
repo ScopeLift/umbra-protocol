@@ -85,9 +85,15 @@ import { mapState } from 'vuex';
 import ConnectWallet from 'components/ConnectWallet';
 import InputPrivateKey from 'components/InputPrivateKey';
 import UnlockAccount from 'components/UnlockAccount';
+import { ethers } from 'ethers';
 import umbra from 'umbra-js';
+import helpers from 'src/mixins/helpers';
 
 const { KeyPair } = umbra;
+
+// TODO update to handle mainnet. Currently has ropsten hardcoded
+const umbraAbi = require('../../../contracts/build/contracts/Umbra.json').abi; // eslint-disable-line
+const umbraAddress = require('../../../contracts/.openzeppelin/ropsten.json').proxies['umbra/Umbra'][0].address; // eslint-disable-line
 
 export default {
   name: 'Withdraw',
@@ -97,6 +103,8 @@ export default {
     InputPrivateKey,
     UnlockAccount,
   },
+
+  mixins: [helpers],
 
   data() {
     return {
@@ -108,7 +116,8 @@ export default {
   computed: {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
-      privateKey: (state) => state.user.privateKey,
+      privateKey: (state) => state.user.sensitive.privateKey,
+      provider: (state) => state.user.ethersProvider,
     }),
 
     keyPair() {
@@ -118,9 +127,64 @@ export default {
   },
 
   methods: {
-    searchForFunds() {
+    async searchForFunds() {
       this.isScanning = true;
-      // this.isScanning = false;
+      try {
+        // Get last block scanned from localStorage. If none found, use block of contract deployment
+        // TODO update to handle mainnet (currently uses Ropsten block)
+        const startBlock = this.$q.localStorage.getItem('lastBlock') || 7938811;
+
+        // Get the most recent block seen
+        const endBlock = await this.provider.getBlockNumber();
+
+        // Create Umbra contract instance
+        const Umbra = new ethers.Contract(umbraAddress, umbraAbi, this.provider);
+
+        // Get list of all Announcement events
+        const events = await Umbra.queryFilter('Announcement', startBlock, endBlock);
+
+        // Generate KeyPair instance from user's decrypted private key
+        const keyPairFromPrivate = new KeyPair(this.privateKey);
+
+        // Get events that decrypt and start with the expected message prefix
+        const userEvents = [];
+        for (let i = 0; i < events.length; i += 1) {
+          const event = events[i];
+          try {
+            // Extract out event parameters
+            const {
+              /* receiver, amount, token, */ iv, pkx, pky, ct0, ct1, ct2, mac,
+            } = event.args;
+
+            // Attempt descrypion
+            const payload = {
+              iv,
+              ephemeralPublicKey: `0x04${pkx.slice(2)}${pky.slice(2)}`,
+              ciphertext: `0x${ct0.slice(2)}${ct1.slice(2)}${ct2.slice(2)}`,
+              mac,
+            };
+            const plaintext = await keyPairFromPrivate.decrypt(payload); // eslint-disable-line
+
+            // Confirm expected prefix was seen and save off event
+            const prefix = 'umbra-protocol-v0';
+            if (!plaintext.startsWith(prefix)) throw new Error('Bad decryption');
+            userEvents.push({ ...event, randomNumber: plaintext.slice(prefix.length) });
+          } catch (err) {
+            // Announcement not for user, so ignore it
+          }
+        }
+
+        console.log('userEvents: ', userEvents);
+
+        // Show list a table of accessible funds with the option to withdraw
+
+        // Save off block number of the last scanned block in localstorage
+        // this.$q.localStorage.set('lastBlock', endBlock);
+        this.isScanning = false;
+      } catch (err) {
+        this.showError(err);
+        this.isScanning = false;
+      }
     },
 
     toggleInputMethod() {

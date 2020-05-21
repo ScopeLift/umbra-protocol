@@ -108,6 +108,8 @@ import helpers from 'src/mixins/helpers';
 
 const umbra = require('umbra-js');
 const addresses = require('../../../addresses.json');
+
+// TODO update to handle mainnet. Currently has ropsten hardcoded
 const umbraAbi = require('../../../contracts/build/contracts/Umbra.json').abi; // eslint-disable-line
 const umbraAddress = require('../../../contracts/.openzeppelin/ropsten.json').proxies['umbra/Umbra'][0].address; // eslint-disable-line
 
