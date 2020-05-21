@@ -4,6 +4,7 @@
       Withdraw
     </h3>
 
+    <!-- IF USER IS NOT LOGGED IN WITH WEB3 WALLET -->
     <div
       v-if="!userAddress"
       class="text-center"
@@ -14,7 +15,8 @@
       </div>
     </div>
 
-    <div v-else-if="isUmbraPrivateKeyLogin && !isScanning">
+    <!-- IF USER IS SCANNING WITH LOCAL STORAGE KEY -->
+    <div v-else-if="isUmbraPrivateKeyLogin && !isScanning && !isScanComplete">
       <div class="form text-justify">
         Enter your password and we'll scan the blockchain for funds
         sent to a stealth address you control.
@@ -34,8 +36,9 @@
       </div>
     </div>
 
+    <!-- IF USER IS SCANNING WITH PRIVAYE KEY -->
     <div
-      v-else-if="!isUmbraPrivateKeyLogin && !isScanning"
+      v-else-if="!isUmbraPrivateKeyLogin && !isScanning && !isScanComplete"
       class="text-center"
     >
       <div class="form">
@@ -64,18 +67,34 @@
       </div>
     </div>
 
-    <div v-if="isScanning">
-      Scanning...
-      <br>
-      TODO
-      <ol>
-        <li>Check localstorage to see last block scanned from</li>
-        <li>Scan for all Announcement events and parse out parameters</li>
-        <li>Call `decrypt` on each set of outputs</li>
-        <li>If decrypted outputed starts with `umbra-protocol-v0`, it's for this private key</li>
-        <li>Save off block number of the last scanned block in localstorage</li>
-        <li>Show list a table of accessible funds with the option to withdraw</li>
-      </ol>
+    <!-- IF WE ARE IN THE PROCESS OF SCANNING -->
+    <div
+      v-else-if="isScanning"
+      class="text-center q-mt-xl"
+    >
+      <q-spinner
+        color="primary"
+        size="3rem"
+      />
+      <div class="text-center q-mt-md">
+        Scanning for funds...
+      </div>
+    </div>
+
+    <!-- SCAN IS COMPLETE, NO FUNDS HAVE BEEN SENT TO USER -->
+    <div
+      v-else-if="isScanComplete && !areFundsAvailable"
+      class="text-center q-mt-xl"
+    >
+      No funds have been sent to you
+    </div>
+
+    <!-- SCAN IS COMPLETE AND USER HAS RECEIVED FUNDS -->
+    <div
+      v-else-if="isScanComplete && areFundsAvailable"
+      class="text-center q-mt-xl"
+    >
+      <received-funds-table :table-data="tableData" />
     </div>
   </q-page>
 </template>
@@ -84,14 +103,18 @@
 import { mapState } from 'vuex';
 import ConnectWallet from 'components/ConnectWallet';
 import InputPrivateKey from 'components/InputPrivateKey';
+import ReceivedFundsTable from 'components/ReceivedFundsTable';
 import UnlockAccount from 'components/UnlockAccount';
 import { ethers } from 'ethers';
 import umbra from 'umbra-js';
 import helpers from 'src/mixins/helpers';
+import { date } from 'quasar';
 
+const { formatDate } = date;
 const { KeyPair } = umbra;
 
 // TODO update to handle mainnet. Currently has ropsten hardcoded
+const addresses = require('../../../addresses.json');
 const umbraAbi = require('../../../contracts/build/contracts/Umbra.json').abi; // eslint-disable-line
 const umbraAddress = require('../../../contracts/.openzeppelin/ropsten.json').proxies['umbra/Umbra'][0].address; // eslint-disable-line
 
@@ -101,6 +124,7 @@ export default {
   components: {
     ConnectWallet,
     InputPrivateKey,
+    ReceivedFundsTable,
     UnlockAccount,
   },
 
@@ -109,7 +133,14 @@ export default {
   data() {
     return {
       isScanning: undefined,
+      isScanComplete: undefined,
+      areFundsAvailable: undefined, // true if user has funds to withdraw
       isUmbraPrivateKeyLogin: true,
+      tableData: undefined,
+      tokenMappings: {
+        [addresses.ETH]: 'ETH',
+        [addresses.DAI]: 'DAI',
+      },
     };
   },
 
@@ -127,6 +158,14 @@ export default {
   },
 
   methods: {
+    secondsToFormattedDate(seconds) {
+      return `${formatDate(seconds * 1000, 'YYYY MMM DD')}`;
+    },
+
+    secondsToFormattedTime(seconds) {
+      return `${formatDate(seconds * 1000, 'hh:mm A')}`;
+    },
+
     async searchForFunds() {
       this.isScanning = true;
       try {
@@ -153,7 +192,7 @@ export default {
           try {
             // Extract out event parameters
             const {
-              /* receiver, amount, token, */ iv, pkx, pky, ct0, ct1, ct2, mac,
+              receiver, amount, token, iv, pkx, pky, ct0, ct1, ct2, mac,
             } = event.args;
 
             // Attempt descrypion
@@ -168,15 +207,48 @@ export default {
             // Confirm expected prefix was seen and save off event
             const prefix = 'umbra-protocol-v0';
             if (!plaintext.startsWith(prefix)) throw new Error('Bad decryption');
-            userEvents.push({ ...event, randomNumber: plaintext.slice(prefix.length) });
+            userEvents.push({
+              ...event, randomNumber: plaintext.slice(prefix.length), receiver, amount, token,
+            });
           } catch (err) {
             // Announcement not for user, so ignore it
           }
         }
 
-        console.log('userEvents: ', userEvents);
-
         // Show list a table of accessible funds with the option to withdraw
+        const tableData = [];
+        for (let i = 0; i < userEvents.length; i += 1) {
+          /* eslint-disable no-await-in-loop */
+          const event = userEvents[i];
+          const receipt = await event.getTransactionReceipt();
+          const block = await event.getBlock();
+          const { timestamp } = block;
+          console.log('receipt: ', receipt);
+
+          const tokenName = this.tokenMappings[event.token] || 'Unknown';
+
+          const data = {
+            from: receipt.from,
+            to: event.receiver,
+            txHash: event.transactionHash,
+            timestamp,
+            txDate: this.secondsToFormattedDate(timestamp),
+            txTime: this.secondsToFormattedTime(timestamp),
+            tokenAddress: event.token,
+            tokenName,
+            amount: ethers.utils.formatEther(event.amount),
+          };
+
+          tableData.push(data);
+        }
+
+        this.tableData = tableData;
+
+        // Scan for funds is complete
+        this.isScanComplete = true;
+        this.areFundsAvailable = userEvents.length > 0;
+
+        console.log('userEvents: ', userEvents);
 
         // Save off block number of the last scanned block in localstorage
         // this.$q.localStorage.set('lastBlock', endBlock);
