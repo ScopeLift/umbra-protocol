@@ -10,18 +10,54 @@
         </q-card-section>
 
         <q-card-section>
-          Enter the ENS name or address you would like to send your
-          {{ selectedPayment.amount }} {{ selectedPayment.tokenName }} to.
-        </q-card-section>
-
-        <q-card-section>
+          <!-- Destination address -->
+          <div>
+            Enter the ENS name or address you would like to send your
+            {{ selectedPayment.amount }} {{ selectedPayment.tokenName }} to.
+          </div>
           <base-input
             v-model="selectedPayment.destinationAddress"
-            :rules="isValidDestination"
+            class="q-pt-none"
             label="Enter ENS name or address"
             :lazy-rules="false"
+            :rules="isValidDestination"
           />
+
+          <!-- Output token -->
+          <div>
+            Enter the desired output token
+          </div>
+          <q-select
+            v-model="selectedPayment.outputToken"
+            class="q-mt-xs"
+            emit-value
+            disable
+            filled
+            label="Select token"
+            :options="tokenList"
+            option-label="symbol"
+            option-value="symbol"
+          >
+            <template v-slot:option="token">
+              <q-item
+                v-bind="token.itemProps"
+                v-on="token.itemEvents"
+              >
+                <q-item-section avatar>
+                  <img
+                    :src="token.opt.image"
+                    style="max-width:30px; max-height:30px; margin: 0 auto;"
+                  >
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ token.opt.symbol }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
         </q-card-section>
+
+        <q-card-section />
 
         <q-card-section>
           <div v-if="sendState == 'waitingForConfirmation'">
@@ -205,7 +241,20 @@ export default {
         amount: undefined,
         tokenName: undefined,
         destinationAddress: undefined,
+        outputToken: undefined,
+        data: undefined, // all related data to this tx
       },
+      //
+      tokenList: [
+        {
+          symbol: 'ETH',
+          image: 'statics/tokens/eth.png',
+        },
+        {
+          symbol: 'DAI',
+          image: 'statics/tokens/dai.png',
+        },
+      ],
       //
       pagination: {
         sortBy: 'txDate',
@@ -282,9 +331,13 @@ export default {
           throw new Error('Something went wrong. These funds may not be accessible.');
         }
 
-        // Show withdraw dialog
+        // Save info on token being withdrawn
         this.selectedPayment.amount = data.row.amount;
         this.selectedPayment.tokenName = data.row.tokenName;
+        this.selectedPayment.outputToken = data.row.tokenName;
+        this.selectedPayment.data = data.row;
+
+        // Show withdraw dialog
         this.sendState = undefined;
         this.showWithdrawDialog = true;
       } catch (err) {
@@ -307,7 +360,9 @@ export default {
         let tx;
         if (this.selectedPayment.tokenName === 'ETH') {
           const balance = await this.provider.getBalance(wallet.address);
-          // TODO un-harcode 21000 gas at 10 gwei for transfer. This is to avoid leaving dust
+
+          // TODO for mainnet, get real gas price instead of hardcoding 21000 gas at 10 gwei
+          // (This is to avoid leaving dust)
           tx = await wallet.sendTransaction({
             value: balance.sub('210000000000000'),
             to: destination,
@@ -340,9 +395,21 @@ export default {
           const Umbra = new ethers.Contract(umbraAddress, umbraAbi, signer);
           tx = await Umbra.withdrawToken(destination);
         }
+
+        // Wait for transaction to be mined
         this.txHash = tx.hash;
         this.sendState = 'waitingForConfirmation';
         await tx.wait(); // this section doesn't do anything for GSN provider
+
+        // Update state to indicate successful withdrawal
+        const updatedWithdrawalData = this.withdrawalData.map((log) => {
+          if (log.to !== this.selectedPayment.data.to) return log;
+          log.isWithdrawn = true;
+          return log;
+        });
+        this.$store.commit('user/withdrawalData', updatedWithdrawalData);
+
+        // Update UI
         this.sendState = 'complete';
       } catch (err) {
         this.showError(err);
