@@ -181,6 +181,9 @@ export default {
         // Get list of all Announcement events
         const events = await Umbra.queryFilter('Announcement', startBlock, endBlock);
 
+        // Get list of all TokenWithdrawal events, TODO use this
+        const withdrawalEvents = await Umbra.queryFilter('TokenWithdrawal', startBlock, endBlock);
+
         // Generate KeyPair instance from user's decrypted private key
         const keyPairFromPrivate = new KeyPair(this.privateKey);
 
@@ -219,6 +222,7 @@ export default {
         for (let i = 0; i < userEvents.length; i += 1) {
           /* eslint-disable no-await-in-loop */
           const event = userEvents[i];
+          const { receiver } = event;
           const receipt = await event.getTransactionReceipt();
           const block = await event.getBlock();
           const { timestamp } = block;
@@ -229,10 +233,11 @@ export default {
           // Check balance of account
           let isWithdrawn;
           if (tokenName === 'ETH') {
-            const balance = await this.provider.getBalance(event.receiver);
+            const balance = await this.provider.getBalance(receiver);
             isWithdrawn = balance.eq(ethers.constants.Zero);
           } else {
-            // TODO
+            const intersection = withdrawalEvents.filter((log) => log.args.receiver === receiver);
+            isWithdrawn = intersection.length > 0;
           }
 
           const data = {
@@ -240,7 +245,7 @@ export default {
             event,
             from,
             randomNumber: event.randomNumber,
-            to: event.receiver,
+            to: receiver,
             tokenAddress: event.token,
             tokenName,
             txHash: event.transactionHash,

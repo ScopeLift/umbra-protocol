@@ -10,9 +10,11 @@
   "scripts": {
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore ./",
     "test": "echo \"No test specified\" && exit 0",
-    "dev": "npx quasar dev"
+    "dev": "npx quasar dev",
+    "build": "npx quasar build && firebase deploy"
   },
   "dependencies": {
+    "@opengsn/gsn": "^0.9.0",
     "@quasar/extras": "^1.0.0",
     "browser-passworder": "^2.0.3",
     "ethers": "^5.0.0-beta.185",

@@ -182,7 +182,11 @@ import { mapState } from 'vuex';
 import { ethers } from 'ethers';
 import helpers from 'src/mixins/helpers';
 
+const { RelayProvider, configureGSN } = require('@opengsn/gsn');
 const umbra = require('umbra-js');
+// TODO update to handle mainnet. Currently has ropsten hardcoded
+const umbraAbi = require('../../../contracts/build/contracts/Umbra.json').abi; // eslint-disable-line
+const umbraAddress = require('../../../contracts/.openzeppelin/ropsten.json').proxies['umbra/Umbra'][0].address; // eslint-disable-line
 
 const { KeyPair } = umbra;
 
@@ -300,19 +304,45 @@ export default {
 
         // Send payment
         const wallet = new ethers.Wallet(this.stealthPrivateKey, this.provider);
+        let tx;
         if (this.selectedPayment.tokenName === 'ETH') {
           const balance = await this.provider.getBalance(wallet.address);
           // TODO un-harcode 21000 gas at 10 gwei for transfer. This is to avoid leaving dust
-          const tx = await wallet.sendTransaction({
+          tx = await wallet.sendTransaction({
             value: balance.sub('210000000000000'),
             to: destination,
             gasLimit: ethers.BigNumber.from('21000'),
             gasPrice: ethers.BigNumber.from('10000000000'),
           });
-          this.txHash = tx.hash;
-          this.sendState = 'waitingForConfirmation';
-          await tx.wait();
+        } else {
+          // Generate object in the format that gsnProvider wants
+          const stealthPrivateKey = Buffer.from(this.stealthPrivateKey.slice(2), 'hex');
+          const stealthAddress = (new KeyPair(this.stealthPrivateKey)).address;
+          const stealthKeyPair = {
+            privateKey: stealthPrivateKey,
+            address: stealthAddress,
+          };
+
+          // Create GSN-enabled provider
+          const config = configureGSN({
+            relayHubAddress: '0xEF46DD512bCD36619a6531Ca84B188b47D85124b',
+            stakeManagerAddress: '0x41c7C7c1Bf501e2F43b51c200FEeEC87540AC925',
+            paymasterAddress: '0xCCA839B94Ba3B52B8f82485B14856602E8635ebA',
+            methodSuffix: '_v4', // MetaMask only
+            jsonStringifyRequest: true, // MetaMask only
+          });
+          const gsnProvider = new RelayProvider(this.provider.provider, config);
+          gsnProvider.addAccount(stealthKeyPair);
+          const ethersProvider = new ethers.providers.Web3Provider(gsnProvider);
+          const signer = ethersProvider.getSigner(stealthAddress);
+
+          // Create contract instance and send tx
+          const Umbra = new ethers.Contract(umbraAddress, umbraAbi, signer);
+          tx = await Umbra.withdrawToken(destination);
         }
+        this.txHash = tx.hash;
+        this.sendState = 'waitingForConfirmation';
+        await tx.wait(); // this section doesn't do anything for GSN provider
         this.sendState = 'complete';
       } catch (err) {
         this.showError(err);
