@@ -1,5 +1,78 @@
 <template>
   <div>
+    <!-- WITHDRAW DIALOG -->
+    <q-dialog v-model="showWithdrawDialog">
+      <q-card class="q-pa-md">
+        <q-card-section>
+          <div class="text-center text-h5 header-black primary">
+            Complete Withdrawal
+          </div>
+        </q-card-section>
+
+        <q-card-section>
+          Enter the ENS name or address you would like to send your
+          {{ selectedPayment.amount }} {{ selectedPayment.tokenName }} to.
+        </q-card-section>
+
+        <q-card-section>
+          <base-input
+            v-model="selectedPayment.destinationAddress"
+            :rules="isValidDestination"
+            label="Enter ENS name or address"
+            :lazy-rules="false"
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <div v-if="sendState == 'waitingForConfirmation'">
+            Your transaction is processing...
+            <div class="text-caption">
+              <a
+                :href="`https://ropsten.etherscan.io/tx/${txHash}`"
+                target="_blank"
+                class="hyperlink"
+              >View on Etherscan</a>
+            </div>
+          </div>
+          <div v-else-if="sendState === 'complete'">
+            <q-icon
+              left
+              color="positive"
+              name="fas fa-check"
+            />
+            Withdrawal complete!
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-if="sendState === 'complete'"
+            v-close-popup
+            color="primary"
+            flat
+            label="Close"
+          />
+          <q-btn
+            v-if="sendState !== 'complete'"
+            v-close-popup
+            color="primary"
+            flat
+            label="Cancel"
+          />
+          <base-button
+            v-if="sendState !== 'complete'"
+            class="q-ml-md"
+            color="primary"
+            :disabled="!okToSend"
+            :loading="sendState === 'waitingToSend' || sendState === 'waitingForConfirmation'"
+            label="Send"
+            @click="withdrawFunds"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- TABLE OF RECEIVED FUNDS -->
     <q-table
       title="Received Funds"
       :data="tableData"
@@ -77,6 +150,7 @@
               :dense="true"
               :flat="true"
               label="Withdraw"
+              @click="beginWithdrawalProcess(props)"
             />
           </div>
         </q-td>
@@ -87,9 +161,17 @@
 
 <script>
 import { mapState } from 'vuex';
+import { ethers } from 'ethers';
+import helpers from 'src/mixins/helpers';
+
+const umbra = require('umbra-js');
+
+const { KeyPair } = umbra;
 
 export default {
   name: 'ReceivedFundsTable',
+
+  mixins: [helpers],
 
   props: {
     tableData: {
@@ -101,6 +183,16 @@ export default {
 
   data() {
     return {
+      sendState: undefined,
+      txHash: undefined,
+      showWithdrawDialog: undefined,
+      stealthPrivateKey: undefined,
+      selectedPayment: {
+        amount: undefined,
+        tokenName: undefined,
+        destinationAddress: undefined,
+      },
+      //
       pagination: {
         sortBy: 'txDate',
         descending: true,
@@ -141,7 +233,77 @@ export default {
   computed: {
     ...mapState({
       privateKey: (state) => state.user.sensitive.privateKey,
+      provider: (state) => state.user.ethersProvider,
+      signer: (state) => state.user.signer,
     }),
+
+    okToSend() {
+      const identifier = this.selectedPayment.destinationAddress;
+      if (!identifier) return undefined;
+      const isAddress = ethers.utils.isAddress(identifier);
+      const isEns = identifier.endsWith('.eth');
+      return isAddress || isEns;
+    },
+  },
+
+  methods: {
+    isValidDestination() {
+      const identifier = this.selectedPayment.destinationAddress;
+      const isAddress = ethers.utils.isAddress(identifier);
+      const isEns = identifier.endsWith('.eth');
+      return isAddress || isEns || 'Please enter a valid ENS domain or address';
+    },
+
+    beginWithdrawalProcess(data) {
+      try {
+        // Get stealth private key
+        const { randomNumber } = data.row;
+        const privateKeyPair = new KeyPair(this.privateKey);
+        const stealthKeyPair = privateKeyPair.mulPrivateKey(randomNumber);
+        this.stealthPrivateKey = stealthKeyPair.privateKeyHex;
+
+        // Confirm funds can be accessed
+        if (stealthKeyPair.address !== data.row.to) {
+          throw new Error('Something went wrong. These funds may not be accessible.');
+        }
+
+        // Show withdraw dialog
+        this.selectedPayment.amount = data.row.amount;
+        this.selectedPayment.tokenName = data.row.tokenName;
+        this.sendState = undefined;
+        this.showWithdrawDialog = true;
+      } catch (err) {
+        this.showError(err);
+      }
+    },
+
+    async withdrawFunds() {
+      try {
+        // Check that address is valid
+        this.sendState = 'waitingToSend';
+        let destination = this.selectedPayment.destinationAddress;
+        if (destination.endsWith('.eth')) {
+          destination = await this.provider.resolveName(destination);
+          if (!destination) throw new Error('Invalid ENS address entered');
+        }
+
+        // Send payment
+        const wallet = new ethers.Wallet(this.stealthPrivateKey, this.provider);
+        if (this.selectedPayment.tokenName === 'ETH') {
+          const tx = await wallet.sendTransaction({
+            value: ethers.BigNumber.from(ethers.utils.parseEther('0.00001')),
+            to: destination,
+          });
+          this.txHash = tx.hash;
+          this.sendState = 'waitingForConfirmation';
+          await tx.wait();
+        }
+        this.sendState = 'complete';
+      } catch (err) {
+        this.showError(err);
+        this.sendState = undefined;
+      }
+    },
   },
 };
 </script>

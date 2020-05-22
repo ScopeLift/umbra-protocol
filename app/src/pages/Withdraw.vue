@@ -228,15 +228,17 @@ export default {
           const tokenName = this.tokenMappings[event.token] || 'Unknown';
 
           const data = {
+            amount: ethers.utils.formatEther(event.amount),
+            event,
             from,
+            randomNumber: event.randomNumber,
             to: event.receiver,
+            tokenAddress: event.token,
+            tokenName,
             txHash: event.transactionHash,
             timestamp,
             txDate: this.secondsToFormattedDate(timestamp),
             txTime: this.secondsToFormattedTime(timestamp),
-            tokenAddress: event.token,
-            tokenName,
-            amount: ethers.utils.formatEther(event.amount),
           };
           tableData.push(data);
         }

@@ -237,7 +237,7 @@ export default {
      * then send transaction
      */
     async sendFundsFlow() {
-      if (!this.hasAllowance) {
+      if (!this.hasAllowance && this.selectedToken !== 'ETH') {
         await this.getTokenApproval();
       }
       await this.sendFunds();
