@@ -145,13 +145,31 @@
       <!-- Actions -->
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <div>
+          <div v-if="!props.row.isWithdrawn">
             <base-button
               :dense="true"
               :flat="true"
               label="Withdraw"
               @click="beginWithdrawalProcess(props)"
             />
+          </div>
+          <div v-else>
+            <div class="positive">
+              <!-- TODO Update to handle mainnet URLs. Currently only handles Ropsten -->
+              <a
+                class="cursor-pointer"
+                :href="`https://ropsten.etherscan.io/address/${props.row.to}`"
+                style="text-decoration: none; color: inherit; "
+                target="_blank"
+              >
+                Withdrawn
+                <q-icon
+                  right
+                  color="positive"
+                  name="fas fa-check"
+                />
+              </a>
+            </div>
           </div>
         </q-td>
       </template>

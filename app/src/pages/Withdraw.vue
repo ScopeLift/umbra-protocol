@@ -226,6 +226,15 @@ export default {
             || `${receipt.from.slice(0, 6)}...${receipt.from.slice(38, 42)}`;
           const tokenName = this.tokenMappings[event.token] || 'Unknown';
 
+          // Check balance of account
+          let isWithdrawn;
+          if (tokenName === 'ETH') {
+            const balance = await this.provider.getBalance(event.receiver);
+            isWithdrawn = balance.eq(ethers.constants.Zero);
+          } else {
+            // TODO
+          }
+
           const data = {
             amount: ethers.utils.formatEther(event.amount),
             event,
@@ -238,6 +247,7 @@ export default {
             timestamp,
             txDate: this.secondsToFormattedDate(timestamp),
             txTime: this.secondsToFormattedTime(timestamp),
+            isWithdrawn,
           };
           tableData.push(data);
         }
