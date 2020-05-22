@@ -1,3 +1,13 @@
+# Firebase
+.firebase/*
+.firebaserc
+firebase.json
+firebase.old.json
+firestore.indexes.json
+firestore.rules
+.runtimeconfig.json
+
+# Default
 .DS_Store
 .thumbs.db
 node_modules
