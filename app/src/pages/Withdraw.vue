@@ -94,7 +94,7 @@
       v-else-if="isScanComplete && areFundsAvailable"
       class="text-center q-mt-xl"
     >
-      <received-funds-table :table-data="tableData" />
+      <received-funds-table />
     </div>
   </q-page>
 </template>
@@ -136,7 +136,6 @@ export default {
       isScanComplete: undefined,
       areFundsAvailable: undefined, // true if user has funds to withdraw
       isUmbraPrivateKeyLogin: true,
-      tableData: undefined,
       tokenMappings: {
         [addresses.ETH]: 'ETH',
         [addresses.DAI]: 'DAI',
@@ -242,7 +241,7 @@ export default {
           };
           tableData.push(data);
         }
-        this.tableData = tableData;
+        this.$store.commit('user/withdrawalData', tableData);
 
         // Scan for funds is complete
         this.isScanComplete = true;

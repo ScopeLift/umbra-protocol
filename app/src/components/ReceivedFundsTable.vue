@@ -75,7 +75,7 @@
     <!-- TABLE OF RECEIVED FUNDS -->
     <q-table
       title="Received Funds"
-      :data="tableData"
+      :data="withdrawalData"
       :columns="columns"
       :pagination.sync="pagination"
       row-key="name"
@@ -173,14 +173,6 @@ export default {
 
   mixins: [helpers],
 
-  props: {
-    tableData: {
-      type: undefined, // Object, but will be undefined before data is fetched
-      required: true,
-      default: undefined,
-    },
-  },
-
   data() {
     return {
       sendState: undefined,
@@ -235,6 +227,7 @@ export default {
       privateKey: (state) => state.user.sensitive.privateKey,
       provider: (state) => state.user.ethersProvider,
       signer: (state) => state.user.signer,
+      withdrawalData: (state) => state.user.withdrawalData,
     }),
 
     okToSend() {
@@ -290,9 +283,13 @@ export default {
         // Send payment
         const wallet = new ethers.Wallet(this.stealthPrivateKey, this.provider);
         if (this.selectedPayment.tokenName === 'ETH') {
+          const balance = await this.provider.getBalance(wallet.address);
+          // TODO un-harcode 21000 gas at 10 gwei for transfer. This is to avoid leaving dust
           const tx = await wallet.sendTransaction({
-            value: ethers.BigNumber.from(ethers.utils.parseEther('0.00001')),
+            value: balance.sub('210000000000000'),
             to: destination,
+            gasLimit: ethers.BigNumber.from('21000'),
+            gasPrice: ethers.BigNumber.from('10000000000'),
           });
           this.txHash = tx.hash;
           this.sendState = 'waitingForConfirmation';

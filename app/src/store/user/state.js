@@ -19,5 +19,6 @@ export default function () {
     send: {
       recipientPublicKey: undefined,
     },
+    withdrawalData: [],
   };
 }

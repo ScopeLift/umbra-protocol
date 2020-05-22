@@ -38,3 +38,8 @@ export function setEnsStatus(state, isEnsConfigured) {
 export function setRecipientPublicKey(state, key) {
   state.send.recipientPublicKey = key;
 }
+
+export function withdrawalData(state, data) {
+  state.withdrawalData = [];
+  state.withdrawalData = data;
+}
