@@ -1,13 +1,17 @@
-# Umbra App (umbra-app)
+# Umbra App
 
 Send and receive stealth payments with the Umbra protocol.
 
-## Setup
+## Development
 
-Current development version requires using the local umbra-js package in this repository.
+If you are using Portis to login, create files in this directory called `.env.dev` and `.env.prod`
+with the following contents:
+
+```bash
+PORTIS_KEY=yourPortisApiKey
+```
+
+Afterwards, run the app locally with the following steps:
 
 1. Install dependencies with `npm install`
-2. Navigate to the `umbra-js` folder and run `npm link`
-3. Navigate back to the `app` folder and run `npm link umbra-js`
-4. Build the app with `npm run dev`
-5.
+2. Build the app with `npm run dev`
