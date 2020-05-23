@@ -23,6 +23,16 @@
 
 Umbra is protocol for enabling stealth payments on the Ethereum blockchain. It enables privacy preserving transactions where **the receiver's identity is only known to the sender and receiver**.
 
+<div align="center">
+	<img width="400" src="readme/stealth-addrs.png" alt="Umbra Logo">
+	<br />
+	<sub><sup>
+		Image via <a href="https://hackernoon.com/blockchain-privacy-enhancing-technology-series-stealth-address-i-c8a3eb4e4e43">@IoTeX hackernoon</a>.
+	</sub></sup>
+</div>
+
+### Components
+
 This repository has three components:
 
 * [Umbra JS](umbra-js/) — A JavaScript library for building Umbra-enabled web3 apps in node.js or in the browser.
@@ -39,7 +49,7 @@ Umbra allows a payer to send funds to a fresh address. That address is controlle
 
 [Tornado Cash](https://tornado.cash/) is awesome and you should use it! It's an on chain mixer that uses zero knowledge proofs. You put funds in, wait a while for other people to do the same, then use your proof to withdrawal them somewhere else. Since everyone's funds are pooled in the mixer, the link between the origin address and withdrawal address is broken.
 
-Umbra is meant for payments between two entities, and comes with a different set of privacy tradeoffs. Rather than *breaking* the link between sending and receiving address, Umbra makes that link *meaningless*. Everyone know the address funds were sent to, but they don't know who controls that address.
+Umbra is meant for payments between two entities, and comes with a different set of privacy tradeoffs. Rather than *breaking* the link between sending and receiving address, Umbra makes that link *meaningless*. Everyone knows the address funds were sent to, but they don't know who controls that address.
 
 **What advantages does Umbra have?**
 
