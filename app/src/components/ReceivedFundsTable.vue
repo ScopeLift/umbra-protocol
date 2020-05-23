@@ -57,8 +57,6 @@
           </q-select>
         </q-card-section>
 
-        <q-card-section />
-
         <q-card-section>
           <div v-if="sendState == 'waitingForConfirmation'">
             Your transaction is processing...

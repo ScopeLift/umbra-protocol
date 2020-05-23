@@ -15,6 +15,14 @@
       </div>
     </div>
 
+    <!-- IF USER IS ON WRONG NETWORK -->
+    <div
+      v-else-if="networkName !== 'ropsten'"
+      class="text-center"
+    >
+      Please switch to the Ropsten network to continue
+    </div>
+
     <!-- IF USER IS SCANNING WITH LOCAL STORAGE KEY -->
     <div v-else-if="isUmbraPrivateKeyLogin && !isScanning && !isScanComplete">
       <div class="form text-justify">
@@ -148,6 +156,7 @@ export default {
       userAddress: (state) => state.user.userAddress,
       privateKey: (state) => state.user.sensitive.privateKey,
       provider: (state) => state.user.ethersProvider,
+      networkName: (state) => state.user.networkName,
     }),
 
     keyPair() {

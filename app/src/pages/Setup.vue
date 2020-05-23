@@ -17,7 +17,7 @@
 
     <!-- IF NOT ON THE CORRECT NETWORK -->
     <div
-      v-else-if="chainId !== '0x3'"
+      v-else-if="networkName !== 'ropsten'"
       class="text-center"
     >
       Please switch to the Ropsten network to continue
@@ -176,7 +176,7 @@ export default {
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
       isEnsConfigured: (state) => state.user.isEnsConfigured,
-      chainId: (state) => state.user.provider.chainId,
+      networkName: (state) => state.user.networkName,
       sensitive: (state) => state.user.sensitive,
     }),
 

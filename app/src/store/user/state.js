@@ -9,6 +9,7 @@ export default function () {
     userAddress: undefined,
     userEnsDomain: undefined,
     isEnsConfigured: undefined,
+    networkName: undefined,
     // Sensitive info
     sensitive: {
       password: undefined,

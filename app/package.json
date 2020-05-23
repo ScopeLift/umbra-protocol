@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@opengsn/gsn": "^0.9.0",
+    "@portis/web3": "^2.0.0-beta.55",
     "@quasar/extras": "^1.0.0",
     "browser-passworder": "^2.0.3",
     "ethers": "^5.0.0-beta.185",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@quasar/app": "^1.0.0",
+    "@quasar/quasar-app-extension-dotenv": "^1.0.1",
     "@quasar/quasar-app-extension-icon-genie": "^1.1.3",
     "babel-eslint": "^10.0.1",
     "eslint": "^6.8.0",

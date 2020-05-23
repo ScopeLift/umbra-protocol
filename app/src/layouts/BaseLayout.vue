@@ -100,14 +100,11 @@ export default {
   computed: {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
-      provider: (state) => state.user.provider,
+      networkName: (state) => state.user.networkName,
     }),
 
     isCorrectNetwork() {
-      if (!this.provider) return true; // assume valid if not connected
-      const { chainId } = this.provider;
-      if (chainId === '0x3' || chainId === '0x03' || chainId === '3' || chainId === 3) return true;
-      return false;
+      return this.networkName === 'ropsten';
     },
   },
 

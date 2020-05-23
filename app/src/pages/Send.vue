@@ -4,6 +4,7 @@
       Send
     </h3>
 
+    <!-- IF USER IS NOT LOGGED IN WITH WEB3 WALLET -->
     <div
       v-if="!userAddress"
       class="text-center"
@@ -13,6 +14,15 @@
         <connect-wallet />
       </div>
     </div>
+
+    <!-- IF USER IS ON WRONG NETWORK -->
+    <div
+      v-else-if="networkName !== 'ropsten'"
+      class="text-center"
+    >
+      Please switch to the Ropsten network to continue
+    </div>
+
     <q-form
       v-else
       ref="sendForm"
@@ -158,6 +168,7 @@ export default {
       userAddress: (state) => state.user.userAddress,
       provider: (state) => state.user.ethersProvider,
       signer: (state) => state.user.signer,
+      networkName: (state) => state.user.networkName,
       recipientPublicKey: (state) => state.user.send.recipientPublicKey,
     }),
 

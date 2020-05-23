@@ -12,6 +12,7 @@ export function setWallet(state, wallet) {
   state.ethersProvider = wallet.ethersProvider;
   state.userAddress = wallet.userAddress;
   state.userEnsDomain = wallet.userEnsDomain;
+  state.networkName = wallet.networkName;
 }
 
 export function setPrivateKey(state, key) {

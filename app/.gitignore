@@ -1,3 +1,5 @@
+.env*
+
 # Firebase
 .firebase/*
 .firebaserc
