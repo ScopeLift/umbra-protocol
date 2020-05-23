@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
-	<b>Privacy Preserving Shielded Payments On The Ethereum Blockchain.</b>
+	<b>Privacy Preserving Stealth Payments On The Ethereum Blockchain.</b>
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 ## About
 
-Umbra is protocol for enabling shielded payments on the Ethereum blockchain. It enables privacy preserving transactions where **the receiver's identity is only known to the sender**.
+Umbra is protocol for enabling stealth payments on the Ethereum blockchain. It enables privacy preserving transactions where **the receiver's identity is only known to the sender**.
 
 This repository has three components:
 
@@ -68,13 +68,13 @@ Because Umbra uses Gas Station Network and Uniswap, Bob doesn't have to fund the
 Here's a high level description of the mechanics of the Umbra protocol:
 
 1. Users publish signed messages to ENS text records to reveal their Umbra public key.
-2. A payer uses this public key, plus some randomly generated data, to create a new 'shielded' address.
+2. A payer uses this public key, plus some randomly generated data, to create a new 'stealth' address.
 3. The payer encrypts the random data with the receiver's public key.
-4. The payer sends the funds, the shielded address, and the encrypted message to Umbra's smart contract, which broadcasts the encrypted message as an Event.
+4. The payer sends the funds, the stealth address, and the encrypted message to Umbra's smart contract, which broadcasts the encrypted message as an Event.
 5. The receiver scans the encrypted messages broadcast by the Umbra contract until they find one they can decrypt with their private key.
-6. The receiver uses the contents of the encrypted message, plus their private key, to generate the private key of the shielded address.
+6. The receiver uses the contents of the encrypted message, plus their private key, to generate the private key of the stealth address.
 7. The receiver uses the stealth address to sign a withdrawal transaction, sending the ETH or tokens to the address of their choice.
-8. Optionally, the withdrawal transaction is broadcast via [Gas Station Network](https://www.opengsn.org/) transaction relayers, obviating the need to fund the shielded address to access tokens. The Umbra contracts swap some of the tokens via Uniswap to pay the GSN relayer for gas.
+8. Optionally, the withdrawal transaction is broadcast via [Gas Station Network](https://www.opengsn.org/) transaction relayers, obviating the need to fund the stealth address to access tokens. The Umbra contracts swap some of the tokens via Uniswap to pay the GSN relayer for gas.
 
 
 ## Development
