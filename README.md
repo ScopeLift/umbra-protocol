@@ -102,3 +102,5 @@ Contributions to Umbra are welcome! Fork the project, create a new branch from m
 ## License
 
 Umbra is available under the [MIT](LICENSE.txt) license.
+
+Copyright (c) 2020 Matthew Solomon and Ben DiFrancesco
