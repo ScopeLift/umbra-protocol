@@ -66,12 +66,10 @@
         <!-- Alpha warning -->
         <div
           id="alpha"
-          class="text-justify q-mt-lg"
-          style="hyphens: manual"
+          class="text-center q-mt-lg"
+          style="max-width: 600px; margin: 1rem auto"
         >
-          WARNING: This is alpha software and is only available on Ropsten. For security,
-          do NOT use this site with an account that holds real funds on the mainnet.
-          If using MetaMask, click "Create Account" to create a fresh account for this app.
+          WARNING: This is alpha software and is only available on Ropsten
         </div>
       </div>
     </q-header>
