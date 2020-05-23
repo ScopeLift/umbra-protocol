@@ -20,6 +20,7 @@
     "browser-passworder": "^2.0.3",
     "ethers": "^5.0.0-beta.185",
     "quasar": "^1.0.0",
+    "umbra-js": "0.0.1",
     "vue-async-computed": "^3.8.2"
   },
   "devDependencies": {
