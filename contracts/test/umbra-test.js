@@ -122,10 +122,35 @@ describe('Umbra', () => {
     });
   });
 
+  it('should not allow someone to send to the ETH receiver twice', async () => {
+    await expectRevert(
+      this.umbra.sendEth(receiver1, ...argumentBytes, {
+        from: payer1,
+        value: ethPayment,
+      }),
+      'Umbra: Cannot reuse a stealth address',
+    );
+  });
+
   it('should not let the eth receiver withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: receiver1 }),
       'Umbra: No tokens available for withdrawal',
+    );
+  });
+
+  it('should not allow someone to pay tokens to a previous ETH receiver', async () => {
+    const toll = await this.umbra.toll();
+
+    await expectRevert(
+      this.umbra.sendToken(
+        receiver1,
+        this.token.address,
+        tokenAmount,
+        ...argumentBytes,
+        { from: payer2, value: toll },
+      ),
+      'Umbra: Cannot reuse a stealth address',
     );
   });
 
@@ -201,6 +226,32 @@ describe('Umbra', () => {
       ct2: argumentBytes[5],
       mac: argumentBytes[6],
     });
+  });
+
+  it('should not allow someone to pay a token to a reused address', async () => {
+    const toll = await this.umbra.toll();
+    await this.token.approve(this.umbra.address, tokenAmount, { from: payer2 });
+
+    await expectRevert(
+      this.umbra.sendToken(
+        receiver2,
+        this.token.address,
+        tokenAmount,
+        ...argumentBytes,
+        { from: payer2, value: toll },
+      ),
+      'Umbra: Cannot reuse a stealth address',
+    );
+  });
+
+  it('should not allow someone to send tokens to a previous ETH receiver', async () => {
+    await expectRevert(
+      this.umbra.sendEth(receiver2, ...argumentBytes, {
+        from: payer1,
+        value: ethPayment,
+      }),
+      'Umbra: Cannot reuse a stealth address',
+    );
   });
 
   it('should not allow a non-receiver to withdraw tokens', async () => {
