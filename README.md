@@ -21,7 +21,7 @@
 
 ## About
 
-Umbra is protocol for enabling stealth payments on the Ethereum blockchain. It enables privacy preserving transactions where **the receiver's identity is only known to the sender and receiver**.
+Umbra is a protocol for enabling stealth payments on the Ethereum blockchain. It enables privacy preserving transactions where **the receiver's identity is only known to the sender and receiver**.
 
 <div align="center">
 	<img width="400" src="readme/stealth-addrs.png" alt="Umbra Logo">
