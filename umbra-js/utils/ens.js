@@ -2,6 +2,8 @@ const ethers = require('ethers');
 const ensNamehash = require('eth-ens-namehash');
 const addresses = require('../addresses.json');
 const publicResolverAbi = require('../abi/PublicResolver.json');
+const { getPublicKeyFromSignature } = require('./utils');
+const { createContract } = require('../inner/contract');
 
 const { ENS_PUBLIC_RESOLVER } = addresses;
 
@@ -13,24 +15,8 @@ const umbraMessage = 'This signature associates my public key with my ENS addres
 ethers.utils.Logger.setLogLevel('error');
 
 /**
- * @notice Creates and returns a contract instance
- * @param {String} address contract address
- * @param {*} abi contract ABI
- * @param {*} provider raw web3 provider to use (not an ethers instance)
- */
-const createContract = (address, abi, provider) => {
-  let ethersProvider = provider;
-  // Convert regular provider to ethers provider
-  if (!ethersProvider.getSigner) ethersProvider = new ethers.providers.Web3Provider(provider);
-  // Use signer if available, otherwise use provider
-  const signer = ethersProvider.getSigner();
-  return new ethers.Contract(address, abi, signer || ethersProvider);
-};
-
-/**
  * @notice Computes ENS namehash of the input ENS domain, normalized to ENS compatibility
- * * @param {*} abi contract ABI
- * * @param {String} name ENS domain, e.g. myname.eth
+ * @param {String} name ENS domain, e.g. myname.eth
  */
 function namehash(name) {
   return ensNamehash.hash(ensNamehash.normalize(name));
@@ -54,25 +40,9 @@ async function getSignature(name, provider) {
  * @param {*} provider raw web3 provider to use (not an ethers instance)
  */
 async function getPublicKey(name, provider) {
-  // Get signature
   const signature = await getSignature(name, provider);
   if (!signature) return undefined;
-  // Get digest
-  const msgHash = ethers.utils.hashMessage(umbraMessage);
-  const msgHashBytes = ethers.utils.arrayify(msgHash);
-  // Perform recovery
-  const publicKey = ethers.utils.recoverPublicKey(msgHashBytes, signature);
-  return publicKey;
-}
-
-/**
- * @notice For a given ENS domain, recovers and returns the public key from its signature
- */
-async function getPublicKeyFromSignature(signature) {
-  const msgHash = ethers.utils.hashMessage(umbraMessage);
-  const msgHashBytes = ethers.utils.arrayify(msgHash);
-  const publicKey = await ethers.utils.recoverPublicKey(msgHashBytes, signature);
-  return publicKey;
+  return await getPublicKeyFromSignature(signature);
 }
 
 /**
@@ -121,7 +91,6 @@ module.exports = {
   namehash,
   getSignature,
   getPublicKey,
-  getPublicKeyFromSignature,
   getBytecode,
   setSignature,
   setBytecode,
