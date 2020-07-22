@@ -37,6 +37,27 @@
         An ENS domain was not found for this address. If you do have an address, make
         sure the reverse record is set.
         <br>
+
+        Alternatively you can specify the domain manually:
+        <base-input
+          v-model="domainName"
+          label="Domain Name"
+        />
+
+        <base-button
+          label="Check"
+          :disabled="!isValidDomainName"
+          :full-width="true"
+          :loading="isCheckingDomain"
+          @click="checkDomain"
+        />
+        <div
+          v-if="domainCheckError"
+          class="negative text-bold q-mr-md"
+        >
+          {{ domainCheckError }}
+        </div>
+
         <span class="text-caption">
           Either login with a different address and refresh the page,
           or follow
@@ -59,12 +80,30 @@ import { mapState } from 'vuex';
 export default {
   name: 'AccountSetupEnsCheck',
 
+  data() {
+    return {
+      domainName: '',
+      isCheckingDomain: false,
+      domainCheckError: '',
+    };
+  },
+
   computed: {
     ...mapState({
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
       provider: (state) => state.user.ethersProvider,
     }),
+    isValidDomainName() { return /.+\.(crypto|eth)$/.test(this.domainName); },
+  },
+
+  methods: {
+    async checkDomain() {
+      const isOwnedDomain = await this.$store.dispatch('user/checkDomain', this.domainName);
+      if (!isOwnedDomain) {
+        this.domainCheckError = 'The specified domain is not owned by this address';
+      }
+    },
   },
 };
 </script>

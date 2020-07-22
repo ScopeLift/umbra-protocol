@@ -59,7 +59,7 @@ import helpers from 'src/mixins/helpers';
 const umbra = require('umbra-js');
 
 const { utils } = ethers;
-const { ens, KeyPair } = umbra;
+const { ens, KeyPair, utils: umbraUtils } = umbra;
 
 export default {
   name: 'AccountSetupEnsConfig',
@@ -79,6 +79,7 @@ export default {
   computed: {
     ...mapState({
       provider: (state) => state.user.provider,
+      domainService: (state) => state.user.domainService,
       signer: (state) => state.user.signer,
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
@@ -86,6 +87,14 @@ export default {
     }),
 
     isEnsConfigured() {
+      // TODO: I enabled this code for testing locally, to be able to overwrite the signature.
+      //  Probably we should even let a user do it. We'll need a warning message for it though,
+      //  because user can potentially loose their payments that haven't been withdrawn.
+
+      // if (this.privateKey) {
+      //   return this.userEnsPublicKey === new KeyPair(this.privateKey).publicKeyHex;
+      // }
+
       return !!this.userEnsPublicKey;
     },
   },
@@ -93,7 +102,7 @@ export default {
   async mounted() {
     this.isLoading = true;
     if (this.userEnsDomain) {
-      this.userEnsPublicKey = await ens.getPublicKey(this.userEnsDomain, this.provider);
+      this.userEnsPublicKey = await this.domainService.getPublicKey(this.userEnsDomain);
     }
     this.isLoading = false;
   },
@@ -123,21 +132,22 @@ export default {
         }
 
         // Recover public key from signature
-        const publicKey = await ens.getPublicKeyFromSignature(signature);
+        const publicKey = await umbraUtils.getPublicKeyFromSignature(signature);
 
         // Verify that recovered public key corresponds to user's address
         const recoveredAddress = utils.computeAddress(publicKey);
         const check1 = recoveredAddress === expectedAddress;
         const check2 = recoveredAddress === await utils.verifyMessage(ens.umbraMessage, signature);
+
         if (!check1 || !check2) {
           throw new Error('Something went wrong signing the message. Please try again');
         }
 
         // Send transaction associating public key and bytecode with ENS address
-        await ens.setSignature(this.userEnsDomain, this.provider, signature);
+        await this.domainService.setSignature(this.userEnsDomain, signature);
 
         // Get updated public key to confirm signature was updated
-        this.userEnsPublicKey = await ens.getPublicKey(this.userEnsDomain, this.provider);
+        this.userEnsPublicKey = await this.domainService.getPublicKey(this.userEnsDomain);
         if (this.userEnsPublicKey !== publicKey) {
           throw new Error('Something went wrong associating your signature with your ENS domain. Please refresh the page and try the setup process again');
         }

@@ -6,6 +6,8 @@ export default function () {
     signer: undefined,
     provider: undefined,
     ethersProvider: undefined,
+    udResolution: undefined,
+    domainService: undefined,
     userAddress: undefined,
     userEnsDomain: undefined,
     isEnsConfigured: undefined,

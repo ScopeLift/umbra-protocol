@@ -17,10 +17,11 @@
     "@opengsn/gsn": "^0.9.0",
     "@portis/web3": "^2.0.0-beta.55",
     "@quasar/extras": "^1.0.0",
+    "@unstoppabledomains/resolution": "^1.6.0-beta.0",
     "browser-passworder": "^2.0.3",
     "ethers": "^5.0.0-beta.185",
     "quasar": "^1.0.0",
-    "umbra-js": "0.0.1",
+    "umbra-js": "file:../umbra-js",
     "vue-async-computed": "^3.8.2"
   },
   "devDependencies": {

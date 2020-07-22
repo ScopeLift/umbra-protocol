@@ -10,9 +10,15 @@ export function setWallet(state, wallet) {
   state.signer = wallet.signer;
   state.provider = wallet.provider;
   state.ethersProvider = wallet.ethersProvider;
+  state.udResolution = wallet.udResolution;
+  state.domainService = wallet.domainService;
   state.userAddress = wallet.userAddress;
   state.userEnsDomain = wallet.userEnsDomain;
   state.networkName = wallet.networkName;
+}
+
+export function setUserDomain(state, domain) {
+  state.userEnsDomain = domain;
 }
 
 export function setPrivateKey(state, key) {

@@ -9,7 +9,7 @@
       v-if="!userAddress"
       class="text-center"
     >
-      Please login to withdraw funds funds
+      Please login to withdraw funds
       <div class="row justify-center">
         <connect-wallet />
       </div>

@@ -6,6 +6,15 @@
       style="min-width: 300px"
       type="password"
     />
+
+    <div v-if="domainIsNotFound">
+      If you own a domain without a reverse record set, try to specify it manually:
+      <base-input
+        v-model="domainName"
+        label="Domain Name"
+      />
+    </div>
+
     <base-button
       :label="buttonLabel"
       :disabled="!password"
@@ -23,7 +32,7 @@ import helpers from 'src/mixins/helpers';
 
 const umbra = require('umbra-js');
 
-const { ens, KeyPair } = umbra;
+const { KeyPair } = umbra;
 
 export default {
   name: 'UnlockAccount',
@@ -42,12 +51,15 @@ export default {
     return {
       isCheckingStatus: undefined,
       password: undefined,
+      domainName: undefined,
+      domainIsNotFound: false,
     };
   },
 
   computed: {
     ...mapState({
       provider: (state) => state.user.provider,
+      domainService: (state) => state.user.domainService,
       userAddress: (state) => state.user.userAddress,
       userEnsDomain: (state) => state.user.userEnsDomain,
     }),
@@ -70,12 +82,22 @@ export default {
         const keyPair = new KeyPair(data.privateKey);
         const publicKey1 = keyPair.publicKeyHex;
 
-        // Get public key from the ENS address
-        if (!this.userEnsDomain) {
+        let publicKey2;
+        if (this.domainName) {
+          publicKey2 = await this.domainService.getPublicKey(this.domainName);
+          this.$store.commit('user/setUserDomain', this.domainName);
+        } else if (!this.userEnsDomain) { // Get public key from the ENS address
+          this.domainIsNotFound = true;
           throw new Error('No ENS Account configured for the connected web3 account.');
+        } else {
+          publicKey2 = await this.domainService.getPublicKey(this.userEnsDomain);
         }
-        const publicKey2 = await ens.getPublicKey(this.userEnsDomain, this.provider);
         this.isCheckingStatus = false;
+
+        if (!publicKey2) {
+          throw new Error("The associated ENS address isn't set up for stealth payments.");
+        }
+        this.domainIsNotFound = false;
 
         // Compare public keys
         if (publicKey1 !== publicKey2) {

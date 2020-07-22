@@ -46,7 +46,7 @@ const ethers = require('ethers');
 const umbra = require('umbra-js');
 
 const { isHexString } = ethers.utils;
-const { ens, utils } = umbra;
+const { utils } = umbra;
 
 export default {
   name: 'LookupRecipient',
@@ -63,6 +63,7 @@ export default {
   computed: {
     ...mapState({
       provider: (state) => state.user.provider,
+      domainService: (state) => state.user.domainService,
     }),
   },
 
@@ -138,7 +139,7 @@ export default {
       }
 
       // Check if this is a valid ENS domain
-      const publicKey = await ens.getPublicKey(val, this.provider);
+      const publicKey = await this.domainService.getPublicKey(val);
       if (publicKey) {
         this.updateRecipientPublicKey(publicKey);
         this.identifierType = 'ens';
