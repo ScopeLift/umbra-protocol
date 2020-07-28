@@ -4,6 +4,7 @@ const DomainService = require('./classes/DomainService');
 const ens = require('./utils/ens');
 const cns = require('./utils/ens');
 const utils = require('./utils/utils');
+const constants = require('constants.json');
 
 module.exports = {
   KeyPair,
@@ -12,4 +13,5 @@ module.exports = {
   ens,
   cns,
   utils,
+  constants,
 };

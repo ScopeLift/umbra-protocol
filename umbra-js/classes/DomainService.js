@@ -1,8 +1,6 @@
 const cns = require('../utils/cns');
 const ens = require('../utils/ens');
 
-const addresses = require('../addresses.json');
-
 class DomainService {
   /**
    * @param {*} provider raw web3 provider to use (not an ethers instance)

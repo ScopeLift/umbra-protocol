@@ -1,13 +1,11 @@
 const ethers = require('ethers');
-const web3 = require('web3');
-const addresses = require('../addresses.json');
+const constants = require('../constants.json');
 const cnsRegistryAbi = require('../abi/CnsRegistry.json');
 const cnsResolverAbi = require('../abi/CnsResolver.json');
 const { createContract } = require('../inner/contract');
 const { getPublicKeyFromSignature } = require('./utils');
-const umbraMessage = 'This signature associates my public key with my CNS address for use with Umbra.';
 
-const { CNS_REGISTRY } = addresses;
+const { CNS_REGISTRY } = constants;
 
 const umbraKeySignature = 'crypto.ETH.signature-v0';
 

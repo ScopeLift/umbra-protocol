@@ -1,15 +1,14 @@
 const ethers = require('ethers');
 const ensNamehash = require('eth-ens-namehash');
-const addresses = require('../addresses.json');
+const constants = require('../constants.json');
 const publicResolverAbi = require('../abi/PublicResolver.json');
 const { getPublicKeyFromSignature } = require('./utils');
 const { createContract } = require('../inner/contract');
 
-const { ENS_PUBLIC_RESOLVER } = addresses;
+const { ENS_PUBLIC_RESOLVER } = constants;
 
 const umbraKeySignature = 'vnd.umbra-v0-signature';
 const umbraKeyBytecode = 'vnd.umbra-v0-bytecode';
-const umbraMessage = 'This signature associates my public key with my ENS address for use with Umbra.';
 
 // Turn of ethers warnings since it warns about overloaded functions in PublicResolver ABI
 ethers.utils.Logger.setLogLevel('error');
@@ -97,5 +96,4 @@ module.exports = {
   // Constants
   umbraKeySignature,
   umbraKeyBytecode,
-  umbraMessage,
 };
