@@ -27,11 +27,6 @@ describe('ENS functions', () => {
     expect(publicKey).to.equal(namePublicKey);
   });
 
-  it('recovers the public key from a signature', async () => {
-    const publicKey = await ens.getPublicKeyFromSignature(nameSignature);
-    expect(publicKey).to.equal(namePublicKey);
-  });
-
   it('gets the bytecode associated with an ENS address', async () => {
     const bytecode = await ens.getBytecode(name, provider);
     expect(bytecode).to.equal(nameBytecode);
