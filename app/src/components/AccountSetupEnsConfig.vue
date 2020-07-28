@@ -59,7 +59,7 @@ import helpers from 'src/mixins/helpers';
 const umbra = require('umbra-js');
 
 const { utils } = ethers;
-const { ens, KeyPair } = umbra;
+const { constants, ens, KeyPair } = umbra;
 
 export default {
   name: 'AccountSetupEnsConfig',
@@ -112,13 +112,13 @@ export default {
         if (!this.privateKey) {
           // User is not using an Umbra-specific key, so prompt them to sign message
           console.log("Using user's web3 wallet"); // eslint-disable-line no-console
-          signature = await this.signer.signMessage(ens.umbraMessage);
+          signature = await this.signer.signMessage(constants.UMBRA_MESSAGE);
           expectedAddress = this.userAddress;
         } else {
           // User is using an Umbra-specific key, so signing is automated
           console.log('Using Umbra-specific key'); // eslint-disable-line no-console
           const signer = new ethers.Wallet(this.privateKey);
-          signature = await signer.signMessage(ens.umbraMessage);
+          signature = await signer.signMessage(constants.UMBRA_MESSAGE);
           expectedAddress = (new KeyPair(this.privateKey)).address;
         }
 
@@ -128,7 +128,10 @@ export default {
         // Verify that recovered public key corresponds to user's address
         const recoveredAddress = utils.computeAddress(publicKey);
         const check1 = recoveredAddress === expectedAddress;
-        const check2 = recoveredAddress === await utils.verifyMessage(ens.umbraMessage, signature);
+        const check2 = recoveredAddress === await utils.verifyMessage(
+          constants.UMBRA_MESSAGE,
+          signature,
+        );
         if (!check1 || !check2) {
           throw new Error('Something went wrong signing the message. Please try again');
         }

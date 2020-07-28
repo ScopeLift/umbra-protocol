@@ -1,6 +1,7 @@
 const ethers = require('ethers');
 
 const { utils } = ethers;
+const constants = require('../constants.json');
 
 /**
  * @notice Adds leading zeroes to ensure hex strings are the expected length.
@@ -71,15 +72,11 @@ module.exports.recoverPublicKeyFromTransaction = async (txHash, provider) => {
   return publicKey;
 };
 
-// TODO: copy-pasted from ens/cns to avoid circular references and assuming they have equal message.
-//  Don't have a better idea what to do with it atm.
-const umbraMessage = 'This signature associates my public key with my ENS address for use with Umbra.';
-
 /**
  * @notice Returns the public key recovered from the signature
  */
 module.exports.getPublicKeyFromSignature = async (signature) => {
-  const msgHash = ethers.utils.hashMessage(umbraMessage);
+  const msgHash = ethers.utils.hashMessage(constants.UMBRA_MESSAGE);
   const msgHashBytes = ethers.utils.arrayify(msgHash);
   const publicKey = await ethers.utils.recoverPublicKey(msgHashBytes, signature);
   return publicKey;

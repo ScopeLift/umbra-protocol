@@ -3,8 +3,8 @@ const { Resolution, Eip1993Factories } = require('@unstoppabledomains/resolution
 const chai = require('chai');
 const cns = require('../utils/cns');
 
-const addresses = require('../addresses.json');
-const { CNS_REGISTRY } = addresses;
+const constants = require('../constants.json');
+const { CNS_REGISTRY } = constants;
 
 const { expect } = chai;
 
