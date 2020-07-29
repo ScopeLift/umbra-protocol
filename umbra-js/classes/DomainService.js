@@ -19,7 +19,7 @@ class DomainService {
     if (isEnsDomain(name)) {
       return ens.namehash(name);
     } else {
-      return cns.namehash(name);
+      return cns.namehash(name, this.udResolution);
     }
   }
 
