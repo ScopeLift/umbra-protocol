@@ -11,8 +11,13 @@ contract UmbraPaymaster is BasePaymaster {
     umbraAddr = _umbraAddr;
   }
 
+  function versionPaymaster() external override view returns (string memory) {
+    return "1.0.0";
+  }
+
   function acceptRelayedCall(
     GSNTypes.RelayRequest calldata relayRequest,
+    bytes calldata, // signature
     bytes calldata approvalData,
     uint256 maxPossibleGas
   ) external override view returns (bytes memory context) {
@@ -23,12 +28,12 @@ contract UmbraPaymaster is BasePaymaster {
     return abi.encode(0x0);
   }
 
-  function preRelayedCall(bytes calldata context) external override relayHubOnly returns (bytes32) {
+  function preRelayedCall(bytes calldata /* context */) external override relayHubOnly returns (bytes32) {
     return bytes32(0);
   }
 
   function postRelayedCall(
-    bytes calldata context,
+    bytes calldata, // context
     bool success,
     bytes32 preRetVal,
     uint256 gasUse,
