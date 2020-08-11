@@ -9,14 +9,14 @@ On chain components of the [Umbra protocol](../README.md).
 Contract development uses the OpenZeppelin tools and test framework. All are installed and exercised via `npm`. Development has been tested with:
 
 * node.js v12.16.1 or later
-* npm 6.13.4 or later
+* yarn 1.22.0 or later
 
 ### Usage
 
-From the current working directory, run `npm install`. Afterwards run:
+From the current working directory, run `yarn install`. Afterwards run:
 
-* `npm run compile` — To compile all contracts
-* `npm run test` — To run all tests
+* `yarn compile` — To compile all contracts
+* `yarn test` — To run all tests
 
 To deploy to Ropsten, you'll need to create a `.env` file with the following:
 
