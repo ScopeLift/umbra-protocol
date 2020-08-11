@@ -9,7 +9,7 @@
     "gas-optimized": "npx oz compile --optimizer on --optimizer-runs 1 && mocha --exit --timeout 0 test/gastests.js"
   },
   "dependencies": {
-    "@opengsn/gsn": "^0.9.0",
+    "@opengsn/gsn": "^0.10.0",
     "@openzeppelin/contracts-ethereum-package": "^3.0.0",
     "@truffle/debug-utils": "^4.1.1",
     "dotenv": "^8.2.0",

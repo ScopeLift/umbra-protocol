@@ -5,10 +5,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
+import "@opengsn/gsn/contracts/interfaces/IKnowForwarderAddress.sol";
 import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 
 
-contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
+contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, OwnableUpgradeSafe {
   using SafeMath for uint256;
 
   struct TokenPayment {
@@ -71,6 +72,14 @@ contract Umbra is BaseRelayRecipient, OwnableUpgradeSafe {
 
   function setForwarder(address _forwarder) public onlyOwner {
     trustedForwarder = _forwarder;
+  }
+
+  function getTrustedForwarder() external override view returns(address) {
+    return trustedForwarder;
+  }
+
+  function versionRecipient() external override view returns (string memory) {
+    return "1.0.0";
   }
 
   function sendEth(
