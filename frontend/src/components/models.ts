@@ -1,8 +1,6 @@
-export interface Todo {
-  id: number;
-  content: string;
-}
+import { ethers } from 'ethers';
 
-export interface Meta {
-  totalCount: number;
-}
+export type Signer = ethers.providers.JsonRpcSigner;
+export type Provider = ethers.providers.Web3Provider;
+export type BigNumber = ethers.BigNumber;
+export type TransactionResponse = ethers.providers.TransactionResponse;
