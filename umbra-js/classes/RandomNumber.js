@@ -1,40 +1,53 @@
 /**
- * @notice Class for managing random numbers
+ * @notice Class for managing random numbers. In Umbra, a random number is 32 bytes, where
+ * the first 16 bytes are zeros (optionally used by developers as payload extensions), and the
+ * last 16 bytes are the random number
  */
 const ethers = require('ethers');
 const { padHex } = require('../utils/utils');
-
-const { utils } = ethers;
+const { BigNumber, utils } = ethers;
+const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
 class RandomNumber {
   /**
    * @notice Generate a new random number
-   * @param {Number} length Number of bytes random number should have
+   * @param {String} payloadExtension 16 byte payload extension, with 0x prefix. Specify as a
+   * 34 character hex string where the first two characters are 0x
    */
-  constructor(length = 32) {
-    this.length = length;
-    this.value = utils.shuffled(utils.randomBytes(length));
-  }
+  constructor(payloadExtension = zeroPrefix) {
+    // Generate default random number without payload extension
+    this.randomLength = 16; // 16 byte random number
+    this.fullLength = 32; // Pad random number to 32 bytes
+    const randomNumberAsBytes = utils.shuffled(utils.randomBytes(this.randomLength));
+    const randomNumberAsBigNumber = BigNumber.from(randomNumberAsBytes);
+    this.value = randomNumberAsBigNumber;
 
-  /**
-   * @notice Get random number as a BigNumber
-   */
-  get asBN() {
-    return ethers.BigNumber.from(this.value);
+    // If a payload extension was provided, validate it
+    if (payloadExtension !== zeroPrefix) {
+      if (!utils.isHexString(payloadExtension))
+        throw new Error('Payload extension is not a valid hex string');
+      if (payloadExtension.length !== 34)
+        throw new Error('Payload extension must be a 16 byte hex string with the 0x prefix');
+    }
+
+    // Payload extension is valid, so update the random number. If no payload extension is provided
+    // the below is equivalent doing nothing, as it replaces the zero prefix with the zero prefix
+    const randomNumberAsHexWithPayloadExt = this.asHex.replace(zeroPrefix, payloadExtension);
+    this.value = BigNumber.from(randomNumberAsHexWithPayloadExt);
   }
 
   /**
    * @notice Get random number as hex string
    */
   get asHex() {
-    return `0x${padHex(this.asBN.toHexString().slice(2), this.length)}`;
+    return `0x${padHex(this.value.toHexString().slice(2), this.fullLength)}`;
   }
 
   /**
    * @notice Get random number as hex string without 0x prefix
    */
   get asHexSlim() {
-    return padHex(this.asHex.slice(2), this.length);
+    return padHex(this.asHex.slice(2), this.fullLength);
   }
 }
 
