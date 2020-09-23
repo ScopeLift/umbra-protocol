@@ -11,7 +11,8 @@ const { expect } = chai;
 
 // Address, public key, and private key from first deterministic ganache account
 const address = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1';
-const publicKey = '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
+const publicKey =
+  '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
 const privateKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d';
 
 describe('KeyPair class', () => {
@@ -65,17 +66,20 @@ describe('KeyPair class', () => {
   it('will recover the public key from an arbitrary transaction', async () => {
     // Specify ropsten transaction hash and its sender
     const txHash = '0x285899397217daba600899add0953eb621605497fcd4979afea9409f81d8b7fa';
-    const sendersPublicKey = '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
+    const sendersPublicKey =
+      '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
     // Create instance and check result
     const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, provider);
     expect(recoveredPublicKey).to.equal(sendersPublicKey);
   });
 
   it('should not initialize an instance without the 0x prefix', () => {
-    expect(() => new KeyPair(privateKey.slice(2)))
-      .to.throw('Key must be in hex format with 0x prefix');
-    expect(() => new KeyPair(wallet.publicKey.slice(4)))
-      .to.throw('Key must be in hex format with 0x prefix');
+    expect(() => new KeyPair(privateKey.slice(2))).to.throw(
+      'Key must be in hex format with 0x prefix'
+    );
+    expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(
+      'Key must be in hex format with 0x prefix'
+    );
   });
 
   it('properly derives public key parameters with both key-based constructor methods', () => {
@@ -143,7 +147,7 @@ describe('KeyPair class', () => {
       const stealthFromStringPrivate2 = randomFromPrivate.mulPublicKey(randomNumber.asHex);
       expect(stealthFromClassPrivate2.address).to.equal(stealthFromStringPrivate2.address);
     }
-  })
+  });
 
   it('works for any randomly generated number and wallet', () => {
     /* eslint-disable no-console */
@@ -163,8 +167,8 @@ describe('KeyPair class', () => {
       const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
       // Confirm outputs match
       if (
-        stealthFromPrivate.address !== stealthFromPublic.address
-      || stealthFromPrivate.publicKeyHex !== stealthFromPublic.publicKeyHex
+        stealthFromPrivate.address !== stealthFromPublic.address ||
+        stealthFromPrivate.publicKeyHex !== stealthFromPublic.publicKeyHex
       ) {
         numFailures += 1;
         console.log();

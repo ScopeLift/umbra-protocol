@@ -20,7 +20,7 @@ const constants = require('../constants.json');
  */
 module.exports.padHex = (hex, bytes = 32) => {
   if (!utils.isHexString) throw new Error('Input is not a valid hex string');
-  if (hex.slice(0, 2) === '0x') { throw new Error('Input must not contain 0x prefix'); }
+  if (hex.slice(0, 2) === '0x') throw new Error('Input must not contain 0x prefix');
   return hex.padStart(bytes * 2, 0);
 };
 
@@ -31,12 +31,12 @@ module.exports.padHex = (hex, bytes = 32) => {
 module.exports.hexStringToBuffer = (data) => Buffer.from(utils.arrayify(data));
 
 /**
-  * @notice Given a transaction hash, return the public key of the transaction's sender
-  * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
-  * recovering public key from a transaction with ethers
-  * @param {String} txHash Transaction hash to recover public key from
-  * @param {*} provider raw web3 provider to use (not an ethers instance)
-  */
+ * @notice Given a transaction hash, return the public key of the transaction's sender
+ * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
+ * recovering public key from a transaction with ethers
+ * @param {String} txHash Transaction hash to recover public key from
+ * @param {*} provider raw web3 provider to use (not an ethers instance)
+ */
 module.exports.recoverPublicKeyFromTransaction = async (txHash, provider) => {
   // Get transaction data
   const ethersProvider = new ethers.providers.Web3Provider(provider);
@@ -80,4 +80,4 @@ module.exports.getPublicKeyFromSignature = async (signature) => {
   const msgHashBytes = ethers.utils.arrayify(msgHash);
   const publicKey = await ethers.utils.recoverPublicKey(msgHashBytes, signature);
   return publicKey;
-}
+};

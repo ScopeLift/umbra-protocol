@@ -19,8 +19,10 @@ const resolution = new Resolution({
 
 // Truth parameters to test against
 const name = 'mvlabat.crypto';
-const nameSignature = '0x053a0fc756e799d2301347e123a440c1cb2830ed5e4ba9a8408f7eb0750933b763d1958b722ecb10dd4f63002397bbf037f6eef5fe9814ddfffc3d704c6a1cd41b';
-const namePublicKey = '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e';
+const nameSignature =
+  '0x053a0fc756e799d2301347e123a440c1cb2830ed5e4ba9a8408f7eb0750933b763d1958b722ecb10dd4f63002397bbf037f6eef5fe9814ddfffc3d704c6a1cd41b';
+const namePublicKey =
+  '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e';
 
 describe('СNS functions', () => {
   it('computes the namehash of a CNS domain', () => {

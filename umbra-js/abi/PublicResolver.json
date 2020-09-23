@@ -1,8 +1,6 @@
 [
   {
-    "inputs": [
-      { "internalType": "contract ENS", "name": "_ens", "type": "address" }
-    ],
+    "inputs": [{ "internalType": "contract ENS", "name": "_ens", "type": "address" }],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -300,13 +298,9 @@
   },
   {
     "constant": true,
-    "inputs": [
-      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
-    ],
+    "inputs": [{ "internalType": "bytes32", "name": "node", "type": "bytes32" }],
     "name": "addr",
-    "outputs": [
-      { "internalType": "address payable", "name": "", "type": "address" }
-    ],
+    "outputs": [{ "internalType": "address payable", "name": "", "type": "address" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
@@ -338,9 +332,7 @@
   },
   {
     "constant": false,
-    "inputs": [
-      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
-    ],
+    "inputs": [{ "internalType": "bytes32", "name": "node", "type": "bytes32" }],
     "name": "clearDNSZone",
     "outputs": [],
     "payable": false,
@@ -349,9 +341,7 @@
   },
   {
     "constant": true,
-    "inputs": [
-      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
-    ],
+    "inputs": [{ "internalType": "bytes32", "name": "node", "type": "bytes32" }],
     "name": "contenthash",
     "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
     "payable": false,
@@ -397,22 +387,16 @@
   },
   {
     "constant": false,
-    "inputs": [
-      { "internalType": "bytes[]", "name": "data", "type": "bytes[]" }
-    ],
+    "inputs": [{ "internalType": "bytes[]", "name": "data", "type": "bytes[]" }],
     "name": "multicall",
-    "outputs": [
-      { "internalType": "bytes[]", "name": "results", "type": "bytes[]" }
-    ],
+    "outputs": [{ "internalType": "bytes[]", "name": "results", "type": "bytes[]" }],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "constant": true,
-    "inputs": [
-      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
-    ],
+    "inputs": [{ "internalType": "bytes32", "name": "node", "type": "bytes32" }],
     "name": "name",
     "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
     "payable": false,
@@ -421,9 +405,7 @@
   },
   {
     "constant": true,
-    "inputs": [
-      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
-    ],
+    "inputs": [{ "internalType": "bytes32", "name": "node", "type": "bytes32" }],
     "name": "pubkey",
     "outputs": [
       { "internalType": "bytes32", "name": "x", "type": "bytes32" },
@@ -561,9 +543,7 @@
   },
   {
     "constant": true,
-    "inputs": [
-      { "internalType": "bytes4", "name": "interfaceID", "type": "bytes4" }
-    ],
+    "inputs": [{ "internalType": "bytes4", "name": "interfaceID", "type": "bytes4" }],
     "name": "supportsInterface",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "payable": false,

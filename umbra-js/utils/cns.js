@@ -25,15 +25,14 @@ function namehash(name, resolution) {
  * @param {*} resolution Resolution instance of @unstoppabledomains/resolution
  */
 async function getSignature(name, resolution) {
-  return await resolution
-    .record(name, umbraKeySignature)
-    .catch((err) => {
-      const recordIsMissing = err.message && err.message.startsWith(`No ${umbraKeySignature} record found`);
-      if (recordIsMissing) {
-        return undefined;
-      }
-      throw err;
-    });
+  return await resolution.record(name, umbraKeySignature).catch((err) => {
+    const recordIsMissing =
+      err.message && err.message.startsWith(`No ${umbraKeySignature} record found`);
+    if (recordIsMissing) {
+      return undefined;
+    }
+    throw err;
+  });
 }
 
 /**
@@ -59,7 +58,9 @@ async function setSignature(name, provider, resolution, signature) {
   // TODO: we can git of resolution parameter here, if we don't use its namehash function
   const domainNamehash = resolution.namehash(name);
   const cnsRegistry = createContract(CNS_REGISTRY, cnsRegistryAbi, provider);
-  const resolverAddress = await cnsRegistry.resolverOf(ethers.BigNumber.from(domainNamehash).toString());
+  const resolverAddress = await cnsRegistry.resolverOf(
+    ethers.BigNumber.from(domainNamehash).toString()
+  );
   const cnsResolver = createContract(resolverAddress, cnsResolverAbi, provider);
   const tx = await cnsResolver.set(umbraKeySignature, signature, domainNamehash);
   await tx.wait();
