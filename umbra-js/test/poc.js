@@ -45,13 +45,11 @@ function recoverPublicKey(message, signature) {
   }
   console.log('Step 1: Public key successfully recovered from recipient signature');
 
-
   // Step 2 ========================================================================================
   // Publish recipient's public key as ENS record
 
   // TODO: Not applicable for POC
   console.log('Step 2: N/A');
-
 
   // Step 3 ========================================================================================
   // Sender generates random number
@@ -60,7 +58,6 @@ function recoverPublicKey(message, signature) {
   const randomNumber = new RandomNumber();
   console.log('Step 3: 32-byte random number successfully generated');
 
-
   // Step 4 ========================================================================================
   // Sender securely sends random number to recipient
 
@@ -68,7 +65,6 @@ function recoverPublicKey(message, signature) {
   // sending funds to that address
   // TODO: Not applicable for POC
   console.log('Step 4: N/A');
-
 
   // Step 5 ========================================================================================
   // Sender computes receiving address and send funds
@@ -90,8 +86,8 @@ function recoverPublicKey(message, signature) {
   // recipient's private key, has the same public key as the receiverPublicKey instance
   // generated from the public key published by the sender
   if (
-    receiverPublicKey.publicKeyHexCoords.x !== receiverPrivateKey.publicKeyHexCoords.x
-    || receiverPublicKey.publicKeyHexCoords.y !== receiverPrivateKey.publicKeyHexCoords.y
+    receiverPublicKey.publicKeyHexCoords.x !== receiverPrivateKey.publicKeyHexCoords.x ||
+    receiverPublicKey.publicKeyHexCoords.y !== receiverPrivateKey.publicKeyHexCoords.y
   ) {
     console.log('X Components:');
     console.log(receiverPublicKey.publicKeyHexCoords.x);

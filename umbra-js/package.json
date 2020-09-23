@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/*.test.js --exit --timeout 0",
-    "lint": "eslint --ext .js ."
+    "lint": "eslint --ext .js .",
+    "prettier": "npx prettier --write ."
   },
   "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",
   "license": "ISC",
@@ -23,10 +24,11 @@
     "@openzeppelin/test-environment": "^0.1.4",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.20.2",
-    "mocha": "^7.1.2"
+    "mocha": "^7.1.2",
+    "prettier": "^2.1.2"
   },
   "keywords": [
     "ethereum",

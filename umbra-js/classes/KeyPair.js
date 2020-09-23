@@ -6,15 +6,10 @@ const eccrypto = require('eccrypto');
 // const { Buffer } = require('buffer/'); // TODO make sure this works in browser and node
 const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
-const {
-  hexStringToBuffer,
-  padHex,
-  recoverPublicKeyFromTransaction,
-} = require('../utils/utils');
+const { hexStringToBuffer, padHex, recoverPublicKeyFromTransaction } = require('../utils/utils');
 
 const ec = new EC('secp256k1');
 const { utils } = ethers;
-
 
 class KeyPair {
   /**
@@ -49,7 +44,9 @@ class KeyPair {
       // Save off public key as hex, other forms computed as getters
       this.publicKeyHex = key;
     } else {
-      throw new Error('Key must be a 66 character private key, a 132 character public key, or a transaction hash with isTxHash set to true');
+      throw new Error(
+        'Key must be a 66 character private key, a 132 character public key, or a transaction hash with isTxHash set to true'
+      );
     }
   }
 
