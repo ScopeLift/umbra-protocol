@@ -4,9 +4,7 @@ JavaScipt library for interacting with the Umbra Protocol
 
 ## Usage
 
-Install the package with `npm install umbra-js`. The example shown below
-uses [ethers v5](https://docs-beta.ethers.io/), which is in beta and can be
-installed with `npm install ethers@next`.
+Install the package with `npm install umbra-js` or `yarn add umbra-js`.
 
 ```javascript
 const ethers = require('ethers')
@@ -68,8 +66,8 @@ const recipientFromTxHash = await KeyPair.instanceFromTransaction(txHash, provid
     INFURA_ID=yourInfuraId
     TEST_ADDRESS=0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD
     ```
-2. Run `npm install`
-3. Run `npm test` to run all tests.
+2. Run `yarn` to install packages
+3. Run `yarn test` to run all tests.
 4. Optionally, run `node test/poc.js` to run the proof-of-concept file. If successful, you should see logs similar to the ones below in your console. Note that the two checks under step 6 are the most important, and both should be `true` if the script ran successfully
 
 ```text
