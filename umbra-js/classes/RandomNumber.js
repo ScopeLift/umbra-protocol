@@ -4,8 +4,8 @@
  * last 16 bytes are the random number
  */
 const ethers = require('ethers');
-const { padHex } = require('../utils/utils');
 const { BigNumber, utils } = ethers;
+const { hexZeroPad } = utils;
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
 class RandomNumber {
@@ -40,14 +40,14 @@ class RandomNumber {
    * @notice Get random number as hex string
    */
   get asHex() {
-    return `0x${padHex(this.value.toHexString().slice(2), this.fullLength)}`;
+    return hexZeroPad(this.value.toHexString(), this.fullLength);
   }
 
   /**
    * @notice Get random number as hex string without 0x prefix
    */
   get asHexSlim() {
-    return padHex(this.asHex.slice(2), this.fullLength);
+    return hexZeroPad(this.asHex, this.fullLength).slice(2);
   }
 }
 

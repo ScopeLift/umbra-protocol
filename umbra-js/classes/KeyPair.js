@@ -2,18 +2,13 @@
  * @notice Class for managing keys on secp256k1 curve
  */
 const EC = require('elliptic').ec;
-// const { Buffer } = require('buffer/'); // TODO make sure this works in browser and node
 const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
-const { hexStringToBuffer, padHex, recoverPublicKeyFromTransaction } = require('../utils/utils');
+const { padHex, recoverPublicKeyFromTransaction } = require('../utils/utils');
 
 const ec = new EC('secp256k1');
 const { utils, BigNumber } = ethers;
 const { hexZeroPad } = utils;
-
-function hexZeroPad32(value) {
-  return hexZeroPad(value, 32);
-}
 
 class KeyPair {
   /**
@@ -133,7 +128,7 @@ class KeyPair {
     const result = {
       // Both outputs are hex strings
       ephemeralPublicKey: ephemeralWallet.publicKey,
-      ciphertext: hexZeroPad32(ciphertext.toHexString()),
+      ciphertext: hexZeroPad(ciphertext.toHexString(), 32),
     };
     return result;
   }
@@ -152,7 +147,7 @@ class KeyPair {
 
     // Decrypt
     const plaintext = BigNumber.from(ciphertext).xor(sharedSecret);
-    return hexZeroPad32(plaintext.toHexString());
+    return hexZeroPad(plaintext.toHexString(), 32);
   }
 
   // ELLIPTIC CURVE MATH ===========================================================================
