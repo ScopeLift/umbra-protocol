@@ -10,7 +10,6 @@ import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
 import "@opengsn/gsn/contracts/interfaces/IKnowForwarderAddress.sol";
 import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 
-
 contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, OwnableUpgradeSafe {
   using SafeMath for uint256;
 

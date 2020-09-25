@@ -6,8 +6,8 @@ const Umbra = contract.fromArtifact('Umbra');
 const UmbraPaymaster = contract.fromArtifact('UmbraPaymaster');
 const TestToken = contract.fromArtifact('TestToken');
 
-const { RelayProvider } = require('@opengsn/gsn/dist/src/relayclient/');
-const gsnTestEnv = require('@opengsn/gsn/dist/GsnTestEnvironment').default;
+const { RelayProvider } = require('@opengsn/gsn/dist/src/relayclient/RelayProvider');
+const { GsnTestEnvironment } = require('@opengsn/gsn/dist/GsnTestEnvironment');
 const { configureGSN } = require('@opengsn/gsn/dist/src/relayclient/GSNConfigurator');
 
 const { argumentBytes } = require('./sample-data');
@@ -42,7 +42,7 @@ describe('Umbra GSN', () => {
     // Start the GSN Test environment— this includes deployment of a relay hub, a forwarder, and
     // a stake manager, as well as starting a relay server. It also deploys a naive Paymaster, but we
     // will use our own
-    const gsnInstance = await gsnTestEnv.startGsn(Umbra.web3.currentProvider.wrappedProvider.host);
+    const gsnInstance = await GsnTestEnvironment.startGsn(Umbra.web3.currentProvider.wrappedProvider.host);
 
     // Save the forwader, as we'll need it when sending contract calls via our RelayProvider
     this.forwarder = gsnInstance.deploymentResult.forwarderAddress;
