@@ -95,38 +95,44 @@ describe('KeyPair class', () => {
   });
 
   it('supports encryption and decryption of the random number', async () => {
-    for (let i = 0; i < 20; i += 1) {
+    const numRuns = 1000;
+    for (let i = 0; i < numRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
       // Do a bunch of tests with random wallets and numbers
       wallet = ethers.Wallet.createRandom();
       // Encrypt payload
-      const number = new RandomNumber();
-      const payload = `umbra-protocol-v0${number.asHex}`;
+      const randomNumber = new RandomNumber();
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
-      const output = await keyPairFromPublic.encrypt(number); // eslint-disable-line no-await-in-loop
+      const output = await keyPairFromPublic.encrypt(randomNumber); // eslint-disable-line no-await-in-loop
       // Decrypt payload
       const keyPairFromPrivate = new KeyPair(wallet.privateKey);
       const plaintext = await keyPairFromPrivate.decrypt(output); // eslint-disable-line no-await-in-loop
-      expect(plaintext).to.equal(payload);
+      expect(plaintext).to.equal(randomNumber.asHex);
     }
   });
 
   it('lets sender generate stealth receiving address that recipient can access', () => {
-    // Generate random number
-    const randomNumber = new RandomNumber();
-    // Sender computes receiving address from random number and recipient's public key
-    const recipientFromPublic = new KeyPair(wallet.publicKey);
-    const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
-    // Recipient computes new private key from random number and derives receiving address
-    const recipientFromPrivate = new KeyPair(wallet.privateKey);
-    const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
-    // Confirm outputs match
-    expect(stealthFromPrivate.address).to.equal(stealthFromPublic.address);
-    expect(stealthFromPrivate.publicKeyHex).to.equal(stealthFromPublic.publicKeyHex);
+    const numRuns = 1000;
+    for (let i = 0; i < numRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
+      // Generate random number
+      const randomNumber = new RandomNumber();
+      // Sender computes receiving address from random number and recipient's public key
+      const recipientFromPublic = new KeyPair(wallet.publicKey);
+      const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
+      // Recipient computes new private key from random number and derives receiving address
+      const recipientFromPrivate = new KeyPair(wallet.privateKey);
+      const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
+      // Confirm outputs match
+      expect(stealthFromPrivate.address).to.equal(stealthFromPublic.address);
+      expect(stealthFromPrivate.publicKeyHex).to.equal(stealthFromPublic.publicKeyHex);
+    }
   });
 
   it('lets multiplication be performed with RandomNumber class or hex string', () => {
-    const numRuns = 100;
+    const numRuns = 1000;
     for (let i = 0; i < numRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
       // Generate random number and wallet
       const randomNumber = new RandomNumber();
       const randomWallet = ethers.Wallet.createRandom();
@@ -150,10 +156,8 @@ describe('KeyPair class', () => {
   });
 
   it('works for any randomly generated number and wallet', () => {
-    /* eslint-disable no-console */
     let numFailures = 0;
     const numRuns = 1000;
-    console.log(`Testing ${numRuns} random numbers and wallets to ensure all pass...`);
     for (let i = 0; i < numRuns; i += 1) {
       if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
       // Generate random number and wallet
@@ -186,6 +190,5 @@ describe('KeyPair class', () => {
       }
     }
     expect(numFailures).to.equal(0);
-    /* eslint-disable no-console */
   });
 });

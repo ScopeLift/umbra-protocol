@@ -2,14 +2,18 @@
  * @notice Class for managing keys on secp256k1 curve
  */
 const EC = require('elliptic').ec;
-const eccrypto = require('eccrypto');
 // const { Buffer } = require('buffer/'); // TODO make sure this works in browser and node
 const { keccak256 } = require('js-sha3');
 const ethers = require('ethers');
 const { hexStringToBuffer, padHex, recoverPublicKeyFromTransaction } = require('../utils/utils');
 
 const ec = new EC('secp256k1');
-const { utils } = ethers;
+const { utils, BigNumber } = ethers;
+const { hexZeroPad } = utils;
+
+function hexZeroPad32(value) {
+  return hexZeroPad(value, 32);
+}
 
 class KeyPair {
   /**
@@ -28,7 +32,7 @@ class KeyPair {
       this.privateKeyHex = key;
       this.privateKeyHexSlim = key.slice(2);
       this.privateKeyEC = ec.keyFromPrivate(this.privateKeyHexSlim);
-      this.privateKeyBN = ethers.BigNumber.from(this.privateKeyHex);
+      this.privateKeyBN = BigNumber.from(this.privateKeyHex);
 
       // Multiply curve's generator point by private key to get public key
       const publicKey = ec.g.mul(this.privateKeyHexSlim);
@@ -92,7 +96,7 @@ class KeyPair {
    * @notice Returns the public key as a BigNumber
    */
   get publicKeyBN() {
-    return ethers.BigNumber.from(this.publicKeyHex);
+    return BigNumber.from(this.publicKeyHex);
   }
 
   /**
@@ -115,23 +119,21 @@ class KeyPair {
   // ENCRYPTION / DECRYPTION =======================================================================
   /**
    * @notice Encrypt a random number with the instance's public key
-   * @param {RandomNumber} number Random number as instance of RandomNumber class
-   * @returns {Object} With fields: 16 byte iv, 65 byte ephemeralPublicKey, 96-byte
-   * ciphertext (assuming 32 byte random number), and 32 byte mac
+   * @param {RandomNumber} randomNumber Random number as instance of RandomNumber class
+   * @returns {Object} Hex strings of uncompressed 65 byte public key and 32 byte ciphertext
    */
-  async encrypt(number) {
-    // Generate message to encrypt
-    const prefix = 'umbra-protocol-v0';
-    const message = `${prefix}${number.asHex}`;
-    // Encrypt it
-    const key = hexStringToBuffer(this.publicKeyHex);
-    const output = await eccrypto.encrypt(key, Buffer.from(message));
-    // Return ciphertext and public key (include MAC?)
+  async encrypt(randomNumber) {
+    // Get shared secret to use as encryption key
+    const ephemeralWallet = ethers.Wallet.createRandom();
+    const privateKey = new ethers.utils.SigningKey(ephemeralWallet.privateKey);
+    const sharedSecret = privateKey.computeSharedSecret(this.publicKeyHex);
+
+    // XOR random number with shared secret to get encrypted value
+    const ciphertext = randomNumber.value.xor(sharedSecret);
     const result = {
-      iv: utils.hexlify(output.iv),
-      ephemeralPublicKey: utils.hexlify(output.ephemPublicKey),
-      ciphertext: utils.hexlify(output.ciphertext),
-      mac: utils.hexlify(output.mac),
+      // Both outputs are hex strings
+      ephemeralPublicKey: ephemeralWallet.publicKey,
+      ciphertext: hexZeroPad32(ciphertext.toHexString()),
     };
     return result;
   }
@@ -139,20 +141,18 @@ class KeyPair {
   /**
    * @notice Decrypt a random number with the instance's private key and return the plaintext
    * @param {String} output Output from the encrypt method
+   * @returns {String} Hex string of the unencrypted value
    */
   async decrypt(output) {
-    // Format output into buffers for eccrypto
-    const formattedOutput = {
-      iv: hexStringToBuffer(output.iv),
-      ephemPublicKey: hexStringToBuffer(output.ephemeralPublicKey),
-      ciphertext: hexStringToBuffer(output.ciphertext),
-      mac: hexStringToBuffer(output.mac),
-    };
-    // Decrypt data
-    const key = hexStringToBuffer(this.privateKeyHex);
-    const plaintext = await eccrypto.decrypt(key, formattedOutput);
-    // Return value as string
-    return plaintext.toString();
+    const { ephemeralPublicKey, ciphertext } = output;
+
+    // Get shared secret to use as decryption key
+    const privateKey = new ethers.utils.SigningKey(this.privateKeyHex);
+    const sharedSecret = privateKey.computeSharedSecret(ephemeralPublicKey);
+
+    // Decrypt
+    const plaintext = BigNumber.from(ciphertext).xor(sharedSecret);
+    return hexZeroPad32(plaintext.toHexString());
   }
 
   // ELLIPTIC CURVE MATH ===========================================================================
