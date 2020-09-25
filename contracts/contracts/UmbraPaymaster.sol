@@ -4,7 +4,7 @@ pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
 import "@opengsn/gsn/contracts/BasePaymaster.sol";
-
+import "@opengsn/gsn/contracts/interfaces/GsnTypes.sol";
 
 contract UmbraPaymaster is BasePaymaster {
   address public umbraAddr;
@@ -17,30 +17,30 @@ contract UmbraPaymaster is BasePaymaster {
     return "1.0.0";
   }
 
-  function acceptRelayedCall(
-    GSNTypes.RelayRequest calldata relayRequest,
-    bytes calldata, // signature
-    bytes calldata approvalData,
-    uint256 maxPossibleGas
-  ) external override view returns (bytes memory context) {
-    (approvalData, maxPossibleGas); // avoid a warning
+  function preRelayedCall(
+        GsnTypes.RelayRequest calldata relayRequest,
+        bytes calldata signature,
+        bytes calldata approvalData,
+        uint256 maxPossibleGas
+    )
+    external
+    override
+    returns (bytes memory context, bool rejectOnRecipientRevert) {
 
-    require(relayRequest.target == umbraAddr, "UmbraPaymaster: Not Target");
+      require(relayRequest.request.to == umbraAddr, "UmbraPaymaster: Not Target");
+      return (abi.encode(0x0), true);
+    }
 
-    return abi.encode(0x0);
-  }
-
-  function preRelayedCall(bytes calldata /* context */) external override relayHubOnly returns (bytes32) {
-    return bytes32(0);
-  }
 
   function postRelayedCall(
-    bytes calldata, // context
+    bytes calldata context,
     bool success,
-    bytes32 preRetVal,
-    uint256 gasUse,
-    GSNTypes.GasData calldata gasData
-  ) external override relayHubOnly {
-    (success, preRetVal, gasUse, gasData);
+    uint256 gasUseWithoutPost,
+    GsnTypes.RelayData calldata relayData
+  )
+  external
+  override
+  relayHubOnly {
+    (success, gasUseWithoutPost, relayData);
   }
 }
