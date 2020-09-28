@@ -19,9 +19,9 @@ contract UmbraPaymaster is BasePaymaster {
 
   function preRelayedCall(
         GsnTypes.RelayRequest calldata relayRequest,
-        bytes calldata signature,
-        bytes calldata approvalData,
-        uint256 maxPossibleGas
+        bytes calldata /*signature*/,
+        bytes calldata /*approvalData*/,
+        uint256 /*maxPossibleGas*/
     )
     external
     override
@@ -33,7 +33,7 @@ contract UmbraPaymaster is BasePaymaster {
 
 
   function postRelayedCall(
-    bytes calldata context,
+    bytes calldata /*context*/,
     bool success,
     uint256 gasUseWithoutPost,
     GsnTypes.RelayData calldata relayData
