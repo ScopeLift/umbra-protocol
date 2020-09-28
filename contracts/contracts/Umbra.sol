@@ -2,15 +2,15 @@
 
 pragma solidity ^0.6.12;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
 import "@opengsn/gsn/contracts/interfaces/IKnowForwarderAddress.sol";
 import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 
-contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, OwnableUpgradeSafe {
+contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
   using SafeMath for uint256;
 
   struct TokenPayment {
@@ -52,7 +52,6 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, OwnableUpgradeSafe 
     address payable _tollReceiver,
     address _gsnForwarder
   ) public {
-    __Ownable_init();
     toll = _toll;
     tollCollector = _tollCollector;
     tollReceiver = _tollReceiver;
@@ -148,7 +147,7 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, OwnableUpgradeSafe 
 
   function _msgSender()
     internal
-    override(ContextUpgradeSafe, BaseRelayRecipient)
+    override(Context, BaseRelayRecipient)
     view
     returns (address payable)
   {
