@@ -31,7 +31,6 @@ contract UmbraPaymaster is BasePaymaster {
       return (abi.encode(0x0), true);
     }
 
-
   function postRelayedCall(
     bytes calldata /*context*/,
     bool success,
