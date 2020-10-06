@@ -9,12 +9,11 @@
   "version": "0.0.1",
   "compiler": {
     "compilerSettings": {
-      "evmVersion": "berlin",
+      "evmVersion": "istanbul",
       "optimizer": {
         "enabled": false,
         "runs": "200"
-      },
-      "evmVersion": "berlin"
+      }
     },
     "typechain": {
       "enabled": false
