@@ -5,8 +5,9 @@
       <h4 class="darkgrey q-mt-md">Only the sender and recipient know who received funds</h4>
     </div>
 
-    <div class="row justify-center">
-      <home-action-card to="send" text="Send" />
+    <div class="row justify-center q-pt-xl">
+      <home-action-card class="col-xs-3" to="send" text="Send" />
+      <home-action-card class="col-xs-3" to="receive" text="Receive" />
     </div>
   </q-page>
 </template>

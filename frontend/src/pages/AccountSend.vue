@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <h1>Send</h1>
+    <h1 class="page-title">Send</h1>
   </q-page>
 </template>
 
@@ -21,6 +21,7 @@ function usePrivateKeys() {
     console.log('keyPairStealthAddress: ', keyPairStealthAddress.value);
     console.log('keyPairEncryption: ', keyPairEncryption.value);
   });
+
   return {};
 }
 

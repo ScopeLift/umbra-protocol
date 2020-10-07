@@ -6,7 +6,8 @@ const routes: RouteConfig[] = [
     component: () => import('layouts/BaseLayout.vue'),
     children: [
       { name: 'home', path: '', component: () => import('pages/Home.vue') },
-      { name: 'send', path: '/send', component: () => import('pages/Send.vue') },
+      { name: 'send', path: '/send', component: () => import('pages/AccountSend.vue') },
+      { name: 'receive', path: '/receive', component: () => import('pages/AccountReceive.vue') },
     ],
   },
 
