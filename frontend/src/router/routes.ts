@@ -4,7 +4,10 @@ const routes: RouteConfig[] = [
   {
     path: '/',
     component: () => import('layouts/BaseLayout.vue'),
-    children: [{ path: '', component: () => import('pages/Home.vue') }],
+    children: [
+      { name: 'home', path: '', component: () => import('pages/Home.vue') },
+      { name: 'send', path: '/send', component: () => import('pages/Send.vue') },
+    ],
   },
 
   // Always leave this as last one,

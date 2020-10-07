@@ -46,7 +46,6 @@
                   style="cursor: pointer"
                   @click="toggleDarkMode()"
                 />
-                <connect-wallet v-if="!userAddress" class="q-ml-lg" />
               </div>
             </div>
           </div>
@@ -72,7 +71,6 @@
 import { defineComponent, onMounted, ref, watchEffect } from '@vue/composition-api';
 import { Dark, LocalStorage } from 'quasar';
 import useWalletStore from 'src/store/wallet';
-import ConnectWallet from 'components/ConnectWallet';
 
 function useDarkMode() {
   function toggleDarkMode() {
@@ -91,7 +89,7 @@ function useWallet() {
   const { userAddress, provider } = useWalletStore();
   const network = ref('');
 
-  watchEffect(async () => {
+  watchEffect(async (): void => {
     if (provider.value) {
       network.value = (await provider.value.getNetwork()).name;
     }
@@ -102,7 +100,6 @@ function useWallet() {
 
 export default defineComponent({
   name: 'BaseLayout',
-  components: { ConnectWallet },
   setup() {
     return { ...useDarkMode(), ...useWallet() };
   },

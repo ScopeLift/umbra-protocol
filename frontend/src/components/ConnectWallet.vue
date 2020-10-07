@@ -1,16 +1,16 @@
 <template>
-  <div>
-    <q-btn color="primary" label="Connect wallet" @click="connectWallet" />
+  <div @click="connectWallet">
+    <slot></slot>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, SetupContext } from '@vue/composition-api';
 import { Dark } from 'quasar';
 import useWalletStore from 'src/store/wallet';
 import Onboard from 'bnc-onboard';
 
-function useWallet() {
+function useWallet(context: SetupContext, to: string) {
   const { setProvider } = useWalletStore();
 
   async function connectWallet() {
@@ -79,6 +79,9 @@ function useWallet() {
     });
     await onboard.walletSelect();
     await onboard.walletCheck();
+
+    // Redirect to specified page
+    await context.root.$router.push({ name: to });
   }
 
   return { connectWallet };
@@ -87,8 +90,16 @@ function useWallet() {
 export default defineComponent({
   name: 'ConnectWallet',
 
-  setup() {
-    return { ...useWallet() };
+  props: {
+    // Page name to redirect to after logging in
+    to: {
+      type: String,
+      required: true,
+    },
+  },
+
+  setup(props, context) {
+    return { ...useWallet(context, props.to) };
   },
 });
 </script>
