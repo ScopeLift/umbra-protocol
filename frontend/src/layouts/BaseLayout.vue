@@ -29,7 +29,10 @@
                 Address: {{ userAddress }}
               </div>
               <div class="row justify-end items-center q-mt-xs">
-                <div v-if="userAddress && network !== 'ropsten'" class="negative text-bold q-mr-md">
+                <div
+                  v-if="userAddress && networkName !== 'ropsten'"
+                  class="negative text-bold q-mr-md"
+                >
                   You must be on the Ropsten network to use this app
                 </div>
                 <q-icon
@@ -86,16 +89,16 @@ function useDarkMode() {
 }
 
 function useWallet() {
-  const { userAddress, provider } = useWalletStore();
-  const network = ref('');
+  const { userAddress, network } = useWalletStore();
+  const networkName = ref('');
 
-  watchEffect(async (): void => {
-    if (provider.value) {
-      network.value = (await provider.value.getNetwork()).name;
+  watchEffect(() => {
+    if (network.value) {
+      networkName.value = network.value.name;
     }
   });
 
-  return { userAddress, network };
+  return { userAddress, networkName };
 }
 
 export default defineComponent({
