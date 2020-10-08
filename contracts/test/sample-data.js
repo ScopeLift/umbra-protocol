@@ -1,25 +1,19 @@
+0x04a8ca477cb9ec0f45dd9aac5775487f224c4e40b08a60199a7789ed2a158cbee7e0ceb9d9f6bcf76d8221268f130d2218064a605f1cb670b4741ed4713baa5595
+0x15feb82777f1fe95dc9f13368e2d376a87fbad0354672b2aa983590d492a46a4
 const rawData = {
-  iv: '0xa632512da339ce66d550da77bb3f5f63',
-  ephemeralPublicKey: '0x0471f1bdfb4a6ba73ef514fa5e169b82f4cd5cdddd2545cf5779b499bc39ff6f8f616a0a862df64d893a1044409181a9b80179852a7fab4201fbf54589df109185',
-  ciphertext: '0x0e763e72bb34d9d365a3d6b618a612eda20dbd049a0a04f8301e6f35289bff0aa5b1bb2ab9d48c6aef064592a1f3422baebf5dc38d9f383ffaec86d2c15ef366872f8841c361063ae5d6f952857a4c3667bf3e2adefa33abdd949d4c9ce6e26d',
-  mac: '0x5907f5443bdaaf0dcd6fe60285f8128afb1a355c27326a483e60e080556dbb43',
+  ephemeralPublicKey: '0x04a8ca477cb9ec0f45dd9aac5775487f224c4e40b08a60199a7789ed2a158cbee7e0ceb9d9f6bcf76d8221268f130d2218064a605f1cb670b4741ed4713baa5595',
+  ciphertext: '0x15feb82777f1fe95dc9f13368e2d376a87fbad0354672b2aa983590d492a46a4',
 };
 
 const bytes = [];
 
-// IV is first bytes16 param
-bytes[0] = rawData.iv;
+// Remove the '04' from the ephemeral public key, which is always the same, then
+// take the first 32 bytes, which represents the x-coordinate on the elliptical
+// curve. The y-coordinate can be derived, and does not need to be included.
+bytes[0] = `0x${rawData.ephemeralPublicKey.slice(4, 4 + 64)}`;
 
-// Emphemeral Pub Key is next 2 bytes32 params
-bytes[1] = `0x${rawData.ephemeralPublicKey.slice(4, 4 + 64)}`;
-bytes[2] = `0x${rawData.ephemeralPublicKey.slice(4 + 64, 4 + 2 * 64)}`;
-
-// Ciphertext is next 3 bytes32 params
-bytes[3] = `0x${rawData.ciphertext.slice(2, 2 + 64)}`;
-bytes[4] = `0x${rawData.ciphertext.slice(2 + 64, 2 + 2 * 64)}`;
-bytes[5] = `0x${rawData.ciphertext.slice(2 + 2 * 64, 2 + 3 * 64)}`;
-
-// MAC is the last bytes32 param
-bytes[6] = rawData.mac;
+// The ciphertext is already exactly 32 bytes, a 16 byte payload extension and
+// a 16 byte random number used for deriving the stealth address.
+bytes[1] = rawData.ciphertext;
 
 module.exports.argumentBytes = bytes;

@@ -22,13 +22,8 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     address indexed receiver,
     uint256 indexed amount,
     address indexed token,
-    bytes16 iv, // Inivitalization Vector
-    bytes32 pkx, // Ephemeral Public Key
-    bytes32 pky,
-    bytes32 ct0, // Ciphertext
-    bytes32 ct1,
-    bytes32 ct2,
-    bytes32 mac // Message Authetnication Code
+    bytes32 pkx, // ephemeral public key x coordinate
+    bytes32 ciphertext
   );
 
   event TokenWithdrawal(
@@ -84,13 +79,8 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
 
   function sendEth(
     address payable _receiver,
-    bytes16 _iv, // Inivitalization Vector
-    bytes32 _pkx, // Ephemeral Public Key
-    bytes32 _pky,
-    bytes32 _ct0, // Ciphertext
-    bytes32 _ct1,
-    bytes32 _ct2,
-    bytes32 _mac // Message Authetnication Code
+    bytes32 _pkx, // ephemeral public key x coordinate
+    bytes32 _ciphertext
   ) public payable unusedAddr(_receiver) {
     require(msg.value > toll, "Umbra: Must pay more than the toll");
 
@@ -99,13 +89,8 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
       _receiver,
       amount,
       ETH_TOKEN_PLACHOLDER,
-      _iv,
       _pkx,
-      _pky,
-      _ct0,
-      _ct1,
-      _ct2,
-      _mac
+      _ciphertext
     );
 
     isUsedAddr[_receiver] = true;
@@ -116,18 +101,18 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     address _receiver,
     address _tokenAddr,
     uint256 _amount,
-    bytes16 _iv, // Inivitalization Vector
-    bytes32 _pkx, // Ephemeral Public Key
-    bytes32 _pky,
-    bytes32 _ct0, // Ciphertext
-    bytes32 _ct1,
-    bytes32 _ct2,
-    bytes32 _mac // Message Authetnication Code
+    bytes32 _pkx, // ephemeral public key x coordinate
+    bytes32 _ciphertext
   ) public payable unusedAddr(_receiver) {
     require(msg.value == toll, "Umbra: Must pay the exact toll");
 
     tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});
-    emit Announcement(_receiver, _amount, _tokenAddr, _iv, _pkx, _pky, _ct0, _ct1, _ct2, _mac);
+    emit Announcement(
+      _receiver,
+      _amount,
+      _tokenAddr,
+      _pkx,
+      _ciphertext);
 
     isUsedAddr[_receiver] = true;
     SafeERC20.safeTransferFrom(IERC20(_tokenAddr), _msgSender(), address(this), _amount);
