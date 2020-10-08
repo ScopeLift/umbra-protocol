@@ -119,13 +119,8 @@ describe('Umbra GSN', () => {
       receiver,
       amount: tokenAmount,
       token: this.token.address,
-      iv: argumentBytes[0],
-      pkx: argumentBytes[1],
-      pky: argumentBytes[2],
-      ct0: argumentBytes[3],
-      ct1: argumentBytes[4],
-      ct2: argumentBytes[5],
-      mac: argumentBytes[6],
+      pkx: argumentBytes[0],
+      ciphertext: argumentBytes[1],
     });
   });
 
