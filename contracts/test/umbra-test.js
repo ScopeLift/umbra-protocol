@@ -9,6 +9,11 @@ const { argumentBytes } = require('./sample-data');
 const { toWei } = web3.utils;
 const { BN } = web3.utils;
 
+// TODO NEXT: Enable token re-use and adjust existing tests. Is there a test sending ETH to
+// a Token receiver? There probs should be. Also, need to test withdraw after receiving multiple
+// sends, and also receving an additional send after withdrawing previous sends. Also, should
+// disallow withdraw if balance 0. Etc...
+
 describe('Umbra', () => {
   const [
     owner,
@@ -25,13 +30,17 @@ describe('Umbra', () => {
   const deployedToll = toWei('0.01', 'ether');
   const updatedToll = toWei('0.001', 'ether');
   const ethPayment = toWei('1.6', 'ether');
+  const secondEthPayment = toWei('7.5', 'ether');
   const tokenAmount = toWei('100', 'ether');
+  const secondTokenAmount = toWei('4.1', 'ether');
+  const totalTokenAmount = ( (new BN(tokenAmount)).add(new BN(secondTokenAmount)) ).toString();
+  const mintTokenAmount = ( (new BN(totalTokenAmount)).add(new BN(tokenAmount)) ).toString();
 
   before(async () => {
     this.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, other, { from: owner });
     this.token = await TestToken.new('TestToken', 'TT');
 
-    await this.token.mint(payer2, tokenAmount);
+    await this.token.mint(payer2, mintTokenAmount);
   });
 
   it('should see the deployed Umbra contract', async () => {
@@ -55,7 +64,7 @@ describe('Umbra', () => {
     expect(toll.toString()).to.equal(deployedToll);
 
     const tokenBalance = await this.token.balanceOf(payer2);
-    expect(tokenBalance.toString()).to.equal(tokenAmount);
+    expect(tokenBalance.toString()).to.equal(mintTokenAmount);
   });
 
   it('should let the owner update the toll', async () => {
@@ -65,7 +74,7 @@ describe('Umbra', () => {
     expect(toll.toString()).to.equal(updatedToll);
   });
 
-  it('should not allow someone other than the owner to upate the toll', async () => {
+  it('should not allow someone other than the owner to update the toll', async () => {
     await expectRevert(
       this.umbra.setToll(deployedToll, { from: other }),
       'Ownable: caller is not the owner',
@@ -117,35 +126,36 @@ describe('Umbra', () => {
     });
   });
 
-  it('should not allow someone to send to the ETH receiver twice', async () => {
-    await expectRevert(
-      this.umbra.sendEth(receiver1, ...argumentBytes, {
-        from: payer1,
-        value: ethPayment,
-      }),
-      'Umbra: Cannot reuse a stealth address',
-    );
+  it('should allow someone to send to the ETH receiver twice', async () => {
+    const receiverInitBalance = new BN(await web3.eth.getBalance(receiver1));
+
+    const toll = await this.umbra.toll();
+    const payment = new BN(secondEthPayment);
+    const actualPayment = payment.sub(toll);
+
+    const receipt = await this.umbra.sendEth(receiver1, ...argumentBytes, {
+      from: payer1,
+      value: secondEthPayment,
+    });
+
+    const receiverPostBalance = new BN(await web3.eth.getBalance(receiver1));
+    const amountReceived = receiverPostBalance.sub(receiverInitBalance);
+
+    expect(amountReceived.toString()).to.equal(actualPayment.toString());
+
+    expectEvent(receipt, 'Announcement', {
+      receiver: receiver1,
+      amount: actualPayment.toString(),
+      token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      pkx: argumentBytes[0],
+      ciphertext: argumentBytes[1],
+    });
   });
 
   it('should not let the eth receiver withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: receiver1 }),
       'Umbra: No tokens available for withdrawal',
-    );
-  });
-
-  it('should not allow someone to pay tokens to a previous ETH receiver', async () => {
-    const toll = await this.umbra.toll();
-
-    await expectRevert(
-      this.umbra.sendToken(
-        receiver1,
-        this.token.address,
-        tokenAmount,
-        ...argumentBytes,
-        { from: payer2, value: toll },
-      ),
-      'Umbra: Cannot reuse a stealth address',
     );
   });
 
@@ -218,6 +228,30 @@ describe('Umbra', () => {
     });
   });
 
+  it('should allow someone to pay tokens to a previous ETH receiver', async () => {
+    const toll = await this.umbra.toll();
+    await this.token.approve(this.umbra.address, secondTokenAmount, { from: payer2 });
+    const receipt = await this.umbra.sendToken(
+      receiver1,
+      this.token.address,
+      secondTokenAmount,
+      ...argumentBytes,
+      { from: payer2, value: toll },
+    );
+
+    const contractBalance = await this.token.balanceOf(this.umbra.address);
+
+    expect(contractBalance.toString()).to.equal(totalTokenAmount);
+
+    expectEvent(receipt, 'Announcement', {
+      receiver: receiver1,
+      amount: secondTokenAmount,
+      token: this.token.address,
+      pkx: argumentBytes[0],
+      ciphertext: argumentBytes[1],
+    });
+  });
+
   it('should not allow someone to pay a token to a reused address', async () => {
     const toll = await this.umbra.toll();
     await this.token.approve(this.umbra.address, tokenAmount, { from: payer2 });
@@ -230,18 +264,34 @@ describe('Umbra', () => {
         ...argumentBytes,
         { from: payer2, value: toll },
       ),
-      'Umbra: Cannot reuse a stealth address',
+      'Umbra: Cannot resend tokens to used stealth address',
     );
   });
 
-  it('should not allow someone to send tokens to a previous ETH receiver', async () => {
-    await expectRevert(
-      this.umbra.sendEth(receiver2, ...argumentBytes, {
-        from: payer1,
-        value: ethPayment,
-      }),
-      'Umbra: Cannot reuse a stealth address',
-    );
+  it('should allow someone to send ETH to a previous Token receiver', async () => {
+    const receiverInitBalance = new BN(await web3.eth.getBalance(receiver2));
+
+    const toll = await this.umbra.toll();
+    const payment = new BN(secondEthPayment);
+    const actualPayment = payment.sub(toll);
+
+    const receipt = await this.umbra.sendEth(receiver2, ...argumentBytes, {
+      from: payer1,
+      value: secondEthPayment,
+    });
+
+    const receiverPostBalance = new BN(await web3.eth.getBalance(receiver2));
+    const amountReceived = receiverPostBalance.sub(receiverInitBalance);
+
+    expect(amountReceived.toString()).to.equal(actualPayment.toString());
+
+    expectEvent(receipt, 'Announcement', {
+      receiver: receiver2,
+      amount: actualPayment.toString(),
+      token: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      pkx: argumentBytes[0],
+      ciphertext: argumentBytes[1],
+    });
   });
 
   it('should not allow a non-receiver to withdraw tokens', async () => {
@@ -273,6 +323,31 @@ describe('Umbra', () => {
     );
   });
 
+  it('should allow someone to pay a token to a reused address after withdraw', async () => {
+    const toll = await this.umbra.toll();
+    await this.token.approve(this.umbra.address, tokenAmount, { from: payer2 });
+
+    const receipt = await this.umbra.sendToken(
+      receiver2,
+      this.token.address,
+      tokenAmount,
+      ...argumentBytes,
+      { from: payer2, value: toll },
+    );
+
+    const contractBalance = await this.token.balanceOf(this.umbra.address);
+
+    expect(contractBalance.toString()).to.equal(totalTokenAmount);
+
+    expectEvent(receipt, 'Announcement', {
+      receiver: receiver2,
+      amount: tokenAmount,
+      token: this.token.address,
+      pkx: argumentBytes[0],
+      ciphertext: argumentBytes[1],
+    });
+  });
+
   it('should not allow someone else to move tolls to toll receiver', async () => {
     await expectRevert(
       this.umbra.collectTolls({ from: other }),
@@ -282,7 +357,7 @@ describe('Umbra', () => {
 
   it('should allow the toll collector to move tolls to toll receiver', async () => {
     const toll = await this.umbra.toll();
-    const expectedCollection = toll.mul(new BN('2'));
+    const expectedCollection = toll.mul(new BN('6'));
     const receiverInitBalance = new BN(await web3.eth.getBalance(tollReceiver));
 
     await this.umbra.collectTolls({ from: tollCollector });

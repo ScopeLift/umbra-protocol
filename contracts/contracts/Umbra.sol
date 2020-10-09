@@ -39,7 +39,6 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
   address public tollCollector;
   address payable public tollReceiver;
   mapping(address => TokenPayment) tokenPayments;
-  mapping(address => bool) isUsedAddr;
 
   constructor(
     uint256 _toll,
@@ -81,7 +80,7 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     address payable _receiver,
     bytes32 _pkx, // ephemeral public key x coordinate
     bytes32 _ciphertext
-  ) public payable unusedAddr(_receiver) {
+  ) public payable {
     require(msg.value > toll, "Umbra: Must pay more than the toll");
 
     uint256 amount = msg.value.sub(toll);
@@ -93,7 +92,6 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
       _ciphertext
     );
 
-    isUsedAddr[_receiver] = true;
     _receiver.transfer(amount);
   }
 
@@ -103,8 +101,12 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     uint256 _amount,
     bytes32 _pkx, // ephemeral public key x coordinate
     bytes32 _ciphertext
-  ) public payable unusedAddr(_receiver) {
+  ) public payable {
     require(msg.value == toll, "Umbra: Must pay the exact toll");
+    require(
+      tokenPayments[_receiver].amount == 0,
+      "Umbra: Cannot resend tokens to used stealth address"
+      );
 
     tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});
     emit Announcement(
@@ -114,7 +116,6 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
       _pkx,
       _ciphertext);
 
-    isUsedAddr[_receiver] = true;
     SafeERC20.safeTransferFrom(IERC20(_tokenAddr), _msgSender(), address(this), _amount);
   }
 
@@ -145,11 +146,6 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
 
   modifier onlyCollector() {
     require(_msgSender() == tollCollector, "Umbra: Not Toll Collector");
-    _;
-  }
-
-  modifier unusedAddr(address _addr) {
-    require(!isUsedAddr[_addr], "Umbra: Cannot reuse a stealth address");
     _;
   }
 }
