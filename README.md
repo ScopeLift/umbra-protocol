@@ -93,7 +93,8 @@ To set up your development environment, clone this repo, and follow the instruct
 
 * [umbra-js/](umbra-js/)
 * [contracts/](contracts/)
-* [app/](app/)
+* [app/](app/) *This is the current frontend to use, but ultimately will be removed in favor of `/frontend`*
+* [frontend/](frontend/) *This is currently a work in progress and can be ignored for now*
 
 ### Contributions
 
