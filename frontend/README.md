@@ -1,4 +1,6 @@
-# Umbra App
+_NOTE: The `app` folder at the project root is the current frontend hosted at https://ropsten.umbra.cash/. This folder is a work in progress to refactor the frontend to use the Vue Composition API and Typescript._
+
+# WIP: Umbra Frontend
 
 Send and receive stealth payments with the Umbra protocol.
 
