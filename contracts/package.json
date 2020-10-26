@@ -1,5 +1,5 @@
 {
-  "name": "umbra-contracts",
+  "name": "@umbra/contracts",
   "version": "0.0.1",
   "description": "Contracts for the Umbra Protocol",
   "scripts": {
