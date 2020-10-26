@@ -1,0 +1,5 @@
+{
+    "files": [],
+    "references": [{ "path": "frontend" }, { "path": "umbra-js" }],
+    "exclude": ["node_modules"]
+  }
