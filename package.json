@@ -1,0 +1,12 @@
+{
+    "name": "umbra",
+    "version": "0.0.1",
+    "description": "Send and receive stealth payments with the Umbra protocol",
+    "author": "mds <17163988+mds1@users.noreply.github.com>",
+    "private": true,
+    "engines": {
+      "node": ">= 10.18.1",
+      "npm": ">= 6.13.4",
+      "yarn": ">= 1.21.1"
+    }
+  }
