@@ -1,25 +1,40 @@
 {
-    "name": "umbra",
-    "version": "0.0.1",
-    "description": "Send and receive stealth payments with the Umbra protocol",
-    "author": "mds <17163988+mds1@users.noreply.github.com>",
-    "private": true,
-    "workspaces": [
-        "frontend",
-        "contracts",
-        "umbra-js"
-    ],
-    "devDependencies": {
-        "eslint": "^7.12.0",
-        "eslint-config-prettier": "^6.14.0",
-        "husky": "^4.3.0",
-        "lerna": "^3.22.1",
-        "prettier": "^2.1.2",
-        "rimraf": "^3.0.2",
-        "typescript": "^4.0.3"
-    },
-    "volta": {
-        "node": "12.19.0",
-        "yarn": "1.22.10"
-      }
+  "name": "umbra",
+  "version": "0.0.1",
+  "description": "Send and receive stealth payments with the Umbra protocol",
+  "author": "mds <17163988+mds1@users.noreply.github.com>",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "contracts",
+    "umbra-js"
+  ],
+  "devDependencies": {
+    "eslint": "^7.12.0",
+    "eslint-config-prettier": "^6.14.0",
+    "husky": "^4.3.0",
+    "lerna": "^3.22.1",
+    "lint-staged": "^10.5.1",
+    "prettier": "^2.1.2",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.0.3"
+  },
+  "scripts": {
+    "build": "lerna run build:declarations; lerna run build",
+    "clean": "lerna run clean",
+    "postinstall": "lerna run build:declarations"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": "eslint --cache --fix",
+    "*.{js,ts,css,md}": "prettier --write"
+  },
+  "volta": {
+    "node": "12.19.0",
+    "yarn": "1.22.10"
+  }
 }
