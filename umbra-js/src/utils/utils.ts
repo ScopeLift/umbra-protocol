@@ -1,5 +1,5 @@
-const ethers = require('ethers');
-
+import { ethers } from 'ethers';
+import { ExternalProvider, SignatureLike } from '../types';
 const { utils } = ethers;
 const constants = require('../constants.json');
 
@@ -15,36 +15,40 @@ const constants = require('../constants.json');
  *      strip leading zeroes.
  *   3. When generating random numbers and returning them as hex strings, the leading
  *      zero bytes get stripped
- * @param {String} hex String to pad, without leading 0x
- * @param {String} bytes Number of bytes string should have
+ * @param hex String to pad, without leading 0x
+ * @param bytes Number of bytes string should have
  */
-module.exports.padHex = (hex, bytes = 32) => {
+export function padHex(hex: string, bytes = 32) {
   if (!utils.isHexString) throw new Error('Input is not a valid hex string');
   if (hex.slice(0, 2) === '0x') throw new Error('Input must not contain 0x prefix');
-  return hex.padStart(bytes * 2, 0);
-};
+  return hex.padStart(bytes * 2, '0');
+}
 
 /**
  * @notice Convert hex string with 0x prefix into Buffer
- * @param {String} data Hex string to convert
+ * @param value Hex string to convert
  */
-module.exports.hexStringToBuffer = (data) => Buffer.from(utils.arrayify(data));
+export function hexStringToBuffer(
+  value: string | number | ethers.utils.Bytes | ethers.utils.Hexable
+) {
+  return Buffer.from(utils.arrayify(value));
+}
 
 /**
  * @notice Given a transaction hash, return the public key of the transaction's sender
  * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
  * recovering public key from a transaction with ethers
  * @param {String} txHash Transaction hash to recover public key from
- * @param {*} provider raw web3 provider to use (not an ethers instance)
+ * @param {*} provider web3 provider to use (not an ethers provider)
  */
-module.exports.recoverPublicKeyFromTransaction = async (txHash, provider) => {
+export async function recoverPublicKeyFromTransaction(txHash: string, provider: ExternalProvider) {
   // Get transaction data
   const ethersProvider = new ethers.providers.Web3Provider(provider);
   const tx = await ethersProvider.getTransaction(txHash);
 
   // Get original signature
-  const splitSignature = {
-    r: tx.r,
+  const splitSignature: SignatureLike = {
+    r: tx.r as string,
     s: tx.s,
     v: tx.v,
   };
@@ -70,14 +74,14 @@ module.exports.recoverPublicKeyFromTransaction = async (txHash, provider) => {
   // Recover sender's public key and address
   const publicKey = utils.recoverPublicKey(msgBytes, signature);
   return publicKey;
-};
+}
 
 /**
  * @notice Returns the public key recovered from the signature
  */
-module.exports.getPublicKeyFromSignature = async (signature) => {
+export async function getPublicKeyFromSignature(signature: SignatureLike) {
   const msgHash = ethers.utils.hashMessage(constants.UMBRA_MESSAGE);
   const msgHashBytes = ethers.utils.arrayify(msgHash);
   const publicKey = await ethers.utils.recoverPublicKey(msgHashBytes, signature);
   return publicKey;
-};
+}

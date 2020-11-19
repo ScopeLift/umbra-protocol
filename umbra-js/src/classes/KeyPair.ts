@@ -1,8 +1,10 @@
 /**
- * @notice Class for managing keys on secp256k1 curve
+ * @dev Class for managing secp256k1 keys and performing operations with them
  */
+
 import { ethers } from 'ethers';
 import type { RandomNumber } from './RandomNumber';
+import { ExternalProvider } from '../types';
 
 const EC = require('elliptic').ec;
 const { keccak256 } = require('js-sha3');
@@ -219,12 +221,9 @@ export class KeyPair {
   /**
    * @notice Generate KeyPair instance asynchronously from a transaction hash
    * @param txHash Transaction hash to recover public key from
-   * @param provider web3 provider to use (not an ethers instance)
+   * @param provider web3 provider to use (not an ethers provider)
    */
-  static async instanceFromTransaction(
-    txHash: string,
-    provider: ethers.providers.ExternalProvider
-  ) {
+  static async instanceFromTransaction(txHash: string, provider: ExternalProvider) {
     const publicKeyHex = await recoverPublicKeyFromTransaction(txHash, provider);
     return new KeyPair(publicKeyHex);
   }
