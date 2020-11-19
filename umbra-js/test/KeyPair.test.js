@@ -3,8 +3,8 @@ const chai = require('chai');
 const ethers = require('ethers');
 
 // umbra-js components
-const KeyPair = require('../build/classes/KeyPair');
-const RandomNumber = require('../build/classes/RandomNumber');
+import { RandomNumber } from '../src/classes/RandomNumber';
+import { KeyPair } from '../src/classes/KeyPair';
 const utils = require('../build/utils/utils');
 
 const { expect } = chai;

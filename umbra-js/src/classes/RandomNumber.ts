@@ -9,7 +9,7 @@ const { BigNumber, utils } = ethers;
 const { hexZeroPad } = utils;
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
-class RandomNumber {
+export class RandomNumber {
   readonly randomLength = 16; // 16 bytes of randomness
   readonly fullLength = 32; // pad to number to 32 bytes
   readonly value: ethers.BigNumber; // random number value
@@ -54,5 +54,3 @@ class RandomNumber {
     return hexZeroPad(this.asHex, this.fullLength).slice(2);
   }
 }
-
-module.exports = RandomNumber;
