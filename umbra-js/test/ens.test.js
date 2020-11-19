@@ -42,12 +42,4 @@ describe('ENS functions', () => {
     const signature = await ens.getSignature(name, provider);
     expect(signature).to.equal(dummySignature);
   });
-
-  it.skip('sets the bytecode', async () => {
-    // TODO same as above test
-    const dummyBytecode = '0x456';
-    await ens.setBytecode(name, provider, dummyBytecode);
-    const bytecode = await ens.setBytecode(name, provider);
-    expect(bytecode).to.equal(dummyBytecode);
-  });
 });
