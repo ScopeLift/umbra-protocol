@@ -1,7 +1,7 @@
+import { DomainService } from '../src/classes/DomainService';
 const { provider } = require('@openzeppelin/test-environment');
 const { Resolution, Eip1993Factories } = require('@unstoppabledomains/resolution');
 const chai = require('chai');
-const DomainService = require('../build/classes/DomainService');
 const constants = require('../build/constants.json');
 
 const { CNS_REGISTRY } = constants;

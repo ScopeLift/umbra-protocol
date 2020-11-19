@@ -1,21 +1,23 @@
+import { ethers } from 'ethers';
+import { Resolution } from '@unstoppabledomains/resolution';
 const cns = require('../utils/cns');
 const ens = require('../utils/ens');
 
-class DomainService {
+export class DomainService {
   /**
-   * @param {*} provider raw web3 provider to use (not an ethers instance)
-   * @param {*} resolution Resolution instance of @unstoppabledomains/resolution
+   * @param provider web3 provider to use (not an ethers instance)
+   * @param udResolution Resolution instance of @unstoppabledomains/resolution
    */
-  constructor(provider, resolution) {
-    this.provider = provider;
-    this.udResolution = resolution;
-  }
+  constructor(
+    readonly provider: ethers.providers.ExternalProvider,
+    readonly udResolution: Resolution
+  ) {}
 
   /**
    * @notice Computes namehash of the input domain, normalized to ENS or CNS compatibility
-   * @param {String} name domain, e.g. myname.eth
+   * @param name domain, e.g. myname.eth
    */
-  namehash(name) {
+  namehash(name: string) {
     if (isEnsDomain(name)) {
       return ens.namehash(name);
     } else {
@@ -26,9 +28,9 @@ class DomainService {
   /**
    * @notice For a given domain, return the associated umbra signature or return
    * undefined if none exists
-   * @param {String} name domain, e.g. myname.eth
+   * @param name domain, e.g. myname.eth
    */
-  async getSignature(name) {
+  async getSignature(name: string) {
     if (isEnsDomain(name)) {
       return await ens.getSignature(name, this.provider);
     } else {
@@ -38,9 +40,9 @@ class DomainService {
 
   /**
    * @notice For a given domain, recovers and returns the public key from its signature
-   * @param {String} name domain, e.g. myname.eth
+   * @param name domain, e.g. myname.eth
    */
-  async getPublicKey(name) {
+  async getPublicKey(name: string) {
     if (isEnsDomain(name)) {
       return await ens.getPublicKey(name, this.provider);
     } else {
@@ -50,11 +52,11 @@ class DomainService {
 
   /**
    * @notice For a given domain, sets the associated umbra signature
-   * @param {String} name domain, e.g. myname.eth
-   * @param {String} signature user's signature of the Umbra protocol message
-   * @returns {String} Transaction hash
+   * @param name domain, e.g. myname.eth
+   * @param signature user's signature of the Umbra protocol message
+   * @returns Transaction hash
    */
-  async setSignature(name, signature) {
+  async setSignature(name: string, signature: string) {
     if (isEnsDomain(name)) {
       return await ens.setSignature(name, this.provider, signature);
     } else {
@@ -63,8 +65,6 @@ class DomainService {
   }
 }
 
-function isEnsDomain(domainName) {
+function isEnsDomain(domainName: string) {
   return domainName.endsWith('.eth');
 }
-
-module.exports = DomainService;
