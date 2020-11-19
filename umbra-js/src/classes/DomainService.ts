@@ -1,17 +1,18 @@
-import { ethers } from 'ethers';
+/**
+ * @dev Wraps ENS and CNS into a common interface
+ */
+
 import { Resolution } from '@unstoppabledomains/resolution';
+import { ExternalProvider } from '../types';
 const cns = require('../utils/cns');
 const ens = require('../utils/ens');
 
 export class DomainService {
   /**
-   * @param provider web3 provider to use (not an ethers instance)
+   * @param provider web3 provider to use (not an ethers provider)
    * @param udResolution Resolution instance of @unstoppabledomains/resolution
    */
-  constructor(
-    readonly provider: ethers.providers.ExternalProvider,
-    readonly udResolution: Resolution
-  ) {}
+  constructor(readonly provider: ExternalProvider, readonly udResolution: Resolution) {}
 
   /**
    * @notice Computes namehash of the input domain, normalized to ENS or CNS compatibility

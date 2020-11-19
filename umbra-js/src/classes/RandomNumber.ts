@@ -1,8 +1,9 @@
 /**
- * @notice Class for managing random numbers. In Umbra, a random number is 32 bytes, where
+ * @dev Class for managing random numbers. In Umbra, a random number is 32 bytes, where
  * the first 16 bytes are zeros (optionally used by developers as payload extensions), and the
  * last 16 bytes are the random number
  */
+
 import { ethers } from 'ethers';
 
 const { BigNumber, utils } = ethers;
