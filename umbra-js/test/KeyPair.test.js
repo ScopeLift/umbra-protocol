@@ -3,9 +3,9 @@ const chai = require('chai');
 const ethers = require('ethers');
 
 // umbra-js components
-const KeyPair = require('../classes/KeyPair');
-const RandomNumber = require('../classes/RandomNumber');
-const utils = require('../utils/utils');
+const KeyPair = require('../src//classes/KeyPair');
+const RandomNumber = require('../src//classes/RandomNumber');
+const utils = require('../src//utils/utils');
 
 const { expect } = chai;
 
