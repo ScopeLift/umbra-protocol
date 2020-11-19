@@ -1,6 +1,6 @@
 <template>
   <connect-wallet :to="to">
-    <q-card class="card-border action-card">
+    <q-card class="card-border action-card default-border-radius">
       <q-card-section class="text-h6 header-black card-header"> {{ text }} </q-card-section>
     </q-card>
   </connect-wallet>

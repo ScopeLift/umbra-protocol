@@ -30,16 +30,11 @@ export default function useWalletStore() {
     network.value = await provider.value.getNetwork();
   }
 
-  // =------------------------------------------ Getters -------------------------------------------
-  // Currently not used, but would defined in the style shown below
-  // const signer = computed((): Signer | undefined =>
-  //   provider.value?.getSigner()
-  // );
-
   // ------------------------------------- Exposed parameters --------------------------------------
   // Define parts of store that should be exposed
   return {
     provider: computed(() => provider.value),
+    chainId: computed(() => provider.value?.network.chainId),
     signer: computed(() => signer.value),
     userAddress: computed(() => userAddress.value),
     network: computed(() => network.value),

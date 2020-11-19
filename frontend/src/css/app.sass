@@ -79,6 +79,9 @@ p, div
   hyphens: manual
   text-align: justify
 
+.text-monospace
+  font-family: monospace
+
 // Card styling
 .action-card
   cursor: pointer
@@ -142,6 +145,15 @@ p, div
   border-color: $lightgrey
 
 .card-border:hover
-  border-width: 1px
-  border-style: solid
+  @extend .card-border
   border-color: $primary
+
+.default-border-radius
+  border-radius: 15px
+
+.card-form 
+  @extend .default-border-radius
+  margin: 0 auto
+  max-width: 400px
+  padding: 1.75rem
+  

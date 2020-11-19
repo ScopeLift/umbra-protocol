@@ -89,6 +89,9 @@ export default function useWalletStore() {
   return {
     keyPairStealthAddress: computed(() => keyPairStealthAddress.value),
     keyPairEncryption: computed(() => keyPairEncryption.value),
+    isLoggedIn: computed(
+      () => Boolean(keyPairStealthAddress.value) && Boolean(keyPairEncryption.value)
+    ),
     getPrivateKeys,
     setKeyPairStealthAddress,
     setKeyPairEncryption,
