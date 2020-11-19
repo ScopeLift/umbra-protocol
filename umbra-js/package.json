@@ -4,9 +4,11 @@
   "description": "Send and receive stealth payments",
   "main": "index.js",
   "scripts": {
-    "test": "npx mocha ./test/*.test.js --exit --timeout 0",
+    "test": "yarn build && npx mocha ./test/*.test.js --exit --timeout 0",
     "lint": "eslint --ext .js .",
-    "prettier": "npx prettier --write ."
+    "prettier": "npx prettier --write .",
+    "watch": "tsc --watch",
+    "build": "tsc --build"
   },
   "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",
   "license": "ISC",
@@ -27,7 +29,8 @@
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^7.1.2",
-    "prettier": "^2.1.2"
+    "prettier": "^2.1.2",
+    "typescript": "^4.0.5"
   },
   "keywords": [
     "ethereum",

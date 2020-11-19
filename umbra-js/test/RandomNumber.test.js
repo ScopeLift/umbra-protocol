@@ -1,7 +1,7 @@
 const chai = require('chai');
 const ethers = require('ethers');
-const RandomNumber = require('../src/classes/RandomNumber');
-const { padHex } = require('../src/utils/utils');
+const RandomNumber = require('../build/classes/RandomNumber');
+const { padHex } = require('../build/utils/utils');
 
 const { expect } = chai;
 const { BigNumber, utils } = ethers;

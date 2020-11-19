@@ -1,8 +1,8 @@
 const { provider } = require('@openzeppelin/test-environment');
 const { Resolution, Eip1993Factories } = require('@unstoppabledomains/resolution');
 const chai = require('chai');
-const cns = require('../src//utils/cns');
-const constants = require('../src/constants.json');
+const cns = require('../build/utils/cns');
+const constants = require('../build/constants.json');
 
 const { CNS_REGISTRY } = constants;
 const { expect } = chai;

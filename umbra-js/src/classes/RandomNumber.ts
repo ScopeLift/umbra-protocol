@@ -3,31 +3,35 @@
  * the first 16 bytes are zeros (optionally used by developers as payload extensions), and the
  * last 16 bytes are the random number
  */
-const ethers = require('ethers');
+import { ethers } from 'ethers';
+
 const { BigNumber, utils } = ethers;
 const { hexZeroPad } = utils;
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
 class RandomNumber {
+  readonly randomLength = 16; // 16 bytes of randomness
+  readonly fullLength = 32; // pad to number to 32 bytes
+  readonly value: ethers.BigNumber; // random number value
+
   /**
    * @notice Generate a new random number
-   * @param {String} payloadExtension 16 byte payload extension, with 0x prefix. Specify as a
-   * 34 character hex string where the first two characters are 0x
+   * @param payloadExtension 16 byte payload extension, with 0x prefix. Specify as a 34 character
+   * hex string where the first two characters are 0x
    */
-  constructor(payloadExtension = zeroPrefix) {
+  constructor(readonly payloadExtension: string = zeroPrefix) {
     // Generate default random number without payload extension
-    this.randomLength = 16; // 16 byte random number
-    this.fullLength = 32; // Pad random number to 32 bytes
-    const randomNumberAsBytes = utils.shuffled(utils.randomBytes(this.randomLength));
-    const randomNumberAsBigNumber = BigNumber.from(randomNumberAsBytes);
-    this.value = randomNumberAsBigNumber;
+    const randomNumberAsBytes = utils.randomBytes(this.randomLength);
+    this.value = BigNumber.from(randomNumberAsBytes);
 
     // If a payload extension was provided, validate it
     if (payloadExtension !== zeroPrefix) {
-      if (!utils.isHexString(payloadExtension))
+      if (!utils.isHexString(payloadExtension)) {
         throw new Error('Payload extension is not a valid hex string');
-      if (payloadExtension.length !== 34)
+      }
+      if (payloadExtension.length !== 34) {
         throw new Error('Payload extension must be a 16 byte hex string with the 0x prefix');
+      }
     }
 
     // Payload extension is valid, so update the random number. If no payload extension is provided
