@@ -1,11 +1,10 @@
 const { provider } = require('@openzeppelin/test-environment');
 const { Resolution, Eip1993Factories } = require('@unstoppabledomains/resolution');
 const chai = require('chai');
-const DomainService = require('../classes/DomainService');
+const DomainService = require('../src/classes/DomainService');
+const constants = require('../src/constants.json');
 
-const constants = require('../constants.json');
 const { CNS_REGISTRY } = constants;
-
 const { expect } = chai;
 
 const resolution = new Resolution({
