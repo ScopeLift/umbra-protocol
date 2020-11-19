@@ -1,6 +1,6 @@
 const { provider } = require('@openzeppelin/test-environment');
 const chai = require('chai');
-const ens = require('../src//utils/ens');
+const ens = require('../build/utils/ens');
 
 const { expect } = chai;
 
