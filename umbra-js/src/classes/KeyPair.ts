@@ -1,22 +1,35 @@
 /**
  * @notice Class for managing keys on secp256k1 curve
  */
+import { ethers } from 'ethers';
+import type { RandomNumber } from './RandomNumber';
+
 const EC = require('elliptic').ec;
 const { keccak256 } = require('js-sha3');
-const ethers = require('ethers');
 const { padHex, recoverPublicKeyFromTransaction } = require('../utils/utils');
 
 const ec = new EC('secp256k1');
 const { utils, BigNumber } = ethers;
 const { hexZeroPad } = utils;
 
-class KeyPair {
+export interface EncryptedPayload {
+  ephemeralPublicKey: string;
+  ciphertext: string;
+}
+
+export class KeyPair {
+  readonly publicKeyHex: string;
+
+  // Private key is optional, so initialize to null
+  readonly privateKeyHex: string | null = null;
+  readonly privateKeyHexSlim: string | null = null;
+  readonly privateKeyEC: string | null = null;
+  readonly privateKeyBN: ethers.BigNumber | null = null;
   /**
    * @notice Creates new instance from a public key or private key
-   * @param {String} key Can be either (1) hex public key with 0x04 prefix, (2) hex private
-   * key with 0x prefix
+   * @param key Can be either (1) hex public key with 0x04 prefix, or (2) hex private key with 0x prefix
    */
-  constructor(key) {
+  constructor(key: string) {
     // Input checks
     if (!utils.isHexString(key)) throw new Error('Key must be in hex format with 0x prefix');
 
@@ -114,10 +127,10 @@ class KeyPair {
   // ENCRYPTION / DECRYPTION =======================================================================
   /**
    * @notice Encrypt a random number with the instance's public key
-   * @param {RandomNumber} randomNumber Random number as instance of RandomNumber class
-   * @returns {Object} Hex strings of uncompressed 65 byte public key and 32 byte ciphertext
+   * @param randomNumber Random number as instance of RandomNumber class
+   * @returns Hex strings of uncompressed 65 byte public key and 32 byte ciphertext
    */
-  async encrypt(randomNumber) {
+  async encrypt(randomNumber: RandomNumber) {
     // Get shared secret to use as encryption key
     const ephemeralWallet = ethers.Wallet.createRandom();
     const privateKey = new ethers.utils.SigningKey(ephemeralWallet.privateKey);
@@ -135,13 +148,16 @@ class KeyPair {
 
   /**
    * @notice Decrypt a random number with the instance's private key and return the plaintext
-   * @param {String} output Output from the encrypt method
-   * @returns {String} Hex string of the unencrypted value
+   * @param output Output from the encrypt method, which can be constructed from on-chain events
+   * @returns Decrypted ciphertext as hex string
    */
-  async decrypt(output) {
-    const { ephemeralPublicKey, ciphertext } = output;
+  async decrypt(output: EncryptedPayload) {
+    if (!this.privateKeyHex) {
+      throw new Error('KeyPair has no associated private key to decrypt with');
+    }
 
     // Get shared secret to use as decryption key
+    const { ephemeralPublicKey, ciphertext } = output;
     const privateKey = new ethers.utils.SigningKey(this.privateKeyHex);
     const sharedSecret = privateKey.computeSharedSecret(ephemeralPublicKey);
 
@@ -153,35 +169,48 @@ class KeyPair {
   // ELLIPTIC CURVE MATH ===========================================================================
   /**
    * @notice Returns new KeyPair instance after multiplying this public key by some value
-   * @param {RandomNumber, String} value number to multiply by, as class RandomNumber or hex
-   * string with 0x prefix
+   * @param value number to multiply by, as RandomNumber or hex string with 0x prefix
    */
-  mulPublicKey(value) {
-    // Perform multiplication
-    const number = utils.isHexString(value) ? value.slice(2) : value.asHexSlim;
+  mulPublicKey(value: RandomNumber | string) {
+    const number = utils.isHexString(value)
+      ? (value as string).slice(2) // provided a valid hex string
+      : (value as RandomNumber).asHexSlim; // provided RandomNumber
+
+    // Perform the multiplication
     const publicKey = this.publicKeyEC.getPublic().mul(number);
+
     // Get x,y hex strings
     const x = padHex(publicKey.getX().toString('hex'));
     const y = padHex(publicKey.getY().toString('hex'));
+
     // Instantiate and return new instance
     return new KeyPair(`0x04${x}${y}`);
   }
 
   /**
    * @notice Returns new KeyPair instance after multiplying this private key by some value
-   * @param {RandomNumber, String} value number to multiply by, as class RandomNumber or hex
-   * string with 0x prefix
+   * @param value number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
-  mulPrivateKey(value) {
+  mulPrivateKey(value: RandomNumber | string) {
+    if (!this.privateKeyBN) {
+      throw new Error('KeyPair has no associated private key to multiply');
+    }
+
+    const number = utils.isHexString(value)
+      ? (value as string) // provided a valid hex string
+      : (value as RandomNumber).asHex; // provided RandomNumber
+
     // Get new private key. This gives us an arbitrarily large number that is not
     // necessarily in the domain of the secp256k1 elliptic curve
-    const number = utils.isHexString(value) ? value : value.asHex;
     const privateKeyFull = this.privateKeyBN.mul(number);
+
     // Modulo operation to get private key to be in correct range, where ec.n gives the
     // order of our curve. We add the 0x prefix as it's required by ethers.js
     const privateKeyMod = privateKeyFull.mod(`0x${ec.n.toString('hex')}`);
+
     // Remove 0x prefix to pad hex value, then add back 0x prefix
     const privateKey = `0x${padHex(privateKeyMod.toHexString().slice(2))}`;
+
     // Instantiate and return new instance
     return new KeyPair(privateKey);
   }
@@ -189,13 +218,14 @@ class KeyPair {
   // STATIC METHODS ================================================================================
   /**
    * @notice Generate KeyPair instance asynchronously from a transaction hash
-   * @param {String} txHash Transaction hash to recover public key from
-   * @param {*} provider raw web3 provider to use (not an ethers instance)
+   * @param txHash Transaction hash to recover public key from
+   * @param provider web3 provider to use (not an ethers instance)
    */
-  static async instanceFromTransaction(txHash, provider) {
+  static async instanceFromTransaction(
+    txHash: string,
+    provider: ethers.providers.ExternalProvider
+  ) {
     const publicKeyHex = await recoverPublicKeyFromTransaction(txHash, provider);
     return new KeyPair(publicKeyHex);
   }
 }
-
-module.exports = KeyPair;

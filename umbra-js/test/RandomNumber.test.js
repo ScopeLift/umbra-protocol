@@ -1,6 +1,6 @@
+import { RandomNumber } from '../src/classes/RandomNumber';
 const chai = require('chai');
 const ethers = require('ethers');
-const RandomNumber = require('../build/classes/RandomNumber');
 const { padHex } = require('../build/utils/utils');
 
 const { expect } = chai;

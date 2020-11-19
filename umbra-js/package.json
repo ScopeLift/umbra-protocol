@@ -4,7 +4,7 @@
   "description": "Send and receive stealth payments",
   "main": "index.js",
   "scripts": {
-    "test": "yarn build && npx mocha ./test/*.test.js --exit --timeout 0",
+    "test": "yarn build && mocha -r ts-node/register ./test/*.test.js --exit --timeout 0 --parallel",
     "lint": "eslint --ext .js .",
     "prettier": "npx prettier --write .",
     "watch": "tsc --watch",
@@ -30,6 +30,7 @@
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^7.1.2",
     "prettier": "^2.1.2",
+    "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
   },
   "keywords": [
