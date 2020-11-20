@@ -1,22 +1,25 @@
-const { provider } = require('@openzeppelin/test-environment');
-const chai = require('chai');
-const ethers = require('ethers');
+import chai from 'chai';
+import { provider } from '@openzeppelin/test-environment';
+import { ethers } from 'ethers';
 
 // umbra-js components
 import { RandomNumber } from '../src/classes/RandomNumber';
 import { KeyPair } from '../src/classes/KeyPair';
-const utils = require('../build/utils/utils');
+import * as utils from '../src/utils/utils';
+
+import { ExternalProvider } from '../src/types';
 
 const { expect } = chai;
+const web3Provider = (provider as unknown) as ExternalProvider;
+const numberOfRuns = 1000; // number of runs for tests that execute in a loop
 
-// Address, public key, and private key from first deterministic ganache account
+// Address, public key (not used), and private key from first deterministic ganache account
 const address = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1';
-const publicKey =
-  '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
+// const publicKey = '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
 const privateKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d';
 
 describe('KeyPair class', () => {
-  let wallet;
+  let wallet: ethers.Wallet;
 
   beforeEach(() => {
     wallet = ethers.Wallet.createRandom();
@@ -41,7 +44,7 @@ describe('KeyPair class', () => {
     const txHash = '0x285899397217daba600899add0953eb621605497fcd4979afea9409f81d8b7fa';
     const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
     // Create instance and check result
-    const keyPair = await KeyPair.instanceFromTransaction(txHash, provider);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash, web3Provider);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -50,7 +53,7 @@ describe('KeyPair class', () => {
     const txHash = '0x71dedd00076997826edbe23bf6f4940bf6508f2e22659ebaec5ab0b1c7aac0e7';
     const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
     // Create instance and check result
-    const keyPair = await KeyPair.instanceFromTransaction(txHash, provider);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash, web3Provider);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -59,7 +62,7 @@ describe('KeyPair class', () => {
     const txHash = '0x8d927f481eea24b80625529db1bc59528a805f70b2669b8d2280bb26fd35ffd5';
     const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
     // Create instance and check result
-    const keyPair = await KeyPair.instanceFromTransaction(txHash, provider);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash, web3Provider);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -69,7 +72,7 @@ describe('KeyPair class', () => {
     const sendersPublicKey =
       '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
     // Create instance and check result
-    const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, provider);
+    const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, web3Provider);
     expect(recoveredPublicKey).to.equal(sendersPublicKey);
   });
 
@@ -88,16 +91,15 @@ describe('KeyPair class', () => {
 
     expect(keyPair1.publicKeyHex).to.equal(keyPair2.publicKeyHex);
     expect(keyPair1.publicKeyHexSlim).to.equal(keyPair2.publicKeyHexSlim);
-    expect(keyPair1.publicKeyHeCoords).to.equal(keyPair2.publicKeyHeCoords);
-    expect(keyPair1.publicKeyHeCoords).to.equal(keyPair2.publicKeyHeCoords);
+    expect(keyPair1.publicKeyHexCoords.x).to.equal(keyPair2.publicKeyHexCoords.x);
+    expect(keyPair1.publicKeyHexCoords.y).to.equal(keyPair2.publicKeyHexCoords.y);
     expect(keyPair1.publicKeyBN.toHexString()).to.equal(keyPair2.publicKeyBN.toHexString());
     expect(JSON.stringify(keyPair1.publicKeyEC)).to.equal(JSON.stringify(keyPair2.publicKeyEC));
   });
 
   it('supports encryption and decryption of the random number', async () => {
-    const numRuns = 1000;
-    for (let i = 0; i < numRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
+    for (let i = 0; i < numberOfRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
       // Do a bunch of tests with random wallets and numbers
       wallet = ethers.Wallet.createRandom();
       // Encrypt payload
@@ -112,9 +114,8 @@ describe('KeyPair class', () => {
   });
 
   it('lets sender generate stealth receiving address that recipient can access', () => {
-    const numRuns = 1000;
-    for (let i = 0; i < numRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
+    for (let i = 0; i < numberOfRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
       // Generate random number
       const randomNumber = new RandomNumber();
       // Sender computes receiving address from random number and recipient's public key
@@ -130,9 +131,8 @@ describe('KeyPair class', () => {
   });
 
   it('lets multiplication be performed with RandomNumber class or hex string', () => {
-    const numRuns = 1000;
-    for (let i = 0; i < numRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
+    for (let i = 0; i < numberOfRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
       // Generate random number and wallet
       const randomNumber = new RandomNumber();
       const randomWallet = ethers.Wallet.createRandom();
@@ -157,9 +157,8 @@ describe('KeyPair class', () => {
 
   it('works for any randomly generated number and wallet', () => {
     let numFailures = 0;
-    const numRuns = 1000;
-    for (let i = 0; i < numRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numRuns}...`);
+    for (let i = 0; i < numberOfRuns; i += 1) {
+      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
       // Generate random number and wallet
       const randomNumber = new RandomNumber();
       const randomWallet = ethers.Wallet.createRandom();

@@ -1,8 +1,11 @@
 import { DomainService } from '../src/classes/DomainService';
-const { provider } = require('@openzeppelin/test-environment');
-const { Resolution, Eip1993Factories } = require('@unstoppabledomains/resolution');
-const chai = require('chai');
-const constants = require('../build/constants.json');
+import { provider } from '@openzeppelin/test-environment';
+import { Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
+import chai from 'chai';
+import constants from '../build/constants.json';
+
+import type { Web3Version0Provider } from '@unstoppabledomains/resolution/build/types';
+import { ExternalProvider } from '../src/types';
 
 const { CNS_REGISTRY } = constants;
 const { expect } = chai;
@@ -10,12 +13,14 @@ const { expect } = chai;
 const resolution = new Resolution({
   blockchain: {
     cns: {
-      provider: Eip1993Factories.fromWeb3Version0Provider(provider),
+      provider: Eip1993Factories.fromWeb3Version0Provider(
+        (provider as unknown) as Web3Version0Provider
+      ),
       registry: CNS_REGISTRY,
     },
   },
 });
-const domainService = new DomainService(provider, resolution);
+const domainService = new DomainService((provider as unknown) as ExternalProvider, resolution);
 
 // Truth parameters to test against
 const ensName = 'msolomon.eth';

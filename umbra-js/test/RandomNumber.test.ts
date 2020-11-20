@@ -1,14 +1,15 @@
 import { RandomNumber } from '../src/classes/RandomNumber';
-const chai = require('chai');
-const ethers = require('ethers');
-const { padHex } = require('../build/utils/utils');
+import chai from 'chai';
+import { ethers } from 'ethers';
+import { padHex } from '../src/utils/utils';
 
 const { expect } = chai;
 const { BigNumber, utils } = ethers;
+const numberOfRuns = 1000; // number of runs for tests that execute in a loop
 const zeroPrefix = '00000000000000000000000000000000'; // 16 bytes of zeros
 
 describe('RandomNumber class', () => {
-  let random;
+  let random: RandomNumber;
 
   beforeEach(() => {
     random = new RandomNumber();
@@ -20,7 +21,7 @@ describe('RandomNumber class', () => {
   });
 
   it('returns random value as a 32 byte hex string with 16 bytes of leading zeros', () => {
-    for (let i = 0; i < 1000; i += 1) {
+    for (let i = 0; i < numberOfRuns; i += 1) {
       random = new RandomNumber();
       const hex = random.asHex;
       const first16Bytes = hex.slice(2, 34);
@@ -35,7 +36,7 @@ describe('RandomNumber class', () => {
   });
 
   it('returns random value as a hex string without the 0x prefix', () => {
-    for (let i = 0; i < 1000; i += 1) {
+    for (let i = 0; i < numberOfRuns; i += 1) {
       random = new RandomNumber();
       const hex = random.asHexSlim;
       const first16Bytes = hex.slice(0, 32);
@@ -83,12 +84,10 @@ describe('RandomNumber class', () => {
   });
 
   it('lets the user set a payload extension when generating a random number', () => {
-    for (let i = 0; i < 1000; i += 1) {
+    for (let i = 0; i < numberOfRuns; i += 1) {
       // Generate random hex string with the correct format
       const randomHexString = `0x${padHex(
-        BigNumber.from(utils.shuffled(utils.randomBytes(16)))
-          .toHexString()
-          .slice(2),
+        BigNumber.from(utils.randomBytes(16)).toHexString().slice(2),
         16
       )}`;
 

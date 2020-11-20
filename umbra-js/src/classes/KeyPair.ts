@@ -6,9 +6,10 @@ import { ethers } from 'ethers';
 import type { RandomNumber } from './RandomNumber';
 import { ExternalProvider } from '../types';
 
-const EC = require('elliptic').ec;
-const { keccak256 } = require('js-sha3');
-const { padHex, recoverPublicKeyFromTransaction } = require('../utils/utils');
+import { ec as EC } from 'elliptic';
+import BN from 'bn.js';
+import { keccak256 } from 'js-sha3';
+import { padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
 
 const ec = new EC('secp256k1');
 const { utils, BigNumber } = ethers;
@@ -25,7 +26,7 @@ export class KeyPair {
   // Private key is optional, so initialize to null
   readonly privateKeyHex: string | null = null;
   readonly privateKeyHexSlim: string | null = null;
-  readonly privateKeyEC: string | null = null;
+  readonly privateKeyEC: EC.KeyPair | null = null;
   readonly privateKeyBN: ethers.BigNumber | null = null;
   /**
    * @notice Creates new instance from a public key or private key
@@ -179,7 +180,7 @@ export class KeyPair {
       : (value as RandomNumber).asHexSlim; // provided RandomNumber
 
     // Perform the multiplication
-    const publicKey = this.publicKeyEC.getPublic().mul(number);
+    const publicKey = this.publicKeyEC.getPublic().mul(new BN(number, 16));
 
     // Get x,y hex strings
     const x = padHex(publicKey.getX().toString('hex'));
@@ -208,7 +209,7 @@ export class KeyPair {
 
     // Modulo operation to get private key to be in correct range, where ec.n gives the
     // order of our curve. We add the 0x prefix as it's required by ethers.js
-    const privateKeyMod = privateKeyFull.mod(`0x${ec.n.toString('hex')}`);
+    const privateKeyMod = privateKeyFull.mod(`0x${(ec.n as BN).toString('hex')}`);
 
     // Remove 0x prefix to pad hex value, then add back 0x prefix
     const privateKey = `0x${padHex(privateKeyMod.toHexString().slice(2))}`;

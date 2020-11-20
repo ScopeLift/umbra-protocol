@@ -4,7 +4,7 @@
   "description": "Send and receive stealth payments",
   "main": "index.js",
   "scripts": {
-    "test": "yarn build && mocha -r ts-node/register ./test/*.test.js --exit --timeout 0 --parallel",
+    "test": "yarn build && mocha -r ts-node/register ./test/*.test.ts --exit --timeout 0",
     "lint": "eslint --ext .js .",
     "prettier": "npx prettier --write .",
     "watch": "tsc --watch",
@@ -23,6 +23,9 @@
   },
   "devDependencies": {
     "@openzeppelin/test-environment": "^0.1.4",
+    "@types/chai": "^4.2.14",
+    "@types/elliptic": "^6.4.12",
+    "@types/mocha": "^8.0.4",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
