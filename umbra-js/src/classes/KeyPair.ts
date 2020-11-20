@@ -62,7 +62,7 @@ export class KeyPair {
       this.publicKeyHex = key;
     } else {
       throw new Error(
-        'Key must be a 66 character private key, a 132 character public key, or a transaction hash with isTxHash set to true'
+        'Key must be a 66 character hex private key or a 132 character hex public key'
       );
     }
   }
