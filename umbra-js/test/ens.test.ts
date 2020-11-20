@@ -1,6 +1,7 @@
-const { provider } = require('@openzeppelin/test-environment');
-const chai = require('chai');
-const ens = require('../build/utils/ens');
+import chai from 'chai';
+import { provider } from '@openzeppelin/test-environment';
+import * as ens from '../build/utils/ens';
+import { ExternalProvider } from '../src/types';
 
 const { expect } = chai;
 
@@ -20,17 +21,17 @@ describe('ENS functions', () => {
   });
 
   it('gets the signature associated with an ENS address', async () => {
-    const signature = await ens.getSignature(name, provider);
+    const signature = await ens.getSignature(name, (provider as unknown) as ExternalProvider);
     expect(signature).to.equal(nameSignature);
   });
 
   it('gets the public key associated with an ENS address', async () => {
-    const publicKey = await ens.getPublicKey(name, provider);
+    const publicKey = await ens.getPublicKey(name, (provider as unknown) as ExternalProvider);
     expect(publicKey).to.equal(namePublicKey);
   });
 
   it('gets the bytecode associated with an ENS address', async () => {
-    const bytecode = await ens.getBytecode(name, provider);
+    const bytecode = await ens.getBytecode(name, (provider as unknown) as ExternalProvider);
     expect(bytecode).to.equal(nameBytecode);
   });
 
@@ -38,8 +39,8 @@ describe('ENS functions', () => {
     // TODO currently fails since provider account is not the msolomon.eth account, so
     // to implement this test we need to have the ganache account register an ENS domain
     const dummySignature = '0x123';
-    await ens.setSignature(name, provider, dummySignature);
-    const signature = await ens.getSignature(name, provider);
+    await ens.setSignature(name, (provider as unknown) as ExternalProvider, dummySignature);
+    const signature = await ens.getSignature(name, (provider as unknown) as ExternalProvider);
     expect(signature).to.equal(dummySignature);
   });
 });

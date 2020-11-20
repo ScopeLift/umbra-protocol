@@ -4,8 +4,8 @@
 
 import { Resolution } from '@unstoppabledomains/resolution';
 import { ExternalProvider } from '../types';
-const cns = require('../utils/cns');
-const ens = require('../utils/ens');
+import * as cns from '../utils/cns';
+import * as ens from '../utils/ens';
 
 export class DomainService {
   /**

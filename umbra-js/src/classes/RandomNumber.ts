@@ -5,9 +5,10 @@
  */
 
 import { ethers } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
+import { hexZeroPad, isHexString } from '@ethersproject/bytes';
+import { randomBytes } from '@ethersproject/random';
 
-const { BigNumber, utils } = ethers;
-const { hexZeroPad } = utils;
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
 export class RandomNumber {
@@ -22,12 +23,12 @@ export class RandomNumber {
    */
   constructor(readonly payloadExtension: string = zeroPrefix) {
     // Generate default random number without payload extension
-    const randomNumberAsBytes = utils.randomBytes(this.randomLength);
+    const randomNumberAsBytes = randomBytes(this.randomLength);
     this.value = BigNumber.from(randomNumberAsBytes);
 
     // If a payload extension was provided, validate it
     if (payloadExtension !== zeroPrefix) {
-      if (!utils.isHexString(payloadExtension)) {
+      if (!isHexString(payloadExtension)) {
         throw new Error('Payload extension is not a valid hex string');
       }
       if (payloadExtension.length !== 34) {

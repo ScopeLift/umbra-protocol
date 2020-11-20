@@ -1,8 +1,11 @@
-const { provider } = require('@openzeppelin/test-environment');
-const { Resolution, Eip1993Factories } = require('@unstoppabledomains/resolution');
-const chai = require('chai');
-const cns = require('../build/utils/cns');
-const constants = require('../build/constants.json');
+import chai from 'chai';
+import { provider } from '@openzeppelin/test-environment';
+import { Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
+import * as cns from '../build/utils/cns';
+import constants from '../build/constants.json';
+
+import type { Web3Version0Provider } from '@unstoppabledomains/resolution/build/types';
+import { ExternalProvider } from '../src/types';
 
 const { CNS_REGISTRY } = constants;
 const { expect } = chai;
@@ -10,7 +13,9 @@ const { expect } = chai;
 const resolution = new Resolution({
   blockchain: {
     cns: {
-      provider: Eip1993Factories.fromWeb3Version0Provider(provider),
+      provider: Eip1993Factories.fromWeb3Version0Provider(
+        (provider as unknown) as Web3Version0Provider
+      ),
       registry: CNS_REGISTRY,
     },
   },
@@ -45,8 +50,13 @@ describe('СNS functions', () => {
     // TODO currently fails since provider account is not the mvlabat.crypto account, so
     // to implement this test we need to have the ganache account register an CNS domain
     const dummySignature = '0x123';
-    await cns.setSignature(name, provider, resolution, dummySignature);
-    const signature = await cns.getSignature(name, provider);
+    await cns.setSignature(
+      name,
+      (provider as unknown) as ExternalProvider,
+      resolution,
+      dummySignature
+    );
+    const signature = await cns.getSignature(name, resolution);
     expect(signature).to.equal(dummySignature);
   });
 });
