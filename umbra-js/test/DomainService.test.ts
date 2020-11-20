@@ -2,7 +2,7 @@ import { DomainService } from '../src/classes/DomainService';
 import { provider } from '@openzeppelin/test-environment';
 import { Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import chai from 'chai';
-import constants from '../build/constants.json';
+import constants from '../src/constants.json';
 
 import type { Web3Version0Provider } from '@unstoppabledomains/resolution/build/types';
 import { ExternalProvider } from '../src/types';

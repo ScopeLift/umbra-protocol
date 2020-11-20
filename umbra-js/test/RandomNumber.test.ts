@@ -1,10 +1,11 @@
 import { RandomNumber } from '../src/classes/RandomNumber';
 import chai from 'chai';
-import { ethers } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
+import { isHexString } from '@ethersproject/bytes';
+import { randomBytes } from '@ethersproject/random';
 import { padHex } from '../src/utils/utils';
 
 const { expect } = chai;
-const { BigNumber, utils } = ethers;
 const numberOfRuns = 1000; // number of runs for tests that execute in a loop
 const zeroPrefix = '00000000000000000000000000000000'; // 16 bytes of zeros
 
@@ -27,7 +28,7 @@ describe('RandomNumber class', () => {
       const first16Bytes = hex.slice(2, 34);
       const last16Bytes = hex.slice(34);
 
-      expect(utils.isHexString(hex)).to.be.true;
+      expect(isHexString(hex)).to.be.true;
       expect(hex.length).to.equal(66); // 32 bytes plus leading 0x prefix
       expect(first16Bytes).to.equal(zeroPrefix);
       expect(last16Bytes).to.not.equal(zeroPrefix);
@@ -42,7 +43,7 @@ describe('RandomNumber class', () => {
       const first16Bytes = hex.slice(0, 32);
       const last16Bytes = hex.slice(32);
 
-      expect(utils.isHexString(hex)).to.be.false;
+      expect(isHexString(hex)).to.be.false;
       expect(hex.length).to.equal(64); // 32 bytes without 0x prefix
       expect(first16Bytes).to.equal(zeroPrefix);
       expect(last16Bytes).to.not.equal(zeroPrefix);
@@ -87,7 +88,7 @@ describe('RandomNumber class', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
       // Generate random hex string with the correct format
       const randomHexString = `0x${padHex(
-        BigNumber.from(utils.randomBytes(16)).toHexString().slice(2),
+        BigNumber.from(randomBytes(16)).toHexString().slice(2),
         16
       )}`;
 
@@ -97,7 +98,7 @@ describe('RandomNumber class', () => {
       const first16Bytes = hexSlim.slice(0, 32);
       const last16Bytes = hexSlim.slice(32);
 
-      expect(utils.isHexString(hex)).to.be.true;
+      expect(isHexString(hex)).to.be.true;
       expect(hex.length).to.equal(66); // 32 bytes plus leading
       expect(first16Bytes).to.equal(randomHexString.slice(2));
       expect(first16Bytes).to.not.equal(zeroPrefix);

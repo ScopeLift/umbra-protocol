@@ -1,7 +1,16 @@
-import { ethers } from 'ethers';
+/**
+ * @dev Assortment of helper methods
+ */
+
+import { arrayify, Bytes, Hexable, isHexString, joinSignature } from '@ethersproject/bytes';
+import { hashMessage } from '@ethersproject/hash';
+import { keccak256 } from '@ethersproject/keccak256';
+import { resolveProperties } from '@ethersproject/properties';
+import { Web3Provider } from '@ethersproject/providers';
+import { recoverPublicKey } from '@ethersproject/signing-key';
+import { serialize as serializeTransaction } from '@ethersproject/transactions';
 import { ExternalProvider, SignatureLike } from '../types';
-const { utils } = ethers;
-const constants = require('../constants.json');
+import constants from '../constants.json';
 
 /**
  * @notice Adds leading zeroes to ensure hex strings are the expected length.
@@ -19,7 +28,7 @@ const constants = require('../constants.json');
  * @param bytes Number of bytes string should have
  */
 export function padHex(hex: string, bytes = 32) {
-  if (!utils.isHexString) throw new Error('Input is not a valid hex string');
+  if (!isHexString) throw new Error('Input is not a valid hex string');
   if (hex.slice(0, 2) === '0x') throw new Error('Input must not contain 0x prefix');
   return hex.padStart(bytes * 2, '0');
 }
@@ -28,10 +37,8 @@ export function padHex(hex: string, bytes = 32) {
  * @notice Convert hex string with 0x prefix into Buffer
  * @param value Hex string to convert
  */
-export function hexStringToBuffer(
-  value: string | number | ethers.utils.Bytes | ethers.utils.Hexable
-) {
-  return Buffer.from(utils.arrayify(value));
+export function hexStringToBuffer(value: string | number | Bytes | Hexable) {
+  return Buffer.from(arrayify(value));
 }
 
 /**
@@ -43,7 +50,7 @@ export function hexStringToBuffer(
  */
 export async function recoverPublicKeyFromTransaction(txHash: string, provider: ExternalProvider) {
   // Get transaction data
-  const ethersProvider = new ethers.providers.Web3Provider(provider);
+  const ethersProvider = new Web3Provider(provider);
   const tx = await ethersProvider.getTransaction(txHash);
 
   // Get original signature
@@ -52,7 +59,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
     s: tx.s,
     v: tx.v,
   };
-  const signature = utils.joinSignature(splitSignature);
+  const signature = joinSignature(splitSignature);
 
   // Reconstruct transaction data that was originally signed
   const txData = {
@@ -66,13 +73,13 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   };
 
   // Properly format it to get the correct message
-  const resolvedTx = await utils.resolveProperties(txData);
-  const rawTx = utils.serializeTransaction(resolvedTx);
-  const msgHash = utils.keccak256(rawTx);
-  const msgBytes = utils.arrayify(msgHash);
+  const resolvedTx = await resolveProperties(txData);
+  const rawTx = serializeTransaction(resolvedTx);
+  const msgHash = keccak256(rawTx);
+  const msgBytes = arrayify(msgHash);
 
   // Recover sender's public key and address
-  const publicKey = utils.recoverPublicKey(msgBytes, signature);
+  const publicKey = recoverPublicKey(msgBytes, signature);
   return publicKey;
 }
 
@@ -80,8 +87,8 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
  * @notice Returns the public key recovered from the signature
  */
 export async function getPublicKeyFromSignature(signature: SignatureLike) {
-  const msgHash = ethers.utils.hashMessage(constants.UMBRA_MESSAGE);
-  const msgHashBytes = ethers.utils.arrayify(msgHash);
-  const publicKey = await ethers.utils.recoverPublicKey(msgHashBytes, signature);
+  const msgHash = hashMessage(constants.UMBRA_MESSAGE);
+  const msgHashBytes = arrayify(msgHash);
+  const publicKey = await recoverPublicKey(msgHashBytes, signature);
   return publicKey;
 }

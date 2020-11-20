@@ -2,7 +2,8 @@
  * @dev Helper methods for interacting with contracts
  */
 
-import { ethers } from 'ethers';
+import { Contract, ContractInterface } from 'ethers';
+import { Web3Provider } from '@ethersproject/providers';
 import { ExternalProvider } from '../types';
 
 /**
@@ -13,11 +14,11 @@ import { ExternalProvider } from '../types';
  */
 export function createContract(
   address: string,
-  abi: ethers.ContractInterface,
+  abi: ContractInterface,
   provider: ExternalProvider
 ) {
-  const ethersProvider = new ethers.providers.Web3Provider(provider);
+  const ethersProvider = new Web3Provider(provider);
   // Use signer if available, otherwise use provider
   const signer = ethersProvider.getSigner();
-  return new ethers.Contract(address, abi, signer || ethersProvider);
+  return new Contract(address, abi, signer || ethersProvider);
 }

@@ -2,18 +2,19 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import { ethers } from 'ethers';
+import BN from 'bn.js';
+import { ec as EC } from 'elliptic';
+import { Wallet } from 'ethers';
+import { getAddress } from '@ethersproject/address';
+import { BigNumber } from '@ethersproject/bignumber';
+import { arrayify, hexZeroPad, isHexString } from '@ethersproject/bytes';
+import { SigningKey } from '@ethersproject/signing-key';
+import { keccak256 } from 'js-sha3';
 import type { RandomNumber } from './RandomNumber';
+import { padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { ExternalProvider } from '../types';
 
-import { ec as EC } from 'elliptic';
-import BN from 'bn.js';
-import { keccak256 } from 'js-sha3';
-import { padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
-
 const ec = new EC('secp256k1');
-const { utils, BigNumber } = ethers;
-const { hexZeroPad } = utils;
 
 export interface EncryptedPayload {
   ephemeralPublicKey: string;
@@ -27,14 +28,15 @@ export class KeyPair {
   readonly privateKeyHex: string | null = null;
   readonly privateKeyHexSlim: string | null = null;
   readonly privateKeyEC: EC.KeyPair | null = null;
-  readonly privateKeyBN: ethers.BigNumber | null = null;
+  readonly privateKeyBN: BigNumber | null = null;
+
   /**
    * @notice Creates new instance from a public key or private key
    * @param key Can be either (1) hex public key with 0x04 prefix, or (2) hex private key with 0x prefix
    */
   constructor(key: string) {
     // Input checks
-    if (!utils.isHexString(key)) throw new Error('Key must be in hex format with 0x prefix');
+    if (!isHexString(key)) throw new Error('Key must be in hex format with 0x prefix');
 
     // Handle input
     if (key.length === 66) {
@@ -114,7 +116,7 @@ export class KeyPair {
    * @notice Returns the public key as bytes array
    */
   get publicKeyBytes() {
-    return utils.arrayify(this.publicKeyHex);
+    return arrayify(this.publicKeyHex);
   }
 
   /**
@@ -124,7 +126,7 @@ export class KeyPair {
     const hash = keccak256(Buffer.from(this.publicKeyHexSlim, 'hex'));
     const addressBuffer = Buffer.from(hash, 'hex');
     const address = `0x${addressBuffer.slice(-20).toString('hex')}`;
-    return utils.getAddress(address);
+    return getAddress(address);
   }
 
   // ENCRYPTION / DECRYPTION =======================================================================
@@ -135,8 +137,8 @@ export class KeyPair {
    */
   async encrypt(randomNumber: RandomNumber) {
     // Get shared secret to use as encryption key
-    const ephemeralWallet = ethers.Wallet.createRandom();
-    const privateKey = new ethers.utils.SigningKey(ephemeralWallet.privateKey);
+    const ephemeralWallet = Wallet.createRandom();
+    const privateKey = new SigningKey(ephemeralWallet.privateKey);
     const sharedSecret = privateKey.computeSharedSecret(this.publicKeyHex);
 
     // XOR random number with shared secret to get encrypted value
@@ -161,7 +163,7 @@ export class KeyPair {
 
     // Get shared secret to use as decryption key
     const { ephemeralPublicKey, ciphertext } = output;
-    const privateKey = new ethers.utils.SigningKey(this.privateKeyHex);
+    const privateKey = new SigningKey(this.privateKeyHex);
     const sharedSecret = privateKey.computeSharedSecret(ephemeralPublicKey);
 
     // Decrypt
@@ -175,7 +177,7 @@ export class KeyPair {
    * @param value number to multiply by, as RandomNumber or hex string with 0x prefix
    */
   mulPublicKey(value: RandomNumber | string) {
-    const number = utils.isHexString(value)
+    const number = isHexString(value)
       ? (value as string).slice(2) // provided a valid hex string
       : (value as RandomNumber).asHexSlim; // provided RandomNumber
 
@@ -199,7 +201,7 @@ export class KeyPair {
       throw new Error('KeyPair has no associated private key to multiply');
     }
 
-    const number = utils.isHexString(value)
+    const number = isHexString(value)
       ? (value as string) // provided a valid hex string
       : (value as RandomNumber).asHex; // provided RandomNumber
 

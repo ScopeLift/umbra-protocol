@@ -3,11 +3,11 @@
  */
 
 import { ExternalProvider } from '../types';
-const ensNamehash = require('eth-ens-namehash');
-const constants = require('../constants.json');
-const publicResolverAbi = require('../abi/PublicResolver.json');
-const { getPublicKeyFromSignature } = require('./utils');
-const { createContract } = require('../inner/contract');
+import constants from '../constants.json';
+import publicResolverAbi from '../abi/PublicResolver.json';
+import { getPublicKeyFromSignature } from './utils';
+import { createContract } from '../inner/contract';
+const ensNamehash = require('eth-ens-namehash'); // doesn't include TypeScript definitions
 
 const { ENS_PUBLIC_RESOLVER } = constants;
 
