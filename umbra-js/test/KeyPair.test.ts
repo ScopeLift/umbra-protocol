@@ -1,13 +1,11 @@
 import chai from 'chai';
 import { provider } from '@openzeppelin/test-environment';
-import { ethers } from 'ethers';
+import { Wallet } from 'ethers';
+import type { ExternalProvider } from '../src/types';
 
-// umbra-js components
 import { RandomNumber } from '../src/classes/RandomNumber';
 import { KeyPair } from '../src/classes/KeyPair';
 import * as utils from '../src/utils/utils';
-
-import { ExternalProvider } from '../src/types';
 
 const { expect } = chai;
 const web3Provider = (provider as unknown) as ExternalProvider;
@@ -19,10 +17,10 @@ const address = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1';
 const privateKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d';
 
 describe('KeyPair class', () => {
-  let wallet: ethers.Wallet;
+  let wallet: Wallet;
 
   beforeEach(() => {
-    wallet = ethers.Wallet.createRandom();
+    wallet = Wallet.createRandom();
   });
 
   it('initializes an instance with valid private key', () => {
@@ -101,7 +99,7 @@ describe('KeyPair class', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
       if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
       // Do a bunch of tests with random wallets and numbers
-      wallet = ethers.Wallet.createRandom();
+      wallet = Wallet.createRandom();
       // Encrypt payload
       const randomNumber = new RandomNumber();
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
@@ -135,7 +133,7 @@ describe('KeyPair class', () => {
       if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
       // Generate random number and wallet
       const randomNumber = new RandomNumber();
-      const randomWallet = ethers.Wallet.createRandom();
+      const randomWallet = Wallet.createRandom();
       const randomFromPublic = new KeyPair(randomWallet.publicKey);
       const randomFromPrivate = new KeyPair(randomWallet.privateKey);
 
@@ -161,7 +159,7 @@ describe('KeyPair class', () => {
       if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
       // Generate random number and wallet
       const randomNumber = new RandomNumber();
-      const randomWallet = ethers.Wallet.createRandom();
+      const randomWallet = Wallet.createRandom();
       // Sender computes receiving address from random number and recipient's public key
       const recipientFromPublic = new KeyPair(randomWallet.publicKey);
       const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);

@@ -4,13 +4,12 @@
 
 import { BigNumber } from '@ethersproject/bignumber';
 import type { Resolution } from '@unstoppabledomains/resolution';
-import { ExternalProvider } from '../types';
-
-const constants = require('../constants.json');
-const cnsRegistryAbi = require('../abi/CnsRegistry.json');
-const cnsResolverAbi = require('../abi/CnsResolver.json');
-const { createContract } = require('../inner/contract');
-const { getPublicKeyFromSignature } = require('./utils');
+import { getPublicKeyFromSignature } from './utils';
+import type { ExternalProvider } from '../types';
+import constants from '../constants.json';
+import cnsRegistryAbi from '../abi/CnsRegistry.json';
+import cnsResolverAbi from '../abi/CnsResolver.json';
+import { createContract } from '../inner/contract';
 
 const { CNS_REGISTRY } = constants;
 

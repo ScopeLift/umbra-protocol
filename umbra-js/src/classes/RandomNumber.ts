@@ -4,7 +4,6 @@
  * last 16 bytes are the random number
  */
 
-import { ethers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexZeroPad, isHexString } from '@ethersproject/bytes';
 import { randomBytes } from '@ethersproject/random';
@@ -14,7 +13,7 @@ const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 export class RandomNumber {
   readonly randomLength = 16; // 16 bytes of randomness
   readonly fullLength = 32; // pad to number to 32 bytes
-  readonly value: ethers.BigNumber; // random number value
+  readonly value: BigNumber; // random number value
 
   /**
    * @notice Generate a new random number
