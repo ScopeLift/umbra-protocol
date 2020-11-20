@@ -1,6 +1,9 @@
 import chai from 'chai';
 import { provider } from '@openzeppelin/test-environment';
 import { Wallet } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
+import { hexZeroPad } from '@ethersproject/bytes';
+import { randomBytes } from '@ethersproject/random';
 import type { ExternalProvider } from '../src/types';
 
 import { RandomNumber } from '../src/classes/RandomNumber';
@@ -10,11 +13,23 @@ import * as utils from '../src/utils/utils';
 const { expect } = chai;
 const web3Provider = (provider as unknown) as ExternalProvider;
 const numberOfRuns = 1000; // number of runs for tests that execute in a loop
+const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
 // Address, public key (not used), and private key from first deterministic ganache account
 const address = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1';
 // const publicKey = '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
 const privateKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d';
+
+// Generates a random number with a random payload extension if one is not provided
+const generateRandomNumber = (payloadExtension: string | undefined = undefined) => {
+  // If a payload extension was provided, use that
+  if (payloadExtension) {
+    return new RandomNumber(payloadExtension);
+  }
+  // Otherwise, generate a random one to use
+  const randomPayloadExtension = hexZeroPad(BigNumber.from(randomBytes(16)).toHexString(), 16);
+  return new RandomNumber(randomPayloadExtension);
+};
 
 describe('KeyPair class', () => {
   let wallet: Wallet;
@@ -96,14 +111,22 @@ describe('KeyPair class', () => {
   });
 
   it('supports encryption and decryption of the random number', async () => {
+    // Do a bunch of tests with random wallets and numbers
     for (let i = 0; i < numberOfRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
-      // Do a bunch of tests with random wallets and numbers
-      wallet = Wallet.createRandom();
-      // Encrypt payload
-      const randomNumber = new RandomNumber();
+      // Every 100th run, print status update and use the zero payload extension
+      let randomNumber: RandomNumber;
+      if ((i + 1) % 100 === 0) {
+        console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+        randomNumber = generateRandomNumber(zeroPrefix);
+      } else {
+        randomNumber = generateRandomNumber();
+      }
+
+      // Generate random wallet and encrypt payload
+      const wallet = Wallet.createRandom();
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
       const output = await keyPairFromPublic.encrypt(randomNumber); // eslint-disable-line no-await-in-loop
+
       // Decrypt payload
       const keyPairFromPrivate = new KeyPair(wallet.privateKey);
       const plaintext = await keyPairFromPrivate.decrypt(output); // eslint-disable-line no-await-in-loop
@@ -113,15 +136,23 @@ describe('KeyPair class', () => {
 
   it('lets sender generate stealth receiving address that recipient can access', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
-      // Generate random number
-      const randomNumber = new RandomNumber();
+      // Every 100th run, print status update and use the zero payload extension
+      let randomNumber: RandomNumber;
+      if ((i + 1) % 100 === 0) {
+        console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+        randomNumber = generateRandomNumber(zeroPrefix);
+      } else {
+        randomNumber = generateRandomNumber();
+      }
+
       // Sender computes receiving address from random number and recipient's public key
       const recipientFromPublic = new KeyPair(wallet.publicKey);
       const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
+
       // Recipient computes new private key from random number and derives receiving address
       const recipientFromPrivate = new KeyPair(wallet.privateKey);
       const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
+
       // Confirm outputs match
       expect(stealthFromPrivate.address).to.equal(stealthFromPublic.address);
       expect(stealthFromPrivate.publicKeyHex).to.equal(stealthFromPublic.publicKeyHex);
@@ -130,9 +161,16 @@ describe('KeyPair class', () => {
 
   it('lets multiplication be performed with RandomNumber class or hex string', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
-      // Generate random number and wallet
-      const randomNumber = new RandomNumber();
+      // Every 100th run, print status update and use the zero payload extension
+      let randomNumber: RandomNumber;
+      if ((i + 1) % 100 === 0) {
+        randomNumber = generateRandomNumber(zeroPrefix);
+        console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+      } else {
+        randomNumber = generateRandomNumber();
+      }
+
+      // Generate random wallet
       const randomWallet = Wallet.createRandom();
       const randomFromPublic = new KeyPair(randomWallet.publicKey);
       const randomFromPrivate = new KeyPair(randomWallet.privateKey);
@@ -156,16 +194,26 @@ describe('KeyPair class', () => {
   it('works for any randomly generated number and wallet', () => {
     let numFailures = 0;
     for (let i = 0; i < numberOfRuns; i += 1) {
-      if ((i + 1) % 100 === 0) console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
-      // Generate random number and wallet
-      const randomNumber = new RandomNumber();
+      // Every 100th run, print status update and use the zero payload extension
+      let randomNumber: RandomNumber;
+      if ((i + 1) % 100 === 0) {
+        console.log(`Executing run ${i + 1} of ${numberOfRuns}...`);
+        randomNumber = generateRandomNumber(zeroPrefix);
+      } else {
+        randomNumber = generateRandomNumber();
+      }
+
+      // Generate random wallet
       const randomWallet = Wallet.createRandom();
+
       // Sender computes receiving address from random number and recipient's public key
       const recipientFromPublic = new KeyPair(randomWallet.publicKey);
       const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
+
       // Recipient computes new private key from random number and derives receiving address
       const recipientFromPrivate = new KeyPair(randomWallet.privateKey);
       const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
+
       // Confirm outputs match
       if (
         stealthFromPrivate.address !== stealthFromPublic.address ||
