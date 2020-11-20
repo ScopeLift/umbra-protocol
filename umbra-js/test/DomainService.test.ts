@@ -4,7 +4,7 @@ import { Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import chai from 'chai';
 import constants from '../src/constants.json';
 
-import type { Web3Version0Provider } from '@unstoppabledomains/resolution/build/types';
+import type { Web3Version0Provider } from '@unstoppabledomains/resolution';
 import { ExternalProvider } from '../src/types';
 
 const { CNS_REGISTRY } = constants;

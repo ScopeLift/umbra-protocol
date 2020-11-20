@@ -4,6 +4,7 @@ import * as ens from '../build/utils/ens';
 import { ExternalProvider } from '../src/types';
 
 const { expect } = chai;
+const web3Provider = (provider as unknown) as ExternalProvider;
 
 // Truth parameters to test against
 const name = 'msolomon.eth';
@@ -21,17 +22,17 @@ describe('ENS functions', () => {
   });
 
   it('gets the signature associated with an ENS address', async () => {
-    const signature = await ens.getSignature(name, (provider as unknown) as ExternalProvider);
+    const signature = await ens.getSignature(name, web3Provider);
     expect(signature).to.equal(nameSignature);
   });
 
   it('gets the public key associated with an ENS address', async () => {
-    const publicKey = await ens.getPublicKey(name, (provider as unknown) as ExternalProvider);
+    const publicKey = await ens.getPublicKey(name, web3Provider);
     expect(publicKey).to.equal(namePublicKey);
   });
 
   it('gets the bytecode associated with an ENS address', async () => {
-    const bytecode = await ens.getBytecode(name, (provider as unknown) as ExternalProvider);
+    const bytecode = await ens.getBytecode(name, web3Provider);
     expect(bytecode).to.equal(nameBytecode);
   });
 
@@ -39,8 +40,8 @@ describe('ENS functions', () => {
     // TODO currently fails since provider account is not the msolomon.eth account, so
     // to implement this test we need to have the ganache account register an ENS domain
     const dummySignature = '0x123';
-    await ens.setSignature(name, (provider as unknown) as ExternalProvider, dummySignature);
-    const signature = await ens.getSignature(name, (provider as unknown) as ExternalProvider);
+    await ens.setSignature(name, web3Provider, dummySignature);
+    const signature = await ens.getSignature(name, web3Provider);
     expect(signature).to.equal(dummySignature);
   });
 });
