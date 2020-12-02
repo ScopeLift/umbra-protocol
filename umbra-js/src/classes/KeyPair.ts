@@ -22,6 +22,7 @@ export interface EncryptedPayload {
 }
 
 export class KeyPair {
+  // Public key as hex string with 0x prefix
   readonly publicKeyHex: string;
 
   // Private key is optional, so initialize to null

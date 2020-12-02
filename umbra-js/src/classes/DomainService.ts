@@ -2,17 +2,33 @@
  * @dev Wraps ENS and CNS into a common interface
  */
 
-import { Resolution } from '@unstoppabledomains/resolution';
+import { Resolution, Eip1993Factories, Web3Version0Provider } from '@unstoppabledomains/resolution';
 import { ExternalProvider } from '../types';
 import * as cns from '../utils/cns';
 import * as ens from '../utils/ens';
+import constants from '../constants.json';
+
+const { CNS_REGISTRY } = constants;
 
 export class DomainService {
+  // Resolution instance of @unstoppabledomains/resolution
+  readonly udResolution: Resolution;
+
   /**
    * @param provider web3 provider to use (not an ethers provider)
-   * @param udResolution Resolution instance of @unstoppabledomains/resolution
    */
-  constructor(readonly provider: ExternalProvider, readonly udResolution: Resolution) {}
+  constructor(readonly provider: ExternalProvider) {
+    this.udResolution = new Resolution({
+      blockchain: {
+        cns: {
+          provider: Eip1993Factories.fromWeb3Version0Provider(
+            (provider as unknown) as Web3Version0Provider
+          ),
+          registry: CNS_REGISTRY,
+        },
+      },
+    });
+  }
 
   /**
    * @notice Computes namehash of the input domain, normalized to ENS or CNS compatibility
