@@ -12,7 +12,7 @@ import * as utils from '../src/utils/utils';
 
 const { expect } = chai;
 const web3Provider = (provider as unknown) as ExternalProvider;
-const numberOfRuns = 1000; // number of runs for tests that execute in a loop
+const numberOfRuns = 100; // number of runs for tests that execute in a loop
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
 // Address, public key (not used), and private key from first deterministic ganache account
