@@ -6,7 +6,7 @@ import { Resolution, Eip1993Factories, Web3Version0Provider } from '@unstoppable
 import { ExternalProvider } from '../types';
 import * as cns from '../utils/cns';
 import * as ens from '../utils/ens';
-import constants from '../constants.json';
+import * as constants from '../constants.json';
 
 const { CNS_REGISTRY } = constants;
 
