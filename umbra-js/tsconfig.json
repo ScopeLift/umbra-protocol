@@ -3,7 +3,7 @@
     "allowJs": true,
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es2015", "es5", "dom"],
+    "lib": ["es2015", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmitOnError": true,
