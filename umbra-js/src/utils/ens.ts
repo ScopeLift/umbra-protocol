@@ -3,8 +3,8 @@
  */
 
 import { ExternalProvider } from '../types';
-import constants from '../constants.json';
-import publicResolverAbi from '../abi/PublicResolver.json';
+import * as constants from '../constants.json';
+import * as publicResolverAbi from '../abi/PublicResolver.json';
 import { getPublicKeyFromSignature } from './utils';
 import { createContract } from '../inner/contract';
 const ensNamehash = require('eth-ens-namehash'); // doesn't include TypeScript definitions

@@ -10,7 +10,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { recoverPublicKey } from '@ethersproject/signing-key';
 import { serialize as serializeTransaction } from '@ethersproject/transactions';
 import { ExternalProvider, SignatureLike } from '../types';
-import constants from '../constants.json';
+import * as constants from '../constants.json';
 
 /**
  * @notice Adds leading zeroes to ensure hex strings are the expected length.

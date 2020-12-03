@@ -2,7 +2,7 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import BN from 'bn.js';
+import * as BN from 'bn.js';
 import { ec as EC } from 'elliptic';
 import { Wallet } from 'ethers';
 import { getAddress } from '@ethersproject/address';

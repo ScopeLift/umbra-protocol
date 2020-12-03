@@ -6,9 +6,9 @@ import { BigNumber } from '@ethersproject/bignumber';
 import type { Resolution } from '@unstoppabledomains/resolution';
 import { getPublicKeyFromSignature } from './utils';
 import type { ExternalProvider } from '../types';
-import constants from '../constants.json';
-import cnsRegistryAbi from '../abi/CnsRegistry.json';
-import cnsResolverAbi from '../abi/CnsResolver.json';
+import * as constants from '../constants.json';
+import * as cnsRegistryAbi from '../abi/CnsRegistry.json';
+import * as cnsResolverAbi from '../abi/CnsResolver.json';
 import { createContract } from '../inner/contract';
 
 const { CNS_REGISTRY } = constants;
