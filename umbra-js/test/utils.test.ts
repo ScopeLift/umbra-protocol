@@ -1,4 +1,4 @@
-import chai from 'chai';
+import * as chai from 'chai';
 import * as utils from '../src/utils/utils';
 
 const { expect } = chai;
