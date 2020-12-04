@@ -1,6 +1,6 @@
 import { DomainService } from '../src/classes/DomainService';
 import { provider } from '@openzeppelin/test-environment';
-import chai from 'chai';
+import * as chai from 'chai';
 import { ExternalProvider } from '../src/types';
 
 const { expect } = chai;

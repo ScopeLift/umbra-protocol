@@ -1,5 +1,5 @@
 import { RandomNumber } from '../src/classes/RandomNumber';
-import chai from 'chai';
+import * as chai from 'chai';
 import { BigNumber } from '@ethersproject/bignumber';
 import { isHexString } from '@ethersproject/bytes';
 import { randomBytes } from '@ethersproject/random';

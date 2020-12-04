@@ -1,8 +1,8 @@
-import chai from 'chai';
+import * as chai from 'chai';
 import { provider } from '@openzeppelin/test-environment';
 import { Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import * as cns from '../build/utils/cns';
-import constants from '../build/constants.json';
+import * as constants from '../build/constants.json';
 
 import type { Web3Version0Provider } from '@unstoppabledomains/resolution';
 import { ExternalProvider } from '../src/types';

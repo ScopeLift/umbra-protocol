@@ -1,4 +1,4 @@
-import chai from 'chai';
+import * as chai from 'chai';
 import { provider } from '@openzeppelin/test-environment';
 import * as ens from '../build/utils/ens';
 import { ExternalProvider } from '../src/types';
