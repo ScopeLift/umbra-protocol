@@ -21,9 +21,7 @@ export class DomainService {
     this.udResolution = new Resolution({
       blockchain: {
         cns: {
-          provider: Eip1993Factories.fromWeb3Version0Provider(
-            (provider as unknown) as Web3Version0Provider
-          ),
+          provider: Eip1993Factories.fromWeb3Version0Provider(provider as Web3Version0Provider),
           registry: CNS_REGISTRY,
         },
       },

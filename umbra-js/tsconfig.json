@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "allowJs": true,
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2015", "dom"],
