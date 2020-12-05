@@ -20,9 +20,8 @@
     "typescript": "^4.0.3"
   },
   "scripts": {
-    "build": "lerna run build:declarations; lerna run build",
-    "clean": "lerna run clean",
-    "postinstall": "lerna run build:declarations"
+    "build": "lerna run build",
+    "clean": "lerna run clean"
   },
   "husky": {
     "hooks": {

@@ -2,8 +2,8 @@
   "name": "@umbra/umbra-js",
   "version": "0.0.1",
   "description": "Send and receive stealth payments",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "files": ["build/**/*"],
   "scripts": {
     "test": "yarn build && mocha -r ts-node/register ./test/*.test.ts --exit --timeout 0",
@@ -11,6 +11,7 @@
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
     "build": "tsc --build",
+    "clean": "rimraf build",
     "prepare": "yarn build",
     "prepublishOnly" : "yarn lint && yarn test"
   },

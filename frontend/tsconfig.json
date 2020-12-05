@@ -6,6 +6,8 @@
     "outDir": "build",
     "rootDir": "src",
     "baseUrl": ".",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],
