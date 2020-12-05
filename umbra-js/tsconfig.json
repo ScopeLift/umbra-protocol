@@ -3,8 +3,15 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "build",
-    "declaration": true,
-    "emitDeclarationOnly": true
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es2015", "dom"],
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "target": "es5"
   },
-  "include": ["./src/**/*"]
+  "include": ["./src/**/*", "./src/**/*.json"]
 }

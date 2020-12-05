@@ -6,12 +6,4 @@ import * as cns from './utils/cns';
 import * as utils from './utils/utils';
 import * as constants from './constants.json';
 
-export default {
-  KeyPair,
-  RandomNumber,
-  DomainService,
-  ens,
-  cns,
-  utils,
-  constants,
-};
+export { KeyPair, RandomNumber, DomainService, ens, cns, utils, constants };

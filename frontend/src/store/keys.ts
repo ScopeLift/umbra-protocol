@@ -2,7 +2,6 @@ import { computed, ref } from '@vue/composition-api';
 import { ethers } from 'ethers';
 import { KeyPair } from '@umbra/umbra-js';
 import { Signer } from 'components/models';
-type KeyPairType = typeof KeyPair;
 
 // ============================================= State =============================================
 // We have two distinct key pairs generated from the same signature:
@@ -13,8 +12,8 @@ type KeyPairType = typeof KeyPair;
 //     Public Key B   used by sender for encrypting the announcement
 //     Private Key B  used by receiver for decrypting announcements
 
-const keyPairStealthAddress = ref<KeyPairType>();
-const keyPairEncryption = ref<KeyPairType>();
+const keyPairStealthAddress = ref<KeyPair>();
+const keyPairEncryption = ref<KeyPair>();
 
 // ======================================= Helper Functions ========================================
 /**
