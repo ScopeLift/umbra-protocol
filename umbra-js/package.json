@@ -7,7 +7,7 @@
   "files": ["build/**/*"],
   "scripts": {
     "test": "yarn build && mocha -r ts-node/register ./test/*.test.ts --exit --timeout 0",
-    "lint": "eslint --ext .js .",
+    "lint": "eslint --ext .js,.ts ./",
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
     "build": "tsc --build",
