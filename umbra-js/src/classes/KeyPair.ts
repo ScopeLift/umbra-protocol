@@ -136,7 +136,7 @@ export class KeyPair {
    * @param randomNumber Random number as instance of RandomNumber class
    * @returns Hex strings of uncompressed 65 byte public key and 32 byte ciphertext
    */
-  async encrypt(randomNumber: RandomNumber) {
+  encrypt(randomNumber: RandomNumber) {
     // Get shared secret to use as encryption key
     const ephemeralWallet = Wallet.createRandom();
     const privateKey = new SigningKey(ephemeralWallet.privateKey);
@@ -157,7 +157,7 @@ export class KeyPair {
    * @param output Output from the encrypt method, which can be constructed from on-chain events
    * @returns Decrypted ciphertext as hex string
    */
-  async decrypt(output: EncryptedPayload) {
+  decrypt(output: EncryptedPayload) {
     if (!this.privateKeyHex) {
       throw new Error('KeyPair has no associated private key to decrypt with');
     }

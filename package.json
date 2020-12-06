@@ -22,16 +22,13 @@
   "scripts": {
     "build": "lerna run build",
     "clean": "lerna run clean",
-    "lint": "lerna run lint"
+    "lint": "lerna run lint",
+    "prepare": "lerna run prepare"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lerna run precommit"
     }
-  },
-  "lint-staged": {
-    "*.{js,ts,vue}": "eslint --cache --fix",
-    "*.{js,ts,css,md}": "prettier --write"
   },
   "volta": {
     "node": "12.19.0",

@@ -49,7 +49,7 @@ export async function getSignature(name: string, resolution: Resolution) {
 export async function getPublicKey(name: string, resolution: Resolution) {
   const signature = await getSignature(name, resolution);
   if (!signature) return undefined;
-  return await getPublicKeyFromSignature(signature);
+  return getPublicKeyFromSignature(signature);
 }
 
 /**
