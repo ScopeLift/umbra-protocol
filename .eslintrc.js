@@ -1,55 +1,32 @@
 module.exports = {
-  root: true,
-
-  parserOptions: {
-    parser: 'babel-eslint',
-    sourceType: 'module'
-  },
-
   env: {
-    browser: true,
-    mocha: true,
+    es2021: true,
   },
 
   extends: [
-    'airbnb-base',
-    'plugin:chai-friendly/recommended',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:vue/essential',
+    'prettier',
+    'prettier/@typescript-eslint',
+    'prettier/vue',
   ],
 
-  plugins: [
-    'chai-friendly',
-  ],
+  plugins: ['@typescript-eslint', 'vue'],
 
-  globals: {
-    'ga': true, // Google Analytics
-    'cordova': true,
-    '__statics': true,
-    'process': true,
-    'Capacitor': true,
-    'chrome': true
-  },
-
-  // add your custom rules here
   rules: {
-    'no-param-reassign': 'off',
-
-    'import/first': 'off',
-    'import/named': 'error',
-    'import/namespace': 'error',
-    'import/default': 'error',
-    'import/export': 'error',
-    'import/extensions': 'off',
-    'import/no-unresolved': 'off',
-    'import/no-extraneous-dependencies': 'off',
-    'import/prefer-default-export': 'off',
+    'prefer-const': 'error',
     'prefer-promise-reject-errors': 'off',
-
-    // allow debugger during development only
+    quotes: ['warn', 'single', { avoidEscape: true }],
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
+    '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-
-    // Max line length of 100 characters, except for lines with comments or strings
-    'max-len': ['error', {
-      code: 100, ignoreComments: true, ignoreTrailingComments: true, ignoreStrings: true,
-    }],
-  }
-}
+  },
+};

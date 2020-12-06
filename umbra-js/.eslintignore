@@ -1,3 +1,6 @@
 /dist
 /node_modules
 /build
+/test
+.eslintrc.js
+test-environment.config.js
