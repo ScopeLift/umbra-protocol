@@ -2,12 +2,12 @@
  * @dev Functions for interacting with the Ehereum Name Service (ENS)
  */
 
-import { ExternalProvider } from '../types';
+import { ExternalProvider, EnsNamehash } from '../types';
 import * as constants from '../constants.json';
 import * as publicResolverAbi from '../abi/PublicResolver.json';
 import { getPublicKeyFromSignature } from './utils';
 import { createContract } from '../inner/contract';
-const ensNamehash = require('eth-ens-namehash'); // doesn't include TypeScript definitions
+const ensNamehash: EnsNamehash = require('eth-ens-namehash'); // doesn't include TypeScript definitions
 
 const { ENS_PUBLIC_RESOLVER } = constants;
 
@@ -30,7 +30,7 @@ export function namehash(name: string) {
  */
 export async function getSignature(name: string, provider: ExternalProvider) {
   const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
-  const signature = await publicResolver.text(namehash(name), umbraKeySignature);
+  const signature: string = await publicResolver.text(namehash(name), umbraKeySignature);
   return signature;
 }
 
@@ -42,7 +42,7 @@ export async function getSignature(name: string, provider: ExternalProvider) {
 export async function getPublicKey(name: string, provider: ExternalProvider) {
   const signature = await getSignature(name, provider);
   if (!signature) return undefined;
-  return await getPublicKeyFromSignature(signature);
+  return getPublicKeyFromSignature(signature);
 }
 
 /**
@@ -53,7 +53,7 @@ export async function getPublicKey(name: string, provider: ExternalProvider) {
  */
 export async function getBytecode(name: string, provider: ExternalProvider) {
   const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
-  const bytecode = await publicResolver.text(namehash(name), umbraKeyBytecode);
+  const bytecode: string = await publicResolver.text(namehash(name), umbraKeyBytecode);
   return bytecode;
 }
 

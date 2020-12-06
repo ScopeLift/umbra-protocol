@@ -86,9 +86,9 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
 /**
  * @notice Returns the public key recovered from the signature
  */
-export async function getPublicKeyFromSignature(signature: SignatureLike) {
+export function getPublicKeyFromSignature(signature: SignatureLike) {
   const msgHash = hashMessage(constants.UMBRA_MESSAGE);
   const msgHashBytes = arrayify(msgHash);
-  const publicKey = await recoverPublicKey(msgHashBytes, signature);
+  const publicKey = recoverPublicKey(msgHashBytes, signature);
   return publicKey;
 }
