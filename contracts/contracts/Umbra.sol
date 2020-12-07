@@ -105,7 +105,7 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     require(msg.value == toll, "Umbra: Must pay the exact toll");
     require(
       tokenPayments[_receiver].amount == 0,
-      "Umbra: Cannot resend tokens to used stealth address"
+      "Umbra: Cannot send more tokens to stealth address"
       );
 
     tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});

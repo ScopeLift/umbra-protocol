@@ -9,11 +9,6 @@ const { argumentBytes } = require('./sample-data');
 const { toWei } = web3.utils;
 const { BN } = web3.utils;
 
-// TODO NEXT: Enable token re-use and adjust existing tests. Is there a test sending ETH to
-// a Token receiver? There probs should be. Also, need to test withdraw after receiving multiple
-// sends, and also receving an additional send after withdrawing previous sends. Also, should
-// disallow withdraw if balance 0. Etc...
-
 describe('Umbra', () => {
   const [
     owner,
@@ -27,13 +22,24 @@ describe('Umbra', () => {
     other,
   ] = accounts;
 
+  // Toll value at contract deployment
   const deployedToll = toWei('0.01', 'ether');
+
+  // Toll value after update by administrator
   const updatedToll = toWei('0.001', 'ether');
+
+  // Eth amounts used in specific payments during test execution
   const ethPayment = toWei('1.6', 'ether');
   const secondEthPayment = toWei('7.5', 'ether');
+
+  // Token amounts used in specific payments during test execution
   const tokenAmount = toWei('100', 'ether');
   const secondTokenAmount = toWei('4.1', 'ether');
+
+  // The total token amount that will be held by the contract at any one time during test execution
   const totalTokenAmount = ( (new BN(tokenAmount)).add(new BN(secondTokenAmount)) ).toString();
+
+  // The amount of tokens that need to be minted to the payer for full test execution
   const mintTokenAmount = ( (new BN(totalTokenAmount)).add(new BN(tokenAmount)) ).toString();
 
   before(async () => {
@@ -264,7 +270,7 @@ describe('Umbra', () => {
         ...argumentBytes,
         { from: payer2, value: toll },
       ),
-      'Umbra: Cannot resend tokens to used stealth address',
+      'Umbra: Cannot send more tokens to stealth address',
     );
   });
 
