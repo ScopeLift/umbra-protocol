@@ -3,10 +3,12 @@
   "version": "0.0.1",
   "description": "Contracts for the Umbra Protocol",
   "scripts": {
-    "compile": "npx oz compile",
-    "test": "npx oz compile && mocha --exit --timeout 0 test/*-test.js",
-    "gas": "npx oz compile && mocha --exit --timeout 0 test/gastests.js",
-    "gas-optimized": "npx oz compile --optimizer on --optimizer-runs 1 && mocha --exit --timeout 0 test/gastests.js"
+    "compile": "oz compile",
+    "build": "yarn compile",
+    "clean": "rimraf build",
+    "test": "oz compile && mocha --exit --timeout 0 test/*-test.js",
+    "gas": "oz compile && mocha --exit --timeout 0 test/gastests.js",
+    "gas-optimized": "oz compile --optimizer on --optimizer-runs 1 && mocha --exit --timeout 0 test/gastests.js"
   },
   "dependencies": {
     "@opengsn/gsn": "^2.0.0-beta.1.3",
