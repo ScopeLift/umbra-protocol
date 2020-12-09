@@ -13,34 +13,28 @@ contract UmbraPaymaster is BasePaymaster {
     umbraAddr = _umbraAddr;
   }
 
-  function versionPaymaster() external override view returns (string memory) {
+  function versionPaymaster() external view override returns (string memory) {
     return "1.0.0";
   }
 
   function preRelayedCall(
-        GsnTypes.RelayRequest calldata relayRequest,
-        bytes calldata signature,
-        bytes calldata approvalData,
-        uint256 maxPossibleGas
-    )
-    external
-    override
-    returns (bytes memory context, bool rejectOnRecipientRevert) {
-      (signature, approvalData, maxPossibleGas); // to silence compiler warnings
+    GsnTypes.RelayRequest calldata relayRequest,
+    bytes calldata signature,
+    bytes calldata approvalData,
+    uint256 maxPossibleGas
+  ) external override returns (bytes memory context, bool rejectOnRecipientRevert) {
+    (signature, approvalData, maxPossibleGas); // to silence compiler warnings
 
-      require(relayRequest.request.to == umbraAddr, "UmbraPaymaster: Not Target");
-      return (abi.encode(0x0), true);
-    }
+    require(relayRequest.request.to == umbraAddr, "UmbraPaymaster: Not Target");
+    return (abi.encode(0x0), true);
+  }
 
   function postRelayedCall(
     bytes calldata context,
     bool success,
     uint256 gasUseWithoutPost,
     GsnTypes.RelayData calldata relayData
-  )
-  external
-  override
-  relayHubOnly {
+  ) external override relayHubOnly {
     (context, success, gasUseWithoutPost, relayData); // to silence compiler warnings
   }
 }

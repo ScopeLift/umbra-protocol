@@ -68,11 +68,11 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     trustedForwarder = _forwarder;
   }
 
-  function getTrustedForwarder() external override view returns(address) {
+  function getTrustedForwarder() external view override returns (address) {
     return trustedForwarder;
   }
 
-  function versionRecipient() external override view returns (string memory) {
+  function versionRecipient() external view override returns (string memory) {
     return "1.0.0";
   }
 
@@ -84,13 +84,7 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     require(msg.value > toll, "Umbra: Must pay more than the toll");
 
     uint256 amount = msg.value.sub(toll);
-    emit Announcement(
-      _receiver,
-      amount,
-      ETH_TOKEN_PLACHOLDER,
-      _pkx,
-      _ciphertext
-    );
+    emit Announcement(_receiver, amount, ETH_TOKEN_PLACHOLDER, _pkx, _ciphertext);
 
     _receiver.transfer(amount);
   }
@@ -109,12 +103,7 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
       );
 
     tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});
-    emit Announcement(
-      _receiver,
-      _amount,
-      _tokenAddr,
-      _pkx,
-      _ciphertext);
+    emit Announcement(_receiver, _amount, _tokenAddr, _pkx, _ciphertext);
 
     SafeERC20.safeTransferFrom(IERC20(_tokenAddr), _msgSender(), address(this), _amount);
   }
@@ -133,8 +122,8 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
 
   function _msgSender()
     internal
-    override(Context, BaseRelayRecipient)
     view
+    override(Context, BaseRelayRecipient)
     returns (address payable)
   {
     return BaseRelayRecipient._msgSender();

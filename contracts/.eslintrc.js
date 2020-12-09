@@ -17,13 +17,9 @@ module.exports = {
   },
 
   // Rules order is important,
-  extends: [
-    'airbnb-base',
-    'plugin:chai-friendly/recommended',
-  ],
+  extends: ['airbnb-base', 'plugin:chai-friendly/recommended'],
 
-  plugins: [
-  ],
+  plugins: [],
 
   // add your custom rules here
   rules: {
@@ -44,8 +40,14 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 
     // Max line length of 100 characters, except for lines with comments or strings
-    'max-len': ['error', {
-      code: 100, ignoreComments: true, ignoreTrailingComments: true, ignoreStrings: true,
-    }],
+    'max-len': [
+      'error',
+      {
+        code: 100,
+        ignoreComments: true,
+        ignoreTrailingComments: true,
+        ignoreStrings: true,
+      },
+    ],
   },
 };

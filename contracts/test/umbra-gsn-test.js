@@ -18,15 +18,7 @@ const origProvider = web3.currentProvider;
 const tokenAmount = toWei('100', 'ether');
 
 describe('Umbra GSN', () => {
-  const [
-    owner,
-    tollCollector,
-    tollReceiver,
-    payer,
-    receiver,
-    acceptor,
-    other,
-  ] = accounts;
+  const [owner, tollCollector, tollReceiver, payer, receiver, acceptor, other] = accounts;
 
   const deployedToll = toWei('0.001', 'ether');
 
@@ -42,7 +34,9 @@ describe('Umbra GSN', () => {
     // Start the GSN Test environment— this includes deployment of a relay hub, a forwarder, and
     // a stake manager, as well as starting a relay server. It also deploys a naive Paymaster, but we
     // will use our own
-    const gsnInstance = await GsnTestEnvironment.startGsn(Umbra.web3.currentProvider.wrappedProvider.host);
+    const gsnInstance = await GsnTestEnvironment.startGsn(
+      Umbra.web3.currentProvider.wrappedProvider.host,
+    );
 
     // Save the forwader, as we'll need it when sending contract calls via our RelayProvider
     this.forwarder = gsnInstance.deploymentResult.forwarderAddress;
@@ -85,7 +79,7 @@ describe('Umbra GSN', () => {
 
   // Drain the receiver's balance to ensure later that it is able to withdraw the
   // tokens sent to it without having to pay anything for gas.
-  it('should drain the receiver\'s balance', async () => {
+  it("should drain the receiver's balance", async () => {
     const receiverBalance = await web3.eth.getBalance(receiver);
     await web3.eth.sendTransaction({
       from: receiver,

@@ -83,7 +83,7 @@ describe('Umbra', () => {
   it('should not allow someone other than the owner to update the toll', async () => {
     await expectRevert(
       this.umbra.setToll(deployedToll, { from: other }),
-      'Ownable: caller is not the owner',
+      'Ownable: caller is not the owner'
     );
   });
 
@@ -93,7 +93,7 @@ describe('Umbra', () => {
 
     await expectRevert(
       this.umbra.sendEth(receiver1, ...argumentBytes, { from: payer1, value: paymentAmount }),
-      'Umbra: Must pay more than the toll',
+      'Umbra: Must pay more than the toll'
     );
   });
 
@@ -102,7 +102,7 @@ describe('Umbra', () => {
 
     await expectRevert(
       this.umbra.sendEth(receiver1, ...argumentBytes, { from: payer1, value: toll }),
-      'Umbra: Must pay more than the toll',
+      'Umbra: Must pay more than the toll'
     );
   });
 
@@ -161,20 +161,16 @@ describe('Umbra', () => {
   it('should not let the eth receiver withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: receiver1 }),
-      'Umbra: No tokens available for withdrawal',
+      'Umbra: No tokens available for withdrawal'
     );
   });
 
   it('should not allow someone to pay with a token without sending the toll', async () => {
     await expectRevert(
-      this.umbra.sendToken(
-        receiver2,
-        this.token.address,
-        tokenAmount,
-        ...argumentBytes,
-        { from: payer2 },
-      ),
-      'Umbra: Must pay the exact toll',
+      this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {
+        from: payer2,
+      }),
+      'Umbra: Must pay the exact toll'
     );
   });
 
@@ -183,14 +179,11 @@ describe('Umbra', () => {
     const lessToll = toll.sub(new BN('1'));
 
     await expectRevert(
-      this.umbra.sendToken(
-        receiver2,
-        this.token.address,
-        tokenAmount,
-        ...argumentBytes,
-        { from: payer2, value: lessToll },
-      ),
-      'Umbra: Must pay the exact toll',
+      this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {
+        from: payer2,
+        value: lessToll,
+      }),
+      'Umbra: Must pay the exact toll'
     );
   });
 
@@ -199,14 +192,11 @@ describe('Umbra', () => {
     const moreToll = toll.add(new BN('1'));
 
     await expectRevert(
-      this.umbra.sendToken(
-        receiver2,
-        this.token.address,
-        tokenAmount,
-        ...argumentBytes,
-        { from: payer2, value: moreToll },
-      ),
-      'Umbra: Must pay the exact toll',
+      this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {
+        from: payer2,
+        value: moreToll,
+      }),
+      'Umbra: Must pay the exact toll'
     );
   });
 
@@ -218,7 +208,7 @@ describe('Umbra', () => {
       this.token.address,
       tokenAmount,
       ...argumentBytes,
-      { from: payer2, value: toll },
+      { from: payer2, value: toll }
     );
 
     const contractBalance = await this.token.balanceOf(this.umbra.address);
@@ -303,7 +293,7 @@ describe('Umbra', () => {
   it('should not allow a non-receiver to withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: other }),
-      'Umbra: No tokens available for withdrawal',
+      'Umbra: No tokens available for withdrawal'
     );
   });
 
@@ -325,7 +315,7 @@ describe('Umbra', () => {
   it('should not allow a receiver to withdraw their tokens twice', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: receiver2 }),
-      'Umbra: No tokens available for withdraw',
+      'Umbra: No tokens available for withdraw'
     );
   });
 
@@ -355,10 +345,7 @@ describe('Umbra', () => {
   });
 
   it('should not allow someone else to move tolls to toll receiver', async () => {
-    await expectRevert(
-      this.umbra.collectTolls({ from: other }),
-      'Umbra: Not Toll Collector',
-    );
+    await expectRevert(this.umbra.collectTolls({ from: other }), 'Umbra: Not Toll Collector');
   });
 
   it('should allow the toll collector to move tolls to toll receiver', async () => {
