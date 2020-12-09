@@ -1,7 +1,7 @@
 {
     "packages": ["frontend", "contracts", "umbra-js"],
     "npmClient": "yarn",
-    "version": "0.0.1",
+    "version": "independent",
     "useWorkspaces": true,
     "stream": true
 }
