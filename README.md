@@ -89,12 +89,26 @@ Here's a high level description of the mechanics of the Umbra protocol:
 
 ### Instructions
 
-To set up your development environment, clone this repo, and follow the instructions in each of the project component's subdirectories.
+Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts, and @umbra/umbra-js. The monorepo structure simplifies the development workflow. To get started, clone this repo, then follow these instructions:
 
-* [umbra-js/](umbra-js/)
-* [contracts/](contracts/)
-* [app/](app/) *This is the current frontend to use, but ultimately will be removed in favor of `/frontend`*
-* [frontend/](frontend/) *This is currently a work in progress and can be ignored for now*
+```sh
+# run these commands from workspace root!
+yarn install # installs dependencies for each of the 3 packages. Also builds umbra-js.
+yarn build # builds each of the 3 packages
+yarn clean # removes build artifacts for each of the 3 packages
+yarn lint # lints each of the 3 packages
+yarn prettier # runs formatting on each of the 3 packages
+yarn test # runs tests for each of the 3 packages
+```
+
+Note: If you want to be more precise with your command (e.g. just building, cleaning, or testing 1 package), simply run any above command from the package directory. For example,
+
+```sh
+cd contracts
+yarn build
+yarn clean
+yarn test
+```
 
 ### Contributions
 

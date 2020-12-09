@@ -4,7 +4,9 @@
   "description": "Send and receive stealth payments",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
-  "files": ["build/**/*"],
+  "files": [
+    "build/**/*"
+  ],
   "scripts": {
     "test": "yarn build && mocha -r ts-node/register ./test/*.test.ts --exit --timeout 0",
     "lint": "eslint --ext .js,.ts ./",
@@ -13,7 +15,7 @@
     "build": "tsc --build",
     "clean": "rimraf build",
     "prepare": "yarn build",
-    "prepublishOnly" : "yarn lint && yarn test",
+    "prepublishOnly": "yarn lint && yarn test",
     "precommit": "lint-staged"
   },
   "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",

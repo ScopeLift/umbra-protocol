@@ -7,11 +7,11 @@ JavaScipt library for interacting with the Umbra Protocol
 Install the package with `npm install umbra-js` or `yarn add umbra-js`.
 
 ```javascript
-const ethers = require('ethers');
-const umbra = require('umbra-js');
+const ethers = require("ethers");
+const umbra = require("umbra-js");
 
 // utils and ens are not used below, but their APIs can be found in utils.js and ens.js
-const { RandomNumber, KeyPair, utils, ens } = umbra;
+const {RandomNumber, KeyPair, utils, ens} = umbra;
 
 // Setup ----------------------------------------------------------------------
 // Generate a random wallet to simulate the recipient
@@ -28,7 +28,7 @@ const recipientFromPublic = new KeyPair(wallet.publicKey);
 const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
 
 // Send fund's to the recipient's stealth receiving address
-console.log('Stealth recipient address: ', stealthFromPublic.address);
+console.log("Stealth recipient address: ", stealthFromPublic.address);
 
 // Recipient ------------------------------------------------------------------
 // Generate a KeyPair instance based on their own private key
@@ -39,7 +39,10 @@ const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
 
 // Access funds and confirm addresses match
 console.log(stealthFromPublic.address === stealthFromPrivate.address); // true
-console.log('Private key to access received funds: ', stealthFromPrivate.privateKeyHex);
+console.log(
+  "Private key to access received funds: ",
+  stealthFromPrivate.privateKeyHex
+);
 ```
 
 Note that a `KeyPair` instance can be created from a public key, private key, or
@@ -54,8 +57,11 @@ transaction hash.
 
 ```javascript
 // Create KeyPair instance from tx hash
-const txHash = '0x123.....';
-const recipientFromTxHash = await KeyPair.instanceFromTransaction(txHash, provider);
+const txHash = "0x123.....";
+const recipientFromTxHash = await KeyPair.instanceFromTransaction(
+  txHash,
+  provider
+);
 ```
 
 ## Development

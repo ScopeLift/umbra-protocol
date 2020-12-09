@@ -1,3 +1,3 @@
 module.exports = {
-    ...require('../.lintstagedrc')
-  }
+  ...require('../.lintstagedrc'),
+};

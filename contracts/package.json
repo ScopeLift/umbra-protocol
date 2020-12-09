@@ -6,6 +6,7 @@
     "compile": "oz compile",
     "build": "yarn compile",
     "clean": "rimraf build",
+    "prettier": "prettier --write .",
     "test": "oz compile && mocha --exit --timeout 0 test/*-test.js",
     "gas": "oz compile && mocha --exit --timeout 0 test/gastests.js",
     "gas-optimized": "oz compile --optimizer on --optimizer-runs 1 && mocha --exit --timeout 0 test/gastests.js",

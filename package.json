@@ -23,6 +23,7 @@
     "build": "lerna run build",
     "clean": "lerna run clean",
     "lint": "lerna run lint",
+    "prettier": "lerna run prettier",
     "prepare": "lerna run prepare",
     "test": "lerna run test"
   },
