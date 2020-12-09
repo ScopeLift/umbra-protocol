@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import { provider } from '@openzeppelin/test-environment';
-import * as ens from '../build/utils/ens';
+import * as ens from '../src/utils/ens';
 import { ExternalProvider } from '../src/types';
 
 const { expect } = chai;

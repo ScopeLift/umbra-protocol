@@ -23,7 +23,8 @@
     "build": "lerna run build",
     "clean": "lerna run clean",
     "lint": "lerna run lint",
-    "prepare": "lerna run prepare"
+    "prepare": "lerna run prepare",
+    "test": "lerna run test"
   },
   "husky": {
     "hooks": {
