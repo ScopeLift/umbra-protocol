@@ -1,2 +1,5 @@
 build/
 .openzeppelin/.session
+artifacts/
+cache/
+typechain/

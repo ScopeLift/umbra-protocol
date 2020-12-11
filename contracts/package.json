@@ -3,15 +3,23 @@
   "version": "0.0.1",
   "description": "Contracts for the Umbra Protocol",
   "scripts": {
+<<<<<<< HEAD
     "compile": "oz compile",
     "build:types": "typechain --target ethers-v5 --outDir ../umbra-js/types/contracts './build/contracts/*.json'",
     "build": "yarn compile && yarn build:types",
+=======
+    "compile": "hardhat compile",
+    "build": "yarn compile",
+>>>>>>> WIP: contracts compile on hardhat
     "clean": "rimraf build",
     "prepare": "yarn build",
     "prettier": "prettier --write .",
     "test": "oz compile && mocha --exit --timeout 0 test/*-test.js",
     "gas": "oz compile && mocha --exit --timeout 0 test/gastests.js",
     "gas-optimized": "oz compile --optimizer on --optimizer-runs 1 && mocha --exit --timeout 0 test/gastests.js",
+    "lint": "yarn run lint:sol && yarn run lint:ts && yarn run prettier:list-different",
+    "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
+    "lint:ts": "eslint --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
     "precommit": "lint-staged"
   },
   "dependencies": {
@@ -24,6 +32,8 @@
     "truffle-hdwallet-provider": "^1.0.17"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/cli": "^2.8.0",
     "@openzeppelin/test-environment": "^0.1.4",
     "@openzeppelin/test-helpers": "^0.5.5",
@@ -33,12 +43,23 @@
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.20.2",
+    "ethereum-waffle": "^3.2.1",
+    "ethers": "^5.0.24",
+    "fs-extra": "^9.0.1",
+    "hardhat": "^2.0.5",
+    "hardhat-typechain": "^0.3.3",
     "mocha": "^7.1.1",
     "prettier": "^2.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.51",
     "solhint": "^3.0.0",
+    "solhint-plugin-prettier": "^0.0.5",
+    "solidity-coverage": "^0.7.13",
+    "ts-node": "^9.1.1",
     "typechain": "^4.0.1"
   },
+  "files": [
+    "/contracts"
+  ],
   "author": "",
   "license": "MIT"
 }
