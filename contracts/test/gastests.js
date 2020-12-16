@@ -1,8 +1,5 @@
-const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
-
-const GasTester = contract.fromArtifact('GasTester');
-
-const { toWei } = web3.utils;
+import { ethers } from 'hardhat';
+const { parseUnits } = ethers.utils;
 
 function randomBytes(length) {
   let result = '';
@@ -15,30 +12,34 @@ function randomBytes(length) {
 }
 
 describe('Gas Tests', () => {
-  const [user] = accounts;
+  let user, instance;
 
   before(async () => {
-    this.instance = await GasTester.new();
+    [user] = await ethers.getSigners();
+    const GasTester = await ethers.getContractFactory('GasTester');
+    instance = await GasTester.deploy().then((c) => c.deployed());
   });
 
   it('should test the bytes32 option', async () => {
-    console.log('TESTING 7 bytes32 ARGUMENTS'); // eslint-disable-line no-console
+    console.log('TESTING 7 bytes32 ARGUMENTS');
 
     const bytes = [];
     for (let i = 0; i < 7; i += 1) {
       bytes.push(`0x${randomBytes(32)}`);
     }
 
-    const tx = await this.instance.manyBytes(...bytes, {
-      from: user,
-      value: toWei('1', 'ether'),
-      gasPrice: 1,
-    });
-    console.log('GAS USED --->', tx.receipt.gasUsed); // eslint-disable-line no-console
+    const receipt = await instance
+      .manyBytes(...bytes, {
+        from: user.address,
+        value: parseUnits('1', 'ether'),
+        gasPrice: 1,
+      })
+      .then(({ hash }) => ethers.provider.waitForTransaction(hash));
+    console.log('GAS USED --->', receipt.gasUsed);
   });
 
   it('should test the option with one bytes16 param', async () => {
-    console.log('TESTING 6 bytes32 + 1 bytes16 ARGUMENTS'); // eslint-disable-line no-console
+    console.log('TESTING 6 bytes32 + 1 bytes16 ARGUMENTS');
 
     const bytes = [];
     for (let i = 0; i < 6; i += 1) {
@@ -47,22 +48,26 @@ describe('Gas Tests', () => {
 
     bytes.push(`0x${randomBytes(16)}`);
 
-    const tx = await this.instance.halfByte(...bytes, {
-      from: user,
-      value: toWei('1', 'ether'),
-      gasPrice: 1,
-    });
-    console.log('GAS USED --->', tx.receipt.gasUsed); // eslint-disable-line no-console
+    const receipt = await instance
+      .halfByte(...bytes, {
+        from: user.address,
+        value: parseUnits('1', 'ether'),
+        gasPrice: 1,
+      })
+      .then(({ hash }) => ethers.provider.waitForTransaction(hash));
+    console.log('GAS USED --->', receipt.gasUsed);
   });
 
   it('should test the big string option', async () => {
-    console.log('TESTING BIG string ARGUMENT'); // eslint-disable-line no-console
+    console.log('TESTING BIG string ARGUMENT');
     const strBytes = randomBytes(208);
-    const tx = await this.instance.bigString(strBytes, {
-      from: user,
-      value: toWei('1', 'ether'),
-      gasPrice: 1,
-    });
-    console.log('GAS USED --->', tx.receipt.gasUsed); // eslint-disable-line no-console
+    const receipt = await instance
+      .bigString(strBytes, {
+        from: user.address,
+        value: parseUnits('1', 'ether'),
+        gasPrice: 1,
+      })
+      .then(({ hash }) => ethers.provider.waitForTransaction(hash));
+    console.log('GAS USED --->', receipt.gasUsed);
   });
 });

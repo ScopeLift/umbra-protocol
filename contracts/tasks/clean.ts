@@ -1,4 +1,4 @@
-import * as fsExtra from 'fs-extra';
+import fsExtra from 'fs-extra';
 import { TASK_CLEAN } from 'hardhat/builtin-tasks/task-names';
 import { task } from 'hardhat/config';
 
