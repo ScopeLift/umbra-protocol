@@ -12,7 +12,8 @@
     "lint": "eslint --ext .js,.ts ./",
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
-    "build": "tsc --build",
+    "build:types": "typechain --target ethers-v5 --outDir types/contracts '../contracts/build/contracts/Umbra*.json'",
+    "build": "tsc --build && yarn build:types",
     "clean": "rimraf build",
     "prepare": "yarn build",
     "prepublishOnly": "yarn lint && yarn test",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@openzeppelin/test-environment": "^0.1.6",
+    "@typechain/ethers-v5": "^5.0.0",
     "@types/chai": "^4.2.14",
     "@types/elliptic": "^6.4.12",
     "@types/mocha": "^8.0.4",
@@ -39,7 +41,8 @@
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^7.1.2",
-    "ts-node": "^9.0.0"
+    "ts-node": "^9.0.0",
+    "typechain": "^4.0.1"
   },
   "keywords": [
     "ethereum",
