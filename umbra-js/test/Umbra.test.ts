@@ -1,5 +1,5 @@
 import { Umbra } from '../src/classes/Umbra';
-import chai from 'chai';
+import * as chai from 'chai';
 import { provider } from '@openzeppelin/test-environment';
 import type { ExternalProvider } from '../src/types';
 

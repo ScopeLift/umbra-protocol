@@ -3,6 +3,7 @@
  */
 
 import { Contract } from 'ethers';
+import { Umbra as UmbraContract } from '../../types/contracts';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import type { ExternalProvider } from '../types';
 
@@ -26,7 +27,7 @@ const addresses: Record<number, Record<string, string>> = {
 export class Umbra {
   readonly ethersProvider: Web3Provider;
   readonly signer: JsonRpcSigner;
-  readonly umbra: Contract;
+  readonly umbra: UmbraContract;
 
   /**
    * @notice Create Umbra instance to interact with the Umbra contracts
@@ -42,7 +43,11 @@ export class Umbra {
 
     this.ethersProvider = new Web3Provider(provider);
     this.signer = this.ethersProvider.getSigner();
-    this.umbra = new Contract(addresses[chainId].umbra, abi, this.signer || this.ethersProvider);
+    this.umbra = new Contract(
+      addresses[chainId].umbra,
+      abi,
+      this.signer || this.ethersProvider
+    ) as UmbraContract;
   }
 
   /**
