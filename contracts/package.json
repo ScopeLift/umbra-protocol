@@ -19,6 +19,7 @@
     "@openzeppelin/contracts": "^3.2.0",
     "@truffle/debug-utils": "^4.1.1",
     "dotenv": "^8.2.0",
+    "ethers": "^5.0.24",
     "truffle": "^5.1.21",
     "truffle-hdwallet-provider": "^1.0.17"
   },

@@ -1,13 +1,46 @@
 const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { inLogs } = require('@openzeppelin/test-helpers/src/expectEvent');
 const { expect } = require('chai');
+const ethers = require('ethers');
 
 const Umbra = contract.fromArtifact('Umbra');
 const TestToken = contract.fromArtifact('TestToken');
 const { argumentBytes } = require('./sample-data');
 
-const { toWei } = web3.utils;
-const { BN } = web3.utils;
+const {
+  keccak256,
+  defaultAbiCoder,
+  arrayify,
+  splitSignature,
+} = ethers.utils;
+const { toWei, BN } = web3.utils;
+
+// Sum token amounts sent as strings and return a string
+const sumTokenAmounts = (amounts) => {
+  const sum = amounts
+    .map((amount) => new BN(amount))
+    .reduce((acc, val) => acc.add(val), new BN('0'));
+
+  return sum.toString();
+};
+
+// Sign a transaction for a metawithdrawal
+// signer - ethers Wallet or other Signer type
+// sponsor - string address of relayer
+// acceptor - withdrawal destination
+// fee - sent to the sponort
+const signMetaWithdrawal = async (signer, sponsor, acceptor, fee) => {
+  const digest = keccak256(
+    defaultAbiCoder.encode(
+      ['address', 'address', 'uint256'],
+      [sponsor, acceptor, fee],
+    ),
+  );
+
+  const rawSig = await signer.signMessage(arrayify(digest));
+  return splitSignature(rawSig);
+};
 
 describe('Umbra', () => {
   const [
@@ -20,7 +53,14 @@ describe('Umbra', () => {
     receiver2,
     acceptor,
     other,
+    relayer,
   ] = accounts;
+
+  // The ethers wallet that will be used when testing meta tx withdrawals
+  const metaWallet = ethers.Wallet.createRandom();
+
+  // The EOA that will receive the relayed withdrawal
+  const metaAcceptor = ethers.Wallet.createRandom().address;
 
   // Toll value at contract deployment
   const deployedToll = toWei('0.01', 'ether');
@@ -35,12 +75,15 @@ describe('Umbra', () => {
   // Token amounts used in specific payments during test execution
   const tokenAmount = toWei('100', 'ether');
   const secondTokenAmount = toWei('4.1', 'ether');
+  const metaTokenTotal = toWei('200', 'ether');
+  const relayerTokenFee = toWei('2', 'ether');
+  const metaTokenAccepted = toWei('198', 'ether');
 
   // The total token amount that will be held by the contract at any one time during test execution
-  const totalTokenAmount = ( (new BN(tokenAmount)).add(new BN(secondTokenAmount)) ).toString();
+  const totalTokenAmount = sumTokenAmounts([tokenAmount, secondTokenAmount]);
 
   // The amount of tokens that need to be minted to the payer for full test execution
-  const mintTokenAmount = ( (new BN(totalTokenAmount)).add(new BN(tokenAmount)) ).toString();
+  const mintTokenAmount = sumTokenAmounts([totalTokenAmount, tokenAmount, metaTokenTotal]);
 
   before(async () => {
     this.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, other, { from: owner });
@@ -344,13 +387,112 @@ describe('Umbra', () => {
     });
   });
 
+  it('should revert on a meta withdrawal when the stealth address does not have a balance', async () => {
+    const { v, r, s } = await signMetaWithdrawal(
+      metaWallet, relayer, metaAcceptor, relayerTokenFee,
+    );
+
+    await expectRevert(
+      this.umbra.withdrawMeta(
+        metaWallet.address,
+        relayer,
+        metaAcceptor,
+        relayerTokenFee,
+        v,
+        r,
+        s,
+        { from: relayer },
+      ),
+      'Umbra: No tokens available for withdrawal',
+    );
+  });
+
+  it('should revert on meta withdrawal signed by the wrong address', async () => {
+    // Send the payment
+    const toll = await this.umbra.toll();
+    await this.token.approve(this.umbra.address, metaTokenTotal, { from: payer2 });
+    await this.umbra.sendToken(
+      metaWallet.address,
+      this.token.address,
+      metaTokenTotal,
+      ...argumentBytes,
+      { from: payer2, value: toll },
+    );
+
+    const wrongWallet = ethers.Wallet.createRandom();
+    const { v, r, s } = await signMetaWithdrawal(
+      wrongWallet, relayer, metaAcceptor, relayerTokenFee,
+    );
+
+    await expectRevert(
+      this.umbra.withdrawMeta(
+        metaWallet.address,
+        relayer,
+        metaAcceptor,
+        relayerTokenFee,
+        v,
+        r,
+        s,
+        { from: relayer },
+      ),
+      'Umbra: Invalid Signature',
+    );
+  });
+
+  it('should revert on meta withdrawal if the fee is more than the amount', async () => {
+    const bigFee = sumTokenAmounts([metaTokenTotal, '100']);
+
+    const { v, r, s } = await signMetaWithdrawal(
+      metaWallet, relayer, metaAcceptor, relayerTokenFee,
+    );
+
+    await expectRevert(
+      this.umbra.withdrawMeta(
+        metaWallet.address,
+        relayer,
+        metaAcceptor,
+        bigFee,
+        v,
+        r,
+        s,
+        { from: relayer },
+      ),
+      'Umbra: Relay fee exceeds balance',
+    );
+  });
+
+  it('perform a withdrawal when given a properly signed meta-tx', async () => {
+    const { v, r, s } = await signMetaWithdrawal(
+      metaWallet, relayer, metaAcceptor, relayerTokenFee,
+    );
+
+    const receipt = await this.umbra.withdrawMeta(
+      metaWallet.address,
+      relayer,
+      metaAcceptor,
+      relayerTokenFee,
+      v,
+      r,
+      s,
+      { from: relayer },
+    );
+
+    const acceptorBalance = await this.token.balanceOf(metaAcceptor);
+    expect(acceptorBalance.toString()).to.equal(metaTokenAccepted);
+
+    const relayerBalance = await this.token.balanceOf(relayer);
+    expect(relayerBalance.toString()).to.equal(relayerTokenFee);
+
+    expectEvent(receipt, 'TokenWithdrawal');
+  });
+
   it('should not allow someone else to move tolls to toll receiver', async () => {
     await expectRevert(this.umbra.collectTolls({ from: other }), 'Umbra: Not Toll Collector');
   });
 
   it('should allow the toll collector to move tolls to toll receiver', async () => {
     const toll = await this.umbra.toll();
-    const expectedCollection = toll.mul(new BN('6'));
+    const expectedCollection = toll.mul(new BN('7'));
     const receiverInitBalance = new BN(await web3.eth.getBalance(tollReceiver));
 
     await this.umbra.collectTolls({ from: tollCollector });

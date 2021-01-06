@@ -120,6 +120,50 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     SafeERC20.safeTransfer(IERC20(tokenAddr), _acceptor, amount);
   }
 
+  function withdrawMeta(
+    address _stealthAddr,
+    address _sponsor,
+    address _acceptor,
+    uint256 _sponsorFee,
+    uint8 _v,
+    bytes32 _r,
+    bytes32 _s
+  ) external {
+    uint256 _amount = tokenPayments[_stealthAddr].amount;
+    address _tokenAddr = tokenPayments[_stealthAddr].token;
+
+    require(_amount > 0, "Umbra: No tokens available for withdrawal");
+    // also protects from underflow
+    require(_amount > _sponsorFee, "Umbra: Relay fee exceeds balance");
+
+    bytes32 _digest = keccak256(
+      abi.encodePacked(
+        "\x19Ethereum Signed Message:\n32",
+        keccak256(
+          abi.encode(
+            _sponsor,
+            _acceptor,
+            _sponsorFee
+          )
+        )
+      )
+    );
+
+    address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
+
+    require(
+      _recoveredAddress != address(0) && _recoveredAddress == _stealthAddr,
+      'Umbra: Invalid Signature'
+    );
+
+    uint256 _withdrawalAmount = _amount - _sponsorFee;
+    delete tokenPayments[_stealthAddr];
+    emit TokenWithdrawal(_stealthAddr, _acceptor, _withdrawalAmount, _tokenAddr);
+
+    SafeERC20.safeTransfer(IERC20(_tokenAddr), _acceptor, _withdrawalAmount);
+    SafeERC20.safeTransfer(IERC20(_tokenAddr), _sponsor, _sponsorFee);
+  }
+
   function _msgSender()
     internal
     view
