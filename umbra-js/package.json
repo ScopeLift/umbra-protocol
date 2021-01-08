@@ -12,7 +12,7 @@
     "lint": "eslint --ext .js,.ts ./",
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
-    "build:types": "typechain --target ethers-v5 --outDir types/contracts '../contracts/build/contracts/Umbra*.json'",
+    "build:types": "typechain --target ethers-v5 --outDir types/contracts '../contracts/build/contracts/*.json'",
     "build": "tsc --build && yarn build:types",
     "clean": "rimraf build",
     "prepare": "yarn build",
