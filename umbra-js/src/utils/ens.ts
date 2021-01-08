@@ -2,7 +2,7 @@
  * @dev Functions for interacting with the Ehereum Name Service (ENS)
  */
 
-import { ExternalProvider, EnsNamehash } from '../types';
+import { EthersProvider, EnsNamehash } from '../types';
 import * as constants from '../constants.json';
 import * as publicResolverAbi from '../abi/PublicResolver.json';
 import { getPublicKeyFromSignature } from './utils';
@@ -28,7 +28,7 @@ export function namehash(name: string) {
  * @param name ENS domain, e.g. myname.eth
  * @param provider web3 provider to use (not an ethers provider)
  */
-export async function getSignature(name: string, provider: ExternalProvider) {
+export async function getSignature(name: string, provider: EthersProvider) {
   const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
   const signature: string = await publicResolver.text(namehash(name), umbraKeySignature);
   return signature;
@@ -39,7 +39,7 @@ export async function getSignature(name: string, provider: ExternalProvider) {
  * @param name ENS domain, e.g. myname.eth
  * @param provider web3 provider to use (not an ethers provider)
  */
-export async function getPublicKey(name: string, provider: ExternalProvider) {
+export async function getPublicKey(name: string, provider: EthersProvider) {
   const signature = await getSignature(name, provider);
   if (!signature) return undefined;
   return getPublicKeyFromSignature(signature);
@@ -51,7 +51,7 @@ export async function getPublicKey(name: string, provider: ExternalProvider) {
  * @param name ENS domain, e.g. myname.eth
  * @param provider web3 provider to use (not an ethers provider)
  */
-export async function getBytecode(name: string, provider: ExternalProvider) {
+export async function getBytecode(name: string, provider: EthersProvider) {
   const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
   const bytecode: string = await publicResolver.text(namehash(name), umbraKeyBytecode);
   return bytecode;
@@ -64,7 +64,7 @@ export async function getBytecode(name: string, provider: ExternalProvider) {
  * @param signature user's signature of the Umbra protocol message, as hex string
  * @returns Transaction hash
  */
-export async function setSignature(name: string, provider: ExternalProvider, signature: string) {
+export async function setSignature(name: string, provider: EthersProvider, signature: string) {
   const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
   const tx = await publicResolver.setText(namehash(name), umbraKeySignature, signature);
   await tx.wait();

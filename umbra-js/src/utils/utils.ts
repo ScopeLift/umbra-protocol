@@ -6,11 +6,13 @@ import { arrayify, Bytes, Hexable, isHexString, joinSignature } from '@etherspro
 import { hashMessage } from '@ethersproject/hash';
 import { keccak256 } from '@ethersproject/keccak256';
 import { resolveProperties } from '@ethersproject/properties';
-import { Web3Provider } from '@ethersproject/providers';
+import { EtherscanProvider } from '@ethersproject/providers';
 import { recoverPublicKey } from '@ethersproject/signing-key';
 import { serialize as serializeTransaction } from '@ethersproject/transactions';
-import { ExternalProvider, SignatureLike } from '../types';
+
 import * as constants from '../constants.json';
+import { DomainService } from '../classes/DomainService';
+import { EthersProvider, SignatureLike } from '../types';
 
 /**
  * @notice Adds leading zeroes to ensure hex strings are the expected length.
@@ -45,13 +47,12 @@ export function hexStringToBuffer(value: string | number | Bytes | Hexable) {
  * @notice Given a transaction hash, return the public key of the transaction's sender
  * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
  * recovering public key from a transaction with ethers
- * @param {String} txHash Transaction hash to recover public key from
- * @param {*} provider web3 provider to use (not an ethers provider)
+ * @param txHash Transaction hash to recover public key from
+ * @param provider ethers provider instance
  */
-export async function recoverPublicKeyFromTransaction(txHash: string, provider: ExternalProvider) {
+export async function recoverPublicKeyFromTransaction(txHash: string, provider: EthersProvider) {
   // Get transaction data
-  const ethersProvider = new Web3Provider(provider);
-  const tx = await ethersProvider.getTransaction(txHash);
+  const tx = await provider.getTransaction(txHash);
 
   // Get original signature
   const splitSignature: SignatureLike = {
@@ -91,4 +92,67 @@ export function getPublicKeyFromSignature(signature: SignatureLike) {
   const msgHashBytes = arrayify(msgHash);
   const publicKey = recoverPublicKey(msgHashBytes, signature);
   return publicKey;
+}
+
+/**
+ * @notice Returns the transaction hash of the first transaction sent by an address, or
+ * undefined if none was found
+ * @param address Address to lookup
+ * @param provider ethers provider instance
+ */
+async function getSentTransaction(address: string, ethersProvider: EthersProvider) {
+  const network = await ethersProvider.getNetwork();
+  const etherscanProvider = new EtherscanProvider(network.chainId);
+  const history = await etherscanProvider.getHistory(address);
+  let txHash;
+  for (let i = 0; i < history.length; i += 1) {
+    const tx = history[i];
+    if (tx.from === address) {
+      txHash = tx.hash;
+      break;
+    }
+  }
+  return txHash;
+}
+
+/**
+ * @notice Returns public key from the recipientId
+ * @param id Recipient identifier, must be an ENS name, CNS name, address, transaction hash, or public key
+ * @param provider web3 provider to use (not an ethers provider)
+ */
+export async function lookupRecipient(id: string, provider: EthersProvider) {
+  // Check if identifier is a public key. If so we just return that directly
+  const isPublicKey = id.length === 132 && isHexString(id) && id.startsWith('0x04');
+  if (isPublicKey) {
+    return id;
+  }
+
+  // Check if identifier is a transaction hash
+  const isTxHash = id.length === 66 && isHexString(id) && id.startsWith('0x');
+  if (isTxHash) {
+    return await recoverPublicKeyFromTransaction(id, provider);
+  }
+
+  // Check if this is a valid address
+  const isValidAddress = id.length === 42 && isHexString(id) && id.startsWith('0x');
+  if (isValidAddress) {
+    // Get last transaction hash sent by that address
+    const txHash = await getSentTransaction(id, provider);
+    if (!txHash) {
+      throw new Error('The provider address has not sent any transactions');
+    }
+
+    // Get public key from that transaction
+    return await recoverPublicKeyFromTransaction(txHash, provider);
+  }
+
+  // Check if this is a valid ENS or CNS name
+  const isDomainService = id.endsWith('.eth') || id.endsWith('.crypto');
+  if (isDomainService) {
+    const domainService = new DomainService(provider);
+    return await domainService.getPublicKey(id);
+  }
+
+  // Invalid identifier provided
+  throw new Error('Invalid id provided');
 }

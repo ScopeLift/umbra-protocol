@@ -2,15 +2,17 @@
  * @dev Simplifies interaction with the Umbra contracts
  */
 
-import { KeyPair } from './KeyPair';
 import { Contract } from 'ethers';
-import { Umbra as UmbraContract, ERC20 } from '../../types/contracts';
 import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
-import { JsonRpcProvider, JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { JsonRpcProvider, JsonRpcSigner } from '@ethersproject/providers';
+
+import { KeyPair } from './KeyPair';
+import { lookupRecipient } from '../utils/utils';
+import { Umbra as UmbraContract, ERC20 } from '../../types/contracts';
 import * as erc20Abi from '../abi/ERC20.json';
 import type {
-  // ExternalProvider,
+  EthersProvider,
   UmbraOverrides,
   // Announcement,
   // UserAnnouncementEvent,
@@ -61,11 +63,7 @@ export class Umbra {
    * @param chainId The Chain ID of the network
    * @param signer The associated signer, or null if no signer is available
    */
-  constructor(
-    readonly provider: Web3Provider | JsonRpcProvider,
-    chainId: number,
-    signer: JsonRpcSigner | null
-  ) {
+  constructor(readonly provider: EthersProvider, chainId: number, signer: JsonRpcSigner | null) {
     const supportedChainIds = Object.keys(contractInfo);
     if (!supportedChainIds.includes(String(chainId))) {
       throw new Error('Unsupported chainId');
@@ -121,17 +119,19 @@ export class Umbra {
 
     // Check that sender has sufficient balance
     const tokenContract = new Contract(token, erc20Abi, this.signer) as ERC20;
-    console.log('await this.signer.getAddress(): ', await this.signer.getAddress());
     const tokenBalance = await tokenContract.balanceOf(await this.signer.getAddress());
-    console.log('tokenBalance: ', tokenBalance);
     if (tokenBalance.lt(amount)) {
       const providedAmount = BigNumber.from(amount).toString();
       const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
       throw new Error(`Insufficient balance to complete transfer. ${details}`);
     }
 
-    console.log(token, amount, recipientId, overrides);
+    // Lookup recipient's public key
+    const recipientPubKey = await lookupRecipient(recipientId, this.provider);
+
+    console.log('recipientPubKey: ', recipientPubKey);
     console.log('isETH(token): ', isETH(token));
+    console.log('overrides: ', overrides);
 
     // //
     // if (isETH(token)) {

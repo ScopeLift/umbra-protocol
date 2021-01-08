@@ -3,6 +3,7 @@ import { provider } from '@openzeppelin/test-environment';
 import { Wallet } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexZeroPad } from '@ethersproject/bytes';
+import { Web3Provider } from '@ethersproject/providers';
 import { randomBytes } from '@ethersproject/random';
 import type { ExternalProvider } from '../src/types';
 
@@ -12,6 +13,7 @@ import * as utils from '../src/utils/utils';
 
 const { expect } = chai;
 const web3Provider = (provider as unknown) as ExternalProvider;
+const ethersProvider = new Web3Provider(web3Provider);
 const numberOfRuns = 100; // number of runs for tests that execute in a loop
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
@@ -57,7 +59,7 @@ describe('KeyPair class', () => {
     const txHash = '0x285899397217daba600899add0953eb621605497fcd4979afea9409f81d8b7fa';
     const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
     // Create instance and check result
-    const keyPair = await KeyPair.instanceFromTransaction(txHash, web3Provider);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -66,7 +68,7 @@ describe('KeyPair class', () => {
     const txHash = '0x71dedd00076997826edbe23bf6f4940bf6508f2e22659ebaec5ab0b1c7aac0e7';
     const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
     // Create instance and check result
-    const keyPair = await KeyPair.instanceFromTransaction(txHash, web3Provider);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -75,7 +77,7 @@ describe('KeyPair class', () => {
     const txHash = '0x8d927f481eea24b80625529db1bc59528a805f70b2669b8d2280bb26fd35ffd5';
     const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
     // Create instance and check result
-    const keyPair = await KeyPair.instanceFromTransaction(txHash, web3Provider);
+    const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
     expect(keyPair.address).to.equal(from);
   });
 
@@ -85,7 +87,7 @@ describe('KeyPair class', () => {
     const sendersPublicKey =
       '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
     // Create instance and check result
-    const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, web3Provider);
+    const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, ethersProvider);
     expect(recoveredPublicKey).to.equal(sendersPublicKey);
   });
 

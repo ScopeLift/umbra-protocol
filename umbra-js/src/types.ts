@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Event, Overrides } from '@ethersproject/contracts';
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 
 export { SignatureLike } from '@ethersproject/bytes';
 
@@ -11,6 +12,8 @@ export interface UmbraOverrides extends Overrides {
 export type ExternalProvider =
   | ethers.providers.ExternalProvider
   | ethers.providers.JsonRpcFetchFunc;
+
+export type EthersProvider = Web3Provider | JsonRpcProvider;
 
 export type EnsNamehash = {
   hash: (name: string) => string;

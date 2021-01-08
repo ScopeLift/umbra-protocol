@@ -22,7 +22,7 @@
   "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",
   "license": "ISC",
   "dependencies": {
-    "@unstoppabledomains/resolution": "^1.8.3",
+    "@unstoppabledomains/resolution": "^1.16.0",
     "buffer": "^6.0.2",
     "dotenv": "^8.2.0",
     "elliptic": "^6.5.2",
