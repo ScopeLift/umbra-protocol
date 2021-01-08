@@ -12,7 +12,7 @@ import { SigningKey } from '@ethersproject/signing-key';
 import { keccak256 } from 'js-sha3';
 import type { RandomNumber } from './RandomNumber';
 import { padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
-import { ExternalProvider } from '../types';
+import { EthersProvider } from '../types';
 
 const ec = new EC('secp256k1');
 
@@ -227,7 +227,7 @@ export class KeyPair {
    * @param txHash Transaction hash to recover public key from
    * @param provider web3 provider to use (not an ethers provider)
    */
-  static async instanceFromTransaction(txHash: string, provider: ExternalProvider) {
+  static async instanceFromTransaction(txHash: string, provider: EthersProvider) {
     const publicKeyHex = await recoverPublicKeyFromTransaction(txHash, provider);
     return new KeyPair(publicKeyHex);
   }

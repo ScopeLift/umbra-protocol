@@ -1,10 +1,14 @@
-import { DomainService } from '../src/classes/DomainService';
-import { provider } from '@openzeppelin/test-environment';
 import * as chai from 'chai';
-import { ExternalProvider } from '../src/types';
+import { ethers } from 'ethers';
+import { provider } from '@openzeppelin/test-environment';
+
+import { DomainService } from '../src/classes/DomainService';
+import type { ExternalProvider } from '../src/types';
 
 const { expect } = chai;
-const domainService = new DomainService((provider as unknown) as ExternalProvider);
+const web3Provider = (provider as unknown) as ExternalProvider;
+const ethersProvider = new ethers.providers.Web3Provider(web3Provider);
+const domainService = new DomainService(ethersProvider);
 
 // Truth parameters to test against
 const ensName = 'msolomon.eth';
@@ -19,37 +23,40 @@ const cnsNamePublicKey =
   '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e';
 
 describe('DomainService class', () => {
-  it('computes the namehash of an ENS domain', () => {
-    const hash = domainService.namehash(ensName);
-    expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');
+  describe('ENS', () => {
+    it('computes the namehash of an ENS domain', () => {
+      const hash = domainService.namehash(ensName);
+      expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');
+    });
+
+    it('gets the signature associated with a ENS address', async function () {
+      const signature = await domainService.getSignature(ensName);
+      expect(signature).to.equal(ensNameSignature);
+    });
+
+    it('gets the public key associated with a ENS address', async function () {
+      this.timeout(10000);
+      const publicKey = await domainService.getPublicKey(ensName);
+      expect(publicKey).to.equal(ensNamePublicKey);
+    });
   });
 
-  it('computes the namehash of a CNS domain', () => {
-    const hash = domainService.namehash(cnsName);
-    expect(hash).to.equal('0x4d5647e26ad24fd1087ddd2dc2d980f6f231d4f5694f63b321ec119848a460ba');
-  });
+  describe('CNS', () => {
+    it('computes the namehash of a CNS domain', () => {
+      const hash = domainService.namehash(cnsName);
+      expect(hash).to.equal('0x4d5647e26ad24fd1087ddd2dc2d980f6f231d4f5694f63b321ec119848a460ba');
+    });
 
-  it('gets the signature associated with a ENS address', async function () {
-    const signature = await domainService.getSignature(ensName);
-    expect(signature).to.equal(ensNameSignature);
-  });
+    it('gets the signature associated with a CNS address', async function () {
+      this.timeout(10000);
+      const signature = await domainService.getSignature(cnsName);
+      expect(signature).to.equal(cnsNameSignature);
+    });
 
-  it('gets the signature associated with a CNS address', async function () {
-    this.timeout(10000);
-    const signature = await domainService.getSignature(cnsName);
-    expect(signature).to.equal(cnsNameSignature);
+    it('gets the public key associated with a CNS address', async function () {
+      this.timeout(10000);
+      const publicKey = await domainService.getPublicKey(cnsName);
+      expect(publicKey).to.equal(cnsNamePublicKey);
+    });
   });
-
-  it('gets the public key associated with a ENS address', async function () {
-    this.timeout(10000);
-    const publicKey = await domainService.getPublicKey(ensName);
-    expect(publicKey).to.equal(ensNamePublicKey);
-  });
-
-  it('gets the public key associated with a CNS address', async function () {
-    this.timeout(10000);
-    const publicKey = await domainService.getPublicKey(cnsName);
-    expect(publicKey).to.equal(cnsNamePublicKey);
-  });
-  0;
 });

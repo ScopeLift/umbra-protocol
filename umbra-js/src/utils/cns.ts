@@ -3,9 +3,9 @@
  */
 
 import { BigNumber } from '@ethersproject/bignumber';
-import type { Resolution } from '@unstoppabledomains/resolution';
+import { default as Resolution } from '@unstoppabledomains/resolution';
 import { getPublicKeyFromSignature } from './utils';
-import type { ExternalProvider } from '../types';
+import type { EthersProvider } from '../types';
 import * as constants from '../constants.json';
 import * as cnsRegistryAbi from '../abi/CnsRegistry.json';
 import * as cnsResolverAbi from '../abi/CnsResolver.json';
@@ -62,7 +62,7 @@ export async function getPublicKey(name: string, resolution: Resolution) {
  */
 export async function setSignature(
   name: string,
-  provider: ExternalProvider,
+  provider: EthersProvider,
   resolution: Resolution,
   signature: string
 ) {

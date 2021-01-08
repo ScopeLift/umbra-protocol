@@ -909,7 +909,7 @@
     global-agent "^2.0.2"
     global-tunnel-ng "^2.7.1"
 
-"@ensdomains/address-encoder@>=0.1.6":
+"@ensdomains/address-encoder@0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@ensdomains/address-encoder/-/address-encoder-0.1.8.tgz#be022a706cfd39327caaca2fa7f59d19ea2787d9"
   integrity sha512-0YwXk/cX7G/qM7YHrOybF9Ht7cwR0/XH37yh0cdPdIOPJ6Y839yymyAWGVC7Sl2ESAhqj4hfoHpb2+QllB7KAQ==
@@ -4159,18 +4159,17 @@
     "@restless/sanitizers" "^0.2.5"
     reactive-properties "^0.1.11"
 
-"@unstoppabledomains/resolution@^1.8.3":
-  version "1.8.3"
-  resolved "https://registry.yarnpkg.com/@unstoppabledomains/resolution/-/resolution-1.8.3.tgz#9f297658d91228022f2518b728d32b900df4f730"
-  integrity sha512-+DcnMHJmTquQbp4HxkwPtVMJaeQWyi3kdzj+2kx/yBCoDdod6N947OXohrEx7nLA6Xbmp8zWk/xe1gp+GUxVFA==
+"@unstoppabledomains/resolution@^1.16.0":
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/@unstoppabledomains/resolution/-/resolution-1.16.0.tgz#c95968d0b49187f79b597128fe7bc739da7be413"
+  integrity sha512-N/cB2V+V1Ue1zxeqSmISsvWWNjKA6//1HlS/jilAxgBxHB6Ql0xLDE2gU5rtAK/FTvBcMPV/wTZ3ZsMEMZIpfg==
   dependencies:
-    "@ensdomains/address-encoder" ">=0.1.6"
+    "@ensdomains/address-encoder" "0.1.8"
     "@ethersproject/abi" "^5.0.1"
     bip44-constants "^8.0.5"
     bn.js "^4.4.0"
     commander "^4.1.1"
     content-hash "^2.5.2"
-    elliptic "^6.5.3"
     ethereum-ens-network-map "^1.0.2"
     hash.js "^1.1.7"
     js-sha3 "^0.8.0"
