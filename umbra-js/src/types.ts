@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
-import { Overrides } from '@ethersproject/contracts';
+import { BigNumber } from '@ethersproject/bignumber';
+import { Event, Overrides } from '@ethersproject/contracts';
 
 export { SignatureLike } from '@ethersproject/bytes';
 
@@ -15,3 +16,23 @@ export type EnsNamehash = {
   hash: (name: string) => string;
   normalize: (name: string) => string;
 };
+
+export interface Announcement {
+  receiver: string;
+  amount: BigNumber;
+  token: string;
+  pkx: string;
+  ciphertext: string;
+}
+
+// A UserAnnouncementEvent is an Announcement event from Umbra where the recipient is the specified user
+export interface UserAnnouncementEvent {
+  event: Event;
+  randomNumber: string;
+  receiver: string;
+  amount: BigNumber;
+  token: string;
+  blockNumber: number;
+  timestamp: number;
+  sender: string;
+}
