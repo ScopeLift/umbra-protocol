@@ -5,9 +5,12 @@
 import { Contract } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
+import { ContractTransaction } from '@ethersproject/contracts';
 import { JsonRpcProvider, JsonRpcSigner } from '@ethersproject/providers';
+import { computePublicKey } from '@ethersproject/signing-key';
 
 import { KeyPair } from './KeyPair';
+import { RandomNumber } from './RandomNumber';
 import { lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, ERC20 } from '../../types/contracts';
 import * as erc20Abi from '../abi/ERC20.json';
@@ -18,22 +21,37 @@ import type {
   // UserAnnouncementEvent,
 } from '../types';
 
+// Additional type definitions
+interface ContactInfo {
+  umbraAddress: string;
+  umbraPaymasterAddress: string;
+  startBlock: number;
+}
+
+interface AnnouncementEvent {
+  receiver: string;
+  amount: BigNumber;
+  token: string;
+  pkx: string;
+  ciphertext: string;
+}
+
 // Umbra.sol ABI
 const abi = require('../../../contracts/build/contracts/Umbra.json').abi;
 
 // Mapping from chainId to contract information
-const contractInfo: Record<number, Record<string, string>> = {
+const contractInfo: Record<number, ContactInfo> = {
   // Ropsten
   3: {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
     umbraPaymasterAddress: '0xCaA925B2A71933E9C4e3FE145019961A691Bdaf3',
-    startBlock: '7938811', // block Umbra contract was deployed at
+    startBlock: 9459745, // block Umbra contract was deployed at
   },
   // Local
   1337: {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
     umbraPaymasterAddress: '0xCaA925B2A71933E9C4e3FE145019961A691Bdaf3',
-    startBlock: '0',
+    startBlock: 9459745,
   },
 };
 
@@ -50,7 +68,7 @@ const missingSignerMessage =
 
 export class Umbra {
   readonly signer: JsonRpcSigner | null; // null if connected with a readonly provider
-  readonly umbra: UmbraContract;
+  readonly umbraContract: UmbraContract;
   readonly chainId: number;
 
   // ======================================== CONSTRUCTORS =========================================
@@ -71,7 +89,7 @@ export class Umbra {
 
     this.signer = signer;
     this.chainId = chainId;
-    this.umbra = new Contract(
+    this.umbraContract = new Contract(
       contractInfo[chainId].umbraAddress,
       abi,
       this.signer || this.provider
@@ -117,36 +135,69 @@ export class Umbra {
     // Check for valid signer
     if (!this.signer) throw new Error(missingSignerMessage);
 
-    // Check that sender has sufficient balance
-    const tokenContract = new Contract(token, erc20Abi, this.signer) as ERC20;
-    const tokenBalance = await tokenContract.balanceOf(await this.signer.getAddress());
-    if (tokenBalance.lt(amount)) {
-      const providedAmount = BigNumber.from(amount).toString();
-      const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
-      throw new Error(`Insufficient balance to complete transfer. ${details}`);
+    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send
+    if (!isETH(token)) {
+      const tokenContract = new Contract(token, erc20Abi, this.signer) as ERC20;
+      const tokenBalance = await tokenContract.balanceOf(await this.signer.getAddress());
+      if (tokenBalance.lt(amount)) {
+        const providedAmount = BigNumber.from(amount).toString();
+        const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
+        throw new Error(`Insufficient balance to complete transfer. ${details}`);
+      }
     }
+
+    // Get toll amount from contract
+    const toll = await this.umbraContract.toll();
 
     // Lookup recipient's public key
     const recipientPubKey = await lookupRecipient(recipientId, this.provider);
+    if (!recipientPubKey) throw new Error('No public key found for provided recipient ID');
+    const recipientKeyPair = new KeyPair(recipientPubKey);
 
-    console.log('recipientPubKey: ', recipientPubKey);
-    console.log('isETH(token): ', isETH(token));
-    console.log('overrides: ', overrides);
+    // Generate random number
+    const randomNumber = overrides.payloadExtension
+      ? new RandomNumber(overrides.payloadExtension)
+      : new RandomNumber();
 
-    // //
-    // if (isETH(token)) {
-    //   // Generate random number and encrypt with recipient's public key
-    //   // TODO
-    //   // Get x,y coordinates of ephemeral private key
-    //   // TODO
-    //   // Compute stealth address
-    //   // Send funds
-    //   // await this.umbra.sendEth(...);
-    // } else {
-    //   // await this.umbra.sendToken(...);
-    // }
+    // Encrypt random number with recipient's public key
+    const encrypted = recipientKeyPair.encrypt(randomNumber);
 
-    return 0;
+    // Get x,y coordinates of ephemeral private key
+    const ephemeralKeyPair = new KeyPair(encrypted.ephemeralPublicKey);
+    const ephemeralKeyPairX = computePublicKey(ephemeralKeyPair.publicKeyHex, true);
+    const compressedXCoordinate = `0x${ephemeralKeyPairX.slice(4)}`;
+
+    // Compute stealth address
+    const stealthKeyPair = recipientKeyPair.mulPublicKey(randomNumber);
+
+    // Get overrides object that removes the payload extension, for use with ethers
+    const filteredOverrides = { ...overrides };
+    delete filteredOverrides.payloadExtension;
+
+    // Send transaction
+    let tx: ContractTransaction;
+    if (isETH(token)) {
+      const txOverrides = { ...filteredOverrides, value: toll.add(amount) };
+      tx = await this.umbraContract.sendEth(
+        stealthKeyPair.address,
+        compressedXCoordinate,
+        encrypted.ciphertext,
+        txOverrides
+      );
+    } else {
+      const txOverrides = { ...filteredOverrides, value: toll };
+      tx = await this.umbraContract.sendToken(
+        stealthKeyPair.address,
+        token,
+        amount,
+        compressedXCoordinate,
+        encrypted.ciphertext,
+        txOverrides
+      );
+    }
+
+    // We do not wait for the transaction to be mined before returning it
+    return { tx, stealthKeyPair };
   }
 
   /**
@@ -175,62 +226,60 @@ export class Umbra {
    */
   async scan(keyPair: KeyPair) {
     // Get start and end blocks to scan events for
-    console.log('keyPair: ', keyPair);
     const startBlock = contractInfo[this.chainId].startBlock;
-    const endBlock = await this.provider.getBlockNumber();
+    const endBlock = 'latest';
 
     // Get list of all Announcement events
-    const announcementFilter = this.umbra.filters.Announcement(null, null, null, null, null); // gets all  announcements
-    const announcementEvents = await this.umbra.queryFilter(
+    const announcementFilter = this.umbraContract.filters.Announcement(
+      null,
+      null,
+      null,
+      null,
+      null
+    );
+    const announcementEvents = await this.umbraContract.queryFilter(
       announcementFilter,
       startBlock,
       endBlock
     );
 
     // Get list of all TokenWithdrawal events
-    const withdrawalFilter = this.umbra.filters.TokenWithdrawal(null, null, null, null); // gets all  announcements
-    const withdrawalEvents = await this.umbra.queryFilter(withdrawalFilter, startBlock, endBlock);
+    const withdrawalFilter = this.umbraContract.filters.TokenWithdrawal(null, null, null, null);
+    const withdrawalEvents = await this.umbraContract.queryFilter(
+      withdrawalFilter,
+      startBlock,
+      endBlock
+    );
     console.log('withdrawalEvents: ', withdrawalEvents);
 
     // Determine which announcements are for the user
-    const userAnnouncementEvents = [] as Event[];
+    const userAnnouncementEvents = [];
     for (let i = 0; i < announcementEvents.length; i += 1) {
       const event = announcementEvents[i];
-      console.log('event.args: ', event.args);
 
       // Extract out event parameters
-      // const { receiver, amount, token, pkx, ciphertext } = (event.args as unknown) as Announcement;
+      const {
+        receiver,
+        amount,
+        token,
+        pkx,
+        ciphertext,
+      } = (event.args as unknown) as AnnouncementEvent;
 
-      // Get y-coordinate of public key from the x-coordinate
-      // TODO
+      // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
+      const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
 
       // Decrypt to get random number
-      // const payload = {
-      //   ephemeralPublicKey: `0x04${pkx.slice(2)}${pky.slice(2)}`,
-      //   ciphertext,
-      // };
-      // const randomNumber = await keyPair.decrypt(payload); // eslint-disable-line
+      const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
+      const randomNumber = keyPair.decrypt(payload);
 
-      // // Get what our receiving address would be with this random number
-      // const computedReceivingAddress = keyPair.mulPublicKey(randomNumber).address;
+      // Get what our receiving address would be with this random number
+      const computedReceivingAddress = keyPair.mulPublicKey(randomNumber).address;
 
       // If our receiving address matches the event's recipient, the transfer was for us
-      // if (computedReceivingAddress === receiver) {
-      //   // Get block number, timestamp, and sender of this event
-      //   // TODO
-
-      //   // Save off data
-      //   userAnnouncementEvents.push({
-      //     event,
-      //     randomNumber,
-      //     receiver,
-      //     amount,
-      //     token,
-      //     blockNumber,
-      //     timestamp,
-      //     sender,
-      //   });
-      // }
+      if (computedReceivingAddress === receiver) {
+        userAnnouncementEvents.push({ event, randomNumber, receiver, amount, token });
+      }
     }
 
     // For each of the user's announcement events, determine if the funds were withdrawn

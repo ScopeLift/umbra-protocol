@@ -8,7 +8,7 @@ import { Wallet } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import { arrayify, hexZeroPad, isHexString } from '@ethersproject/bytes';
-import { SigningKey } from '@ethersproject/signing-key';
+import { computePublicKey, SigningKey } from '@ethersproject/signing-key';
 import { keccak256 } from 'js-sha3';
 import type { RandomNumber } from './RandomNumber';
 import { padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
@@ -230,5 +230,20 @@ export class KeyPair {
   static async instanceFromTransaction(txHash: string, provider: EthersProvider) {
     const publicKeyHex = await recoverPublicKeyFromTransaction(txHash, provider);
     return new KeyPair(publicKeyHex);
+  }
+
+  /**
+   * @notice Given the x-coordinate of a public key, without the identifying prefix bit, returns
+   * the uncompressed public key assuming the identifying bit is 02
+   * @dev We don't know if the identifying bit is 02 or 03, but for this use case it doesn't
+   * actually matter, since we are not deriving an address from the public key. We use the public
+   * key to compute the shared secret to decrypt the random number, and since that involves
+   * multiplying this public key by a private key, the result is the same regardless of whether we
+   * had the 02 or 03 prefix
+   * @dev CONFIRM THE ABOVE STATEMENT IS ALWAYS TRUE
+   */
+  static getUncompressedFromX(pkx: BigNumber | string) {
+    const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);
+    return computePublicKey(BigNumber.from(`0x02${hexWithoutPrefix}`).toHexString());
   }
 }
