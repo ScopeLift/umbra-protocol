@@ -13,7 +13,7 @@
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
     "build:types": "typechain --target ethers-v5 --outDir types/contracts '../contracts/build/contracts/*.json'",
-    "build": "tsc --build && yarn build:types",
+    "build": "yarn build:types && tsc --build",
     "clean": "rimraf build",
     "prepare": "yarn build",
     "prepublishOnly": "yarn lint && yarn test",
@@ -27,7 +27,7 @@
     "dotenv": "^8.2.0",
     "elliptic": "^6.5.2",
     "eth-ens-namehash": "^2.0.8",
-    "ethers": "^5.0.21",
+    "ethers": "^5.0.25",
     "js-sha3": "^0.8.0"
   },
   "devDependencies": {
