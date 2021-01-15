@@ -6,11 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
-import "@opengsn/gsn/contracts/interfaces/IKnowForwarderAddress.sol";
-import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 
-contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
+contract Umbra is Ownable {
   using SafeMath for uint256;
 
   struct TokenPayment {
@@ -43,13 +40,11 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
   constructor(
     uint256 _toll,
     address _tollCollector,
-    address payable _tollReceiver,
-    address _gsnForwarder
+    address payable _tollReceiver
   ) public {
     toll = _toll;
     tollCollector = _tollCollector;
     tollReceiver = _tollReceiver;
-    trustedForwarder = _gsnForwarder;
   }
 
   function setToll(uint256 _newToll) public onlyOwner {
@@ -62,18 +57,6 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
 
   function setTollReceiver(address payable _newTollReceiver) public onlyOwner {
     tollReceiver = _newTollReceiver;
-  }
-
-  function setForwarder(address _forwarder) public onlyOwner {
-    trustedForwarder = _forwarder;
-  }
-
-  function getTrustedForwarder() external view override returns (address) {
-    return trustedForwarder;
-  }
-
-  function versionRecipient() external view override returns (string memory) {
-    return "1.0.0";
   }
 
   function sendEth(
@@ -100,22 +83,22 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     require(
       tokenPayments[_receiver].amount == 0,
       "Umbra: Cannot send more tokens to stealth address"
-      );
+    );
 
     tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});
     emit Announcement(_receiver, _amount, _tokenAddr, _pkx, _ciphertext);
 
-    SafeERC20.safeTransferFrom(IERC20(_tokenAddr), _msgSender(), address(this), _amount);
+    SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, address(this), _amount);
   }
 
   function withdrawToken(address _acceptor) public {
-    uint256 amount = tokenPayments[_msgSender()].amount;
-    address tokenAddr = tokenPayments[_msgSender()].token;
+    uint256 amount = tokenPayments[msg.sender].amount;
+    address tokenAddr = tokenPayments[msg.sender].token;
 
     require(amount > 0, "Umbra: No tokens available for withdrawal");
 
-    delete tokenPayments[_msgSender()];
-    emit TokenWithdrawal(_msgSender(), _acceptor, amount, tokenAddr);
+    delete tokenPayments[msg.sender];
+    emit TokenWithdrawal(msg.sender, _acceptor, amount, tokenAddr);
 
     SafeERC20.safeTransfer(IERC20(tokenAddr), _acceptor, amount);
   }
@@ -139,13 +122,7 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     bytes32 _digest = keccak256(
       abi.encodePacked(
         "\x19Ethereum Signed Message:\n32",
-        keccak256(
-          abi.encode(
-            _sponsor,
-            _acceptor,
-            _sponsorFee
-          )
-        )
+        keccak256(abi.encode(_sponsor, _acceptor, _sponsorFee))
       )
     );
 
@@ -153,7 +130,7 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
 
     require(
       _recoveredAddress != address(0) && _recoveredAddress == _stealthAddr,
-      'Umbra: Invalid Signature'
+      "Umbra: Invalid Signature"
     );
 
     uint256 _withdrawalAmount = _amount - _sponsorFee;
@@ -164,21 +141,12 @@ contract Umbra is BaseRelayRecipient, IKnowForwarderAddress, Ownable {
     SafeERC20.safeTransfer(IERC20(_tokenAddr), _sponsor, _sponsorFee);
   }
 
-  function _msgSender()
-    internal
-    view
-    override(Context, BaseRelayRecipient)
-    returns (address payable)
-  {
-    return BaseRelayRecipient._msgSender();
-  }
-
   function collectTolls() public onlyCollector {
     tollReceiver.transfer(address(this).balance);
   }
 
   modifier onlyCollector() {
-    require(_msgSender() == tollCollector, "Umbra: Not Toll Collector");
+    require(msg.sender == tollCollector, "Umbra: Not Toll Collector");
     _;
   }
 }

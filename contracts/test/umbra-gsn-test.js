@@ -16,7 +16,9 @@ const { argumentBytes } = require('./sample-data');
 
 const { toWei } = web3.utils;
 
-const { keccak256, defaultAbiCoder, arrayify, splitSignature } = ethers.utils;
+const {
+  keccak256, defaultAbiCoder, arrayify, splitSignature,
+} = ethers.utils;
 
 const origProvider = web3.currentProvider;
 
@@ -31,7 +33,7 @@ const tokenAccepted = toWei('99', 'ether');
 // fee - sent to the sponort
 const signMetaWithdrawal = async (signer, sponsor, acceptor, fee) => {
   const digest = keccak256(
-    defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, fee])
+    defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, fee]),
   );
 
   const rawSig = await signer.signMessage(arrayify(digest));
@@ -39,7 +41,7 @@ const signMetaWithdrawal = async (signer, sponsor, acceptor, fee) => {
 };
 
 describe('Umbra GSN', () => {
-  const [owner, tollCollector, tollReceiver, payer, acceptor, other, relayer] = accounts;
+  const [owner, tollCollector, tollReceiver, payer, acceptor, relayer] = accounts;
 
   const deployedToll = toWei('0.001', 'ether');
 
@@ -49,7 +51,7 @@ describe('Umbra GSN', () => {
 
   before(async () => {
     // Deploy the Umbra contract
-    this.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, other, { from: owner });
+    this.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, { from: owner });
 
     // Mint tokens needed for test
     this.token = await TestToken.new('TestToken', 'TT');
@@ -59,7 +61,7 @@ describe('Umbra GSN', () => {
     // a stake manager, as well as starting a relay server. It also deploys a naive Paymaster, but we
     // will use our own
     const gsnInstance = await GsnTestEnvironment.startGsn(
-      UmbraRelayRecipient.web3.currentProvider.wrappedProvider.host
+      UmbraRelayRecipient.web3.currentProvider.wrappedProvider.host,
     );
 
     // Save the forwader, as we'll need it when sending contract calls via our RelayProvider
@@ -112,7 +114,7 @@ describe('Umbra GSN', () => {
       this.token.address,
       tokenAmount,
       ...argumentBytes,
-      { from: payer, value: toll }
+      { from: payer, value: toll },
     );
 
     const contractBalance = await this.token.balanceOf(this.umbra.address);
@@ -153,9 +155,9 @@ describe('Umbra GSN', () => {
           // When making a contract call with the RelayProvider, an additional options param is
           // needed: the forwarder that will be used.
           forwarder: this.forwarder,
-        }
+        },
       ),
-      'Umbra: No tokens available for withdrawal'
+      'Umbra: No tokens available for withdrawal',
     );
   });
 
@@ -182,9 +184,9 @@ describe('Umbra GSN', () => {
           // When making a contract call with the RelayProvider, an additional options param is
           // needed: the forwarder that will be used.
           forwarder: this.forwarder,
-        }
+        },
       ),
-      'Umbra: Invalid Signature'
+      'Umbra: Invalid Signature',
     );
   });
 
@@ -195,7 +197,7 @@ describe('Umbra GSN', () => {
       receiverWallet,
       relayer,
       acceptor,
-      relayerTokenFee
+      relayerTokenFee,
     );
 
     await this.relayRecipient.withdrawMeta(
@@ -211,7 +213,7 @@ describe('Umbra GSN', () => {
         // When making a contract call with the RelayProvider, an additional options param is
         // needed: the forwarder that will be used.
         forwarder: this.forwarder,
-      }
+      },
     );
 
     const acceptorBalance = await this.token.balanceOf(acceptor);
@@ -228,7 +230,7 @@ describe('Umbra GSN', () => {
       receiverWallet,
       relayer,
       acceptor,
-      relayerTokenFee
+      relayerTokenFee,
     );
 
     await expectRevert(
@@ -245,9 +247,9 @@ describe('Umbra GSN', () => {
           // When making a contract call with the RelayProvider, an additional options param is
           // needed: the forwarder that will be used.
           forwarder: this.forwarder,
-        }
+        },
       ),
-      'Umbra: No tokens available for withdrawal'
+      'Umbra: No tokens available for withdrawal',
     );
   });
 });
