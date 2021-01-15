@@ -45,13 +45,13 @@ const contractInfo: Record<number, ContactInfo> = {
   3: {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
     umbraPaymasterAddress: '0xCaA925B2A71933E9C4e3FE145019961A691Bdaf3',
-    startBlock: 9459745, // block Umbra contract was deployed at
+    startBlock: 9473583, // block Umbra contract was deployed at
   },
   // Local
   1337: {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
     umbraPaymasterAddress: '0xCaA925B2A71933E9C4e3FE145019961A691Bdaf3',
-    startBlock: 9459745,
+    startBlock: 9473583,
   },
 };
 
