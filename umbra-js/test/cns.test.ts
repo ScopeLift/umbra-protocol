@@ -4,7 +4,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import {
   default as Resolution,
   // Web3Version0Provider,
-  // Eip1993Factories,
+  Eip1993Factories,
 } from '@unstoppabledomains/resolution';
 
 import * as cns from '../src/utils/cns';
@@ -20,9 +20,7 @@ const ethersProvider = new Web3Provider(web3Provider);
 const resolution = new Resolution({
   blockchain: {
     cns: {
-      // provider: Eip1993Factories.fromWeb3Version0Provider(
-      //   (provider as unknown) as Web3Version0Provider
-      // ),
+      provider: Eip1993Factories.fromEthersProvider(ethersProvider),
       registry: CNS_REGISTRY,
     },
   },

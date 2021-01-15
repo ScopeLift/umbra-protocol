@@ -2,11 +2,7 @@
  * @dev Wraps ENS and CNS into a common interface
  */
 
-import {
-  default as Resolution,
-  // Eip1993Factories,
-  // Web3Version0Provider,
-} from '@unstoppabledomains/resolution';
+import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import { EthersProvider } from '../types';
 import * as cns from '../utils/cns';
 import * as ens from '../utils/ens';
@@ -25,9 +21,7 @@ export class DomainService {
     this.udResolution = new Resolution({
       blockchain: {
         cns: {
-          // provider: Eip1993Factories.fromWeb3Version0Provider(
-          //   (provider as unknown) as Web3Version0Provider
-          // ),
+          provider: Eip1993Factories.fromEthersProvider(provider),
           registry: CNS_REGISTRY,
         },
       },
