@@ -7,10 +7,10 @@ import "@opengsn/gsn/contracts/interfaces/IKnowForwarderAddress.sol";
 import "@opengsn/gsn/contracts/interfaces/IRelayHub.sol";
 
 interface IUmbra {
-  function withdrawMeta(
+  function withdrawTokenOnBehalf(
     address _stealthAddr,
-    address _sponsor,
     address _acceptor,
+    address _sponsor,
     uint256 _sponsorFee,
     uint8 _v,
     bytes32 _r,
@@ -26,16 +26,16 @@ contract UmbraRelayRecipient is BaseRelayRecipient, IKnowForwarderAddress {
     trustedForwarder = _forwarder;
   }
 
-  function withdrawMeta(
+  function withdrawTokenOnBehalf(
     address _stealthAddr,
-    address _sponsor,
     address _acceptor,
+    address _sponsor,
     uint256 _sponsorFee,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
   ) external {
-    umbra.withdrawMeta(_stealthAddr, _sponsor, _acceptor, _sponsorFee, _v, _r, _s);
+    umbra.withdrawTokenOnBehalf(_stealthAddr, _acceptor, _sponsor, _sponsorFee, _v, _r, _s);
   }
 
   function getTrustedForwarder() external view override returns (address) {

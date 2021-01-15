@@ -103,10 +103,10 @@ contract Umbra is Ownable {
     SafeERC20.safeTransfer(IERC20(tokenAddr), _acceptor, amount);
   }
 
-  function withdrawMeta(
+  function withdrawTokenOnBehalf(
     address _stealthAddr,
-    address _sponsor,
     address _acceptor,
+    address _sponsor,
     uint256 _sponsorFee,
     uint8 _v,
     bytes32 _r,
