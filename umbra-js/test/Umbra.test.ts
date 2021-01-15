@@ -6,13 +6,13 @@ import * as chai from 'chai';
 import { accounts, provider } from '@openzeppelin/test-environment';
 import type { ExternalProvider } from '../src/types';
 import { TestToken as ERC20, TestToken__factory as ERC20__factory } from '../types/contracts';
+import { node } from '../test-environment.config';
 
 const { expect } = chai;
 const web3Provider = (provider as unknown) as ExternalProvider;
 const ethersProvider = new Web3Provider(web3Provider);
 
-const INFURA_ID = process.env.INFURA_ID;
-const JSON_RPC_URL = `https://ropsten.infura.io/v3/${INFURA_ID}`;
+const JSON_RPC_URL = node.fork;
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const payloadExtension = '0x0123456789abcdef0123456789abcdef';
 const quantity = ethers.utils.parseEther('10');

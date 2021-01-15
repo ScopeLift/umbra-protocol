@@ -1,5 +1,5 @@
 /**
- * @dev Functions for interacting with the Ehereum Name Service (ENS)
+ * @dev Functions for interacting with the Ethereum Name Service (ENS)
  */
 
 import { EthersProvider, EnsNamehash } from '../types';
