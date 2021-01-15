@@ -4,8 +4,10 @@
   "description": "Contracts for the Umbra Protocol",
   "scripts": {
     "compile": "oz compile",
-    "build": "yarn compile",
+    "build:types": "typechain --target ethers-v5 --outDir ../umbra-js/types/contracts './build/contracts/*.json'",
+    "build": "yarn compile && yarn build:types",
     "clean": "rimraf build",
+    "prepare": "yarn build",
     "prettier": "prettier --write .",
     "test": "oz compile && mocha --exit --timeout 0 test/*-test.js",
     "gas": "oz compile && mocha --exit --timeout 0 test/gastests.js",
@@ -24,6 +26,7 @@
     "@openzeppelin/cli": "^2.8.0",
     "@openzeppelin/test-environment": "^0.1.4",
     "@openzeppelin/test-helpers": "^0.5.5",
+    "@typechain/ethers-v5": "^5.0.0",
     "chai": "^4.2.0",
     "eslint": "^7.0.0",
     "eslint-config-airbnb-base": "^14.1.0",
@@ -32,7 +35,8 @@
     "mocha": "^7.1.1",
     "prettier": "^2.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.51",
-    "solhint": "^3.0.0"
+    "solhint": "^3.0.0",
+    "typechain": "^4.0.1"
   },
   "author": "",
   "license": "MIT"
