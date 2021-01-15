@@ -93,7 +93,7 @@ describe('Umbra', () => {
   it('should not allow someone other than the owner to update the toll', async () => {
     await expectRevert(
       this.umbra.setToll(deployedToll, { from: other }),
-      'Ownable: caller is not the owner'
+      'Ownable: caller is not the owner',
     );
   });
 
@@ -103,7 +103,7 @@ describe('Umbra', () => {
 
     await expectRevert(
       this.umbra.sendEth(receiver1, ...argumentBytes, { from: payer1, value: paymentAmount }),
-      'Umbra: Must pay more than the toll'
+      'Umbra: Must pay more than the toll',
     );
   });
 
@@ -112,7 +112,7 @@ describe('Umbra', () => {
 
     await expectRevert(
       this.umbra.sendEth(receiver1, ...argumentBytes, { from: payer1, value: toll }),
-      'Umbra: Must pay more than the toll'
+      'Umbra: Must pay more than the toll',
     );
   });
 
@@ -171,7 +171,7 @@ describe('Umbra', () => {
   it('should not let the eth receiver withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: receiver1 }),
-      'Umbra: No tokens available for withdrawal'
+      'Umbra: No tokens available for withdrawal',
     );
   });
 
@@ -180,7 +180,7 @@ describe('Umbra', () => {
       this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {
         from: payer2,
       }),
-      'Umbra: Must pay the exact toll'
+      'Umbra: Must pay the exact toll',
     );
   });
 
@@ -193,7 +193,7 @@ describe('Umbra', () => {
         from: payer2,
         value: lessToll,
       }),
-      'Umbra: Must pay the exact toll'
+      'Umbra: Must pay the exact toll',
     );
   });
 
@@ -206,7 +206,7 @@ describe('Umbra', () => {
         from: payer2,
         value: moreToll,
       }),
-      'Umbra: Must pay the exact toll'
+      'Umbra: Must pay the exact toll',
     );
   });
 
@@ -218,7 +218,7 @@ describe('Umbra', () => {
       this.token.address,
       tokenAmount,
       ...argumentBytes,
-      { from: payer2, value: toll }
+      { from: payer2, value: toll },
     );
 
     const contractBalance = await this.token.balanceOf(this.umbra.address);
@@ -242,7 +242,7 @@ describe('Umbra', () => {
       this.token.address,
       secondTokenAmount,
       ...argumentBytes,
-      { from: payer2, value: toll }
+      { from: payer2, value: toll },
     );
 
     const contractBalance = await this.token.balanceOf(this.umbra.address);
@@ -267,7 +267,7 @@ describe('Umbra', () => {
         from: payer2,
         value: toll,
       }),
-      'Umbra: Cannot send more tokens to stealth address'
+      'Umbra: Cannot send more tokens to stealth address',
     );
   });
 
@@ -300,7 +300,7 @@ describe('Umbra', () => {
   it('should not allow a non-receiver to withdraw tokens', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: other }),
-      'Umbra: No tokens available for withdrawal'
+      'Umbra: No tokens available for withdrawal',
     );
   });
 
@@ -322,7 +322,7 @@ describe('Umbra', () => {
   it('should not allow a receiver to withdraw their tokens twice', async () => {
     await expectRevert(
       this.umbra.withdrawToken(acceptor, { from: receiver2 }),
-      'Umbra: No tokens available for withdraw'
+      'Umbra: No tokens available for withdraw',
     );
   });
 
@@ -335,7 +335,7 @@ describe('Umbra', () => {
       this.token.address,
       tokenAmount,
       ...argumentBytes,
-      { from: payer2, value: toll }
+      { from: payer2, value: toll },
     );
 
     const contractBalance = await this.token.balanceOf(this.umbra.address);
@@ -356,7 +356,7 @@ describe('Umbra', () => {
       metaWallet,
       relayer,
       metaAcceptor,
-      relayerTokenFee
+      relayerTokenFee,
     );
 
     await expectRevert(
@@ -368,9 +368,9 @@ describe('Umbra', () => {
         v,
         r,
         s,
-        { from: relayer }
+        { from: relayer },
       ),
-      'Umbra: No tokens available for withdrawal'
+      'Umbra: No balance to withdraw or fee exceeds balance',
     );
   });
 
@@ -383,7 +383,7 @@ describe('Umbra', () => {
       this.token.address,
       metaTokenTotal,
       ...argumentBytes,
-      { from: payer2, value: toll }
+      { from: payer2, value: toll },
     );
 
     const wrongWallet = ethers.Wallet.createRandom();
@@ -391,7 +391,7 @@ describe('Umbra', () => {
       wrongWallet,
       relayer,
       metaAcceptor,
-      relayerTokenFee
+      relayerTokenFee,
     );
 
     await expectRevert(
@@ -403,9 +403,9 @@ describe('Umbra', () => {
         v,
         r,
         s,
-        { from: relayer }
+        { from: relayer },
       ),
-      'Umbra: Invalid Signature'
+      'Umbra: Invalid Signature',
     );
   });
 
@@ -416,14 +416,14 @@ describe('Umbra', () => {
       metaWallet,
       relayer,
       metaAcceptor,
-      relayerTokenFee
+      relayerTokenFee,
     );
 
     await expectRevert(
       this.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, relayer, bigFee, v, r, s, {
         from: relayer,
       }),
-      'Umbra: Relay fee exceeds balance'
+      'Umbra: No balance to withdraw or fee exceeds balance',
     );
   });
 
@@ -432,7 +432,7 @@ describe('Umbra', () => {
       metaWallet,
       relayer,
       metaAcceptor,
-      relayerTokenFee
+      relayerTokenFee,
     );
 
     const receipt = await this.umbra.withdrawTokenOnBehalf(
@@ -443,7 +443,7 @@ describe('Umbra', () => {
       v,
       r,
       s,
-      { from: relayer }
+      { from: relayer },
     );
 
     const acceptorBalance = await this.token.balanceOf(metaAcceptor);

@@ -115,9 +115,8 @@ contract Umbra is Ownable {
     uint256 _amount = tokenPayments[_stealthAddr].amount;
     address _tokenAddr = tokenPayments[_stealthAddr].token;
 
-    require(_amount > 0, "Umbra: No tokens available for withdrawal");
     // also protects from underflow
-    require(_amount > _sponsorFee, "Umbra: Relay fee exceeds balance");
+    require(_amount > _sponsorFee, "Umbra: No balance to withdraw or fee exceeds balance");
 
     bytes32 _digest = keccak256(
       abi.encodePacked(
