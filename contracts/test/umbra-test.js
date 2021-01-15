@@ -2,44 +2,12 @@ const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
 const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const ethers = require('ethers');
+const { argumentBytes } = require('./sample-data');
+const { sumTokenAmounts, signMetaWithdrawal } = require('./utils');
 
 const Umbra = contract.fromArtifact('Umbra');
 const TestToken = contract.fromArtifact('TestToken');
-const { argumentBytes } = require('./sample-data');
-
-const {
-  keccak256,
-  defaultAbiCoder,
-  arrayify,
-  splitSignature,
-} = ethers.utils;
 const { toWei, BN } = web3.utils;
-
-// Sum token amounts sent as strings and return a string
-const sumTokenAmounts = (amounts) => {
-  const sum = amounts
-    .map((amount) => new BN(amount))
-    .reduce((acc, val) => acc.add(val), new BN('0'));
-
-  return sum.toString();
-};
-
-// Sign a transaction for a metawithdrawal
-// signer - ethers Wallet or other Signer type
-// sponsor - string address of relayer
-// acceptor - withdrawal destination
-// fee - sent to the sponort
-const signMetaWithdrawal = async (signer, sponsor, acceptor, fee) => {
-  const digest = keccak256(
-    defaultAbiCoder.encode(
-      ['address', 'address', 'uint256'],
-      [sponsor, acceptor, fee],
-    ),
-  );
-
-  const rawSig = await signer.signMessage(arrayify(digest));
-  return splitSignature(rawSig);
-};
 
 describe('Umbra', () => {
   const [
@@ -295,13 +263,10 @@ describe('Umbra', () => {
     await this.token.approve(this.umbra.address, tokenAmount, { from: payer2 });
 
     await expectRevert(
-      this.umbra.sendToken(
-        receiver2,
-        this.token.address,
-        tokenAmount,
-        ...argumentBytes,
-        { from: payer2, value: toll },
-      ),
+      this.umbra.sendToken(receiver2, this.token.address, tokenAmount, ...argumentBytes, {
+        from: payer2,
+        value: toll,
+      }),
       'Umbra: Cannot send more tokens to stealth address',
     );
   });
@@ -388,20 +353,16 @@ describe('Umbra', () => {
 
   it('should revert on a meta withdrawal when the stealth address does not have a balance', async () => {
     const { v, r, s } = await signMetaWithdrawal(
-      metaWallet, relayer, metaAcceptor, relayerTokenFee,
+      metaWallet,
+      relayer,
+      metaAcceptor,
+      relayerTokenFee,
     );
 
     await expectRevert(
-      this.umbra.withdrawMeta(
-        metaWallet.address,
-        relayer,
-        metaAcceptor,
-        relayerTokenFee,
-        v,
-        r,
-        s,
-        { from: relayer },
-      ),
+      this.umbra.withdrawMeta(metaWallet.address, relayer, metaAcceptor, relayerTokenFee, v, r, s, {
+        from: relayer,
+      }),
       'Umbra: No tokens available for withdrawal',
     );
   });
@@ -420,20 +381,16 @@ describe('Umbra', () => {
 
     const wrongWallet = ethers.Wallet.createRandom();
     const { v, r, s } = await signMetaWithdrawal(
-      wrongWallet, relayer, metaAcceptor, relayerTokenFee,
+      wrongWallet,
+      relayer,
+      metaAcceptor,
+      relayerTokenFee,
     );
 
     await expectRevert(
-      this.umbra.withdrawMeta(
-        metaWallet.address,
-        relayer,
-        metaAcceptor,
-        relayerTokenFee,
-        v,
-        r,
-        s,
-        { from: relayer },
-      ),
+      this.umbra.withdrawMeta(metaWallet.address, relayer, metaAcceptor, relayerTokenFee, v, r, s, {
+        from: relayer,
+      }),
       'Umbra: Invalid Signature',
     );
   });
@@ -442,27 +399,26 @@ describe('Umbra', () => {
     const bigFee = sumTokenAmounts([metaTokenTotal, '100']);
 
     const { v, r, s } = await signMetaWithdrawal(
-      metaWallet, relayer, metaAcceptor, relayerTokenFee,
+      metaWallet,
+      relayer,
+      metaAcceptor,
+      relayerTokenFee,
     );
 
     await expectRevert(
-      this.umbra.withdrawMeta(
-        metaWallet.address,
-        relayer,
-        metaAcceptor,
-        bigFee,
-        v,
-        r,
-        s,
-        { from: relayer },
-      ),
+      this.umbra.withdrawMeta(metaWallet.address, relayer, metaAcceptor, bigFee, v, r, s, {
+        from: relayer,
+      }),
       'Umbra: Relay fee exceeds balance',
     );
   });
 
   it('perform a withdrawal when given a properly signed meta-tx', async () => {
     const { v, r, s } = await signMetaWithdrawal(
-      metaWallet, relayer, metaAcceptor, relayerTokenFee,
+      metaWallet,
+      relayer,
+      metaAcceptor,
+      relayerTokenFee,
     );
 
     const receipt = await this.umbra.withdrawMeta(
