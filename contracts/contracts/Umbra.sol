@@ -118,12 +118,13 @@ contract Umbra is Ownable {
     // also protects from underflow
     require(_amount > _sponsorFee, "Umbra: No balance to withdraw or fee exceeds balance");
 
-    bytes32 _digest = keccak256(
-      abi.encodePacked(
-        "\x19Ethereum Signed Message:\n32",
-        keccak256(abi.encode(_sponsor, _acceptor, _sponsorFee))
-      )
-    );
+    bytes32 _digest =
+      keccak256(
+        abi.encodePacked(
+          "\x19Ethereum Signed Message:\n32",
+          keccak256(abi.encode(_sponsor, _acceptor, _sponsorFee))
+        )
+      );
 
     address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
 

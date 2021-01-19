@@ -1,7 +1,7 @@
 [
   {
     "inputs": [
-      {"internalType": "contract ENS", "name": "_ens", "type": "address"}
+      { "internalType": "contract ENS", "name": "_ens", "type": "address" }
     ],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -286,13 +286,13 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "uint256", "name": "contentTypes", "type": "uint256"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "uint256", "name": "contentTypes", "type": "uint256" }
     ],
     "name": "ABI",
     "outputs": [
-      {"internalType": "uint256", "name": "", "type": "uint256"},
-      {"internalType": "bytes", "name": "", "type": "bytes"}
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "bytes", "name": "", "type": "bytes" }
     ],
     "payable": false,
     "stateMutability": "view",
@@ -300,10 +300,12 @@
   },
   {
     "constant": true,
-    "inputs": [{"internalType": "bytes32", "name": "node", "type": "bytes32"}],
+    "inputs": [
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
+    ],
     "name": "addr",
     "outputs": [
-      {"internalType": "address payable", "name": "", "type": "address"}
+      { "internalType": "address payable", "name": "", "type": "address" }
     ],
     "payable": false,
     "stateMutability": "view",
@@ -312,11 +314,11 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "uint256", "name": "coinType", "type": "uint256"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "uint256", "name": "coinType", "type": "uint256" }
     ],
     "name": "addr",
-    "outputs": [{"internalType": "bytes", "name": "", "type": "bytes"}],
+    "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
@@ -324,19 +326,21 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes32", "name": "", "type": "bytes32"},
-      {"internalType": "address", "name": "", "type": "address"},
-      {"internalType": "address", "name": "", "type": "address"}
+      { "internalType": "bytes32", "name": "", "type": "bytes32" },
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "address", "name": "", "type": "address" }
     ],
     "name": "authorisations",
-    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
     "constant": false,
-    "inputs": [{"internalType": "bytes32", "name": "node", "type": "bytes32"}],
+    "inputs": [
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
+    ],
     "name": "clearDNSZone",
     "outputs": [],
     "payable": false,
@@ -345,9 +349,11 @@
   },
   {
     "constant": true,
-    "inputs": [{"internalType": "bytes32", "name": "node", "type": "bytes32"}],
+    "inputs": [
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
+    ],
     "name": "contenthash",
-    "outputs": [{"internalType": "bytes", "name": "", "type": "bytes"}],
+    "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
@@ -355,12 +361,12 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "name", "type": "bytes32"},
-      {"internalType": "uint16", "name": "resource", "type": "uint16"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "name", "type": "bytes32" },
+      { "internalType": "uint16", "name": "resource", "type": "uint16" }
     ],
     "name": "dnsRecord",
-    "outputs": [{"internalType": "bytes", "name": "", "type": "bytes"}],
+    "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
@@ -368,11 +374,11 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "name", "type": "bytes32"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "name", "type": "bytes32" }
     ],
     "name": "hasDNSRecords",
-    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
@@ -380,21 +386,23 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "bytes4", "name": "interfaceID", "type": "bytes4"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "bytes4", "name": "interfaceID", "type": "bytes4" }
     ],
     "name": "interfaceImplementer",
-    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
     "constant": false,
-    "inputs": [{"internalType": "bytes[]", "name": "data", "type": "bytes[]"}],
+    "inputs": [
+      { "internalType": "bytes[]", "name": "data", "type": "bytes[]" }
+    ],
     "name": "multicall",
     "outputs": [
-      {"internalType": "bytes[]", "name": "results", "type": "bytes[]"}
+      { "internalType": "bytes[]", "name": "results", "type": "bytes[]" }
     ],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -402,20 +410,24 @@
   },
   {
     "constant": true,
-    "inputs": [{"internalType": "bytes32", "name": "node", "type": "bytes32"}],
+    "inputs": [
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
+    ],
     "name": "name",
-    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
     "constant": true,
-    "inputs": [{"internalType": "bytes32", "name": "node", "type": "bytes32"}],
+    "inputs": [
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" }
+    ],
     "name": "pubkey",
     "outputs": [
-      {"internalType": "bytes32", "name": "x", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "y", "type": "bytes32"}
+      { "internalType": "bytes32", "name": "x", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "y", "type": "bytes32" }
     ],
     "payable": false,
     "stateMutability": "view",
@@ -424,9 +436,9 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "uint256", "name": "contentType", "type": "uint256"},
-      {"internalType": "bytes", "name": "data", "type": "bytes"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "uint256", "name": "contentType", "type": "uint256" },
+      { "internalType": "bytes", "name": "data", "type": "bytes" }
     ],
     "name": "setABI",
     "outputs": [],
@@ -437,9 +449,9 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "uint256", "name": "coinType", "type": "uint256"},
-      {"internalType": "bytes", "name": "a", "type": "bytes"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "uint256", "name": "coinType", "type": "uint256" },
+      { "internalType": "bytes", "name": "a", "type": "bytes" }
     ],
     "name": "setAddr",
     "outputs": [],
@@ -450,8 +462,8 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "address", "name": "a", "type": "address"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "address", "name": "a", "type": "address" }
     ],
     "name": "setAddr",
     "outputs": [],
@@ -462,9 +474,9 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "address", "name": "target", "type": "address"},
-      {"internalType": "bool", "name": "isAuthorised", "type": "bool"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "address", "name": "target", "type": "address" },
+      { "internalType": "bool", "name": "isAuthorised", "type": "bool" }
     ],
     "name": "setAuthorisation",
     "outputs": [],
@@ -475,8 +487,8 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "bytes", "name": "hash", "type": "bytes"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "bytes", "name": "hash", "type": "bytes" }
     ],
     "name": "setContenthash",
     "outputs": [],
@@ -487,8 +499,8 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "bytes", "name": "data", "type": "bytes"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "bytes", "name": "data", "type": "bytes" }
     ],
     "name": "setDNSRecords",
     "outputs": [],
@@ -499,9 +511,9 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "bytes4", "name": "interfaceID", "type": "bytes4"},
-      {"internalType": "address", "name": "implementer", "type": "address"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "bytes4", "name": "interfaceID", "type": "bytes4" },
+      { "internalType": "address", "name": "implementer", "type": "address" }
     ],
     "name": "setInterface",
     "outputs": [],
@@ -512,8 +524,8 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "string", "name": "name", "type": "string"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "string", "name": "name", "type": "string" }
     ],
     "name": "setName",
     "outputs": [],
@@ -524,9 +536,9 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "x", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "y", "type": "bytes32"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "x", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "y", "type": "bytes32" }
     ],
     "name": "setPubkey",
     "outputs": [],
@@ -537,9 +549,9 @@
   {
     "constant": false,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "string", "name": "key", "type": "string"},
-      {"internalType": "string", "name": "value", "type": "string"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "string", "name": "key", "type": "string" },
+      { "internalType": "string", "name": "value", "type": "string" }
     ],
     "name": "setText",
     "outputs": [],
@@ -550,10 +562,10 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes4", "name": "interfaceID", "type": "bytes4"}
+      { "internalType": "bytes4", "name": "interfaceID", "type": "bytes4" }
     ],
     "name": "supportsInterface",
-    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "payable": false,
     "stateMutability": "pure",
     "type": "function"
@@ -561,11 +573,11 @@
   {
     "constant": true,
     "inputs": [
-      {"internalType": "bytes32", "name": "node", "type": "bytes32"},
-      {"internalType": "string", "name": "key", "type": "string"}
+      { "internalType": "bytes32", "name": "node", "type": "bytes32" },
+      { "internalType": "string", "name": "key", "type": "string" }
     ],
     "name": "text",
-    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
     "payable": false,
     "stateMutability": "view",
     "type": "function"

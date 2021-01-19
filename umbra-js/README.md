@@ -11,7 +11,7 @@ const ethers = require("ethers");
 const umbra = require("umbra-js");
 
 // utils and ens are not used below, but their APIs can be found in utils.js and ens.js
-const {RandomNumber, KeyPair, utils, ens} = umbra;
+const { RandomNumber, KeyPair, utils, ens } = umbra;
 
 // Setup ----------------------------------------------------------------------
 // Generate a random wallet to simulate the recipient

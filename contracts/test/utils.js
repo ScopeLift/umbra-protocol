@@ -2,9 +2,7 @@ const { web3 } = require('@openzeppelin/test-environment');
 const ethers = require('ethers');
 
 const { BN } = web3.utils;
-const {
-  keccak256, defaultAbiCoder, arrayify, splitSignature,
-} = ethers.utils;
+const { keccak256, defaultAbiCoder, arrayify, splitSignature } = ethers.utils;
 
 /**
  * Sum token amounts sent as strings and return a string
@@ -28,7 +26,7 @@ const sumTokenAmounts = (amounts) => {
  */
 const signMetaWithdrawal = async (signer, sponsor, acceptor, fee) => {
   const digest = keccak256(
-    defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, fee]),
+    defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, fee])
   );
 
   const rawSig = await signer.signMessage(arrayify(digest));
