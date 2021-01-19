@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { Web3Provider } from '@ethersproject/providers';
 import * as chai from 'chai';
 import { accounts, provider } from '@openzeppelin/test-environment';
-import type { ExternalProvider } from '../src/types';
+import type { ChainConfig, ExternalProvider } from '../src/types';
 import { TestToken as ERC20, TestToken__factory as ERC20__factory } from '../types/contracts';
 import { node } from '../test-environment.config';
 
@@ -77,9 +77,16 @@ describe('Umbra class', () => {
     sender.signer = ethersProvider.getSigner(signerIndex);
     // const receiver.signer = ethersProvider.getSigner(receiverIndex);
 
+    // Get chainConfig based on most recent Ropsten block number to minimize scanning time
+    const lastBlockNumber = await ethersProvider.getBlockNumber();
+    const chainConfig: ChainConfig = {
+      umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
+      startBlock: lastBlockNumber,
+    };
+
     // Get Umbra instances
-    umbra = await Umbra.create(sender.signer);
-    umbraReadonly = await Umbra.createReadonly(JSON_RPC_URL);
+    umbra = await Umbra.create(sender.signer, chainConfig);
+    umbraReadonly = await Umbra.createReadonly(JSON_RPC_URL, chainConfig);
 
     // Deploy mock tokens
     const daiFactory = new ERC20__factory(sender.signer);
@@ -96,6 +103,57 @@ describe('Umbra class', () => {
     it('initializes correctly when using a JSON-RPC provider', async () => {
       expect(umbraReadonly.provider._isProvider).to.be.true;
       expect(Boolean(umbraReadonly.signer)).to.be.false;
+    });
+
+    it('initializes correctly when using a default chainId', async () => {
+      // Localhost with signer
+      const umbra1 = await Umbra.create(sender.signer, 1337);
+      expect(umbra1.chainConfig.umbraAddress).to.equal(
+        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+      );
+      expect(umbra1.chainConfig.startBlock).to.equal(9496718);
+
+      // Localhost with read-only provider
+      const umbra2 = await Umbra.createReadonly(JSON_RPC_URL, 1337);
+      expect(umbra2.chainConfig.umbraAddress).to.equal(
+        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+      );
+      expect(umbra2.chainConfig.startBlock).to.equal(9496718);
+
+      // Ropsten with signer
+      const umbra3 = await Umbra.create(sender.signer, 3);
+      expect(umbra3.chainConfig.umbraAddress).to.equal(
+        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+      );
+      expect(umbra3.chainConfig.startBlock).to.equal(9496718);
+
+      // Ropsten with read-only provider
+      const umbra4 = await Umbra.createReadonly(JSON_RPC_URL, 3);
+      expect(umbra4.chainConfig.umbraAddress).to.equal(
+        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+      );
+      expect(umbra4.chainConfig.startBlock).to.equal(9496718);
+    });
+
+    it('does not allow invalid default chain IDs to be provided', async () => {
+      const msg = 'Unsupported chain ID provided';
+      await expectRejection(Umbra.create(sender.signer, 999), msg);
+      await expectRejection(Umbra.createReadonly(JSON_RPC_URL, 999), msg);
+    });
+
+    it('initializes correctly when using a custom chain configuration', async () => {
+      // Define random properties since they are not verified
+      const chainConfig = { umbraAddress: ethers.constants.AddressZero, startBlock: 100 };
+
+      // Custom chain config with signer
+      const umbra1 = await Umbra.create(sender.signer, chainConfig);
+      expect(umbra1.chainConfig.umbraAddress).to.equal(chainConfig.umbraAddress);
+      expect(umbra1.chainConfig.startBlock).to.equal(chainConfig.startBlock);
+
+      // Custom chain config with read-only provider
+      const umbra2 = await Umbra.createReadonly(JSON_RPC_URL, chainConfig);
+      expect(umbra2.chainConfig.umbraAddress).to.equal(chainConfig.umbraAddress);
+      expect(umbra2.chainConfig.startBlock).to.equal(chainConfig.startBlock);
     });
   });
 
@@ -130,8 +188,8 @@ describe('Umbra class', () => {
       // RECEIVER
       // Receiver scans for funds send to them
       const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncementEvents } = await umbra.scan(receiverKeyPair);
-      expect(userAnnouncementEvents.length).to.be.greaterThan(0);
+      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
       // TODO once meta-transaction implementation is done + contract redeployed
@@ -158,8 +216,8 @@ describe('Umbra class', () => {
       // RECEIVER
       // Receiver scans for funds send to them
       const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncementEvents } = await umbra.scan(receiverKeyPair);
-      expect(userAnnouncementEvents.length).to.be.greaterThan(0);
+      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
       // TODO once meta-transaction implementation is done + contract redeployed
@@ -179,8 +237,8 @@ describe('Umbra class', () => {
       // RECEIVER
       // Receiver scans for funds send to them
       const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncementEvents } = await umbra.scan(receiverKeyPair);
-      expect(userAnnouncementEvents.length).to.be.greaterThan(0);
+      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
       // TODO once meta-transaction implementation is done + contract redeployed
@@ -201,8 +259,8 @@ describe('Umbra class', () => {
       // RECEIVER
       // Receiver scans for funds send to them
       const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncementEvents } = await umbra.scan(receiverKeyPair);
-      expect(userAnnouncementEvents.length).to.be.greaterThan(0);
+      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
       // TODO once meta-transaction implementation is done + contract redeployed

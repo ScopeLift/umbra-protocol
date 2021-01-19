@@ -3,11 +3,8 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { Event, Overrides } from '@ethersproject/contracts';
 import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 
+// ========================================= Ethers types ==========================================
 export { SignatureLike } from '@ethersproject/bytes';
-
-export interface UmbraOverrides extends Overrides {
-  payloadExtension?: string;
-}
 
 export type ExternalProvider =
   | ethers.providers.ExternalProvider
@@ -15,11 +12,25 @@ export type ExternalProvider =
 
 export type EthersProvider = Web3Provider | JsonRpcProvider;
 
-export type EnsNamehash = {
-  hash: (name: string) => string;
-  normalize: (name: string) => string;
-};
+// ======================================= Umbra class types =======================================
+// Settings when instantiating an instance of the Umbra class
+export interface ChainConfig {
+  umbraAddress: string; // address of Umbra contract
+  startBlock: number; // block Umbra contract was deployed at
+}
 
+// Overrides when sending or withdrawing funds
+export interface UmbraOverrides extends Overrides {
+  payloadExtension?: string;
+}
+
+// Start and end block numbers to use when scanning for events
+export interface ScanOverrides {
+  startBlock?: number | string;
+  endBlock?: number | string;
+}
+
+// Type definition for Announcement events emitted from the contract
 export interface Announcement {
   receiver: string;
   amount: BigNumber;
@@ -28,14 +39,17 @@ export interface Announcement {
   ciphertext: string;
 }
 
-// A UserAnnouncementEvent is an Announcement event from Umbra where the recipient is the specified user
-export interface UserAnnouncementEvent {
+// A UserAnnouncement is an Announcement event from Umbra where the recipient is the specified user
+export interface UserAnnouncement {
   event: Event;
   randomNumber: string;
   receiver: string;
   amount: BigNumber;
   token: string;
-  blockNumber: number;
-  timestamp: number;
-  sender: string;
 }
+
+// ======================================= ENS-related types =======================================
+export type EnsNamehash = {
+  hash: (name: string) => string;
+  normalize: (name: string) => string;
+};

@@ -15,47 +15,44 @@ import { lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, ERC20 } from '../../types/contracts';
 import * as erc20Abi from '../abi/ERC20.json';
 import type {
+  Announcement,
+  UserAnnouncement,
+  ChainConfig,
   EthersProvider,
   UmbraOverrides,
-  // Announcement,
-  // UserAnnouncementEvent,
+  ScanOverrides,
 } from '../types';
-
-// Additional type definitions
-interface ContactInfo {
-  umbraAddress: string;
-  umbraPaymasterAddress: string;
-  startBlock: number;
-}
-
-interface AnnouncementEvent {
-  receiver: string;
-  amount: BigNumber;
-  token: string;
-  pkx: string;
-  ciphertext: string;
-}
 
 // Umbra.sol ABI
 const abi = require('../../../contracts/build/contracts/Umbra.json').abi;
 
 // Mapping from chainId to contract information
-const contractInfo: Record<number, ContactInfo> = {
+const chainConfigs: Record<number, ChainConfig> = {
   // Ropsten
   3: {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
-    umbraPaymasterAddress: '0xCaA925B2A71933E9C4e3FE145019961A691Bdaf3',
-    startBlock: 9473583, // block Umbra contract was deployed at
+    startBlock: 9496718,
   },
   // Local
   1337: {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
-    umbraPaymasterAddress: '0xCaA925B2A71933E9C4e3FE145019961A691Bdaf3',
-    startBlock: 9473583,
+    startBlock: 9496718,
   },
 };
 
-// Determines if the provided address is a token or ETH
+// Helper method to parse chainConfig input
+const parseChainConfig = (chainConfig: ChainConfig | number) => {
+  // If a number is provided, verify chainId value is value and pull config from `chainConfigs`
+  if (typeof chainConfig === 'number') {
+    const validChainIds = Object.keys(chainConfigs);
+    if (validChainIds.includes(String(chainConfig))) return chainConfigs[chainConfig];
+    throw new Error('Unsupported chain ID provided');
+  }
+  // Otherwise return the user's provided chain config
+  return chainConfig;
+};
+
+// Helper method to determine if the provided address is a token or ETH
 const isETH = (token: string) => {
   if (token === 'ETH') return true;
   const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -67,52 +64,52 @@ const missingSignerMessage =
   'This method requires a valid signer, but Umbra instance has a readonly provider';
 
 export class Umbra {
-  readonly signer: JsonRpcSigner | null; // null if connected with a readonly provider
   readonly umbraContract: UmbraContract;
-  readonly chainId: number;
 
   // ======================================== CONSTRUCTORS =========================================
   /**
    * @notice Create Umbra instance to interact with the Umbra contracts
    * @dev WARNING: It is recommended that you do not call the constructor directly, and instead use
    * the static methods to generate an Umbra instance. If you do call the constructor directly, be
-   * certain that the provided chain ID matches the provider's chain ID
+   * certain that the provided chainConfig information is valid
    * @param provider ethers provider to use
-   * @param chainId The Chain ID of the network
    * @param signer The associated signer, or null if no signer is available
+   * @param chainConfig The chain configuration of the network
    */
-  constructor(readonly provider: EthersProvider, chainId: number, signer: JsonRpcSigner | null) {
-    const supportedChainIds = Object.keys(contractInfo);
-    if (!supportedChainIds.includes(String(chainId))) {
-      throw new Error('Unsupported chainId');
-    }
-
-    this.signer = signer;
-    this.chainId = chainId;
-    this.umbraContract = new Contract(
-      contractInfo[chainId].umbraAddress,
-      abi,
-      this.signer || this.provider
-    ) as UmbraContract;
+  constructor(
+    readonly provider: EthersProvider,
+    readonly signer: JsonRpcSigner | null,
+    readonly chainConfig: ChainConfig
+  ) {
+    const umbraAddress = chainConfig.umbraAddress;
+    this.umbraContract = new Contract(umbraAddress, abi, signer || provider) as UmbraContract;
   }
 
   /**
    * @notice Generates Umbra instance from a web3 provider to read from and write to the Umbra contracts
    * @param signer Signer to use
+   * @param chainConfig The chain configuration of the network, or null to read it from the signer
    */
-  static async create(signer: JsonRpcSigner) {
+  static async create(signer: JsonRpcSigner, chainConfig: ChainConfig | number | null = null) {
+    // If chainConfig is provided, use user-provided info
+    if (chainConfig) return new Umbra(signer.provider, signer, parseChainConfig(chainConfig));
+    // Otherwise, read chain ID from signer
     const chainId = await signer.getChainId();
-    return new Umbra(signer.provider, chainId, signer);
+    return new Umbra(signer.provider, signer, parseChainConfig(chainId));
   }
 
   /**
    * @notice Generates Umbra instance from a JSON-RPC API to read from the Umbra contracts
    * @param url URL of the JSON-RPC provider to connect to
+   * @param chainConfig The chain configuration of the network, or null to read it from the provider
    */
-  static async createReadonly(url: string) {
+  static async createReadonly(url: string, chainConfig: ChainConfig | number | null = null) {
+    // If chainConfig is provided, use user-provided info
     const provider = new JsonRpcProvider(url);
+    if (chainConfig) return new Umbra(provider, null, parseChainConfig(chainConfig));
+    // Otherwise, read chain ID from provider
     const network = await provider.getNetwork();
-    return new Umbra(provider, network.chainId, null);
+    return new Umbra(provider, null, parseChainConfig(network.chainId));
   }
 
   // ==================================== CONTRACT INTERACTION =====================================
@@ -202,6 +199,7 @@ export class Umbra {
 
   /**
    * @notice Withdraw funds for a recipient
+   * @param token Address of token to withdraw
    * @param recipient Recipient address
    * @param overrides Override the payload extension, gas limit, gas price, or nonce
    */
@@ -223,11 +221,12 @@ export class Umbra {
   /**
    * @notice Scans Umbra event logs for funds sent to the specified address
    * @param keyPair KeyPair of user to scan for, must have associated private key
+   * @param overrides Override the start and end block used for scanning
    */
-  async scan(keyPair: KeyPair) {
+  async scan(keyPair: KeyPair, overrides: ScanOverrides = {}) {
     // Get start and end blocks to scan events for
-    const startBlock = contractInfo[this.chainId].startBlock;
-    const endBlock = 'latest';
+    const startBlock = overrides.startBlock || this.chainConfig.startBlock;
+    const endBlock = overrides.endBlock || 'latest';
 
     // Get list of all Announcement events
     const announcementFilter = this.umbraContract.filters.Announcement(
@@ -237,7 +236,7 @@ export class Umbra {
       null,
       null
     );
-    const announcementEvents = await this.umbraContract.queryFilter(
+    const announcements = await this.umbraContract.queryFilter(
       announcementFilter,
       startBlock,
       endBlock
@@ -253,18 +252,12 @@ export class Umbra {
     console.log('withdrawalEvents: ', withdrawalEvents);
 
     // Determine which announcements are for the user
-    const userAnnouncementEvents = [];
-    for (let i = 0; i < announcementEvents.length; i += 1) {
-      const event = announcementEvents[i];
+    const userAnnouncements = [] as UserAnnouncement[];
+    for (let i = 0; i < announcements.length; i += 1) {
+      const event = announcements[i];
 
       // Extract out event parameters
-      const {
-        receiver,
-        amount,
-        token,
-        pkx,
-        ciphertext,
-      } = (event.args as unknown) as AnnouncementEvent;
+      const { receiver, amount, token, pkx, ciphertext } = (event.args as unknown) as Announcement;
 
       // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
       const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
@@ -278,13 +271,13 @@ export class Umbra {
 
       // If our receiving address matches the event's recipient, the transfer was for us
       if (computedReceivingAddress === receiver) {
-        userAnnouncementEvents.push({ event, randomNumber, receiver, amount, token });
+        userAnnouncements.push({ event, randomNumber, receiver, amount, token });
       }
     }
 
     // For each of the user's announcement events, determine if the funds were withdrawn
     // TODO
 
-    return { userAnnouncementEvents /* userWithdrawalEvents, userEvents */ };
+    return { userAnnouncements /* userWithdrawalEvents, userEvents */ };
   }
 }
