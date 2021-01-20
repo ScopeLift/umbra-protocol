@@ -3769,10 +3769,10 @@
   dependencies:
     eslint-visitor-keys "^1.1.0"
 
-"@unstoppabledomains/resolution@^1.16.0":
-  version "1.16.2"
-  resolved "https://registry.yarnpkg.com/@unstoppabledomains/resolution/-/resolution-1.16.2.tgz#b69f75b542c521dc3647d6e74e2b98b38b2536dc"
-  integrity sha512-5+wiAwCGEiHK38gP7JRxOqAhLNj4sx58dl5gyVANGK85SrcUShL3WP5OWcS4JRFeKNNgv96oaxYFy61G/9dmgQ==
+"@unstoppabledomains/resolution@1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@unstoppabledomains/resolution/-/resolution-1.9.0.tgz#a6089ecfff915185a365d338f1105b9b7ab5c05d"
+  integrity sha512-vmJk+lAlcL45WoEjqpRgtFSUGrgDy8UwWcKWmmsnkc/2mZF8YhgWJraBwAVPVubQlpF6hV0WKqWiwMmXA+aH1A==
   dependencies:
     "@ensdomains/address-encoder" "0.1.8"
     "@ethersproject/abi" "^5.0.1"
