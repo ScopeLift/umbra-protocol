@@ -4,8 +4,8 @@
 
 import { Contract } from 'ethers';
 import { getAddress } from '@ethersproject/address';
-import { BigNumber } from '@ethersproject/bignumber';
-import { ContractTransaction } from '@ethersproject/contracts';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import { ContractTransaction, Overrides } from '@ethersproject/contracts';
 import { JsonRpcProvider, JsonRpcSigner } from '@ethersproject/providers';
 import { computePublicKey } from '@ethersproject/signing-key';
 
@@ -19,7 +19,7 @@ import type {
   UserAnnouncement,
   ChainConfig,
   EthersProvider,
-  UmbraOverrides,
+  SendOverrides,
   ScanOverrides,
 } from '../types';
 
@@ -127,7 +127,7 @@ export class Umbra {
     token: string,
     amount: BigNumber | string,
     recipientId: string,
-    overrides: UmbraOverrides = {}
+    overrides: SendOverrides = {}
   ) {
     // Check for valid signer
     if (!this.signer) throw new Error(missingSignerMessage);
@@ -198,24 +198,83 @@ export class Umbra {
   }
 
   /**
-   * @notice Withdraw funds for a recipient
+   * @notice Withdraw ETH or tokens to a specified destination address with a regular transaction
    * @param token Address of token to withdraw
-   * @param recipient Recipient address
+   * @param stealthAddress Stealth address funds were sent to
+   * @param destination Address to send funds to
    * @param overrides Override the payload extension, gas limit, gas price, or nonce
+   * @dev The signer used for sending the transaction will be the one associated with the Umbra
+   * instance. Use the `connect()` method to explicitly set the signer you want to use before
+   * calling this method, e.g. `umbra.connect(mySigner).withdraw(...)
+   * @dev This method does not relay meta-transactions
    */
-  withdraw(token: string, recipient: string, overrides: UmbraOverrides = {}) {
-    console.log(token, recipient, overrides);
+  async withdraw(
+    token: string,
+    stealthAddress: string,
+    destination: string,
+    overrides: Overrides = {}
+  ) {
+    // Check for valid signer
+    if (!this.signer) throw new Error(missingSignerMessage);
 
-    // Determine if recipient caller is withdrawing token or ETH by reading contract
+    if (isETH(token)) {
+      // Withdraw ETH
+      // Based on gas price, compute how much ETH to transfer to avoid dust
+      const ethBalance = await this.provider.getBalance(stealthAddress);
+      const gasPrice = BigNumber.from(overrides.gasPrice) || (await this.provider.getGasPrice());
+      const gasLimit = BigNumber.from(overrides.gasLimit) || BigNumber.from('21000');
+      const txCost = gasPrice.mul(gasLimit);
+      return await this.signer.sendTransaction({
+        to: destination,
+        value: ethBalance.sub(txCost),
+        gasPrice,
+        gasLimit,
+        nonce: overrides.nonce || undefined, // nonce will be determined by ethers if undefined
+      });
+    } else {
+      // Withdrawing a token
+      return await this.umbraContract.withdrawToken(destination, overrides);
+    }
+  }
+
+  /**
+   * @notice Withdraw tokens by sending a meta-transaction on behalf of a user
+   * @param stealthAddr Stealth address funds were sent to
+   * @param destination Address to send funds to
+   * @param sponsor Address that receives sponsorFee
+   * @param sponsorFee Fee for relayer
+   * @param v v-component of signature
+   * @param r r-component of signature
+   * @param s s-component of signature
+   * @param overrides
+   */
+  async withdrawOnBehalf(
+    stealthAddr: string,
+    destination: string,
+    sponsor: string,
+    sponsorFee: BigNumberish,
+    v: number,
+    r: string,
+    s: string,
+    overrides: Overrides = {}
+  ) {
+    return await this.umbraContract.withdrawTokenOnBehalf(
+      stealthAddr,
+      destination,
+      sponsor,
+      sponsorFee,
+      v,
+      r,
+      s,
+      overrides
+    );
+  }
+
+  /**
+   * @notice Withdraw tokens by relaying a user's meta-transaction
+   */
+  async relayWithdrawOnBehalf() {
     // TODO
-
-    // // Withdraw funds
-    // if (isETH(token)) {
-    //   // Based on gas price, compute how much ETH to transfer to avoid dust
-    //   // TODO
-    // } else {
-    //   // this.umbra.withdrawToken(...);
-    // }
   }
 
   /**
@@ -279,5 +338,13 @@ export class Umbra {
     // TODO
 
     return { userAnnouncements /* userWithdrawalEvents, userEvents */ };
+  }
+
+  /**
+   * @notice Returns a new instance of the Umbra class, with the specified signer
+   * @param signer Signer to use
+   */
+  connect(signer: JsonRpcSigner) {
+    return new Umbra(signer.provider, signer, this.chainConfig);
   }
 }

@@ -5,6 +5,7 @@ import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
 
 // ========================================= Ethers types ==========================================
 export { SignatureLike } from '@ethersproject/bytes';
+export { TransactionResponse } from '@ethersproject/providers';
 
 export type ExternalProvider =
   | ethers.providers.ExternalProvider
@@ -19,12 +20,12 @@ export interface ChainConfig {
   startBlock: number; // block Umbra contract was deployed at
 }
 
-// Overrides when sending or withdrawing funds
-export interface UmbraOverrides extends Overrides {
+// Overrides when sending funds
+export interface SendOverrides extends Overrides {
   payloadExtension?: string;
 }
 
-// Start and end block numbers to use when scanning for events
+// Overrides for the start and end block numbers to use when scanning for events
 export interface ScanOverrides {
   startBlock?: number | string;
   endBlock?: number | string;
