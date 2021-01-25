@@ -2,11 +2,11 @@
  * @dev Simplifies interaction with the Umbra contracts
  */
 
-import { Contract } from 'ethers';
+import { Contract, Wallet } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { ContractTransaction, Overrides } from '@ethersproject/contracts';
-import { JsonRpcProvider, JsonRpcSigner } from '@ethersproject/providers';
+import { JsonRpcSigner } from '@ethersproject/providers';
 import { computePublicKey } from '@ethersproject/signing-key';
 
 import { KeyPair } from './KeyPair';
@@ -59,64 +59,39 @@ const isETH = (token: string) => {
   return getAddress(token) === ETH_ADDRESS; // throws if not a valid address
 };
 
-// Error message to throw if a valid signer is required but not present
-const missingSignerMessage =
-  'This method requires a valid signer, but Umbra instance has a readonly provider';
-
 export class Umbra {
+  readonly chainConfig: ChainConfig;
   readonly umbraContract: UmbraContract;
 
   // ======================================== CONSTRUCTORS =========================================
   /**
    * @notice Create Umbra instance to interact with the Umbra contracts
-   * @dev WARNING: It is recommended that you do not call the constructor directly, and instead use
-   * the static methods to generate an Umbra instance. If you do call the constructor directly, be
-   * certain that the provided chainConfig information is valid
    * @param provider ethers provider to use
-   * @param signer The associated signer, or null if no signer is available
-   * @param chainConfig The chain configuration of the network
+   * @param chainConfig The chain configuration of the network or a network ID to use a default one
    */
-  constructor(
-    readonly provider: EthersProvider,
-    readonly signer: JsonRpcSigner | null,
-    readonly chainConfig: ChainConfig
-  ) {
-    const umbraAddress = chainConfig.umbraAddress;
-    this.umbraContract = new Contract(umbraAddress, abi, signer || provider) as UmbraContract;
-  }
-
-  /**
-   * @notice Generates Umbra instance from a web3 provider to read from and write to the Umbra contracts
-   * @param signer Signer to use
-   * @param chainConfig The chain configuration of the network, or null to read it from the signer
-   */
-  static async create(signer: JsonRpcSigner, chainConfig: ChainConfig | number | null = null) {
-    // If chainConfig is provided, use user-provided info
-    if (chainConfig) return new Umbra(signer.provider, signer, parseChainConfig(chainConfig));
-    // Otherwise, read chain ID from signer
-    const chainId = await signer.getChainId();
-    return new Umbra(signer.provider, signer, parseChainConfig(chainId));
-  }
-
-  /**
-   * @notice Generates Umbra instance from a JSON-RPC API to read from the Umbra contracts
-   * @param url URL of the JSON-RPC provider to connect to
-   * @param chainConfig The chain configuration of the network, or null to read it from the provider
-   */
-  static async createReadonly(url: string, chainConfig: ChainConfig | number | null = null) {
-    // If chainConfig is provided, use user-provided info
-    const provider = new JsonRpcProvider(url);
-    if (chainConfig) return new Umbra(provider, null, parseChainConfig(chainConfig));
-    // Otherwise, read chain ID from provider
-    const network = await provider.getNetwork();
-    return new Umbra(provider, null, parseChainConfig(network.chainId));
+  constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
+    this.chainConfig = parseChainConfig(chainConfig);
+    this.umbraContract = new Contract(
+      this.chainConfig.umbraAddress,
+      abi,
+      provider
+    ) as UmbraContract;
   }
 
   // ==================================== CONTRACT INTERACTION =====================================
 
   /**
+   * @notice Returns a signer with a valid provider
+   * @param signer Signer that may or may not have an associated provider
+   */
+  getSigner(signer: JsonRpcSigner | Wallet) {
+    return signer.provider ? signer : signer.connect(this.provider);
+  }
+
+  /**
    * @notice Send funds to a recipient via Umbra
    * @dev If sending tokens, make sure to handle the approvals before calling this method
+   * @param signer Signer to send transaction from
    * @param token Address of token to send. Use 'ETH' or '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
    * to send Ether
    * @param amount Amount to send, in units of that token (e.g. use 1e6 to send 1 USDC)
@@ -124,18 +99,19 @@ export class Umbra {
    * @param overrides Override the payload extension, gas limit, gas price, or nonce
    */
   async send(
+    signer: JsonRpcSigner | Wallet,
     token: string,
     amount: BigNumber | string,
     recipientId: string,
     overrides: SendOverrides = {}
   ) {
-    // Check for valid signer
-    if (!this.signer) throw new Error(missingSignerMessage);
+    // Configure signer
+    const txSigner = this.getSigner(signer);
 
     // If applicable, check that sender has sufficient token balance. ETH balance is checked on send
     if (!isETH(token)) {
-      const tokenContract = new Contract(token, erc20Abi, this.signer) as ERC20;
-      const tokenBalance = await tokenContract.balanceOf(await this.signer.getAddress());
+      const tokenContract = new Contract(token, erc20Abi, signer) as ERC20;
+      const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
       if (tokenBalance.lt(amount)) {
         const providedAmount = BigNumber.from(amount).toString();
         const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
@@ -175,22 +151,27 @@ export class Umbra {
     let tx: ContractTransaction;
     if (isETH(token)) {
       const txOverrides = { ...filteredOverrides, value: toll.add(amount) };
-      tx = await this.umbraContract.sendEth(
-        stealthKeyPair.address,
-        compressedXCoordinate,
-        encrypted.ciphertext,
-        txOverrides
-      );
+      tx = await this.umbraContract
+        .connect(txSigner)
+        .sendEth(
+          stealthKeyPair.address,
+          toll,
+          compressedXCoordinate,
+          encrypted.ciphertext,
+          txOverrides
+        );
     } else {
       const txOverrides = { ...filteredOverrides, value: toll };
-      tx = await this.umbraContract.sendToken(
-        stealthKeyPair.address,
-        token,
-        amount,
-        compressedXCoordinate,
-        encrypted.ciphertext,
-        txOverrides
-      );
+      tx = await this.umbraContract
+        .connect(txSigner)
+        .sendToken(
+          stealthKeyPair.address,
+          token,
+          amount,
+          compressedXCoordinate,
+          encrypted.ciphertext,
+          txOverrides
+        );
     }
 
     // We do not wait for the transaction to be mined before returning it
@@ -199,32 +180,34 @@ export class Umbra {
 
   /**
    * @notice Withdraw ETH or tokens to a specified destination address with a regular transaction
+   * @param signer Signer to send transaction from
    * @param token Address of token to withdraw
    * @param stealthAddress Stealth address funds were sent to
    * @param destination Address to send funds to
    * @param overrides Override the payload extension, gas limit, gas price, or nonce
-   * @dev The signer used for sending the transaction will be the one associated with the Umbra
-   * instance. Use the `connect()` method to explicitly set the signer you want to use before
-   * calling this method, e.g. `umbra.connect(mySigner).withdraw(...)
+   * @dev The provider used for sending the transaction will be the one associated with the Umbra
+   * instance. Use the `connect()` method to explicitly set the provider you want to use before
+   * calling this method, e.g. `umbra.connect(myProvider).withdraw(...)
    * @dev This method does not relay meta-transactions
    */
   async withdraw(
+    signer: JsonRpcSigner | Wallet,
     token: string,
     stealthAddress: string,
     destination: string,
     overrides: Overrides = {}
   ) {
-    // Check for valid signer
-    if (!this.signer) throw new Error(missingSignerMessage);
+    // Configure signer
+    const txSigner = this.getSigner(signer);
 
     if (isETH(token)) {
       // Withdraw ETH
       // Based on gas price, compute how much ETH to transfer to avoid dust
       const ethBalance = await this.provider.getBalance(stealthAddress);
-      const gasPrice = BigNumber.from(overrides.gasPrice) || (await this.provider.getGasPrice());
-      const gasLimit = BigNumber.from(overrides.gasLimit) || BigNumber.from('21000');
+      const gasPrice = BigNumber.from(overrides.gasPrice || (await this.provider.getGasPrice()));
+      const gasLimit = BigNumber.from(overrides.gasLimit || '21000');
       const txCost = gasPrice.mul(gasLimit);
-      return await this.signer.sendTransaction({
+      return await txSigner.sendTransaction({
         to: destination,
         value: ethBalance.sub(txCost),
         gasPrice,
@@ -233,12 +216,13 @@ export class Umbra {
       });
     } else {
       // Withdrawing a token
-      return await this.umbraContract.withdrawToken(destination, overrides);
+      return await this.umbraContract.connect(txSigner).withdrawToken(destination, overrides);
     }
   }
 
   /**
    * @notice Withdraw tokens by sending a meta-transaction on behalf of a user
+   * @param signer Signer to send transaction from
    * @param stealthAddr Stealth address funds were sent to
    * @param destination Address to send funds to
    * @param sponsor Address that receives sponsorFee
@@ -249,6 +233,7 @@ export class Umbra {
    * @param overrides
    */
   async withdrawOnBehalf(
+    signer: JsonRpcSigner | Wallet,
     stealthAddr: string,
     destination: string,
     sponsor: string,
@@ -258,16 +243,10 @@ export class Umbra {
     s: string,
     overrides: Overrides = {}
   ) {
-    return await this.umbraContract.withdrawTokenOnBehalf(
-      stealthAddr,
-      destination,
-      sponsor,
-      sponsorFee,
-      v,
-      r,
-      s,
-      overrides
-    );
+    const txSigner = this.getSigner(signer);
+    return await this.umbraContract
+      .connect(txSigner)
+      .withdrawTokenOnBehalf(stealthAddr, destination, sponsor, sponsorFee, v, r, s, overrides);
   }
 
   /**
@@ -308,7 +287,7 @@ export class Umbra {
       startBlock,
       endBlock
     );
-    console.log('withdrawalEvents: ', withdrawalEvents);
+    withdrawalEvents; // to silence tsc error
 
     // Determine which announcements are for the user
     const userAnnouncements = [] as UserAnnouncement[];
@@ -341,10 +320,15 @@ export class Umbra {
   }
 
   /**
-   * @notice Returns a new instance of the Umbra class, with the specified signer
-   * @param signer Signer to use
+   * @notice Helper method to return the stealth wallet from a receiver's private key and a random number
+   * @param receiverKeyPair KeyPair instance generated from private key of receiver
+   * @param randomNumber Number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
-  connect(signer: JsonRpcSigner) {
-    return new Umbra(signer.provider, signer, this.chainConfig);
+  static getStealthWallet(receiverKeyPair: KeyPair, randomNumber: RandomNumber | string) {
+    const stealthFromPrivate = receiverKeyPair.mulPrivateKey(randomNumber);
+    if (!stealthFromPrivate.privateKeyHex) {
+      throw new Error('Stealth key pair must have a private key: this should never occur');
+    }
+    return new Wallet(stealthFromPrivate.privateKeyHex);
   }
 }
