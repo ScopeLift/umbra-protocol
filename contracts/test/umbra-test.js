@@ -102,7 +102,7 @@ describe('Umbra', () => {
     const paymentAmount = toll.sub(new BN('1'));
 
     await expectRevert(
-      this.umbra.sendEth(receiver1, ...argumentBytes, { from: payer1, value: paymentAmount }),
+      this.umbra.sendEth(receiver1, toll, ...argumentBytes, { from: payer1, value: paymentAmount }),
       'Umbra: Must pay more than the toll'
     );
   });
@@ -111,8 +111,18 @@ describe('Umbra', () => {
     const toll = await this.umbra.toll();
 
     await expectRevert(
-      this.umbra.sendEth(receiver1, ...argumentBytes, { from: payer1, value: toll }),
+      this.umbra.sendEth(receiver1, toll, ...argumentBytes, { from: payer1, value: toll }),
       'Umbra: Must pay more than the toll'
+    );
+  });
+
+  it('should not allow an eth payment that commits to the wrong toll', async () => {
+    await expectRevert(
+      this.umbra.sendEth(receiver1, deployedToll, ...argumentBytes, {
+        from: payer1,
+        value: ethPayment,
+      }),
+      'Umbra: Invalid or outdated toll commitment'
     );
   });
 
@@ -123,7 +133,7 @@ describe('Umbra', () => {
     const payment = new BN(ethPayment);
     const actualPayment = payment.sub(toll);
 
-    const receipt = await this.umbra.sendEth(receiver1, ...argumentBytes, {
+    const receipt = await this.umbra.sendEth(receiver1, toll, ...argumentBytes, {
       from: payer1,
       value: ethPayment,
     });
@@ -149,7 +159,7 @@ describe('Umbra', () => {
     const payment = new BN(secondEthPayment);
     const actualPayment = payment.sub(toll);
 
-    const receipt = await this.umbra.sendEth(receiver1, ...argumentBytes, {
+    const receipt = await this.umbra.sendEth(receiver1, toll, ...argumentBytes, {
       from: payer1,
       value: secondEthPayment,
     });
@@ -278,7 +288,7 @@ describe('Umbra', () => {
     const payment = new BN(secondEthPayment);
     const actualPayment = payment.sub(toll);
 
-    const receipt = await this.umbra.sendEth(receiver2, ...argumentBytes, {
+    const receipt = await this.umbra.sendEth(receiver2, toll, ...argumentBytes, {
       from: payer1,
       value: secondEthPayment,
     });

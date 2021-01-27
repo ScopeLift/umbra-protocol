@@ -61,9 +61,11 @@ contract Umbra is Ownable {
 
   function sendEth(
     address payable _receiver,
+    uint256 _tollCommitment,
     bytes32 _pkx, // ephemeral public key x coordinate
     bytes32 _ciphertext
   ) public payable {
+    require(_tollCommitment == toll, "Umbra: Invalid or outdated toll commitment");
     require(msg.value > toll, "Umbra: Must pay more than the toll");
 
     uint256 amount = msg.value.sub(toll);
