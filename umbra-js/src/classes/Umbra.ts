@@ -15,7 +15,7 @@ import { computePublicKey } from '@ethersproject/signing-key';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { lookupRecipient } from '../utils/utils';
-import { Umbra as UmbraContract, ERC20 } from '../../types/contracts';
+import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import * as erc20Abi from '../abi/ERC20.json';
 import type {
   Announcement,
