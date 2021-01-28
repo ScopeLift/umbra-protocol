@@ -8,6 +8,7 @@ import './tasks/accounts';
 import './tasks/clean';
 
 import '@nomiclabs/hardhat-waffle';
+import '@nomiclabs/hardhat-web3';
 import 'hardhat-typechain';
 import 'solidity-coverage';
 
