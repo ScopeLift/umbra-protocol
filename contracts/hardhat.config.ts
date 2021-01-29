@@ -9,13 +9,14 @@ import './tasks/clean';
 
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-web3';
+import '@nomiclabs/hardhat-truffle5';
 import 'hardhat-typechain';
 import 'solidity-coverage';
 
 const chainIds = {
   ganache: 1337,
   goerli: 5,
-  hardhat: 31337,
+  hardhat: 1337,
   kovan: 42,
   mainnet: 1,
   rinkeby: 4,
@@ -56,6 +57,12 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: chainIds.hardhat,
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/1'/0",
+      },
     },
     goerli: createTestnetConfig('goerli'),
     kovan: createTestnetConfig('kovan'),
