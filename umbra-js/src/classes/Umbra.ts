@@ -180,7 +180,7 @@ export class Umbra {
 
   /**
    * @notice Withdraw ETH or tokens to a specified destination address with a regular transaction
-   * @param signer Signer to send transaction from
+   * @param generationPrivateKey Receiver's generation private key
    * @param token Address of token to withdraw
    * @param stealthAddress Stealth address funds were sent to
    * @param destination Address to send funds to
@@ -191,14 +191,15 @@ export class Umbra {
    * @dev This method does not relay meta-transactions
    */
   async withdraw(
-    signer: JsonRpcSigner | Wallet,
+    generationPrivateKey: string,
     token: string,
     stealthAddress: string,
     destination: string,
     overrides: Overrides = {}
   ) {
     // Configure signer
-    const txSigner = this.getSigner(signer);
+    const wallet = new Wallet(generationPrivateKey);
+    const txSigner = this.getSigner(wallet);
 
     if (isETH(token)) {
       // Withdraw ETH
@@ -258,10 +259,15 @@ export class Umbra {
 
   /**
    * @notice Scans Umbra event logs for funds sent to the specified address
-   * @param keyPair KeyPair of user to scan for, must have associated private key
+   * @param generationPublicKey Receiver's generation private key
+   * @param encryptionPrivateKey Receiver's encryption public key
    * @param overrides Override the start and end block used for scanning
    */
-  async scan(keyPair: KeyPair, overrides: ScanOverrides = {}) {
+  async scan(
+    generationPublicKey: string,
+    encryptionPrivateKey: string,
+    overrides: ScanOverrides = {}
+  ) {
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
@@ -302,10 +308,12 @@ export class Umbra {
 
       // Decrypt to get random number
       const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
-      const randomNumber = keyPair.decrypt(payload);
+      const encryptionKeyPair = new KeyPair(encryptionPrivateKey);
+      const randomNumber = encryptionKeyPair.decrypt(payload);
 
       // Get what our receiving address would be with this random number
-      const computedReceivingAddress = keyPair.mulPublicKey(randomNumber).address;
+      const generationKeyPair = new KeyPair(generationPublicKey);
+      const computedReceivingAddress = generationKeyPair.mulPublicKey(randomNumber).address;
 
       // If our receiving address matches the event's recipient, the transfer was for us
       if (computedReceivingAddress === receiver) {
@@ -321,14 +329,15 @@ export class Umbra {
 
   /**
    * @notice Helper method to return the stealth wallet from a receiver's private key and a random number
-   * @param receiverKeyPair KeyPair instance generated from private key of receiver
+   * @param generationPrivateKey Receiver's generation private key
    * @param randomNumber Number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
-  static getStealthWallet(receiverKeyPair: KeyPair, randomNumber: RandomNumber | string) {
-    const stealthFromPrivate = receiverKeyPair.mulPrivateKey(randomNumber);
+  static getStealthPrivateKey(generationPrivateKey: string, randomNumber: RandomNumber | string) {
+    const generationPrivateKeyPair = new KeyPair(generationPrivateKey);
+    const stealthFromPrivate = generationPrivateKeyPair.mulPrivateKey(randomNumber);
     if (!stealthFromPrivate.privateKeyHex) {
       throw new Error('Stealth key pair must have a private key: this should never occur');
     }
-    return new Wallet(stealthFromPrivate.privateKeyHex);
+    return stealthFromPrivate.privateKeyHex;
   }
 }

@@ -1,4 +1,3 @@
-import { KeyPair } from '../src/classes/KeyPair';
 import { Umbra } from '../src/classes/Umbra';
 import { BigNumber, BigNumberish, ethers } from 'ethers';
 import { Web3Provider, JsonRpcSigner, JsonRpcProvider } from '@ethersproject/providers';
@@ -211,8 +210,10 @@ describe.only('Umbra class', () => {
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      const { userAnnouncements } = await umbra.scan(
+        receiver.wallet.publicKey,
+        receiver.wallet.privateKey
+      );
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
@@ -237,8 +238,10 @@ describe.only('Umbra class', () => {
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      const { userAnnouncements } = await umbra.scan(
+        receiver.wallet.publicKey,
+        receiver.wallet.privateKey
+      );
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
@@ -260,19 +263,21 @@ describe.only('Umbra class', () => {
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      const { userAnnouncements } = await umbra.scan(
+        receiver.wallet.publicKey,
+        receiver.wallet.privateKey
+      );
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
       // Destination wallet should have a balance equal to amount sent minus gas cost
-      const stealthWallet = Umbra.getStealthWallet(
-        receiverKeyPair,
+      const stealthPrivateKey = Umbra.getStealthPrivateKey(
+        receiver.wallet.privateKey,
         userAnnouncements[0].randomNumber
       );
       const destinationWallet = ethers.Wallet.createRandom();
       const withdrawTx = await umbra.withdraw(
-        stealthWallet,
+        stealthPrivateKey,
         'ETH',
         stealthKeyPair.address,
         destinationWallet.address
@@ -297,8 +302,10 @@ describe.only('Umbra class', () => {
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const receiverKeyPair = new KeyPair(receiver.wallet.privateKey);
-      const { userAnnouncements } = await umbra.scan(receiverKeyPair);
+      const { userAnnouncements } = await umbra.scan(
+        receiver.wallet.publicKey,
+        receiver.wallet.privateKey
+      );
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw
