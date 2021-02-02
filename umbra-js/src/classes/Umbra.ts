@@ -3,9 +3,12 @@
  */
 
 import { Contract, Wallet } from 'ethers';
+import { defaultAbiCoder } from '@ethersproject/abi';
 import { getAddress } from '@ethersproject/address';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import { arrayify, splitSignature } from '@ethersproject/bytes';
 import { ContractTransaction, Overrides } from '@ethersproject/contracts';
+import { keccak256 } from '@ethersproject/keccak256';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { computePublicKey } from '@ethersproject/signing-key';
 
@@ -327,6 +330,8 @@ export class Umbra {
     return { userAnnouncements /* userWithdrawalEvents, userEvents */ };
   }
 
+  // ==================================== STATIC HELPER METHODS ====================================
+
   /**
    * @notice Helper method to return the stealth wallet from a receiver's private key and a random number
    * @param generationPrivateKey Receiver's generation private key
@@ -339,5 +344,28 @@ export class Umbra {
       throw new Error('Stealth key pair must have a private key: this should never occur');
     }
     return stealthFromPrivate.privateKeyHex;
+  }
+
+  /**
+   * @notice Sign a transaction to be used with withdrawTokenOnBehalf
+   * @dev Return type is an ethers Signature: { r: string; s: string; _vs: string, recoveryParam: number; v: number; }
+   * @param generationPrivateKey Receiver's generation private key that is doing the signing
+   * @param acceptor Withdrawal destination
+   * @param sponsor Address of relayer
+   * @param sponsorFee Amount sent to sponsor
+   */
+  static async signWithdraw(
+    generationPrivateKey: string,
+    acceptor: string,
+    sponsor: string,
+    sponsorFee: BigNumberish
+  ) {
+    const stealthWallet = new Wallet(generationPrivateKey);
+    const digest = keccak256(
+      defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, sponsorFee])
+    );
+
+    const rawSig = await stealthWallet.signMessage(arrayify(digest));
+    return splitSignature(rawSig);
   }
 }
