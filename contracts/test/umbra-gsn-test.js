@@ -10,6 +10,7 @@ const { sumTokenAmounts, signMetaWithdrawal } = require('./utils');
 const Umbra = artifacts.require('Umbra');
 const UmbraPaymaster = artifacts.require('UmbraPaymaster');
 const UmbraRelayRecipient = artifacts.require('UmbraRelayRecipient');
+const UmbraForwarder = artifacts.require('UmbraForwarder');
 const TestToken = artifacts.require('TestToken');
 
 const { toWei } = web3.utils;
@@ -38,15 +39,17 @@ describe('Umbra GSN', () => {
     ctx.token = await TestToken.new('TestToken', 'TT');
     await ctx.token.mint(payer, tokenAmount);
 
-    // Start the GSN Test environment— ctx includes deployment of a relay hub, a forwarder, and
+    // Start the GSN Test environment— this includes deployment of a relay hub, a forwarder, and
     // a stake manager, as well as starting a relay server. It also deploys a naive Paymaster, but we
     // will use our own
     const gsnInstance = await GsnTestEnvironment.startGsn(
       'localhost'
     );
 
-    // Save the forwader, as we'll need it when sending contract calls via our RelayProvider
-    ctx.forwarder = gsnInstance.deploymentResult.forwarderAddress;
+    // Deploy our custom forwarder, which ignore signature validation, and save its address
+    // We'll need it when sending contract calls via our RelayProvider
+    const deployedForwarder = await UmbraForwarder.new({ from: owner });
+    ctx.forwarder = deployedForwarder.address;
 
     // Deploy the Umbra GSN wrapper & paymaster
     ctx.relayRecipient = await UmbraRelayRecipient.new(ctx.umbra.address, ctx.forwarder, {
@@ -69,7 +72,7 @@ describe('Umbra GSN', () => {
     };
     const gsnConfig = configureGSN(gsnConfigParams);
 
-    // Create and save a RelayProvider. ctx web3 provder wraps the original web3
+    // Create and save a RelayProvider. This web3 provder wraps the original web3
     // provider given by the OZ test environment, but also accounts for interaction with
     // contracts via GSN, and thus needs to know our gsn config as well
     ctx.gsnProvider = new RelayProvider(origProvider, gsnConfig);
@@ -112,8 +115,8 @@ describe('Umbra GSN', () => {
   });
 
   it('should not allow a non-receiver to withdraw tokens with GSN', async () => {
-    // ctx line updates the web3 Provider used by our ctx.relayRecipient instance for all future calls.
-    // Needing to do update it ctx way is an idiosyncracy of truffle-contract. The important
+    // This line updates the web3 Provider used by our ctx.relayRecipient instance for all future calls.
+    // Needing to do update it this way is an idiosyncracy of truffle-contract. The important
     // thing is that calls be made using the RelayProvider instantiated previously.
     // By using the RelayProvider instances, tx's sent through ctx.relayRecipient will now go through GSN.
     UmbraRelayRecipient.web3.setProvider(ctx.gsnProvider);
