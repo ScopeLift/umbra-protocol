@@ -83,8 +83,6 @@ describe('Umbra class', () => {
     // looping through the accounts above doesn't
     sender['wallet'] = wallets[signerIndex - 1];
     receiver['wallet'] = wallets[receiverIndex - 1];
-    console.log('sender:   ', sender.wallet.address);
-    console.log('receiver: ', receiver.wallet.address);
   });
 
   beforeEach(async () => {

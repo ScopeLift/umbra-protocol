@@ -87,13 +87,14 @@ export class Umbra {
    * @notice Returns a signer with a valid provider
    * @param signer Signer that may or may not have an associated provider
    */
-  getSigner(signer: JsonRpcSigner | Wallet) {
+  getConnectedSigner(signer: JsonRpcSigner | Wallet) {
     return signer.provider ? signer : signer.connect(this.provider);
   }
 
   /**
    * @notice Send funds to a recipient via Umbra
    * @dev If sending tokens, make sure to handle the approvals before calling this method
+   * @dev The provider used for sending the transaction is the one associated with the Umbra instance
    * @param signer Signer to send transaction from
    * @param token Address of token to send. Use 'ETH' or '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
    * to send Ether
@@ -109,7 +110,7 @@ export class Umbra {
     overrides: SendOverrides = {}
   ) {
     // Configure signer
-    const txSigner = this.getSigner(signer);
+    const txSigner = this.getConnectedSigner(signer);
 
     // If applicable, check that sender has sufficient token balance. ETH balance is checked on send
     if (!isETH(token)) {
@@ -183,15 +184,13 @@ export class Umbra {
 
   /**
    * @notice Withdraw ETH or tokens to a specified destination address with a regular transaction
+   * @dev The provider used for sending the transaction is the one associated with the Umbra instance
+   * @dev This method does not relay meta-transactions and requires signer to have ETH
    * @param generationPrivateKey Receiver's generation private key
    * @param token Address of token to withdraw
    * @param stealthAddress Stealth address funds were sent to
-   * @param destination Address to send funds to
-   * @param overrides Override the payload extension, gas limit, gas price, or nonce
-   * @dev The provider used for sending the transaction will be the one associated with the Umbra
-   * instance. Use the `connect()` method to explicitly set the provider you want to use before
-   * calling this method, e.g. `umbra.connect(myProvider).withdraw(...)
-   * @dev This method does not relay meta-transactions
+   * @param destination Address where funds will be withdrawn to
+   * @param overrides Override the gas limit, gas price, or nonce
    */
   async withdraw(
     generationPrivateKey: string,
@@ -202,7 +201,7 @@ export class Umbra {
   ) {
     // Configure signer
     const wallet = new Wallet(generationPrivateKey);
-    const txSigner = this.getSigner(wallet);
+    const txSigner = this.getConnectedSigner(wallet);
 
     if (isETH(token)) {
       // Withdraw ETH
@@ -226,15 +225,17 @@ export class Umbra {
 
   /**
    * @notice Withdraw tokens by sending a meta-transaction on behalf of a user
+   * @dev The provider used for sending the transaction is the one associated with the Umbra instance
+   * @dev This method does not relay meta-transactions and requires signer to have ETH
    * @param signer Signer to send transaction from
    * @param stealthAddr Stealth address funds were sent to
-   * @param destination Address to send funds to
+   * @param destination Address where funds will be withdrawn to
    * @param sponsor Address that receives sponsorFee
    * @param sponsorFee Fee for relayer
    * @param v v-component of signature
    * @param r r-component of signature
    * @param s s-component of signature
-   * @param overrides
+   * @param overrides Override the gas limit, gas price, or nonce
    */
   async withdrawOnBehalf(
     signer: JsonRpcSigner | Wallet,
@@ -247,7 +248,7 @@ export class Umbra {
     s: string,
     overrides: Overrides = {}
   ) {
-    const txSigner = this.getSigner(signer);
+    const txSigner = this.getConnectedSigner(signer);
     return await this.umbraContract
       .connect(txSigner)
       .withdrawTokenOnBehalf(stealthAddr, destination, sponsor, sponsorFee, v, r, s, overrides);
