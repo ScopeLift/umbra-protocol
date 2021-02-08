@@ -64,7 +64,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "hardhat clean",
-    "compile": "hardhat compile",
+    "build": "hardhat compile",
     "coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"./test/**/*.ts\"",
     "lint": "yarn run lint:sol && yarn run lint:ts && yarn run prettier:list-different",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
@@ -73,7 +73,7 @@
     "prettier:list-different": "prettier --config .prettierrc --list-different \"**/*.{js,json,md,sol,ts}\"",
     "test": "concurrently --success first --kill-others \"hardhat node &>/dev/null\" \"hardhat test --network localhost\"",
     "typechain": "hardhat typechain",
-    "postinstall": "yarn run typechain"
+    "prepare": "yarn run typechain"
   },
   "volta": {
     "extends": "../package.json"

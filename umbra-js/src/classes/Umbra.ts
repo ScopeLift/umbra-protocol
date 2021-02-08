@@ -27,7 +27,7 @@ import type {
 } from '../types';
 
 // Umbra.sol ABI
-const abi = require('../../../contracts/build/contracts/Umbra.json').abi;
+const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
 
 // Mapping from chainId to contract information
 const chainConfigs: Record<number, ChainConfig> = {
