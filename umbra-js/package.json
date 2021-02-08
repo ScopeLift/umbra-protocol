@@ -53,5 +53,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ScopeLift/umbra.git"
+  },
+  "volta": {
+    "extends": "../package.json"
   }
 }
