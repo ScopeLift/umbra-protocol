@@ -1,6 +1,10 @@
-# Solidity Template
+# Umbra contracts
 
-My favourite setup for writing Solidity smart contracts.
+On chain components of the [Umbra protocol](../README.md).
+
+## Development
+
+This dev toolchain based on @paulkberg's [solidity-template](https://github.com/paulrberg/solidity-template) repo includes:
 
 - [Hardhat](https://github.com/nomiclabs/hardhat): compile and run the smart contracts on a local development network
 - [TypeChain](https://github.com/ethereum-ts/TypeChain): generate TypeScript types for smart contracts
@@ -10,14 +14,11 @@ My favourite setup for writing Solidity smart contracts.
 - [Solcover](https://github.com/sc-forks/solidity-coverage) code coverage
 - [Prettier Plugin Solidity](https://github.com/prettier-solidity/prettier-plugin-solidity): code formatter
 
-This is a GitHub template, which means you can reuse it as many times as you want. You can do that by clicking the "Use this
-template" button at the top of the page.
-
 ## Usage
 
 ### Pre Requisites
 
-Before running any command, make sure to install dependencies:
+Before running any command, make sure to install dependencies
 
 ```sh
 $ yarn install
