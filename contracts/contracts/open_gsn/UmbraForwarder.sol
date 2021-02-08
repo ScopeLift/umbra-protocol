@@ -88,7 +88,7 @@ contract UmbraForwarder is IForwarder {
         registerRequestTypeInternal(requestType);
     }
 
-    function registerDomainSeparator(string calldata name, string calldata version) external {
+    function registerDomainSeparator(string calldata name, string calldata version) external override {
         uint256 chainId;
         /* solhint-disable-next-line no-inline-assembly */
         assembly { chainId := chainid() }
@@ -133,7 +133,7 @@ contract UmbraForwarder is IForwarder {
         //         "\x19\x01", domainSeparator,
         //         keccak256(_getEncoded(req, requestTypeHash, suffixData))
         //     ));
-        //require(digest.recover(sig) == req.from, "signature mismatch");
+        // require(digest.recover(sig) == req.from, "signature mismatch");
     }
 
     function _getEncoded(

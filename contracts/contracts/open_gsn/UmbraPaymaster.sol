@@ -14,7 +14,7 @@ contract UmbraPaymaster is BasePaymaster {
   }
 
   function versionPaymaster() external view override returns (string memory) {
-    return "1.0.0";
+    return "2.0.0";
   }
 
   function preRelayedCall(
@@ -26,7 +26,7 @@ contract UmbraPaymaster is BasePaymaster {
     (signature, approvalData, maxPossibleGas); // to silence compiler warnings
 
     require(relayRequest.request.to == umbraAddr, "UmbraPaymaster: Not Target");
-    return (abi.encode(0x0), true);
+    return ("", true);
   }
 
   function postRelayedCall(

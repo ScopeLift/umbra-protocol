@@ -3,7 +3,6 @@ const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const { RelayProvider } = require('@opengsn/gsn/dist/src/relayclient/RelayProvider');
 const { GsnTestEnvironment } = require('@opengsn/gsn/dist/GsnTestEnvironment');
-const { configureGSN } = require('@opengsn/gsn/dist/src/relayclient/GSNConfigurator');
 const { argumentBytes } = require('./sample-data');
 const { sumTokenAmounts, signMetaWithdrawal } = require('./utils');
 
@@ -39,23 +38,28 @@ describe('Umbra GSN', () => {
     ctx.token = await TestToken.new('TestToken', 'TT');
     await ctx.token.mint(payer, tokenAmount);
 
-    // Start the GSN Test environment— this includes deployment of a relay hub, a forwarder, and
-    // a stake manager, as well as starting a relay server. It also deploys a naive Paymaster, but we
-    // will use our own
-    const gsnInstance = await GsnTestEnvironment.startGsn(
-      'localhost'
-    );
+    // Start the GSN Test environment— this includes deployment of a relay hub and
+    // a stake manager, as well as starting a relay server. It also deploys a naive Paymaster and
+    // a Forwarder implementation, but in both cases, we will use our own
+    const gsnInstance = await GsnTestEnvironment.startGsn('localhost');
 
     // Deploy our custom forwarder, which ignore signature validation, and save its address
     // We'll need it when sending contract calls via our RelayProvider
     const deployedForwarder = await UmbraForwarder.new({ from: owner });
     ctx.forwarder = deployedForwarder.address;
 
-    // Deploy the Umbra GSN wrapper & paymaster
+    // Deploy the Umbra GSN wrapper
     ctx.relayRecipient = await UmbraRelayRecipient.new(ctx.umbra.address, ctx.forwarder, {
       from: owner,
     });
+
+    // Deploy the Umbra Paymaster
     ctx.paymaster = await UmbraPaymaster.new(ctx.relayRecipient.address, { from: owner });
+
+    // Configure our paymaster to use the global RelayHub instance
+    await ctx.paymaster.setRelayHub(gsnInstance.contractsDeployment.relayHubAddress, {
+      from: owner
+    });
 
     // Configure GSN with the params from the test deployment + our paymaster
     const gsnConfigParams = {
@@ -65,20 +69,19 @@ describe('Umbra GSN', () => {
       // chainId: '*',
       relayLookupWindowBlocks: 1e5,
       preferredRelays: [gsnInstance.relayUrl],
-      relayHubAddress: gsnInstance.deploymentResult.relayHubAddress,
-      stakeManagerAddress: gsnInstance.deploymentResult.stakeManagerAddress,
+      relayHubAddress: gsnInstance.contractsDeployment.relayHubAddress,
+      stakeManagerAddress: gsnInstance.contractsDeployment.stakeManagerAddress,
       paymasterAddress: ctx.paymaster.address,
       verbose: false,
     };
-    const gsnConfig = configureGSN(gsnConfigParams);
 
     // Create and save a RelayProvider. This web3 provder wraps the original web3
     // provider given by the OZ test environment, but also accounts for interaction with
     // contracts via GSN, and thus needs to know our gsn config as well
-    ctx.gsnProvider = new RelayProvider(origProvider, gsnConfig);
-
-    // Configure our paymaster to use the global RelayHub instance
-    await ctx.paymaster.setRelayHub(gsnInstance.deploymentResult.relayHubAddress, { from: owner });
+    ctx.gsnProvider = await RelayProvider.newProvider({
+      provider: origProvider,
+      config: gsnConfigParams,
+    }).init();
 
     // Fund our Paymaster to pay for gas. Actually, ctx funds the RelayHub with ETH our Paymaster
     // has the right to spend, since payments to the Paymaster are forwarded
