@@ -7,9 +7,9 @@ import type { ChainConfig, ExternalProvider } from '../src/types';
 import {
   TestToken as ERC20,
   Umbra as UmbraContract,
-  TestToken__factory as ERC20__factory,
-  Umbra__factory,
-} from '../types/contracts';
+  TestTokenFactory as ERC20__factory,
+  UmbraFactory as Umbra__factory,
+} from '@umbra/contracts/typechain';
 import { node } from '../test-environment.config';
 
 const { expect } = chai;
