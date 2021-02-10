@@ -174,6 +174,15 @@ describe('Umbra class', () => {
     });
   });
 
+  describe('Private key generation', () => {
+    it('properly generates private keys', async () => {
+      const wallet = ethers.Wallet.createRandom();
+      const { generationKeyPair, encryptionKeyPair } = await umbra.generatePrivateKeys(wallet);
+      expect(generationKeyPair.privateKeyHex).to.have.length(66);
+      expect(encryptionKeyPair.privateKeyHex).to.have.length(66);
+    });
+  });
+
   describe('Send, scan, and withdraw funds', () => {
     const mintAndApproveDai = async (signer: JsonRpcSigner, user: string, amount: BigNumber) => {
       await dai.connect(signer).mint(user, amount);
@@ -223,7 +232,7 @@ describe('Umbra class', () => {
       await sender.signer.sendTransaction({ to: stealthKeyPair.address, value: parseEther('1') });
 
       // Now we withdraw the tokens
-      const stealthPrivateKey = Umbra.getStealthPrivateKey(
+      const stealthPrivateKey = Umbra.computeStealthPrivateKey(
         receiver.wallet.privateKey,
         userAnnouncements[0].randomNumber
       );
@@ -290,7 +299,7 @@ describe('Umbra class', () => {
       await sender.signer.sendTransaction({ to: relayerWallet.address, value: parseEther('1') });
 
       // Get signature
-      const stealthPrivateKey = Umbra.getStealthPrivateKey(
+      const stealthPrivateKey = Umbra.computeStealthPrivateKey(
         receiver.wallet.privateKey,
         userAnnouncements[0].randomNumber
       );
@@ -340,7 +349,7 @@ describe('Umbra class', () => {
 
       // Withdraw (test regular withdrawal)
       // Destination wallet should have a balance equal to amount sent minus gas cost
-      const stealthPrivateKey = Umbra.getStealthPrivateKey(
+      const stealthPrivateKey = Umbra.computeStealthPrivateKey(
         receiver.wallet.privateKey,
         userAnnouncements[0].randomNumber
       );
@@ -379,7 +388,7 @@ describe('Umbra class', () => {
 
       // Withdraw (test regular withdrawal)
       // Destination wallet should have a balance equal to amount sent minus gas cost
-      const stealthPrivateKey = Umbra.getStealthPrivateKey(
+      const stealthPrivateKey = Umbra.computeStealthPrivateKey(
         receiver.wallet.privateKey,
         userAnnouncements[0].randomNumber
       );

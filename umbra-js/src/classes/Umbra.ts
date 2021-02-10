@@ -6,11 +6,13 @@ import { Contract, Wallet } from 'ethers';
 import { defaultAbiCoder } from '@ethersproject/abi';
 import { getAddress } from '@ethersproject/address';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { arrayify, splitSignature } from '@ethersproject/bytes';
+import { arrayify, hexlify, isHexString, splitSignature } from '@ethersproject/bytes';
 import { ContractTransaction, Overrides } from '@ethersproject/contracts';
 import { keccak256 } from '@ethersproject/keccak256';
 import { JsonRpcSigner } from '@ethersproject/providers';
+import { sha256 } from '@ethersproject/sha2';
 import { computePublicKey } from '@ethersproject/signing-key';
+import { toUtf8Bytes } from '@ethersproject/strings';
 
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
@@ -66,7 +68,7 @@ export class Umbra {
   readonly chainConfig: ChainConfig;
   readonly umbraContract: UmbraContract;
 
-  // ======================================== CONSTRUCTORS =========================================
+  // ========================================= CONSTRUCTOR =========================================
   /**
    * @notice Create Umbra instance to interact with the Umbra contracts
    * @param provider ethers provider to use
@@ -331,6 +333,64 @@ export class Umbra {
     return { userAnnouncements /* userWithdrawalEvents, userEvents */ };
   }
 
+  // ======================================= HELPER METHODS ========================================
+
+  /**
+   * @notice Asks a user to sign a message to generate two Umbra-specific private keys for them
+   * @param signer Signer to sign message from
+   * @returns Two KeyPair instances, for the generationKeyPair and encryptionKeyPair
+   */
+  async generatePrivateKeys(signer: JsonRpcSigner | Wallet) {
+    // Base message that will be signed
+    const baseMessage =
+      'Sign this message to access your Umbra account.\n\nThis signature gives the app access to your funds, so only sign this message for a trusted client!';
+
+    // Append chain ID if not mainnet to mitigate replay attacks
+    const chainId = this.provider.network.chainId;
+    const message = chainId === 1 ? baseMessage : `${baseMessage}\n\nChain ID: ${chainId}`;
+
+    // Get 65 byte signature from user
+    const isValidSignature = (sig: string) => isHexString(sig) && sig.length === 132; // user to verify signature
+    let signature: string;
+    signature = await signer.signMessage(message); // prompt to user is here, uses eth_sign
+
+    // Fallback to personal_sign if eth_sign isn't supported (e.g. for Status and other wallets)
+    if (!isValidSignature(signature)) {
+      const userAddress = await signer.getAddress();
+      signature = String(
+        await this.provider.send('personal_sign', [
+          hexlify(toUtf8Bytes(message)),
+          userAddress.toLowerCase(),
+        ])
+      );
+    }
+
+    // Verify signature
+    if (!isValidSignature(signature)) {
+      throw new Error(`Invalid signature: ${signature}`);
+    }
+
+    // Split hex string signature into two 32 byte chunks
+    const startIndex = 2; // first two characters are 0x, so skip these
+    const length = 64; // each 32 byte chunk is in hex, so 64 characters
+    const portion1 = signature.slice(startIndex, startIndex + length);
+    const portion2 = signature.slice(startIndex + length, startIndex + length + length);
+    const lastByte = signature.slice(signature.length - 2);
+
+    if (`0x${portion1}${portion2}${lastByte}` !== signature) {
+      throw new Error('Signature incorrectly generated or parsed');
+    }
+
+    // Hash the signature pieces to get the two private keys
+    const generationPrivateKey = sha256(`0x${portion1}`);
+    const encryptionPrivateKey = sha256(`0x${portion2}`);
+
+    // Create KeyPair instances from the private keys and return them
+    const generationKeyPair = new KeyPair(generationPrivateKey);
+    const encryptionKeyPair = new KeyPair(encryptionPrivateKey);
+    return { generationKeyPair, encryptionKeyPair };
+  }
+
   // ==================================== STATIC HELPER METHODS ====================================
 
   /**
@@ -338,7 +398,10 @@ export class Umbra {
    * @param generationPrivateKey Receiver's generation private key
    * @param randomNumber Number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
-  static getStealthPrivateKey(generationPrivateKey: string, randomNumber: RandomNumber | string) {
+  static computeStealthPrivateKey(
+    generationPrivateKey: string,
+    randomNumber: RandomNumber | string
+  ) {
     const generationPrivateKeyPair = new KeyPair(generationPrivateKey);
     const stealthFromPrivate = generationPrivateKeyPair.mulPrivateKey(randomNumber);
     if (!stealthFromPrivate.privateKeyHex) {
