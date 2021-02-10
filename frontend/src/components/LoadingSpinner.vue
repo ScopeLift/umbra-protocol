@@ -1,14 +1,12 @@
 <template>
-  <q-page padding>
-    <h1 class="page-title">Send</h1>
-  </q-page>
+  <q-spinner-puff class="text-center q-mx-auto q-my-xl" color="primary" size="4rem" />
 </template>
 
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
-  name: 'PageSend',
+  name: 'LoadingSpinner',
   setup() {
     return {};
   },

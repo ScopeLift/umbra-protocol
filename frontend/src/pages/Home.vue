@@ -8,6 +8,7 @@
     <div class="row justify-center q-pt-xl">
       <home-action-card class="col-xs-3" to="send" text="Send" />
       <home-action-card class="col-xs-3" to="receive" text="Receive" />
+      <home-action-card class="col-xs-3" to="setup" text="Setup" />
     </div>
   </q-page>
 </template>
