@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <h1 class="page-title">Receive</h1>
+    <h1 class="page-title">Setup</h1>
 
     <div class="q-mx-auto">
       <div v-if="keyStatus === 'denied'" class="text-center">
@@ -9,8 +9,7 @@
       </div>
       <div v-else-if="keyStatus === 'waiting'" class="text-center">Waiting for signature</div>
       <div v-else-if="keyStatus === 'success'" class="text-center">
-        <loading-spinner />
-        <div class="text-center text-italic">Scanning for funds...</div>
+        Follow the steps below to setup ENS
       </div>
       <div v-else class="text-center">Invalid app state! Please contact us for support</div>
     </div>
@@ -34,7 +33,7 @@ function useKeys() {
 }
 
 export default defineComponent({
-  name: 'PageReceive',
+  name: 'PageSetup',
   setup() {
     return { ...useKeys() };
   },
