@@ -1,7 +1,7 @@
-import { computed, ref } from '@vue/composition-api';
+import { computed, onMounted, ref } from '@vue/composition-api';
 import { ethers } from 'ethers';
 import { KeyPair, Umbra } from '@umbra/umbra-js';
-import { Signer, Provider, Network } from 'components/models';
+import { Signer, Provider, Network, TokenInfo, TokenList } from 'components/models';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -22,10 +22,22 @@ const network = ref<Network>();
 const umbra = ref<Umbra>();
 const generationKeyPair = ref<KeyPair>();
 const encryptionKeyPair = ref<KeyPair>();
+const tokens = ref<TokenInfo[]>([]); // list of network tokens
+// const balances = ref<Record<string, ethers.BigNumber>>({}); // mapping from token address to user's balance
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
+  onMounted(() => void fetchTokenList()); // dispatch in the background to get token details
+
   // ------------------------------------------- Actions -------------------------------------------
+  async function fetchTokenList() {
+    const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
+    const url = 'https://tokens.coingecko.com/uniswap/all.json';
+    const response = (await jsonFetch(url)) as TokenList;
+    tokens.value = response.tokens;
+    console.log('tokens.value: ', tokens.value);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function setProvider(p: any) {
     // Set network/wallet properties
@@ -70,6 +82,7 @@ export default function useWalletStore() {
     signer: computed(() => signer.value),
     userAddress: computed(() => userAddress.value),
     network: computed(() => network.value),
+    fetchTokenList,
     setProvider,
     getPrivateKeys,
   };
