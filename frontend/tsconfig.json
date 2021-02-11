@@ -18,5 +18,5 @@
       "boot/*": ["src/boot/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "src/**/*.json"]
 }
