@@ -30,10 +30,10 @@
               </div>
               <div class="row justify-end items-center q-mt-xs">
                 <div
-                  v-if="userAddress && networkName !== 'ropsten'"
+                  v-if="userAddress && networkName !== 'rinkeby'"
                   class="negative text-bold q-mr-md"
                 >
-                  You must be on the Ropsten network to use this app
+                  You must be on the Rinkeby network to use this app
                 </div>
                 <q-icon
                   v-if="!$q.dark.isActive"
@@ -59,7 +59,7 @@
           class="dark-toggle text-center q-mt-lg"
           style="max-width: 600px; margin: 1rem auto"
         >
-          WARNING: This is alpha software and is only available on Ropsten
+          WARNING: This is alpha software and is only available on Rinkeby
         </div>
       </div>
     </q-header>
