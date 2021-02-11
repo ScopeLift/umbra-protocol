@@ -129,9 +129,15 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Lookup recipient's public key
-    const recipientPubKey = await lookupRecipient(recipientId, this.provider);
-    if (!recipientPubKey) throw new Error('No public key found for provided recipient ID');
-    const recipientKeyPair = new KeyPair(recipientPubKey);
+    const { generationPublicKey, encryptionPublicKey } = await lookupRecipient(
+      recipientId,
+      this.provider
+    );
+    if (!generationPublicKey || !encryptionPublicKey) {
+      throw new Error('Could not retrieve valid public keys for provided recipient ID');
+    }
+    const generationKeyPair = new KeyPair(generationPublicKey);
+    const encryptionKeyPair = new KeyPair(encryptionPublicKey);
 
     // Generate random number
     const randomNumber = overrides.payloadExtension
@@ -139,7 +145,7 @@ export class Umbra {
       : new RandomNumber();
 
     // Encrypt random number with recipient's public key
-    const encrypted = recipientKeyPair.encrypt(randomNumber);
+    const encrypted = encryptionKeyPair.encrypt(randomNumber);
 
     // Get x,y coordinates of ephemeral private key
     const ephemeralKeyPair = new KeyPair(encrypted.ephemeralPublicKey);
@@ -147,7 +153,7 @@ export class Umbra {
     const compressedXCoordinate = `0x${ephemeralKeyPairX.slice(4)}`;
 
     // Compute stealth address
-    const stealthKeyPair = recipientKeyPair.mulPublicKey(randomNumber);
+    const stealthKeyPair = generationKeyPair.mulPublicKey(randomNumber);
 
     // Get overrides object that removes the payload extension, for use with ethers
     const filteredOverrides = { ...overrides };

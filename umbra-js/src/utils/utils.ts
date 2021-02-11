@@ -116,7 +116,7 @@ async function getSentTransaction(address: string, ethersProvider: EthersProvide
 }
 
 /**
- * @notice Returns public key from the recipientId
+ * @notice Returns public keys from the recipientId
  * @param id Recipient identifier, must be an ENS name, CNS name, address, transaction hash, or public key
  * @param provider web3 provider to use (not an ethers provider)
  */
@@ -124,13 +124,14 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   // Check if identifier is a public key. If so we just return that directly
   const isPublicKey = id.length === 132 && isHexString(id) && id.startsWith('0x04');
   if (isPublicKey) {
-    return id;
+    return { generationPublicKey: id, encryptionPublicKey: id };
   }
 
   // Check if identifier is a transaction hash
   const isTxHash = id.length === 66 && isHexString(id) && id.startsWith('0x');
   if (isTxHash) {
-    return await recoverPublicKeyFromTransaction(id, provider);
+    const publicKey = await recoverPublicKeyFromTransaction(id, provider);
+    return { generationPublicKey: publicKey, encryptionPublicKey: publicKey };
   }
 
   // Check if this is a valid address
@@ -143,14 +144,16 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
     }
 
     // Get public key from that transaction
-    return await recoverPublicKeyFromTransaction(txHash, provider);
+    const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
+    return { generationPublicKey: publicKey, encryptionPublicKey: publicKey };
   }
 
   // Check if this is a valid ENS or CNS name
   const isDomainService = id.endsWith('.eth') || id.endsWith('.crypto');
   if (isDomainService) {
     const domainService = new DomainService(provider);
-    return await domainService.getPublicKey(id);
+    const publicKey = await domainService.getPublicKey(id);
+    return { generationPublicKey: publicKey, encryptionPublicKey: publicKey };
   }
 
   // Invalid identifier provided
