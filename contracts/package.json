@@ -74,7 +74,7 @@
     "test": "concurrently --success first --kill-others \"hardhat node &>/dev/null\" \"hardhat test --network localhost\"",
     "typechain": "hardhat typechain",
     "prepare": "yarn run typechain",
-    "deploy:umbra": "hardhat compile && node scripts/deploy.js"
+    "deploy:umbra": "hardhat run scripts/deploy.js"
   },
   "volta": {
     "extends": "../package.json"
