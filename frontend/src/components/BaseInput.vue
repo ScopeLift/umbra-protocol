@@ -1,32 +1,31 @@
 <template>
-  <div style="max-width: 300px; margin: 0 auto">
-    <q-input
-      v-model="content"
-      :autofocus="autofocus"
-      :autogrow="autogrow"
-      :bg-color="bgColor"
-      color="primary"
-      class="q-my-sm"
-      data-cy="base-input"
-      :dense="dense"
-      filled
-      :hide-bottom-space="hideBottomSpace"
-      :hint="hintString"
-      :label="label"
-      :lazy-rules="lazyRules"
-      :rules="[(val) => rules(val)]"
-      :type="type"
-      :outlined="outlined"
-      standout
-      @blur="hideHint"
-      @focus="showHint"
-      @input="handleInput"
-    >
-      <template v-if="appendButtonLabel" v-slot:append>
-        <base-button class="cursor-pointer" :label="appendButtonLabel" @click="handleClick" />
-      </template>
-    </q-input>
-  </div>
+  <q-input
+    v-model="content"
+    :autofocus="autofocus"
+    :autogrow="autogrow"
+    :bg-color="bgColor"
+    color="primary"
+    class="q-my-sm"
+    data-cy="base-input"
+    :dense="dense"
+    filled
+    :hide-bottom-space="hideBottomSpace"
+    :hint="hintString"
+    :label="label"
+    :lazy-rules="lazyRules"
+    :rules="[(val) => rules(val)]"
+    :type="type"
+    :outlined="outlined"
+    :placeholder="placeholder"
+    standout
+    @blur="hideHint"
+    @focus="showHint"
+    @input="handleInput"
+  >
+    <template v-if="appendButtonLabel" v-slot:append>
+      <base-button class="cursor-pointer" :label="appendButtonLabel" @click="handleClick" />
+    </template>
+  </q-input>
 </template>
 
 <script lang="ts">
@@ -57,7 +56,7 @@ export default Vue.extend({
     bgColor: {
       type: String,
       required: false,
-      default: 'grey-10',
+      default: undefined,
     },
 
     dense: {
@@ -88,6 +87,12 @@ export default Vue.extend({
       type: undefined, // can be true, false, or ondemand
       required: false,
       default: 'ondemand',
+    },
+
+    placeholder: {
+      type: String,
+      required: false,
+      default: undefined,
     },
 
     rules: {

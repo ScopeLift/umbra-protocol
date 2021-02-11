@@ -1,0 +1,10 @@
+diff --git a/node_modules/@uniswap/token-lists/dist/index.d.ts b/node_modules/@uniswap/token-lists/dist/index.d.ts
+index aec9675..c8efafa 100644
+--- a/node_modules/@uniswap/token-lists/dist/index.d.ts
++++ b/node_modules/@uniswap/token-lists/dist/index.d.ts
+@@ -1,4 +1,4 @@
+-import schema from './tokenlist.schema.json';
++import schema from '../src/tokenlist.schema.json';
+ export * from './types';
+ export * from './isVersionUpdate';
+ export * from './getVersionUpgrade';
