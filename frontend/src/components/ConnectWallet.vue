@@ -48,7 +48,7 @@ function useWallet(context: SetupContext, to: string) {
     const onboard = Onboard({
       dappId: process.env.BLOCKNATIVE_API_KEY,
       darkMode: Dark.isActive,
-      networkId: 3, // always Ropsten for now
+      networkId: 4, // always testnet for now
       walletSelect: { wallets },
       subscriptions: {
         wallet: async (wallet) => {

@@ -38,6 +38,11 @@ const chainConfigs: Record<number, ChainConfig> = {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
     startBlock: 9496718,
   },
+  // Rinkeby
+  4: {
+    umbraAddress: '0x264063408fD1bdC703083AE083c813240A024B7f',
+    startBlock: 8055954,
+  },
   // Local
   1337: {
     umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',

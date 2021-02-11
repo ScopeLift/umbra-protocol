@@ -1,5 +1,9 @@
 {
-  "address": "0x5e227AD1969Ea493B43F840cfF78d08a6fc17796",
+  "addresses": {
+    "1": "0x5e227AD1969Ea493B43F840cfF78d08a6fc17796,",
+    "3": "0x53C43764255c17BD724F74c4eF150724AC50a3ed,",
+    "4": "0x42Ad527de7d4e9d9d011aC45B31D8551f8Fe9821"
+  },
   "abi": [
     {
       "constant": false,
