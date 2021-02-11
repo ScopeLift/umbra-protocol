@@ -48,6 +48,6 @@
     "last 5 Opera versions"
   ],
   "volta": {
-    "extends": "../../package.json"
+    "extends": "../package.json"
   }
 }
