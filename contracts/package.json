@@ -73,7 +73,8 @@
     "prettier:list-different": "prettier --list-different \"**/*.{js,json,md,sol,ts}\"",
     "test": "concurrently --success first --kill-others \"hardhat node &>/dev/null\" \"hardhat test --network localhost\"",
     "typechain": "hardhat typechain",
-    "prepare": "yarn run typechain"
+    "prepare": "yarn run typechain",
+    "deploy:umbra": "hardhat compile && node scripts/deploy.js"
   },
   "volta": {
     "extends": "../package.json"
