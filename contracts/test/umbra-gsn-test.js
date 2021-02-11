@@ -22,7 +22,7 @@ const tokenAmount = sumTokenAmounts([relayerTokenFee, tokenAccepted]);
 
 describe('Umbra GSN', () => {
   let owner, tollCollector, tollReceiver, payer, acceptor, relayer;
-  const ctx = {}
+  const ctx = {};
   const deployedToll = toWei('0.001', 'ether');
 
   // The ethers wallet that will be used when testing meta tx withdrawals
@@ -58,7 +58,7 @@ describe('Umbra GSN', () => {
 
     // Configure our paymaster to use the global RelayHub instance
     await ctx.paymaster.setRelayHub(gsnInstance.contractsDeployment.relayHubAddress, {
-      from: owner
+      from: owner,
     });
 
     // Configure GSN with the params from the test deployment + our paymaster

@@ -50,8 +50,19 @@ describe('Umbra', () => {
   // The amount of tokens that need to be minted to the payer for full test execution
   const mintTokenAmount = sumTokenAmounts([totalTokenAmount, tokenAmount, metaTokenTotal]);
 
-  before(async () =>  {
-    [owner, tollCollector, tollReceiver, payer1, receiver1, payer2, receiver2, acceptor, other, relayer] = await web3.eth.getAccounts();
+  before(async () => {
+    [
+      owner,
+      tollCollector,
+      tollReceiver,
+      payer1,
+      receiver1,
+      payer2,
+      receiver2,
+      acceptor,
+      other,
+      relayer,
+    ] = await web3.eth.getAccounts();
     ctx.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, { from: owner });
     ctx.token = await TestToken.new('TestToken', 'TT');
 

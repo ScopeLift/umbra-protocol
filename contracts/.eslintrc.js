@@ -6,7 +6,7 @@ module.exports = {
   },
   env: {
     mocha: true,
-    node: true
+    node: true,
   },
   rules: {
     'no-console': 'off',
