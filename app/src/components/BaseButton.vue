@@ -10,6 +10,7 @@
       :label="label"
       :loading="loading"
       :outline="outline"
+      :type="type"
       @click="handleClick"
     />
   </div>
@@ -66,6 +67,12 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+
+    type: {
+      type: String,
+      required: false,
+      default: undefined,
     },
   },
 

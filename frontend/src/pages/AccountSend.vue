@@ -9,7 +9,13 @@
 
       <!-- Token -->
       <div>Select token to send</div>
-      <q-select v-model="token" filled placeholder="Token" :options="tokenOptions" />
+      <base-select
+        v-model="token"
+        filled
+        label="Token"
+        :options="tokenOptions"
+        option-label="symbol"
+      />
 
       <!-- Amount -->
       <div>Amount to send</div>
@@ -18,9 +24,10 @@
         v-model="humanAmount"
         placeholder="0"
         lazy-rules
-        :rules="(val) => (val && val > 0) || 'Please enter an amount above zero'"
+        :rules="(val) => (val && val > 0) || 'Please enter an amount'"
       />
 
+      <!-- Send button -->
       <div>
         <base-button label="Send" type="submit" color="primary" />
       </div>
@@ -30,24 +37,30 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import useWalletStore from 'src/store/wallet';
 
 function useSendForm() {
+  const { tokens: tokenOptions } = useWalletStore();
   const recipientId = ref<string>();
   const token = ref<string>();
   const humanAmount = ref<string>();
 
   function isValidId(val: string) {
     if (val && (val.endsWith('.eth') || val.endsWith('.crypto'))) return true;
-    return 'Please enter a valid ENS or CNS name';
+    return 'Please enter an ENS or CNS name';
   }
 
   function onSubmit() {
+    if (!recipientId.value || !token.value || !humanAmount.value) {
+      throw new Error('Please complete the form');
+    }
+
     console.log('recipientId', recipientId.value);
     console.log('token', token.value);
     console.log('humanAmount', humanAmount.value);
   }
 
-  return { recipientId, humanAmount, token, tokenOptions: ['a', 'b'], onSubmit, isValidId };
+  return { recipientId, humanAmount, tokenOptions, token, onSubmit, isValidId };
 }
 
 export default defineComponent({

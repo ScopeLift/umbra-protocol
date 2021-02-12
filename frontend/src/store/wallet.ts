@@ -23,6 +23,16 @@ import erc20 from 'src/contracts/erc20.json';
 
 const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+const ETH_TOKEN = {
+  address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  name: 'Ether',
+  symbol: 'ETH',
+  decimals: 18,
+  logoURI: '/tokens/eth.svg',
+};
+
+// Keep this type in sync with keys under multicall.json 'addresses' key
+type SupportedChainIds = '1' | '3' | '4';
 
 // ============================================= State =============================================
 // We do not publicly expose the state to provide control over when and how it's changed. It
@@ -50,9 +60,11 @@ export default function useWalletStore() {
       const url = 'https://tokens.coingecko.com/uniswap/all.json';
       const response = (await jsonFetch(url)) as TokenList;
       tokens.value = response.tokens;
+      tokens.value.push({ chainId: 1, ...ETH_TOKEN });
     } else {
       // Rinkeby
       tokens.value = [
+        { chainId: 4, ...ETH_TOKEN },
         // prettier-ignore
         { chainId: 4, address: '0x2e055eee18284513b993db7568a592679ab13188', name: 'Dai', symbol: 'DAI', decimals: 18, logoURI: 'https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774', },
         // prettier-ignore
@@ -65,24 +77,25 @@ export default function useWalletStore() {
     // Setup
     if (!provider.value) throw new Error('Provider not connected');
     await getTokenList(); // does nothing if we already have the list
-    const chainId = provider.value.network.chainId;
+    const chainId = String(provider.value.network.chainId) as SupportedChainIds;
     const multicallAddress = multicallInfo.addresses[chainId];
     const multicall = new ethers.Contract(multicallAddress, multicallInfo.abi, provider.value);
 
     // Generate balance calls using Multicall contract
     const calls = tokens.value.map((token) => {
       const { address: tokenAddress } = token;
-      const tokenContract = new ethers.Contract(tokenAddress, erc20.abi, signer.value);
-      return {
-        target: tokenAddress,
-        callData: tokenContract.interface.encodeFunctionData('balanceOf', [userAddress.value]),
-      };
-    });
-
-    // Add call for ETH balance
-    calls.push({
-      target: multicallAddress,
-      callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
+      if (tokenAddress === ETH_ADDRESS) {
+        return {
+          target: multicallAddress,
+          callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
+        };
+      } else {
+        const tokenContract = new ethers.Contract(tokenAddress, erc20.abi, signer.value);
+        return {
+          target: tokenAddress,
+          callData: tokenContract.interface.encodeFunctionData('balanceOf', [userAddress.value]),
+        };
+      }
     });
 
     // Send the call
@@ -93,7 +106,6 @@ export default function useWalletStore() {
     tokens.value.forEach((token, index) => {
       balances.value[token.address] = BigNumber.from(multicallResponse[index]);
     });
-    balances.value[ETH_ADDRESS] = BigNumber.from(multicallResponse[multicallResponse.length - 1]);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,6 +155,7 @@ export default function useWalletStore() {
     signer: computed(() => signer.value),
     userAddress: computed(() => userAddress.value),
     network: computed(() => network.value),
+    tokens: computed(() => tokens.value),
     getTokenList,
     setProvider,
     getPrivateKeys,
