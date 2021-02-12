@@ -11,28 +11,28 @@ const fs = require('fs');
 const hre = require('hardhat'); 
 const { ethers } = hre;
 
-const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-const { BigNumber } = ethers;
-const { parseEther } = ethers.utils;
-const { AddressZero } = ethers.constants;
+const ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS = '0x53C88539C65E0350408a2294C4A85eB3d8ce8789';
+
+const deployParams = require('./deployParams.json');
 
 // Initialize object that will hold all deploy info. We'll continually update this and save it to
 // a file using the save() method below
-// const parameters = {
-//   // TODO consider changing layout so a contract's constructor parameters live with its address
-//   network,
-//   admin: adminWallet.address,
-//   contracts: { ETH: ETH_ADDRESS }, // will be populated with all contract addresses
-// };
+const parameters = {
+  // TODO consider changing layout so a contract's constructor parameters live with its address
+  admin: null,
+  contracts: {}, // will be populated with all contract addresses
+  actions: {}, // will be populated with deployment actins
+};
 
 // Setup for saving off deploy info to JSON file
 const now = new Date().toISOString();
 const folderName = './deploy-history';
-const fileName = `${folderName}/${network}-${now}.json`;
+const fileName = `${folderName}/${now}.json`;
 fs.mkdir(folderName, (err) => {
   if (err && err.code !== 'EEXIST') throw err;
 });
 
+// method to save the deploy info to a JSON file
 const save = (value, field, subfield = undefined) => {
   if (subfield) {
     parameters[field][subfield] = value;
@@ -44,15 +44,47 @@ const save = (value, field, subfield = undefined) => {
 
 // IIFE async function so "await"s can be performed for each operation
 (async function () {
-
   const [adminWallet] = await ethers.getSigners();
-  console.log("got to before deploy attempt");
-  
-  const Umbra = await ethers.getContractFactory('Umbra', adminWallet);
-  console.log("got past contract factory");
-  const umbra = await Umbra.deploy(1, adminWallet.address, adminWallet.address); // I'm sure the toll value & addresses should be different
-  console.log("got past deploy");
-  await umbra.deployed();
+  save(adminWallet.address, 'admin');
 
+  // deploy the Umbra contracts  
+  const Umbra = await ethers.getContractFactory('Umbra', adminWallet);
+  console.log("got the contract, params are: ", deployParams.toll, deployParams.tollCollector, deployParams.tollReceiver);
+  const umbra = await Umbra.deploy(deployParams.toll, deployParams.tollCollector, deployParams.tollReceiver);
+  await umbra.deployed();
+  save(umbra.address, 'contracts', 'Umbra');
   console.log("Umbra contract deployed to address: ", umbra.address);
+
+  const UmbraForwarder = await ethers.getContractFactory('UmbraForwarder', adminWallet);
+  const umbraForwarder = await UmbraForwarder.deploy();
+  await umbraForwarder.deployed();
+  save(umbraForwarder.address, 'contracts', 'UmbraForwarder');
+  console.log("UmbraForwarder contract deployed to address: ", umbraForwarder.address);
+
+  const UmbraRelayRecipient = await ethers.getContractFactory('UmbraRelayRecipient', adminWallet);
+  const umbraRelayRecipient = await UmbraRelayRecipient.deploy(umbra.address, umbraForwarder.address);
+  await umbraRelayRecipient.deployed();
+  save(umbraRelayRecipient.address, 'contracts', 'UmbraRelayRecipient');
+  console.log("UmbraRelayRecipient contract deployed to address: ", umbraRelayRecipient.address);
+
+  const UmbraPaymaster = await ethers.getContractFactory('UmbraPaymaster', adminWallet);
+  const umbraPaymaster = await UmbraPaymaster.deploy(umbraRelayRecipient.address);
+  await umbraPaymaster.deployed();
+  save(umbraPaymaster.address, 'contracts', 'UmbraPaymaster');
+  console.log("UmbraPaymaster contract deployed to address: ", umbraPaymaster.address);
+
+  // set the relayer address on the Paymaster contract
+  await umbraPaymaster.setRelayHub(ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS);
+  save(ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS, 'actions', 'SetPaymasterRelayHub');
+  console.log("UmbraPaymaster relay hub set to address: ", ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS);
+
+  // Create transaction to send funds to Paymaster contract
+  const tx = {
+    to: umbraPaymaster.address,
+    value: ethers.utils.parseEther('1')
+  };
+  const receipt = await adminWallet.sendTransaction(tx);
+  await receipt.wait();
+  save(receipt.hash, 'actions', 'SendPaymasterFundsTx');
+  console.log(`Transaction successful with hash: ${receipt.hash}`);
 })();
