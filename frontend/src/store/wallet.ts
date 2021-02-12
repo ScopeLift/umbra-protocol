@@ -156,7 +156,10 @@ export default function useWalletStore() {
     userAddress: computed(() => userAddress.value),
     network: computed(() => network.value),
     tokens: computed(() => tokens.value),
+    balances: computed(() => balances.value),
+    umbra: computed(() => umbra.value),
     getTokenList,
+    getTokenBalances,
     setProvider,
     getPrivateKeys,
   };
