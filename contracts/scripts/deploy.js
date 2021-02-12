@@ -8,7 +8,7 @@
  * If deploying to a local node (--network localhost), first start Hardhat using `yarn hardhat node`
  */
 const fs = require('fs');
-const hre = require('hardhat'); 
+const hre = require('hardhat');
 const { ethers } = hre;
 
 const ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS = '0x53C88539C65E0350408a2294C4A85eB3d8ce8789';
@@ -47,41 +47,56 @@ const save = (value, field, subfield = undefined) => {
   const [adminWallet] = await ethers.getSigners();
   save(adminWallet.address, 'admin');
 
-  // deploy the Umbra contracts  
+  // deploy the Umbra contracts
   const Umbra = await ethers.getContractFactory('Umbra', adminWallet);
-  console.log("got the contract, params are: ", deployParams.toll, deployParams.tollCollector, deployParams.tollReceiver);
-  const umbra = await Umbra.deploy(deployParams.toll, deployParams.tollCollector, deployParams.tollReceiver);
+  console.log(
+    'got the contract, params are: ',
+    deployParams.toll,
+    deployParams.tollCollector,
+    deployParams.tollReceiver
+  );
+  const umbra = await Umbra.deploy(
+    deployParams.toll,
+    deployParams.tollCollector,
+    deployParams.tollReceiver
+  );
   await umbra.deployed();
   save(umbra.address, 'contracts', 'Umbra');
-  console.log("Umbra contract deployed to address: ", umbra.address);
+  console.log('Umbra contract deployed to address: ', umbra.address);
 
   const UmbraForwarder = await ethers.getContractFactory('UmbraForwarder', adminWallet);
   const umbraForwarder = await UmbraForwarder.deploy();
   await umbraForwarder.deployed();
   save(umbraForwarder.address, 'contracts', 'UmbraForwarder');
-  console.log("UmbraForwarder contract deployed to address: ", umbraForwarder.address);
+  console.log('UmbraForwarder contract deployed to address: ', umbraForwarder.address);
 
   const UmbraRelayRecipient = await ethers.getContractFactory('UmbraRelayRecipient', adminWallet);
-  const umbraRelayRecipient = await UmbraRelayRecipient.deploy(umbra.address, umbraForwarder.address);
+  const umbraRelayRecipient = await UmbraRelayRecipient.deploy(
+    umbra.address,
+    umbraForwarder.address
+  );
   await umbraRelayRecipient.deployed();
   save(umbraRelayRecipient.address, 'contracts', 'UmbraRelayRecipient');
-  console.log("UmbraRelayRecipient contract deployed to address: ", umbraRelayRecipient.address);
+  console.log('UmbraRelayRecipient contract deployed to address: ', umbraRelayRecipient.address);
 
   const UmbraPaymaster = await ethers.getContractFactory('UmbraPaymaster', adminWallet);
   const umbraPaymaster = await UmbraPaymaster.deploy(umbraRelayRecipient.address);
   await umbraPaymaster.deployed();
   save(umbraPaymaster.address, 'contracts', 'UmbraPaymaster');
-  console.log("UmbraPaymaster contract deployed to address: ", umbraPaymaster.address);
+  console.log('UmbraPaymaster contract deployed to address: ', umbraPaymaster.address);
 
   // set the relayer address on the Paymaster contract
   await umbraPaymaster.setRelayHub(ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS);
   save(ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS, 'actions', 'SetPaymasterRelayHub');
-  console.log("UmbraPaymaster relay hub set to address: ", ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS);
+  console.log(
+    'UmbraPaymaster relay hub set to address: ',
+    ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS
+  );
 
   // Create transaction to send funds to Paymaster contract
   const tx = {
     to: umbraPaymaster.address,
-    value: ethers.utils.parseEther('1')
+    value: ethers.utils.parseEther('1'),
   };
   const receipt = await adminWallet.sendTransaction(tx);
   await receipt.wait();
