@@ -11,7 +11,7 @@ const fs = require('fs');
 const hre = require('hardhat');
 const { ethers } = hre;
 
-const ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS = '0x53C88539C65E0350408a2294C4A85eB3d8ce8789';
+const RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS = '0x53C88539C65E0350408a2294C4A85eB3d8ce8789';
 
 const deployParams = require('./deployParams.json');
 
@@ -86,11 +86,11 @@ const save = (value, field, subfield = undefined) => {
   console.log('UmbraPaymaster contract deployed to address: ', umbraPaymaster.address);
 
   // set the relayer address on the Paymaster contract
-  await umbraPaymaster.setRelayHub(ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS);
-  save(ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS, 'actions', 'SetPaymasterRelayHub');
+  await umbraPaymaster.setRelayHub(RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS);
+  save(RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS, 'actions', 'SetPaymasterRelayHub');
   console.log(
     'UmbraPaymaster relay hub set to address: ',
-    ROPSTEN_PAYMASTER_PUBLIC_RELAYER_ADDRESS
+    RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS
   );
 
   // Create transaction to send funds to Paymaster contract
