@@ -57,6 +57,9 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
+      forking: {
+        url: 'https://rinkeby' + '.infura.io/v3/' + infuraApiKey
+      },
       chainId: chainIds.hardhat,
       accounts: {
         count: 10,
