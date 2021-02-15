@@ -9,14 +9,10 @@
  */
 const fs = require('fs');
 const hre = require('hardhat');
+const { exit } = require('process');
 const { ethers } = hre;
 
 const network = process.env.HARDHAT_NETWORK;
-
-const deployParams = require('./deployParams.json');
-const deployParamsForNetwork = deployParams[network];
-
-console.log('Toll for umbra is:', deployParamsForNetwork.toll);
 
 // Initialize object that will hold all deploy info. We'll continually update this and save it to
 // a file using the save() method below
@@ -47,6 +43,15 @@ const save = (value, field, subfield = undefined) => {
 // IIFE async function so "await"s can be performed for each operation
 (async function () {
   try {
+    const deployParams = require('./deployParams.json');
+    const deployParamsForNetwork = deployParams[network];
+
+    if (!deployParamsForNetwork) {
+      console.log('Invalid network requested', network);
+      save(network, 'actions', 'InvalidNetworkRequested');
+      exit();
+    }
+
     console.log('Deploying to: ', network);
     save(network, 'actions', 'DeployingContractsToNetwork');
 
@@ -107,7 +112,7 @@ const save = (value, field, subfield = undefined) => {
     const receipt = await adminWallet.sendTransaction(tx);
     await receipt.wait();
     save(receipt.hash, 'actions', 'SendPaymasterFundsTx');
-    console.log(`Transaction successful with hash: ${receipt.hash}`);
+    console.log(`Paymaster funding transaction successful with hash: ${receipt.hash}`);
 
     // catch any error from operations above, log it and save it to deploy history file
   } catch (error) {
