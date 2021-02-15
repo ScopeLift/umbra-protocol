@@ -58,7 +58,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: 'https://rinkeby' + '.infura.io/v3/' + infuraApiKey
+        url: 'https://rinkeby' + '.infura.io/v3/' + infuraApiKey,
       },
       chainId: chainIds.hardhat,
       accounts: {

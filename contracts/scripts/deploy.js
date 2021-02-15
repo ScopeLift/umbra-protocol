@@ -11,23 +11,25 @@ const fs = require('fs');
 const hre = require('hardhat');
 const { ethers } = hre;
 
-const RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS = '0x53C88539C65E0350408a2294C4A85eB3d8ce8789';
+const network = process.env.HARDHAT_NETWORK;
 
 const deployParams = require('./deployParams.json');
+const deployParamsForNetwork = deployParams[network];
+
+console.log('Toll for umbra is:', deployParamsForNetwork.toll);
 
 // Initialize object that will hold all deploy info. We'll continually update this and save it to
 // a file using the save() method below
 const parameters = {
-  // TODO consider changing layout so a contract's constructor parameters live with its address
   admin: null,
   contracts: {}, // will be populated with all contract addresses
-  actions: {}, // will be populated with deployment actins
+  actions: {}, // will be populated with deployment actions
 };
 
 // Setup for saving off deploy info to JSON file
 const now = new Date().toISOString();
 const folderName = './deploy-history';
-const fileName = `${folderName}/${now}.json`;
+const fileName = `${folderName}/${network}-${now}.json`;
 fs.mkdir(folderName, (err) => {
   if (err && err.code !== 'EEXIST') throw err;
 });
@@ -45,15 +47,18 @@ const save = (value, field, subfield = undefined) => {
 // IIFE async function so "await"s can be performed for each operation
 (async function () {
   try {
+    console.log('Deploying to: ', network);
+    save(network, 'actions', 'DeployingContractsToNetwork');
+
     const [adminWallet] = await ethers.getSigners();
     save(adminWallet.address, 'admin');
 
     // deploy the Umbra contracts
     const Umbra = await ethers.getContractFactory('Umbra', adminWallet);
     const umbra = await Umbra.deploy(
-      deployParams.toll,
-      deployParams.tollCollector,
-      deployParams.tollReceiver
+      deployParamsForNetwork.toll,
+      deployParamsForNetwork.tollCollector,
+      deployParamsForNetwork.tollReceiver
     );
     await umbra.deployed();
     save(umbra.address, 'contracts', 'Umbra');
@@ -81,11 +86,11 @@ const save = (value, field, subfield = undefined) => {
     console.log('UmbraPaymaster contract deployed to address: ', umbraPaymaster.address);
 
     // set the relayer address on the Paymaster contract
-    await umbraPaymaster.setRelayHub(RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS);
-    save(RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS, 'actions', 'SetPaymasterRelayHub');
+    await umbraPaymaster.setRelayHub(deployParamsForNetwork.payMasterPublicRelayer);
+    save(deployParamsForNetwork.payMasterPublicRelayer, 'actions', 'SetPaymasterRelayHub');
     console.log(
       'UmbraPaymaster relay hub set to address: ',
-      RINKEBY_PAYMASTER_PUBLIC_RELAYER_ADDRESS
+      deployParamsForNetwork.payMasterPublicRelayer
     );
 
     // Create transaction to send funds to Paymaster contract
@@ -101,6 +106,6 @@ const save = (value, field, subfield = undefined) => {
     // catch any error from operations above, log it and save it to deploy history file
   } catch (error) {
     save(error.toString(), 'actions', 'Error');
-    console.log("Deployment Error: ", error.toString());
+    console.log('Deployment Error: ', error.toString());
   }
 })();

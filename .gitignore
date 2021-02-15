@@ -155,3 +155,6 @@ dist
 .yarn/unplugged
 .yarn/build-state.yml
 .pnp.*
+
+# deploy history localhost files
+contracts/deploy-history/localhost-*

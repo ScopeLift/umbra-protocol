@@ -19,6 +19,7 @@
     "artifacts/**/*",
     "artifacts/**/*.json",
     "scripts/**/*",
+    "scripts/**/*.json",
     "tasks/**/*",
     "test/**/*",
     "typechain/**/*",
