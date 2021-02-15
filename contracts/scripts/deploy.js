@@ -86,11 +86,17 @@ const save = (value, field, subfield = undefined) => {
     console.log('UmbraPaymaster contract deployed to address: ', umbraPaymaster.address);
 
     // set the relayer address on the Paymaster contract
-    await umbraPaymaster.setRelayHub(deployParamsForNetwork.payMasterPublicRelayer);
+    const setRelayHubTxReceipt = await umbraPaymaster.setRelayHub(
+      deployParamsForNetwork.payMasterPublicRelayer
+    );
+    setRelayHubTxReceipt.wait();
     save(deployParamsForNetwork.payMasterPublicRelayer, 'actions', 'SetPaymasterRelayHub');
+    save(setRelayHubTxReceipt.hash, 'actions', 'SetPaymasterRelayHubTxHash');
     console.log(
       'UmbraPaymaster relay hub set to address: ',
-      deployParamsForNetwork.payMasterPublicRelayer
+      deployParamsForNetwork.payMasterPublicRelayer,
+      ' at transaction hash:',
+      setRelayHubTxReceipt.hash
     );
 
     // Create transaction to send funds to Paymaster contract
