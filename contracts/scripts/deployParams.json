@@ -6,9 +6,9 @@
     "payMasterPublicRelayer": "0x53C88539C65E0350408a2294C4A85eB3d8ce8789"
   },
   "rinkeby": {
-    "toll": 1,
-    "tollCollector": "0x53C88539C65E0350408a2294C4A85eB3d8ce8789",
-    "tollReceiver": "0x53C88539C65E0350408a2294C4A85eB3d8ce8789",
+    "toll": 0,
+    "tollCollector": "0x5d11E5f17eCaFc43A8D966E4F37809C07208C80E",
+    "tollReceiver": "0x91C727F6E9feA86A8DC968333c16f615c5603c8a",
     "payMasterPublicRelayer": "0x53C88539C65E0350408a2294C4A85eB3d8ce8789"
   }
 }

@@ -4,7 +4,7 @@
  * continuing to the next step. This is done because it makes it simpler to continue from that spot
  * rather than restart the full deployment
  * @dev To initialize a deploy:
- *   `yarn deploy:umbra --network <network>`   (where network specifies a netwrk found in the hardhat.config.ts file)
+ *   `yarn deploy --network <network>`   (where network specifies a netwrk found in the hardhat.config.ts file)
  * If deploying to a local node (--network localhost), first start Hardhat using `yarn hardhat node`
  */
 const fs = require('fs');
@@ -108,6 +108,7 @@ const save = (value, field, subfield = undefined) => {
     const tx = {
       to: umbraPaymaster.address,
       value: ethers.utils.parseEther('1'),
+      gasLimit: 1000000,
     };
     const receipt = await adminWallet.sendTransaction(tx);
     await receipt.wait();
