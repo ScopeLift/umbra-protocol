@@ -41,6 +41,7 @@ type SupportedChainIds = '1' | '3' | '4';
 const provider = ref<Provider>();
 const signer = ref<Signer>();
 const userAddress = ref<string>();
+const userEns = ref<string>();
 const network = ref<Network>();
 const umbra = ref<Umbra>();
 const generationKeyPair = ref<KeyPair>();
@@ -114,6 +115,7 @@ export default function useWalletStore() {
     provider.value = new ethers.providers.Web3Provider(p);
     signer.value = provider.value.getSigner();
     userAddress.value = await signer.value.getAddress();
+    userEns.value = await provider.value.lookupAddress(userAddress.value);
     network.value = await provider.value.getNetwork();
 
     // Set Umbra class
@@ -153,7 +155,8 @@ export default function useWalletStore() {
   return {
     provider: computed(() => provider.value),
     signer: computed(() => signer.value),
-    userAddress: computed(() => userAddress.value),
+    userAddress: computed(() => userEns.value || userAddress.value),
+    userEns: computed(() => userEns.value),
     network: computed(() => network.value),
     tokens: computed(() => tokens.value),
     balances: computed(() => balances.value),

@@ -62,6 +62,7 @@ function useSendForm() {
     const amount = BigNumber.from(parseUnits(humanAmount.value, decimals));
     if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
     if (!signer.value) throw new Error('Wallet not connected');
+    if (!umbra.value) throw new Error('Umbra instance not configured');
 
     // Send with Umbra
     // TODO Currently fails since ENS setup is not finalized

@@ -13,26 +13,122 @@
       </div>
       <div v-else class="text-center">Invalid app state! Please contact us for support</div>
     </div>
+
+    <q-carousel
+      v-model="carouselStep"
+      animated
+      class="shadow-2 rounded-borders"
+      control-color="black"
+      height="300px"
+      navigation
+      navigation-icon="fas fa-circle"
+      ref="carousel"
+      swipeable
+      transition-next="jump-left"
+      transition-prev="jump-right"
+    >
+      <!-- Carousel Navigation Buttons -->
+      <template v-slot:control>
+        <q-carousel-control position="left" class="row">
+          <q-btn
+            class="q-my-auto"
+            flat
+            text-color="black"
+            icon="fas fa-arrow-left"
+            @click="$refs.carousel.previous()"
+          />
+        </q-carousel-control>
+        <q-carousel-control position="right" class="row">
+          <q-btn
+            class="q-my-auto"
+            flat
+            text-color="black"
+            icon="fas fa-arrow-right"
+            @click="$refs.carousel.next()"
+          />
+        </q-carousel-control>
+      </template>
+
+      <!-- Step 1: ENS Registration -->
+      <q-carousel-slide name="1" class="q-px-xl">
+        <div class="q-mx-xl q-pb-xl">
+          <h5 class="q-my-md q-pt-none">Step 1: ENS Registration</h5>
+          <div class="q-mt-md">
+            <div v-if="userEns">You are logged in with {{ userAddress }}</div>
+            <div v-else>
+              <p>
+                An ENS domain was not found for this address. If you do have an address, make sure
+                the reverse record is set.
+              </p>
+              <p>
+                Either login with a different address and refresh the page, or follow
+                <a
+                  class="hyperlink"
+                  href="https://medium.com/@eric.conner/the-ultimate-guide-to-ens-names-aa541586067a"
+                  target="_blank"
+                  >this guide</a
+                >
+                to learn how to purchase a domain and configure it to resolve to your Ethereum
+                address. Be sure to use the Public Resolver and set the reverse record.
+              </p>
+            </div>
+          </div>
+        </div>
+      </q-carousel-slide>
+
+      <!-- Step 2: Get Signature -->
+      <q-carousel-slide name="2" class="q-px-xl">
+        <div class="q-mx-xl q-pb-xl">
+          <h5 class="q-my-md q-pt-none">Step 2: Generate Keys</h5>
+          <div class="q-mt-md">
+            Use the button below to sign a message, which will be used to generate an Umbra-specific
+            pair of private keys. These keys allow you to securely use Umbra without compromising
+            the private keys of your connected wallet.
+          </div>
+          <base-button @click="getPrivateKeysHandler" label="Sign" />
+        </div>
+      </q-carousel-slide>
+
+      <!-- Step 3: Save private keys to ENS -->
+      <q-carousel-slide name="3" class="q-px-xl">
+        <div class="q-mx-xl q-pb-xl">
+          <h5 class="q-my-md q-pt-none">Step 3: Publish Keys</h5>
+          <div class="q-mt-md">
+            You'll now be asked to send a transaction which associates the two public keys generated
+            with {{ userAddress.value }}. This means people can now securely send you funds through
+            Umbra by visiting this site and sending funds to {{ userAddress.value }}
+          </div>
+          <base-button @click="publishKeys" label="Publish keys" />
+        </div>
+      </q-carousel-slide>
+    </q-carousel>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
+import BaseButton from 'src/components/BaseButton.vue';
 import useWallet from 'src/store/wallet';
 
 function useKeys() {
-  const { getPrivateKeys } = useWallet();
+  const { getPrivateKeys, userAddress, userEns } = useWallet();
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
+  const carouselStep = ref('1');
 
   async function getPrivateKeysHandler() {
     keyStatus.value = await getPrivateKeys();
   }
 
-  onMounted(async () => await getPrivateKeysHandler());
-  return { keyStatus, getPrivateKeysHandler };
+  function publishKeys() {
+    //
+  }
+
+  // onMounted(async () => await getPrivateKeysHandler());
+  return { carouselStep, userAddress, userEns, keyStatus, getPrivateKeysHandler, publishKeys };
 }
 
 export default defineComponent({
+  components: { BaseButton },
   name: 'PageSetup',
   setup() {
     return { ...useKeys() };
