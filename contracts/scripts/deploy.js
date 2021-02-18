@@ -22,15 +22,24 @@ const parameters = {
   actions: {}, // will be populated with deployment actions
 };
 
-// Setup for saving off deploy info to JSON file
+// Initialize an object that will hold just deployed contract address info. We'll continually update this and save it to
+// a file using the save() method below
+const contractAddresses = {
+  contracts: {}, // will be populated with all contract addresses
+};
+
+// Setup for saving off deploy info to JSON files
 const now = new Date().toISOString();
 const folderName = './deploy-history';
 const fileName = `${folderName}/${network}-${now}.json`;
+const contractAddressesFileName = `${folderName}/${network}-latest.json`;
 fs.mkdir(folderName, (err) => {
   if (err && err.code !== 'EEXIST') throw err;
 });
 
-// method to save the deploy info to a JSON file
+// method to save the deploy info to 2 JSON files
+//  first one named with network and timestamp, contains all relevant deployment info
+//  second one name with network and "latest", contains only contract addresses deployed
 const save = (value, field, subfield = undefined) => {
   if (subfield) {
     parameters[field][subfield] = value;
@@ -38,6 +47,10 @@ const save = (value, field, subfield = undefined) => {
     parameters[field] = value;
   }
   fs.writeFileSync(fileName, JSON.stringify(parameters));
+  if (field === 'contracts') {
+    contractAddresses[field][subfield] = value;
+    fs.writeFileSync(contractAddressesFileName, JSON.stringify(contractAddresses));
+  }
 };
 
 // IIFE async function so "await"s can be performed for each operation
