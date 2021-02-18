@@ -22,15 +22,18 @@ const parameters = {
   actions: {}, // will be populated with deployment actions
 };
 
-// Setup for saving off deploy info to JSON file
+// Setup for saving off deploy info to JSON files
 const now = new Date().toISOString();
 const folderName = './deploy-history';
 const fileName = `${folderName}/${network}-${now}.json`;
+const latestFileName = `${folderName}/${network}-latest.json`;
 fs.mkdir(folderName, (err) => {
   if (err && err.code !== 'EEXIST') throw err;
 });
 
-// method to save the deploy info to a JSON file
+// method to save the deploy info to 2 JSON files
+//  first one named with network and timestamp, contains all relevant deployment info
+//  second one name with network and "latest", contains only contract addresses deployed
 const save = (value, field, subfield = undefined) => {
   if (subfield) {
     parameters[field][subfield] = value;
@@ -114,6 +117,9 @@ const save = (value, field, subfield = undefined) => {
     await receipt.wait();
     save(receipt.hash, 'actions', 'SendPaymasterFundsTx');
     console.log(`Paymaster funding transaction successful with hash: ${receipt.hash}`);
+
+    // everything went well, save the deployment info in the 'latest' JSON file
+    fs.writeFileSync(latestFileName, JSON.stringify(parameters));
 
     // catch any error from operations above, log it and save it to deploy history file
   } catch (error) {
