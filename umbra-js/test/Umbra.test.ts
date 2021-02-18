@@ -177,9 +177,9 @@ describe('Umbra class', () => {
   describe('Private key generation', () => {
     it('properly generates private keys', async () => {
       const wallet = ethers.Wallet.createRandom();
-      const { generationKeyPair, encryptionKeyPair } = await umbra.generatePrivateKeys(wallet);
-      expect(generationKeyPair.privateKeyHex).to.have.length(66);
-      expect(encryptionKeyPair.privateKeyHex).to.have.length(66);
+      const { spendingKeyPair, viewingKeyPair } = await umbra.generatePrivateKeys(wallet);
+      expect(spendingKeyPair.privateKeyHex).to.have.length(66);
+      expect(viewingKeyPair.privateKeyHex).to.have.length(66);
     });
   });
 

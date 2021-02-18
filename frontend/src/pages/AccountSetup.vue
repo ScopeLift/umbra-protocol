@@ -54,7 +54,12 @@
         <div class="q-mx-xl q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 1: ENS Registration</h5>
           <div class="q-mt-md">
-            <div v-if="userEns">You are logged in with {{ userAddress }}</div>
+            <!-- User has ENS name -->
+            <div v-if="userEns">
+              You are logged in with <span class="text-bold">{{ userAddress }}</span
+              >. Click below to configure your name as needed for Umbra. TODO
+            </div>
+            <!-- User does not have ENS name -->
             <div v-else>
               <p>
                 An ENS domain was not found for this address. If you do have an address, make sure
@@ -111,7 +116,14 @@ import BaseButton from 'src/components/BaseButton.vue';
 import useWallet from 'src/store/wallet';
 
 function useKeys() {
-  const { getPrivateKeys, userAddress, userEns } = useWallet();
+  const {
+    domainService,
+    getPrivateKeys,
+    userAddress,
+    userEns,
+    spendingKeyPair,
+    viewingKeyPair,
+  } = useWallet();
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
   const carouselStep = ref('1');
 
@@ -119,8 +131,17 @@ function useKeys() {
     keyStatus.value = await getPrivateKeys();
   }
 
-  function publishKeys() {
-    //
+  async function publishKeys() {
+    if (!domainService.value) throw new Error('Invalid DomainService. Please refresh the page');
+    if (!userEns.value) throw new Error('Invalid ENS or CNS name. Please return to the first step');
+    const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
+    if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
+    const tx = await domainService.value.setPublicKeys(
+      userEns.value,
+      String(spendingKeyPair.value?.privateKeyHex),
+      String(viewingKeyPair.value?.privateKeyHex)
+    );
+    console.log('tx: ', tx);
   }
 
   // onMounted(async () => await getPrivateKeysHandler());

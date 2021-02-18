@@ -134,15 +134,15 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Lookup recipient's public key
-    const { generationPublicKey, encryptionPublicKey } = await lookupRecipient(
+    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(
       recipientId,
       this.provider
     );
-    if (!generationPublicKey || !encryptionPublicKey) {
+    if (!spendingPublicKey || !viewingPublicKey) {
       throw new Error('Could not retrieve valid public keys for provided recipient ID');
     }
-    const generationKeyPair = new KeyPair(generationPublicKey);
-    const encryptionKeyPair = new KeyPair(encryptionPublicKey);
+    const spendingKeyPair = new KeyPair(spendingPublicKey);
+    const viewingKeyPair = new KeyPair(viewingPublicKey);
 
     // Generate random number
     const randomNumber = overrides.payloadExtension
@@ -150,7 +150,7 @@ export class Umbra {
       : new RandomNumber();
 
     // Encrypt random number with recipient's public key
-    const encrypted = encryptionKeyPair.encrypt(randomNumber);
+    const encrypted = viewingKeyPair.encrypt(randomNumber);
 
     // Get x,y coordinates of ephemeral private key
     const ephemeralKeyPair = new KeyPair(encrypted.ephemeralPublicKey);
@@ -158,7 +158,7 @@ export class Umbra {
     const compressedXCoordinate = `0x${ephemeralKeyPairX.slice(4)}`;
 
     // Compute stealth address
-    const stealthKeyPair = generationKeyPair.mulPublicKey(randomNumber);
+    const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
 
     // Get overrides object that removes the payload extension, for use with ethers
     const filteredOverrides = { ...overrides };
@@ -276,12 +276,12 @@ export class Umbra {
 
   /**
    * @notice Scans Umbra event logs for funds sent to the specified address
-   * @param generationPublicKey Receiver's generation private key
+   * @param spendingPublicKey Receiver's generation private key
    * @param encryptionPrivateKey Receiver's encryption public key
    * @param overrides Override the start and end block used for scanning
    */
   async scan(
-    generationPublicKey: string,
+    spendingPublicKey: string,
     encryptionPrivateKey: string,
     overrides: ScanOverrides = {}
   ) {
@@ -325,12 +325,12 @@ export class Umbra {
 
       // Decrypt to get random number
       const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
-      const encryptionKeyPair = new KeyPair(encryptionPrivateKey);
-      const randomNumber = encryptionKeyPair.decrypt(payload);
+      const viewingKeyPair = new KeyPair(encryptionPrivateKey);
+      const randomNumber = viewingKeyPair.decrypt(payload);
 
       // Get what our receiving address would be with this random number
-      const generationKeyPair = new KeyPair(generationPublicKey);
-      const computedReceivingAddress = generationKeyPair.mulPublicKey(randomNumber).address;
+      const spendingKeyPair = new KeyPair(spendingPublicKey);
+      const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
 
       // If our receiving address matches the event's recipient, the transfer was for us
       if (computedReceivingAddress === receiver) {
@@ -349,7 +349,7 @@ export class Umbra {
   /**
    * @notice Asks a user to sign a message to generate two Umbra-specific private keys for them
    * @param signer Signer to sign message from
-   * @returns Two KeyPair instances, for the generationKeyPair and encryptionKeyPair
+   * @returns Two KeyPair instances, for the spendingKeyPair and viewingKeyPair
    */
   async generatePrivateKeys(signer: JsonRpcSigner | Wallet) {
     // Base message that will be signed
@@ -397,9 +397,9 @@ export class Umbra {
     const encryptionPrivateKey = sha256(`0x${portion2}`);
 
     // Create KeyPair instances from the private keys and return them
-    const generationKeyPair = new KeyPair(generationPrivateKey);
-    const encryptionKeyPair = new KeyPair(encryptionPrivateKey);
-    return { generationKeyPair, encryptionKeyPair };
+    const spendingKeyPair = new KeyPair(generationPrivateKey);
+    const viewingKeyPair = new KeyPair(encryptionPrivateKey);
+    return { spendingKeyPair, viewingKeyPair };
   }
 
   // ==================================== STATIC HELPER METHODS ====================================

@@ -3,14 +3,12 @@
  */
 
 import { arrayify, Bytes, Hexable, isHexString, joinSignature } from '@ethersproject/bytes';
-import { hashMessage } from '@ethersproject/hash';
 import { keccak256 } from '@ethersproject/keccak256';
 import { resolveProperties } from '@ethersproject/properties';
 import { EtherscanProvider } from '@ethersproject/providers';
 import { recoverPublicKey } from '@ethersproject/signing-key';
 import { serialize as serializeTransaction } from '@ethersproject/transactions';
 
-import * as constants from '../constants.json';
 import { DomainService } from '../classes/DomainService';
 import { EthersProvider, SignatureLike } from '../types';
 
@@ -53,13 +51,10 @@ export function hexStringToBuffer(value: string | number | Bytes | Hexable) {
 export async function recoverPublicKeyFromTransaction(txHash: string, provider: EthersProvider) {
   // Get transaction data
   const tx = await provider.getTransaction(txHash);
+  if (!tx) throw new Error('Transaction not found');
 
   // Get original signature
-  const splitSignature: SignatureLike = {
-    r: tx.r as string,
-    s: tx.s,
-    v: tx.v,
-  };
+  const splitSignature: SignatureLike = { r: tx.r as string, s: tx.s, v: tx.v };
   const signature = joinSignature(splitSignature);
 
   // Reconstruct transaction data that was originally signed
@@ -81,16 +76,6 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
 
   // Recover sender's public key and address
   const publicKey = recoverPublicKey(msgBytes, signature);
-  return publicKey;
-}
-
-/**
- * @notice Returns the public key recovered from the signature
- */
-export function getPublicKeyFromSignature(signature: SignatureLike) {
-  const msgHash = hashMessage(constants.UMBRA_MESSAGE);
-  const msgHashBytes = arrayify(msgHash);
-  const publicKey = recoverPublicKey(msgHashBytes, signature);
   return publicKey;
 }
 
@@ -124,14 +109,14 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   // Check if identifier is a public key. If so we just return that directly
   const isPublicKey = id.length === 132 && isHexString(id) && id.startsWith('0x04');
   if (isPublicKey) {
-    return { generationPublicKey: id, encryptionPublicKey: id };
+    return { spendingPublicKey: id, viewingPublicKey: id };
   }
 
   // Check if identifier is a transaction hash
   const isTxHash = id.length === 66 && isHexString(id) && id.startsWith('0x');
   if (isTxHash) {
     const publicKey = await recoverPublicKeyFromTransaction(id, provider);
-    return { generationPublicKey: publicKey, encryptionPublicKey: publicKey };
+    return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
   }
 
   // Check if this is a valid address
@@ -145,15 +130,14 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
 
     // Get public key from that transaction
     const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
-    return { generationPublicKey: publicKey, encryptionPublicKey: publicKey };
+    return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
   }
 
   // Check if this is a valid ENS or CNS name
   const isDomainService = id.endsWith('.eth') || id.endsWith('.crypto');
   if (isDomainService) {
     const domainService = new DomainService(provider);
-    const publicKey = await domainService.getPublicKey(id);
-    return { generationPublicKey: publicKey, encryptionPublicKey: publicKey };
+    return domainService.getPublicKeys(id);
   }
 
   // Invalid identifier provided

@@ -1,7 +1,7 @@
 import { computed, onMounted, ref } from '@vue/composition-api';
 import { ethers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
-import { KeyPair, Umbra } from '@umbra/umbra-js';
+import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
 import {
   Signer,
   Provider,
@@ -44,8 +44,9 @@ const userAddress = ref<string>();
 const userEns = ref<string>();
 const network = ref<Network>();
 const umbra = ref<Umbra>();
-const generationKeyPair = ref<KeyPair>();
-const encryptionKeyPair = ref<KeyPair>();
+const domainService = ref<DomainService>();
+const spendingKeyPair = ref<KeyPair>();
+const viewingKeyPair = ref<KeyPair>();
 const tokens = ref<TokenInfo[]>([]); // list of network tokens
 const balances = ref<Record<string, ethers.BigNumber>>({}); // mapping from token address to user's balance
 
@@ -118,9 +119,10 @@ export default function useWalletStore() {
     userEns.value = await provider.value.lookupAddress(userAddress.value);
     network.value = await provider.value.getNetwork();
 
-    // Set Umbra class
+    // Set Umbra and DomainService classes
     const chainId = provider.value.network.chainId;
     umbra.value = new Umbra(provider.value, chainId);
+    domainService.value = new DomainService(provider.value);
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
@@ -136,14 +138,14 @@ export default function useWalletStore() {
     if (!umbra.value) {
       throw new Error('No Umbra instance available');
     }
-    if (generationKeyPair.value && encryptionKeyPair.value) {
+    if (spendingKeyPair.value && viewingKeyPair.value) {
       return 'success';
     }
 
     try {
       const keyPairs = await umbra.value.generatePrivateKeys(signer.value);
-      generationKeyPair.value = keyPairs.generationKeyPair;
-      encryptionKeyPair.value = keyPairs.encryptionKeyPair;
+      spendingKeyPair.value = keyPairs.spendingKeyPair;
+      viewingKeyPair.value = keyPairs.viewingKeyPair;
       return 'success';
     } catch (err) {
       return 'denied'; // most likely user rejected the signature
@@ -161,6 +163,9 @@ export default function useWalletStore() {
     tokens: computed(() => tokens.value),
     balances: computed(() => balances.value),
     umbra: computed(() => umbra.value),
+    domainService: computed(() => domainService.value),
+    spendingKeyPair: computed(() => spendingKeyPair.value),
+    viewingKeyPair: computed(() => viewingKeyPair.value),
     getTokenList,
     getTokenBalances,
     setProvider,

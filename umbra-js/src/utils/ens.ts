@@ -3,16 +3,27 @@
  */
 
 import { EthersProvider, EnsNamehash } from '../types';
-import * as constants from '../constants.json';
+import { BigNumber } from '@ethersproject/bignumber';
+import { SigningKey } from '@ethersproject/signing-key';
+import { KeyPair } from '../classes/KeyPair';
 import * as publicResolverAbi from '../abi/PublicResolver.json';
-import { getPublicKeyFromSignature } from './utils';
 import { createContract } from '../inner/contract';
 const ensNamehash: EnsNamehash = require('eth-ens-namehash'); // doesn't include TypeScript definitions
 
-const { ENS_PUBLIC_RESOLVER } = constants;
+type StealthKeys = {
+  spendingPubKeyPrefix: BigNumber;
+  spendingPubKey: BigNumber;
+  viewingPubKeyPrefix: BigNumber;
+  viewingPubKey: BigNumber;
+};
 
-export const umbraKeySignature = 'vnd.umbra-v0-signature';
-export const umbraKeyBytecode = 'vnd.umbra-v0-bytecode';
+const getEnsResolverAddress = async (provider: EthersProvider) => {
+  const chainId = (await provider.getNetwork()).chainId;
+  if (chainId === 4 || chainId === 1337) {
+    return '0x50ad87E547D5Dfbd6b62bfb6E5C3b9b4fb3c17cC';
+  }
+  throw new Error('Unsupported chain ID');
+};
 
 /**
  * @notice Computes ENS namehash of the input ENS domain, normalized to ENS compatibility
@@ -23,50 +34,60 @@ export function namehash(name: string) {
 }
 
 /**
- * @notice For a given ENS domain, return the associated umbra signature or return
- * undefined if none exists
+ * @notice For a given ENS domain, returns the public keys, or undefined if they don't exist
  * @param name ENS domain, e.g. myname.eth
- * @param provider web3 provider to use (not an ethers provider)
+ * @param provider Ethers provider
  */
-export async function getSignature(name: string, provider: EthersProvider) {
-  const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
-  const signature: string = await publicResolver.text(namehash(name), umbraKeySignature);
-  return signature;
+export async function getPublicKeys(name: string, provider: EthersProvider) {
+  const ensResolverAddress = await getEnsResolverAddress(provider);
+  const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
+  const keys = (await publicResolver.stealthKeys(namehash(name))) as StealthKeys;
+
+  const spendingPublicKey = KeyPair.getUncompressedFromX(
+    keys.spendingPubKey,
+    keys.spendingPubKeyPrefix.toNumber()
+  );
+  const viewingPublicKey = KeyPair.getUncompressedFromX(
+    keys.viewingPubKey,
+    keys.viewingPubKeyPrefix.toNumber()
+  );
+
+  return { spendingPublicKey, viewingPublicKey };
 }
 
 /**
- * @notice For a given ENS domain, recovers and returns the public key from its signature
+ * @notice For a given ENS domain, sets the associated umbra public keys
  * @param name ENS domain, e.g. myname.eth
- * @param provider web3 provider to use (not an ethers provider)
- */
-export async function getPublicKey(name: string, provider: EthersProvider) {
-  const signature = await getSignature(name, provider);
-  if (!signature) return undefined;
-  return getPublicKeyFromSignature(signature);
-}
-
-/**
- * @notice For a given ENS domain, return the associated umbra bytecode or return
- * undefined if none exists
- * @param name ENS domain, e.g. myname.eth
- * @param provider web3 provider to use (not an ethers provider)
- */
-export async function getBytecode(name: string, provider: EthersProvider) {
-  const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
-  const bytecode: string = await publicResolver.text(namehash(name), umbraKeyBytecode);
-  return bytecode;
-}
-
-/**
- * @notice For a given ENS domain, sets the associated umbra signature
- * @param name ENS domain, e.g. myname.eth
- * @param provider web3 provider to use (not an ethers provider)
- * @param signature user's signature of the Umbra protocol message, as hex string
+ * @param spendingPrivateKey The public key for generating a stealth address as BigNumber
+ * @param viewingPrivateKey The public key to use for encryption as BigNumber
+ * @param provider Ethers provider
  * @returns Transaction hash
  */
-export async function setSignature(name: string, provider: EthersProvider, signature: string) {
-  const publicResolver = createContract(ENS_PUBLIC_RESOLVER, publicResolverAbi, provider);
-  const tx = await publicResolver.setText(namehash(name), umbraKeySignature, signature);
-  await tx.wait();
+export async function setPublicKeys(
+  name: string,
+  spendingPrivateKey: string,
+  viewingPrivateKey: string,
+  provider: EthersProvider
+) {
+  // Break public keys into the required components
+  const spendingSigningKey = new SigningKey(spendingPrivateKey);
+  const viewingSigningKey = new SigningKey(viewingPrivateKey);
+  const spendingPubKeyCompressed = spendingSigningKey.compressedPublicKey;
+  const viewingPubKeyCompressed = viewingSigningKey.compressedPublicKey;
+
+  const spendingPublicKeyPrefix = spendingPubKeyCompressed.slice(2, 4);
+  const spendingPublicKey = BigNumber.from(`0x${spendingPubKeyCompressed.slice(4)}`).toString();
+  const viewingPublicKeyPrefix = viewingPubKeyCompressed.slice(2, 4);
+  const viewingPublicKey = BigNumber.from(`0x${viewingPubKeyCompressed.slice(4)}`).toString();
+
+  const ensResolverAddress = await getEnsResolverAddress(provider);
+  const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
+  const tx = await publicResolver.setStealthKeys(
+    namehash(name),
+    spendingPublicKeyPrefix,
+    spendingPublicKey,
+    viewingPublicKeyPrefix,
+    viewingPublicKey
+  );
   return tx.hash as string;
 }

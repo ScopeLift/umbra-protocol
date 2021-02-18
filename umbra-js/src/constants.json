@@ -1,5 +1,4 @@
 {
-  "ENS_PUBLIC_RESOLVER": "0x42D63ae25990889E35F215bC95884039Ba354115",
   "CNS_REGISTRY": "0xD55bbCeE17B47DB40588fF9e2cA90404b095Acd5",
   "UMBRA_MESSAGE": "This signature associates my public key with my ENS address for use with Umbra."
 }

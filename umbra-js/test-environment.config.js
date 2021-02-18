@@ -2,7 +2,7 @@ require('dotenv').config();
 
 module.exports = {
   node: {
-    fork: `https://ropsten.infura.io/v3/${process.env.INFURA_ID}`,
+    fork: `https://rinkeby.infura.io/v3/${process.env.INFURA_ID}`,
     account_keys_path: './test-keys.json',
   },
 };

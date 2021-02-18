@@ -41,27 +41,14 @@ export class DomainService {
   }
 
   /**
-   * @notice For a given domain, return the associated umbra signature or return
-   * undefined if none exists
-   * @param name domain, e.g. myname.eth
-   */
-  async getSignature(name: string) {
-    if (isEnsDomain(name)) {
-      return await ens.getSignature(name, this.provider);
-    } else {
-      return await cns.getSignature(name, this.udResolution);
-    }
-  }
-
-  /**
    * @notice For a given domain, recovers and returns the public key from its signature
    * @param name domain, e.g. myname.eth
    */
-  async getPublicKey(name: string) {
+  async getPublicKeys(name: string) {
     if (isEnsDomain(name)) {
-      return await ens.getPublicKey(name, this.provider);
+      return ens.getPublicKeys(name, this.provider);
     } else {
-      return await cns.getPublicKey(name, this.udResolution);
+      return cns.getPublicKeys(name, this.udResolution);
     }
   }
 
@@ -71,11 +58,11 @@ export class DomainService {
    * @param signature user's signature of the Umbra protocol message
    * @returns Transaction hash
    */
-  async setSignature(name: string, signature: string) {
+  async setPublicKeys(name: string, spendingPrivateKey: string, viewingPrivateKey: string) {
     if (isEnsDomain(name)) {
-      return await ens.setSignature(name, this.provider, signature);
+      return ens.setPublicKeys(name, spendingPrivateKey, viewingPrivateKey, this.provider);
     } else {
-      return await cns.setSignature(name, this.provider, this.udResolution, signature);
+      return cns.setPublicKeys(name, this.provider, this.udResolution, spendingPrivateKey);
     }
   }
 }

@@ -55,37 +55,37 @@ describe('KeyPair class', () => {
   });
 
   it('initializes an instance from a regular transaction', async () => {
-    // Specify mainnet transaction hash and its sender
-    const txHash = '0x285899397217daba600899add0953eb621605497fcd4979afea9409f81d8b7fa';
-    const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
+    // Specify rinkeby transaction hash and its sender
+    const txHash = '0x0f18ca5d71b4ad595a7a9a649c940aeec068ef6f1a4fe71f210578a8ea483e0f';
+    const from = '0x40f3F89639bFFc7B23cA5D9FCB9eD9a9C579664B';
     // Create instance and check result
     const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
     expect(keyPair.address).to.equal(from);
   });
 
   it('initializes an instance from a contract interaction transaction', async () => {
-    // Specify ropsten transaction hash and its sender
-    const txHash = '0x71dedd00076997826edbe23bf6f4940bf6508f2e22659ebaec5ab0b1c7aac0e7';
-    const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
+    // Specify rinkeby transaction hash and its sender
+    const txHash = '0xfc84305e8aea7c735bd89e01e0fe66b50ce8ed8c940291fa8f3e1a1070f029c5';
+    const from = '0x72378CbC246C17fe856d7678d944a0C51227eD59';
     // Create instance and check result
     const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
     expect(keyPair.address).to.equal(from);
   });
 
   it('initializes an instance from a contract creation transaction', async () => {
-    // Specify ropsten transaction hash and its sender
-    const txHash = '0x8d927f481eea24b80625529db1bc59528a805f70b2669b8d2280bb26fd35ffd5';
-    const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
+    // Specify rinkeby transaction hash and its sender
+    const txHash = '0xa84eae9a81444a02d10916627c282fe16fd78eb8ed3e2bd36ec257f7272ddcd0';
+    const from = '0x627306090abaB3A6e1400e9345bC60c78a8BEf57';
     // Create instance and check result
     const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
     expect(keyPair.address).to.equal(from);
   });
 
   it('will recover the public key from an arbitrary transaction', async () => {
-    // Specify ropsten transaction hash and its sender
-    const txHash = '0x285899397217daba600899add0953eb621605497fcd4979afea9409f81d8b7fa';
+    // Specify rinkeby transaction hash and its sender
+    const txHash = '0x0f18ca5d71b4ad595a7a9a649c940aeec068ef6f1a4fe71f210578a8ea483e0f';
     const sendersPublicKey =
-      '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
+      '0x041e2f66297fe2f58c9a9e4b7895bd4e5107581ed533ea9ff311631ea15692a6e6eb8d38f1bddf2e6e9f00dc5120e313671c93570b4997dcd9cd9388ae35ffd4b8';
     // Create instance and check result
     const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, ethersProvider);
     expect(recoveredPublicKey).to.equal(sendersPublicKey);

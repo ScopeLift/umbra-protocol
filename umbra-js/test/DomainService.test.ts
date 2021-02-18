@@ -10,53 +10,60 @@ const web3Provider = (provider as unknown) as ExternalProvider;
 const ethersProvider = new ethers.providers.Web3Provider(web3Provider);
 const domainService = new DomainService(ethersProvider);
 
-// Truth parameters to test against
-const ensName = 'msolomon.eth';
-const ensNameSignature =
-  '0x833b3846cf69f8667db746624661f7b5d85c131be9b9844c8f52d3d056fb81137fff198ad9eac9f63fb7469ef5d844737dedf27e75653d1b133554777f7384bd1b';
-const ensNamePublicKey =
-  '0x0483393469b6042c8ab2626258b95031edc4b4fa6ed637a81f23861e2e28901bbe20fcdae2dd56aa1998e8beb3a7537a5927f95c0456fad9694e042e9cce67d607';
-const cnsName = 'mvlabat.crypto';
-const cnsNameSignature =
-  '0x053a0fc756e799d2301347e123a440c1cb2830ed5e4ba9a8408f7eb0750933b763d1958b722ecb10dd4f63002397bbf037f6eef5fe9814ddfffc3d704c6a1cd41b';
-const cnsNamePublicKey =
-  '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e';
+// Truth parameters to test against (on Rinkeby)
+const params = {
+  ens: {
+    name: 'msolomon.eth',
+    nameSpendingPublicKey:
+      '0x0445e52d17b8c845d0dcb490ba6701e3f31d24828768aa77e613b7f1be712b383240c1bf8f278ebb160c77a3d1cc84b200459ded5095ee50551c339b158a3a00e1',
+    nameViewingPublicKey:
+      '0x041190b7e2b61b8872c9ea5fff14770e7d3e78900282371b09ee9f2b8c4016b9967b5e9ee9e1e0bef30052e806321f0685a3ad69e2233be6813b81a5d293feea76',
+  },
+  cns: {
+    name: 'mvlabat.crypto',
+    nameSpendingPublicKey:
+      '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e',
+    nameViewingPublicKey:
+      '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e',
+  },
+};
 
 describe('DomainService class', () => {
   describe('ENS', () => {
     it('computes the namehash of an ENS domain', () => {
-      const hash = domainService.namehash(ensName);
+      const hash = domainService.namehash(params.ens.name);
       expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');
     });
 
-    it('gets the signature associated with a ENS address', async function () {
-      const signature = await domainService.getSignature(ensName);
-      expect(signature).to.equal(ensNameSignature);
+    it.skip('sets the public keys for an ENS address', async function () {
+      this.timeout(10000);
+      // TODO
     });
 
-    it('gets the public key associated with a ENS address', async function () {
+    it('gets the public keys associated with an ENS address', async function () {
       this.timeout(10000);
-      const publicKey = await domainService.getPublicKey(ensName);
-      expect(publicKey).to.equal(ensNamePublicKey);
+      const publicKeys = await domainService.getPublicKeys(params.ens.name);
+      expect(publicKeys.spendingPublicKey).to.equal(params.ens.nameSpendingPublicKey);
+      expect(publicKeys.viewingPublicKey).to.equal(params.ens.nameViewingPublicKey);
     });
   });
 
   describe('CNS', () => {
     it('computes the namehash of a CNS domain', () => {
-      const hash = domainService.namehash(cnsName);
+      const hash = domainService.namehash(params.cns.name);
       expect(hash).to.equal('0x4d5647e26ad24fd1087ddd2dc2d980f6f231d4f5694f63b321ec119848a460ba');
     });
 
-    it('gets the signature associated with a CNS address', async function () {
+    it.skip('sets the public keys for a CNS address', async function () {
       this.timeout(10000);
-      const signature = await domainService.getSignature(cnsName);
-      expect(signature).to.equal(cnsNameSignature);
+      // TODO
     });
 
-    it('gets the public key associated with a CNS address', async function () {
+    it('gets the public keys associated with a CNS address', async function () {
       this.timeout(10000);
-      const publicKey = await domainService.getPublicKey(cnsName);
-      expect(publicKey).to.equal(cnsNamePublicKey);
+      const publicKeys = await domainService.getPublicKeys(params.cns.name);
+      expect(publicKeys.spendingPublicKey).to.equal(params.cns.nameSpendingPublicKey);
+      expect(publicKeys.viewingPublicKey).to.equal(params.cns.nameViewingPublicKey);
     });
   });
 });

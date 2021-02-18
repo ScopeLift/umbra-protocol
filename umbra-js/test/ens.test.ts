@@ -10,40 +10,25 @@ const ethersProvider = new Web3Provider(web3Provider);
 
 // Truth parameters to test against
 const name = 'msolomon.eth';
-const nameSignature =
-  '0x833b3846cf69f8667db746624661f7b5d85c131be9b9844c8f52d3d056fb81137fff198ad9eac9f63fb7469ef5d844737dedf27e75653d1b133554777f7384bd1b';
-const namePublicKey =
-  '0x0483393469b6042c8ab2626258b95031edc4b4fa6ed637a81f23861e2e28901bbe20fcdae2dd56aa1998e8beb3a7537a5927f95c0456fad9694e042e9cce67d607';
-const nameBytecode = ''; // currently not set
+const nameSpendingPublicKey =
+  '0x0445e52d17b8c845d0dcb490ba6701e3f31d24828768aa77e613b7f1be712b383240c1bf8f278ebb160c77a3d1cc84b200459ded5095ee50551c339b158a3a00e1';
+const nameViewingPublicKey =
+  '0x041190b7e2b61b8872c9ea5fff14770e7d3e78900282371b09ee9f2b8c4016b9967b5e9ee9e1e0bef30052e806321f0685a3ad69e2233be6813b81a5d293feea76';
 
 describe('ENS functions', () => {
   it('computes the namehash of an ENS domain', () => {
-    // const norm = e
     const hash = ens.namehash('msolomon.eth');
     expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');
   });
 
-  it('gets the signature associated with an ENS address', async () => {
-    const signature = await ens.getSignature(name, ethersProvider);
-    expect(signature).to.equal(nameSignature);
+  it('gets the public keys associated with an ENS address', async () => {
+    const publicKeys = await ens.getPublicKeys(name, ethersProvider);
+    expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
+    expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 
-  it('gets the public key associated with an ENS address', async () => {
-    const publicKey = await ens.getPublicKey(name, ethersProvider);
-    expect(publicKey).to.equal(namePublicKey);
-  });
-
-  it('gets the bytecode associated with an ENS address', async () => {
-    const bytecode = await ens.getBytecode(name, ethersProvider);
-    expect(bytecode).to.equal(nameBytecode);
-  });
-
-  it.skip('sets the signature', async () => {
-    // TODO currently fails since provider account is not the msolomon.eth account, so
+  it.skip('sets the public keys', async () => {
+    // TODO currently would fail since provider account is not the msolomon.eth account, so
     // to implement this test we need to have the ganache account register an ENS domain
-    const dummySignature = '0x123';
-    await ens.setSignature(name, ethersProvider, dummySignature);
-    const signature = await ens.getSignature(name, ethersProvider);
-    expect(signature).to.equal(dummySignature);
   });
 });

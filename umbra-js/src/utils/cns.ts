@@ -4,7 +4,6 @@
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { default as Resolution } from '@unstoppabledomains/resolution';
-import { getPublicKeyFromSignature } from './utils';
 import type { EthersProvider } from '../types';
 import * as constants from '../constants.json';
 import * as cnsRegistryAbi from '../abi/CnsRegistry.json';
@@ -25,31 +24,17 @@ export function namehash(name: string, resolution: Resolution) {
 }
 
 /**
- * @notice For a given CNS domain, return the associated umbra signature or return
- * undefined if none exists
- * @param name CNS domain, e.g. myname.crypto
- * @param resolution Resolution instance of @unstoppabledomains/resolution
- */
-export async function getSignature(name: string, resolution: Resolution) {
-  return await resolution.record(name, umbraKeySignature).catch((err) => {
-    const recordIsMissing =
-      err.message && err.message.startsWith(`No ${umbraKeySignature} record found`);
-    if (recordIsMissing) {
-      return undefined;
-    }
-    throw err;
-  });
-}
-
-/**
  * @notice For a given CNS domain, recovers and returns the public key from its signature
  * @param name CNS domain, e.g. myname.crypto
  * @param resolution Resolution instance of @unstoppabledomains/resolution
  */
-export async function getPublicKey(name: string, resolution: Resolution) {
-  const signature = await getSignature(name, resolution);
-  if (!signature) return undefined;
-  return getPublicKeyFromSignature(signature);
+export function getPublicKeys(name: string, resolution: Resolution) {
+  name; // silence errors
+  resolution; // silence errors
+  const spendingPublicKey = '';
+  const viewingPublicKey = '';
+
+  return { spendingPublicKey, viewingPublicKey };
 }
 
 /**
@@ -60,7 +45,7 @@ export async function getPublicKey(name: string, resolution: Resolution) {
  * @param signature user's signature of the Umbra protocol message, as hex string
  * @returns Transaction hash
  */
-export async function setSignature(
+export async function setPublicKeys(
   name: string,
   provider: EthersProvider,
   resolution: Resolution,

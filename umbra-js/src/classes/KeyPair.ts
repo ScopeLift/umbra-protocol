@@ -235,15 +235,25 @@ export class KeyPair {
   /**
    * @notice Given the x-coordinate of a public key, without the identifying prefix bit, returns
    * the uncompressed public key assuming the identifying bit is 02
-   * @dev We don't know if the identifying bit is 02 or 03, but for this use case it doesn't
+   * @dev We don't know if the identifying bit is 02 or 03, but for the scanning use case it doesn't
    * actually matter, since we are not deriving an address from the public key. We use the public
    * key to compute the shared secret to decrypt the random number, and since that involves
    * multiplying this public key by a private key, the result is the same regardless of whether we
    * had the 02 or 03 prefix
-   * @dev CONFIRM THE ABOVE STATEMENT IS ALWAYS TRUE
+   * @dev TODO CONFIRM THE ABOVE STATEMENT IS ALWAYS TRUE
+   * @param pkx x-coordinate of compressed public key
+   * @param prefix Prefix bit, must be 02 or 03
    */
-  static getUncompressedFromX(pkx: BigNumber | string) {
+  static getUncompressedFromX(
+    pkx: BigNumber | string,
+    prefix: number | string | undefined = undefined
+  ) {
+    if (!prefix) {
+      const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);
+      return computePublicKey(BigNumber.from(`0x02${hexWithoutPrefix}`).toHexString());
+    }
     const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);
-    return computePublicKey(BigNumber.from(`0x02${hexWithoutPrefix}`).toHexString());
+    const hexWithPrefix = `0x0${Number(prefix)}${hexWithoutPrefix}`;
+    return computePublicKey(BigNumber.from(hexWithPrefix).toHexString());
   }
 }
