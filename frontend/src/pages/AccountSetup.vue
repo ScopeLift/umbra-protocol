@@ -2,7 +2,12 @@
   <q-page padding>
     <h1 class="page-title">Setup</h1>
 
-    <div class="q-mx-auto">
+    <!-- 
+      This code snippet is useful for ensuring we've gotten a user's signature when needed. It's
+      not currently used, but soon will be pulled out into a component
+    -->
+
+    <!-- <div class="q-mx-auto">
       <div v-if="keyStatus === 'denied'" class="text-center">
         This app needs your signature to continue
         <base-button @click="getPrivateKeysHandler" label="Sign" />
@@ -12,7 +17,7 @@
         Follow the steps below to setup ENS
       </div>
       <div v-else class="text-center">Invalid app state! Please contact us for support</div>
-    </div>
+    </div> -->
 
     <q-carousel
       v-model="carouselStep"
@@ -24,12 +29,12 @@
       navigation-icon="fas fa-circle"
       ref="carousel"
       swipeable
-      transition-next="jump-left"
-      transition-prev="jump-right"
+      transition-next="slide-left"
+      transition-prev="slide-right"
     >
       <!-- Carousel Navigation Buttons -->
       <template v-slot:control>
-        <q-carousel-control position="left" class="row">
+        <q-carousel-control v-if="carouselStep !== '1'" position="left" class="row">
           <q-btn
             class="q-my-auto"
             flat
@@ -38,7 +43,7 @@
             @click="$refs.carousel.previous()"
           />
         </q-carousel-control>
-        <q-carousel-control position="right" class="row">
+        <q-carousel-control v-if="carouselStep !== '3'" position="right" class="row">
           <q-btn
             class="q-my-auto"
             flat
@@ -57,7 +62,7 @@
             <!-- User has ENS name -->
             <div v-if="userEns">
               You are logged in with <span class="text-bold">{{ userAddress }}</span
-              >. Click below to configure your name as needed for Umbra. TODO
+              >. Please continue to the next step.
             </div>
             <!-- User does not have ENS name -->
             <div v-else>
@@ -86,9 +91,12 @@
         <div class="q-mx-xl q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 2: Generate Keys</h5>
           <div class="q-mt-md">
-            Use the button below to sign a message, which will be used to generate an Umbra-specific
-            pair of private keys. These keys allow you to securely use Umbra without compromising
-            the private keys of your connected wallet.
+            <p>
+              Use the button below to sign a message, which will be used to generate an
+              Umbra-specific pair of private keys. These keys allow you to securely use Umbra
+              without compromising the private keys of your connected wallet.
+            </p>
+            <p>You do not need to save these keys anywhere!</p>
           </div>
           <base-button @click="getPrivateKeysHandler" label="Sign" />
         </div>
@@ -144,7 +152,6 @@ function useKeys() {
     console.log('tx: ', tx);
   }
 
-  // onMounted(async () => await getPrivateKeysHandler());
   return { carouselStep, userAddress, userEns, keyStatus, getPrivateKeysHandler, publishKeys };
 }
 

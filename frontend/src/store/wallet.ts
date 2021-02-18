@@ -31,8 +31,8 @@ const ETH_TOKEN = {
   logoURI: '/tokens/eth.svg',
 };
 
-// Keep this type in sync with keys under multicall.json 'addresses' key
-type SupportedChainIds = '1' | '3' | '4';
+// Must be the set of Chain IDs present for all contracts in src/contracts
+type SupportedChainIds = '4';
 
 // ============================================= State =============================================
 // We do not publicly expose the state to provide control over when and how it's changed. It
