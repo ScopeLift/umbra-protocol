@@ -22,17 +22,11 @@ const parameters = {
   actions: {}, // will be populated with deployment actions
 };
 
-// Initialize an object that will hold just deployed contract address info. We'll continually update this and save it to
-// a file using the save() method below
-const contractAddresses = {
-  contracts: {}, // will be populated with all contract addresses
-};
-
 // Setup for saving off deploy info to JSON files
 const now = new Date().toISOString();
 const folderName = './deploy-history';
 const fileName = `${folderName}/${network}-${now}.json`;
-const contractAddressesFileName = `${folderName}/${network}-latest.json`;
+const latestFileName = `${folderName}/${network}-latest.json`;
 fs.mkdir(folderName, (err) => {
   if (err && err.code !== 'EEXIST') throw err;
 });
@@ -47,10 +41,6 @@ const save = (value, field, subfield = undefined) => {
     parameters[field] = value;
   }
   fs.writeFileSync(fileName, JSON.stringify(parameters));
-  if (field === 'contracts') {
-    contractAddresses[field][subfield] = value;
-    fs.writeFileSync(contractAddressesFileName, JSON.stringify(contractAddresses));
-  }
 };
 
 // IIFE async function so "await"s can be performed for each operation
@@ -127,6 +117,9 @@ const save = (value, field, subfield = undefined) => {
     await receipt.wait();
     save(receipt.hash, 'actions', 'SendPaymasterFundsTx');
     console.log(`Paymaster funding transaction successful with hash: ${receipt.hash}`);
+
+    // everything went well, save the deployment info in the 'latest' JSON file
+    fs.writeFileSync(latestFileName, JSON.stringify(parameters));
 
     // catch any error from operations above, log it and save it to deploy history file
   } catch (error) {
