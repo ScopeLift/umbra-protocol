@@ -37,9 +37,12 @@ describe('СNS functions', () => {
 
   it('gets the public keys associated with a CNS address', async function () {
     this.timeout(10000);
-    const publicKeys = await cns.getPublicKeys(name, resolution);
-    expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
-    expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
+    nameSpendingPublicKey; // silence errors
+    nameViewingPublicKey; // silence errors
+    throw new Error('Test not implemented');
+    // const publicKeys = await cns.getPublicKeys(name, resolution);
+    // expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
+    // expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 
   it.skip('sets the public keys', async () => {

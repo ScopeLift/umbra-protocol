@@ -61,9 +61,10 @@ describe('DomainService class', () => {
 
     it('gets the public keys associated with a CNS address', async function () {
       this.timeout(10000);
-      const publicKeys = await domainService.getPublicKeys(params.cns.name);
-      expect(publicKeys.spendingPublicKey).to.equal(params.cns.nameSpendingPublicKey);
-      expect(publicKeys.viewingPublicKey).to.equal(params.cns.nameViewingPublicKey);
+      throw new Error('Test not implemented');
+      // const publicKeys = await domainService.getPublicKeys(params.cns.name);
+      // expect(publicKeys.spendingPublicKey).to.equal(params.cns.nameSpendingPublicKey);
+      // expect(publicKeys.viewingPublicKey).to.equal(params.cns.nameViewingPublicKey);
     });
   });
 });
