@@ -2,7 +2,7 @@
   <q-page padding>
     <h1 class="page-title">Send</h1>
 
-    <q-form @submit="onSubmit">
+    <q-form @submit="onFormSubmit">
       <!-- Identifier -->
       <div>Recipient's ENS or CNS name</div>
       <base-input v-model="recipientId" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
@@ -37,12 +37,25 @@
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import { BigNumber } from '@ethersproject/bignumber';
+import { MaxUint256 } from '@ethersproject/constants';
+import { Contract } from '@ethersproject/contracts';
 import { parseUnits } from '@ethersproject/units';
 import useWalletStore from 'src/store/wallet';
+import useAlerts from 'src/utils/alerts';
 import { TokenInfo } from 'components/models';
+import erc20 from 'src/contracts/erc20.json';
 
 function useSendForm() {
-  const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer } = useWalletStore();
+  const {
+    tokens: tokenOptions,
+    getTokenBalances,
+    balances,
+    umbra,
+    signer,
+    userAddress,
+  } = useWalletStore();
+  const { txNotify } = useAlerts();
+
   const recipientId = ref<string>();
   const token = ref<TokenInfo>();
   const humanAmount = ref<string>();
@@ -52,7 +65,7 @@ function useSendForm() {
     return 'Please enter an ENS or CNS name';
   }
 
-  async function onSubmit() {
+  async function onFormSubmit() {
     // Form validation
     if (!recipientId.value || !token.value || !humanAmount.value)
       throw new Error('Please complete the form');
@@ -64,13 +77,34 @@ function useSendForm() {
     if (!signer.value) throw new Error('Wallet not connected');
     if (!umbra.value) throw new Error('Umbra instance not configured');
 
+    // If token, get approval
+    if (token.value.symbol !== 'ETH') {
+      // Check allowance
+      const tokenContract = new Contract(token.value.address, erc20.abi, signer.value);
+      const umbraAddress = umbra.value.umbraContract.address;
+      const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
+      // If insufficient allowance, get approval
+      if (amount.gt(allowance)) {
+        const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
+        txNotify(approveTx.hash);
+        await approveTx.wait();
+      }
+    }
+
     // Send with Umbra
-    // TODO Currently fails since ENS setup is not finalized
     const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value);
-    console.log('tx: ', tx);
+    txNotify(tx.hash);
+    resetForm();
+    await tx.wait();
   }
 
-  return { recipientId, humanAmount, tokenOptions, token, onSubmit, isValidId };
+  function resetForm() {
+    recipientId.value = undefined;
+    token.value = undefined;
+    humanAmount.value = undefined;
+  }
+
+  return { recipientId, humanAmount, tokenOptions, token, onFormSubmit, isValidId };
 }
 
 export default defineComponent({

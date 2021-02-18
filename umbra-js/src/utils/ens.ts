@@ -2,8 +2,9 @@
  * @dev Functions for interacting with the Ethereum Name Service (ENS)
  */
 
-import { EthersProvider, EnsNamehash } from '../types';
+import { EthersProvider, EnsNamehash, TransactionResponse } from '../types';
 import { BigNumber } from '@ethersproject/bignumber';
+import { Zero } from '@ethersproject/constants';
 import { SigningKey } from '@ethersproject/signing-key';
 import { KeyPair } from '../classes/KeyPair';
 import * as publicResolverAbi from '../abi/PublicResolver.json';
@@ -42,6 +43,9 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
   const ensResolverAddress = await getEnsResolverAddress(provider);
   const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
   const keys = (await publicResolver.stealthKeys(namehash(name))) as StealthKeys;
+  if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
+    return { spendingPublicKey: undefined, viewingPublicKey: undefined };
+  }
 
   const spendingPublicKey = KeyPair.getUncompressedFromX(
     keys.spendingPubKey,
@@ -61,7 +65,7 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
  * @param spendingPrivateKey The public key for generating a stealth address as BigNumber
  * @param viewingPrivateKey The public key to use for encryption as BigNumber
  * @param provider Ethers provider
- * @returns Transaction hash
+ * @returns Transaction
  */
 export async function setPublicKeys(
   name: string,
@@ -89,5 +93,5 @@ export async function setPublicKeys(
     viewingPublicKeyPrefix,
     viewingPublicKey
   );
-  return tx.hash as string;
+  return tx as TransactionResponse;
 }

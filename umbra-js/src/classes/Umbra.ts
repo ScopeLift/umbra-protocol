@@ -139,7 +139,7 @@ export class Umbra {
       this.provider
     );
     if (!spendingPublicKey || !viewingPublicKey) {
-      throw new Error('Could not retrieve valid public keys for provided recipient ID');
+      throw new Error('Could not retrieve public keys for provided recipient ID');
     }
     const spendingKeyPair = new KeyPair(spendingPublicKey);
     const viewingKeyPair = new KeyPair(viewingPublicKey);

@@ -19,6 +19,7 @@
     "@umbra/umbra-js": "^0.0.1",
     "@uniswap/token-lists": "^1.0.0-beta.19",
     "@vue/composition-api": "^0.6.4",
+    "bnc-notify": "^1.5.1",
     "bnc-onboard": "^1.13.0",
     "core-js": "^3.6.5",
     "ethers": "^5.0.9",

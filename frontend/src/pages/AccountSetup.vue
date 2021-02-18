@@ -121,7 +121,8 @@
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import BaseButton from 'src/components/BaseButton.vue';
-import useWallet from 'src/store/wallet';
+import useWalletStore from 'src/store/wallet';
+import useAlerts from 'src/utils/alerts';
 
 function useKeys() {
   const {
@@ -131,7 +132,9 @@ function useKeys() {
     userEns,
     spendingKeyPair,
     viewingKeyPair,
-  } = useWallet();
+  } = useWalletStore();
+  const { txNotify } = useAlerts();
+
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
   const carouselStep = ref('1');
 
@@ -149,7 +152,8 @@ function useKeys() {
       String(spendingKeyPair.value?.privateKeyHex),
       String(viewingKeyPair.value?.privateKeyHex)
     );
-    console.log('tx: ', tx);
+    txNotify(tx.hash);
+    await tx.wait();
   }
 
   return { carouselStep, userAddress, userEns, keyStatus, getPrivateKeysHandler, publishKeys };

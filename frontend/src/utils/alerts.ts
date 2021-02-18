@@ -1,8 +1,9 @@
-import { Notify } from 'quasar';
+import { Dark, Notify } from 'quasar';
+import BNotify from 'bnc-notify';
 
 export default function useAlerts() {
   /**
-   * Present notification alert to the user
+   * @notice Present notification alert to the user
    * @param color Alert color, choose positive, negative, warning, info, or others
    * @param message Message to display on notification
    */
@@ -17,7 +18,7 @@ export default function useAlerts() {
   }
 
   /**
-   * Show error message to user
+   * @notice Show error message to user
    * @param err Error object thrown
    * @param msg Optional, fallback error message if one is not provided by the err object
    */
@@ -29,5 +30,18 @@ export default function useAlerts() {
     else notifyUser('negative', msg);
   }
 
-  return { notifyUser, handleError };
+  /**
+   * @notice Transaction monitoring
+   * @param txHash Transaction hash to monitor
+   */
+  function txNotify(txHash: string) {
+    const notify = BNotify({
+      dappId: process.env.BLOCKNATIVE_API_KEY,
+      networkId: 4,
+      darkMode: Dark.isActive,
+    });
+    notify.hash(txHash);
+  }
+
+  return { notifyUser, handleError, txNotify };
 }
