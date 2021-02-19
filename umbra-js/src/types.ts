@@ -1,7 +1,13 @@
 import { ethers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Event, Overrides } from '@ethersproject/contracts';
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers';
+import {
+  Block,
+  TransactionReceipt,
+  TransactionResponse,
+  JsonRpcProvider,
+  Web3Provider,
+} from '@ethersproject/providers';
 
 // ========================================= Ethers types ==========================================
 export { SignatureLike } from '@ethersproject/bytes';
@@ -47,6 +53,9 @@ export interface UserAnnouncement {
   receiver: string;
   amount: BigNumber;
   token: string;
+  block: Block;
+  tx: TransactionResponse;
+  receipt: TransactionReceipt;
 }
 
 // ======================================= ENS-related types =======================================

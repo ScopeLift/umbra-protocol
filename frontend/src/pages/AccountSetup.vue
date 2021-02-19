@@ -2,23 +2,6 @@
   <q-page padding>
     <h1 class="page-title">Setup</h1>
 
-    <!-- 
-      This code snippet is useful for ensuring we've gotten a user's signature when needed. It's
-      not currently used, but soon will be pulled out into a component
-    -->
-
-    <!-- <div class="q-mx-auto">
-      <div v-if="keyStatus === 'denied'" class="text-center">
-        This app needs your signature to continue
-        <base-button @click="getPrivateKeysHandler" label="Sign" />
-      </div>
-      <div v-else-if="keyStatus === 'waiting'" class="text-center">Waiting for signature</div>
-      <div v-else-if="keyStatus === 'success'" class="text-center">
-        Follow the steps below to setup ENS
-      </div>
-      <div v-else class="text-center">Invalid app state! Please contact us for support</div>
-    </div> -->
-
     <q-carousel
       v-model="carouselStep"
       animated
@@ -120,6 +103,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import { TransactionResponse } from '@ethersproject/providers';
 import BaseButton from 'src/components/BaseButton.vue';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
@@ -147,11 +131,11 @@ function useKeys() {
     if (!userEns.value) throw new Error('Invalid ENS or CNS name. Please return to the first step');
     const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
     if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
-    const tx = await domainService.value.setPublicKeys(
+    const tx = (await domainService.value.setPublicKeys(
       userEns.value,
       String(spendingKeyPair.value?.privateKeyHex),
       String(viewingKeyPair.value?.privateKeyHex)
-    );
+    )) as TransactionResponse;
     txNotify(tx.hash);
     await tx.wait();
   }

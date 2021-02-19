@@ -330,7 +330,22 @@ export class Umbra {
 
       // If our receiving address matches the event's recipient, the transfer was for us
       if (computedReceivingAddress === receiver) {
-        userAnnouncements.push({ event, randomNumber, receiver, amount, token });
+        // const promises = ;
+        const [block, tx, receipt] = await Promise.all([
+          event.getBlock(),
+          event.getTransaction(),
+          event.getTransactionReceipt(),
+        ]);
+        userAnnouncements.push({
+          event,
+          randomNumber,
+          receiver,
+          amount,
+          token,
+          block,
+          tx,
+          receipt,
+        });
       }
     }
 
