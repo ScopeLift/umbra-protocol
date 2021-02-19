@@ -68,9 +68,9 @@ export default function useWalletStore() {
       tokens.value = [
         { chainId: 4, ...ETH_TOKEN },
         // prettier-ignore
-        { chainId: 4, address: '0x2e055eee18284513b993db7568a592679ab13188', name: 'Dai', symbol: 'DAI', decimals: 18, logoURI: 'https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774', },
+        { chainId: 4, address: '0x2e055eEe18284513B993dB7568A592679aB13188', name: 'Dai', symbol: 'DAI', decimals: 18, logoURI: 'https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774', },
         // prettier-ignore
-        { chainId: 4, address: '0xeb8f08a975ab53e34d8a0330e0d34de942c95926', name: 'USD Coin', symbol: 'USDC', decimals: 6, logoURI: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389', },
+        { chainId: 4, address: '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926', name: 'USD Coin', symbol: 'USDC', decimals: 6, logoURI: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389', },
       ];
     }
   }
