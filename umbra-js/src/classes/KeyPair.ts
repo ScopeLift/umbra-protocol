@@ -12,7 +12,7 @@ import { computePublicKey, SigningKey } from '@ethersproject/signing-key';
 import { keccak256 } from 'js-sha3';
 import type { RandomNumber } from './RandomNumber';
 import { padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
-import { EthersProvider } from '../types';
+import { CompressedPublicKey, EthersProvider } from '../types';
 
 const ec = new EC('secp256k1');
 
@@ -233,26 +233,40 @@ export class KeyPair {
   }
 
   /**
+   * @notice Takes an uncompressed public key and returns the compressed public key
+   * @param publicKey Uncompressed public key, as hex string starting with 0x
+   * @returns Object containing the prefix as an integer and compressed public key as hex, as separate parameters
+   */
+  static compressPublicKey(publicKey: string): CompressedPublicKey {
+    const compressedPublicKey = computePublicKey(publicKey, true);
+    return {
+      prefix: Number(compressedPublicKey[3]), // prefix bit is the 4th character in the string (e.g. 0x03)
+      pubKeyXCoordinate: `0x${compressedPublicKey.slice(4)}`,
+    };
+  }
+
+  /**
    * @notice Given the x-coordinate of a public key, without the identifying prefix bit, returns
    * the uncompressed public key assuming the identifying bit is 02
-   * @dev We don't know if the identifying bit is 02 or 03, but for the scanning use case it doesn't
-   * actually matter, since we are not deriving an address from the public key. We use the public
-   * key to compute the shared secret to decrypt the random number, and since that involves
-   * multiplying this public key by a private key, the result is the same regardless of whether we
-   * had the 02 or 03 prefix
-   * @dev TODO CONFIRM THE ABOVE STATEMENT IS ALWAYS TRUE
-   * @param pkx x-coordinate of compressed public key
-   * @param prefix Prefix bit, must be 02 or 03
+   * @dev We don't know if the identifying bit is 02 or 03 when uncompressing for the scanning use
+   * case, but it doesn't actually matter since we are not deriving an address from the public key.
+   * We use the public key to compute the shared secret to decrypt the random number, and since that
+   * involves multiplying this public key by a private key, the result is the same shared secret
+   * regardless of whether we assume the 02 or 03 prefix. Therefore if no prefix is provided, we
+   * can assume 02, and it's up to the user to make sure they are using this method safely.I
+   * @param pkx x-coordinate of compressed public key, as BigNumber or hex string
+   * @param prefix Prefix bit, must be 2 or 3
    */
   static getUncompressedFromX(
     pkx: BigNumber | string,
     prefix: number | string | undefined = undefined
   ) {
     if (!prefix) {
+      // Only safe to use this branch when uncompressed key is using for scanning your funds
       const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);
       return computePublicKey(BigNumber.from(`0x02${hexWithoutPrefix}`).toHexString());
     }
-    const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);
+    const hexWithoutPrefix = padHex(BigNumber.from(pkx).toHexString().slice(2));
     const hexWithPrefix = `0x0${Number(prefix)}${hexWithoutPrefix}`;
     return computePublicKey(BigNumber.from(hexWithPrefix).toHexString());
   }

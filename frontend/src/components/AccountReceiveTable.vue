@@ -127,7 +127,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     const decimals = getTokenInfo(tokenAddress).decimals;
     return Number(formatUnits(amount, decimals)).toLocaleString(undefined, {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 8,
+      maximumFractionDigits: 10,
     });
   };
   const formatAddress = async (address: string) => {

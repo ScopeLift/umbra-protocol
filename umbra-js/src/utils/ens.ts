@@ -5,7 +5,6 @@
 import { EthersProvider, EnsNamehash, TransactionResponse } from '../types';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
-import { SigningKey } from '@ethersproject/signing-key';
 import { KeyPair } from '../classes/KeyPair';
 import * as publicResolverAbi from '../abi/PublicResolver.json';
 import { createContract } from '../inner/contract';
@@ -62,36 +61,36 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
 /**
  * @notice For a given ENS domain, sets the associated umbra public keys
  * @param name ENS domain, e.g. myname.eth
- * @param spendingPrivateKey The public key for generating a stealth address as BigNumber
- * @param viewingPrivateKey The public key to use for encryption as BigNumber
+ * @param spendingPublicKey The public key for generating a stealth address as BigNumber
+ * @param viewingPublicKey The public key to use for encryption as BigNumber
  * @param provider Ethers provider
  * @returns Transaction
  */
 export async function setPublicKeys(
   name: string,
-  spendingPrivateKey: string,
-  viewingPrivateKey: string,
+  spendingPublicKey: string,
+  viewingPublicKey: string,
   provider: EthersProvider
 ) {
   // Break public keys into the required components
-  const spendingSigningKey = new SigningKey(spendingPrivateKey);
-  const viewingSigningKey = new SigningKey(viewingPrivateKey);
-  const spendingPubKeyCompressed = spendingSigningKey.compressedPublicKey;
-  const viewingPubKeyCompressed = viewingSigningKey.compressedPublicKey;
+  const {
+    prefix: spendingPublicKeyPrefix,
+    pubKeyXCoordinate: spendingPublicKeyX,
+  } = KeyPair.compressPublicKey(spendingPublicKey);
+  const {
+    prefix: viewingPublicKeyPrefix,
+    pubKeyXCoordinate: viewingPublicKeyX,
+  } = KeyPair.compressPublicKey(viewingPublicKey);
 
-  const spendingPublicKeyPrefix = spendingPubKeyCompressed.slice(2, 4);
-  const spendingPublicKey = BigNumber.from(`0x${spendingPubKeyCompressed.slice(4)}`).toString();
-  const viewingPublicKeyPrefix = viewingPubKeyCompressed.slice(2, 4);
-  const viewingPublicKey = BigNumber.from(`0x${viewingPubKeyCompressed.slice(4)}`).toString();
-
+  // Send transaction to set the keys
   const ensResolverAddress = await getEnsResolverAddress(provider);
   const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
   const tx = await publicResolver.setStealthKeys(
     namehash(name),
     spendingPublicKeyPrefix,
-    spendingPublicKey,
+    spendingPublicKeyX,
     viewingPublicKeyPrefix,
-    viewingPublicKey
+    viewingPublicKeyX
   );
   return tx as TransactionResponse;
 }

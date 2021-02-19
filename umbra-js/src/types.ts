@@ -26,6 +26,12 @@ export interface ChainConfig {
   startBlock: number; // block Umbra contract was deployed at
 }
 
+// Type for storing compressed public keys
+export interface CompressedPublicKey {
+  prefix: number;
+  pubKeyXCoordinate: string; // has 0x prefix
+}
+
 // Overrides when sending funds
 export interface SendOverrides extends Overrides {
   payloadExtension?: string;

@@ -133,8 +133,8 @@ function useKeys() {
     if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
     const tx = (await domainService.value.setPublicKeys(
       userEns.value,
-      String(spendingKeyPair.value?.privateKeyHex),
-      String(viewingKeyPair.value?.privateKeyHex)
+      String(spendingKeyPair.value?.publicKeyHex),
+      String(viewingKeyPair.value?.publicKeyHex)
     )) as TransactionResponse;
     txNotify(tx.hash);
     await tx.wait();

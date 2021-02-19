@@ -11,7 +11,6 @@ import { ContractTransaction, Overrides } from '@ethersproject/contracts';
 import { keccak256 } from '@ethersproject/keccak256';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { sha256 } from '@ethersproject/sha2';
-import { computePublicKey } from '@ethersproject/signing-key';
 import { toUtf8Bytes } from '@ethersproject/strings';
 
 import { KeyPair } from './KeyPair';
@@ -153,9 +152,7 @@ export class Umbra {
     const encrypted = viewingKeyPair.encrypt(randomNumber);
 
     // Get x,y coordinates of ephemeral private key
-    const ephemeralKeyPair = new KeyPair(encrypted.ephemeralPublicKey);
-    const ephemeralKeyPairX = computePublicKey(ephemeralKeyPair.publicKeyHex, true);
-    const compressedXCoordinate = `0x${ephemeralKeyPairX.slice(4)}`;
+    const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
 
     // Compute stealth address
     const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
@@ -173,7 +170,7 @@ export class Umbra {
         .sendEth(
           stealthKeyPair.address,
           toll,
-          compressedXCoordinate,
+          pubKeyXCoordinate,
           encrypted.ciphertext,
           txOverrides
         );
@@ -185,7 +182,7 @@ export class Umbra {
           stealthKeyPair.address,
           token,
           amount,
-          compressedXCoordinate,
+          pubKeyXCoordinate,
           encrypted.ciphertext,
           txOverrides
         );
@@ -368,7 +365,7 @@ export class Umbra {
       'Sign this message to access your Umbra account.\n\nThis signature gives the app access to your funds, so only sign this message for a trusted client!';
 
     // Append chain ID if not mainnet to mitigate replay attacks
-    const chainId = this.provider.network.chainId;
+    const { chainId } = await this.provider.getNetwork();
     const message = chainId === 1 ? baseMessage : `${baseMessage}\n\nChain ID: ${chainId}`;
 
     // Get 65 byte signature from user

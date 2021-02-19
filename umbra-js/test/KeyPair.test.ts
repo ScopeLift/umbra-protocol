@@ -6,9 +6,9 @@ import { hexZeroPad } from '@ethersproject/bytes';
 import { Web3Provider } from '@ethersproject/providers';
 import { randomBytes } from '@ethersproject/random';
 import type { ExternalProvider } from '../src/types';
-
 import { RandomNumber } from '../src/classes/RandomNumber';
 import { KeyPair } from '../src/classes/KeyPair';
+import { Umbra } from '../src/classes/Umbra';
 import * as utils from '../src/utils/utils';
 
 const { expect } = chai;
@@ -38,6 +38,15 @@ describe('KeyPair class', () => {
 
   beforeEach(() => {
     wallet = Wallet.createRandom();
+  });
+
+  it('should not initialize an instance without the 0x prefix', () => {
+    expect(() => new KeyPair(privateKey.slice(2))).to.throw(
+      'Key must be in hex format with 0x prefix'
+    );
+    expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(
+      'Key must be in hex format with 0x prefix'
+    );
   });
 
   it('initializes an instance with valid private key', () => {
@@ -91,13 +100,61 @@ describe('KeyPair class', () => {
     expect(recoveredPublicKey).to.equal(sendersPublicKey);
   });
 
-  it('should not initialize an instance without the 0x prefix', () => {
-    expect(() => new KeyPair(privateKey.slice(2))).to.throw(
-      'Key must be in hex format with 0x prefix'
-    );
-    expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(
-      'Key must be in hex format with 0x prefix'
-    );
+  it('properly compresses and uncompresses public keys', async () => {
+    // Known set of private keys that fail if compressed public key is not padded to 32 bytes (in
+    // other words, these private keys generate public keys that start with a zero-byte)
+    // prettier-ignore
+    const privateKeys = [ '0x7a79b9a28a51ff8704238959a7b19dd43149698b32065559948419e650636f68', '0xa1275d22f814d1e766d76eeea4f97584a322bec236176d291c3a46856b8d8770', '0xa5e4845e9d1bd6e546ee6655519a4400a9b591afc1fc09c74016a6e17c27c47b', '0x2a618897e58ef3a09a1c3f8b32931bc08fc671e00545b9e919fb418367eec49d', '0xa01d066e7f01d664296fbab225d86590555e762f021f73a6837ab69a4b20fb32', '0xdbe0800f84f57e58f16b346fe8b6c264700a5adbb70bb522bd3ee4b75f3d59c7', '0xed8dee728fb529b9fa1a78e205685e632609c0b43600048323fde68353990be7', ];
+    for (let i = 0; i < privateKeys.length; i += 1) {
+      wallet = new Wallet(privateKeys[i]);
+      const compressedPublicKey = KeyPair.compressPublicKey(wallet.publicKey);
+      const uncompressedPublicKey = KeyPair.getUncompressedFromX(
+        compressedPublicKey.pubKeyXCoordinate,
+        compressedPublicKey.prefix
+      );
+      expect(uncompressedPublicKey).to.equal(wallet.publicKey);
+    }
+
+    // Repeat again but with random private keys
+    for (let i = 0; i < numberOfRuns; i += 1) {
+      wallet = Wallet.createRandom();
+      const compressedPublicKey = KeyPair.compressPublicKey(wallet.publicKey);
+      const uncompressedPublicKey = KeyPair.getUncompressedFromX(
+        compressedPublicKey.pubKeyXCoordinate,
+        compressedPublicKey.prefix
+      );
+      expect(uncompressedPublicKey).to.equal(wallet.publicKey);
+    }
+  });
+
+  it('successfully decrypts random number regardless of ephemeral public key prefix', async () => {
+    for (let i = 0; i < numberOfRuns; i += 1) {
+      // Recipient account setup
+      const recipient = Wallet.createRandom();
+      const umbra = new Umbra(ethersProvider, 4);
+      const { viewingKeyPair } = await umbra.generatePrivateKeys(recipient);
+
+      // Simulate sender encrypting the random number
+      const randomNumber = new RandomNumber();
+      const encrypted = viewingKeyPair.encrypt(randomNumber);
+
+      // Pull out the data that is published to chain and emitted as an event
+      const { ciphertext } = encrypted;
+      const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
+
+      // Assume 02 prefix and decrypt
+      const uncompressedPubKey1 = KeyPair.getUncompressedFromX(pubKeyXCoordinate, 2);
+      const payload1 = { ephemeralPublicKey: uncompressedPubKey1, ciphertext };
+      const randomNumber1 = viewingKeyPair.decrypt(payload1);
+      expect(randomNumber1).to.equal(randomNumber.asHex);
+
+      // Assume 03 prefix and decrypt
+      const uncompressedPubKey2 = KeyPair.getUncompressedFromX(pubKeyXCoordinate, 3);
+      const payload2 = { ephemeralPublicKey: uncompressedPubKey2, ciphertext };
+      const randomNumber2 = viewingKeyPair.decrypt(payload2);
+      expect(randomNumber2).to.equal(randomNumber.asHex);
+      expect(uncompressedPubKey1).to.not.equal(uncompressedPubKey2); // confirm we took different paths to same result
+    }
   });
 
   it('properly derives public key parameters with both key-based constructor methods', () => {
