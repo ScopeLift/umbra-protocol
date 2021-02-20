@@ -107,6 +107,19 @@ const save = (value, field, subfield = undefined) => {
       setRelayHubTxReceipt.hash
     );
 
+    const setTrustedForwaderTxReceipt = await umbraPaymaster.setTrustedForwarder(
+      umbraForwarder.address,
+    );
+    setTrustedForwaderTxReceipt.wait();
+    save(umbraForwarder.address, 'actions', 'SetTrustedForwarder');
+    save(setTrustedForwaderTxReceipt.hash, 'actions', 'SetTrustedForwarderTxHash');
+    console.log(
+      'UmbraPaymaster trusted forwarder set to address: ',
+      umbraForwarder.address,
+      ' at transaction hash: ',
+      setTrustedForwaderTxReceipt.hash
+    );
+
     // Create transaction to send funds to Paymaster contract
     const tx = {
       to: umbraPaymaster.address,
