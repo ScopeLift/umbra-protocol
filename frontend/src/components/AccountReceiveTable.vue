@@ -1,6 +1,12 @@
 <template>
   <div>
+    <div v-if="isLoading" class="text-center">
+      <loading-spinner />
+      <div class="text-center text-italic">Scanning for funds...</div>
+    </div>
+
     <q-table
+      v-else
       :columns="mainTableColumns"
       :data="formattedAnnouncements"
       :pagination="paginationConfig"
@@ -23,8 +29,8 @@
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <!-- Asset column -->
             <div v-if="col.name === 'date'">
-              <div>{{ getDate(col.value.timestamp * 1000) }}</div>
-              <div class="text-caption text-grey">{{ getTime(col.value.timestamp * 1000) }}</div>
+              <div>{{ formatDate(col.value.timestamp * 1000) }}</div>
+              <div class="text-caption text-grey">{{ formatTime(col.value.timestamp * 1000) }}</div>
             </div>
 
             <!-- Amount column -->
@@ -68,7 +74,22 @@
         <!-- Expansion row -->
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%" class="bg-grey-2">
-            <div class="q-pa-md">Withdraw form will go here</div>
+            <q-form class="q-pa-md">
+              <div>Enter address to withdraw funds to</div>
+              <div class="text-caption">
+                <span class="text-bold">WARNING</span>: Be sure you understand the security
+                implications before entering a withdrawal address. If you withdraw to an address
+                publicly associated with you, privacy for this transaction will be lost
+              </div>
+              <base-input
+                v-model="destinationAddress"
+                @click="withdraw(props.row)"
+                appendButtonLabel="Withdraw"
+                label="Address"
+                lazy-rules
+                :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
+              />
+            </q-form>
           </q-td>
         </q-tr>
       </template>
@@ -80,14 +101,19 @@
 import { defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date } from 'quasar';
 import { BigNumber } from '@ethersproject/bignumber';
-import { Block } from '@ethersproject/providers';
+import { Block, TransactionResponse } from '@ethersproject/providers';
 import { formatUnits } from '@ethersproject/units';
-import { UserAnnouncement } from '@umbra/umbra-js';
+import { UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import useWalletStore from 'src/store/wallet';
+import useAlerts from 'src/utils/alerts';
+import BaseButton from './BaseButton.vue';
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
-  const { tokens, provider } = useWalletStore();
+  const { tokens, provider, umbra, spendingKeyPair, viewingKeyPair } = useWalletStore();
+  const { txNotify } = useAlerts();
   const paginationConfig = { rowsPerPage: 25 };
+  const isLoading = ref(false);
+  const destinationAddress = ref('');
 
   const mainTableColumns = [
     {
@@ -116,8 +142,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   ];
 
   // Table formatters
-  const getDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
-  const getTime = (timestamp: number) => date.formatDate(timestamp, 'H:mm A');
+  const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
+  const formatTime = (timestamp: number) => date.formatDate(timestamp, 'H:mm A');
   const getTokenInfo = (tokenAddress: string) => {
     return tokens.value.filter((token) => token.address === tokenAddress)[0];
   };
@@ -142,27 +168,59 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   // Format announcements so from addresses support ENS
   const formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
   onMounted(async () => {
+    isLoading.value = true;
     const fromAddresses = announcements.map((announcement) => announcement.receipt.from);
     const formattedFromAddresses = await Promise.all(fromAddresses.map(formatAddress));
     formattedAnnouncements.value.forEach((announcement, index) => {
       announcement.receipt.from = formattedFromAddresses[index];
       announcement.tx.from = formattedFromAddresses[index];
     });
+    isLoading.value = false;
   });
 
+  async function withdraw(announcement: UserAnnouncement) {
+    // Get token info and stealth private key
+    const token = getTokenInfo(announcement.token);
+    const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(
+      announcement.randomNumber
+    );
+
+    console.log('spendingKeyPair.value?.privateKeyHex: ', spendingKeyPair.value?.privateKeyHex);
+    console.log('token.address: ', token.address);
+    console.log('announcement.receiver: ', announcement.receiver);
+    console.log('destinationAddress.value: ', destinationAddress.value);
+    // Send transaction
+    let tx: TransactionResponse;
+    if (token.symbol === 'ETH') {
+      tx = await umbra.value?.withdraw(
+        String(stealthKeyPair.privateKeyHex),
+        token.address,
+        announcement.receiver,
+        destinationAddress.value
+      );
+    } else {
+      //
+    }
+    txNotify(tx.hash);
+  }
+
   return {
+    isLoading,
     paginationConfig,
     mainTableColumns,
-    getDate,
-    getTime,
+    formatDate,
+    formatTime,
     getTokenLogoUri,
     getTokenSymbol,
     formatAmount,
     formattedAnnouncements,
+    destinationAddress,
+    withdraw,
   };
 }
 
 export default defineComponent({
+  components: { BaseButton },
   name: 'AccountReceiveTable',
   props: {
     announcements: {

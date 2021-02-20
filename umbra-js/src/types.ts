@@ -58,7 +58,7 @@ export interface UserAnnouncement {
   randomNumber: string;
   receiver: string;
   amount: BigNumber;
-  token: string;
+  token: string; // token address
   block: Block;
   tx: TransactionResponse;
   receipt: TransactionReceipt;
