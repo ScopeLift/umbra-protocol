@@ -15,6 +15,7 @@
     "precommit": "lint-staged"
   },
   "dependencies": {
+    "@opengsn/gsn": "^2.1.0",
     "@quasar/extras": "^1.0.0",
     "@umbra/umbra-js": "^0.0.1",
     "@uniswap/token-lists": "^1.0.0-beta.19",

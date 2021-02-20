@@ -39,7 +39,7 @@ const chainConfigs: Record<number, ChainConfig> = {
   },
   // Rinkeby
   4: {
-    umbraAddress: '0x264063408fD1bdC703083AE083c813240A024B7f',
+    umbraAddress: '0x9116217a74bA46a327a824Bc4FB2e3d7dAA1d97a',
     startBlock: 8055954,
   },
   // Local
@@ -342,6 +342,7 @@ export class Umbra {
           block,
           tx,
           receipt,
+          isWithdrawn: false, // assume false for now
         });
       }
     }

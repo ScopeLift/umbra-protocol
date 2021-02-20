@@ -62,6 +62,7 @@ export interface UserAnnouncement {
   block: Block;
   tx: TransactionResponse;
   receipt: TransactionReceipt;
+  isWithdrawn: boolean;
 }
 
 // ======================================= ENS-related types =======================================

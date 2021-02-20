@@ -1,6 +1,6 @@
 {
   "addresses": {
-    "4": "0xCCA839B94Ba3B52B8f82485B14856602E8635ebA"
+    "4": "0x853Bc1D394bbaE59107595eBEe48d3af2Bb25743"
   },
   "abi": [
     {
@@ -46,6 +46,19 @@
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "trustedForwarder",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
