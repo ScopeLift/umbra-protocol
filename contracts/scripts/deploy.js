@@ -108,7 +108,7 @@ const save = (value, field, subfield = undefined) => {
     );
 
     const setTrustedForwaderTxReceipt = await umbraPaymaster.setTrustedForwarder(
-      umbraForwarder.address,
+      umbraForwarder.address
     );
     setTrustedForwaderTxReceipt.wait();
     save(umbraForwarder.address, 'actions', 'SetTrustedForwarder');
