@@ -63,7 +63,11 @@
 
           <!-- Expansion button, works accordian-style -->
           <q-td auto-width>
+            <div v-if="props.row.isWithdrawn" class="text-positive">
+              Withdrawn<q-icon name="fas fa-check" class="q-ml-sm" />
+            </div>
             <base-button
+              v-else
               @click="expanded = [props.key]"
               color="primary"
               :dense="true"
@@ -128,6 +132,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const isLoading = ref(false);
   const destinationAddress = ref('');
   const isWithdrawInProgress = ref(false);
+  type TokenPayment = { token: string; amount: BigNumber };
 
   const mainTableColumns = [
     {
@@ -158,8 +163,18 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   // Table formatters and helpers
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
   const formatTime = (timestamp: number) => date.formatDate(timestamp, 'H:mm A');
+  const isEth = (tokenAddress: string) => {
+    return tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+  };
   const getTokenInfo = (tokenAddress: string) => {
     return tokens.value.filter((token) => token.address === tokenAddress)[0];
+  };
+  const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
+    if (isEth(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
+    const tokenPayment = (await umbra.value?.umbraContract.tokenPayments(
+      userAddress
+    )) as TokenPayment;
+    return tokenPayment.amount;
   };
   const getTokenSymbol = (tokenAddress: string) => getTokenInfo(tokenAddress).symbol;
   const getTokenLogoUri = (tokenAddress: string) => getTokenInfo(tokenAddress).logoURI;
@@ -191,8 +206,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       announcement.tx.from = formattedFromAddresses[index];
     });
 
-    // Now compare against withdrawal events
-    // TODO
+    // Find announcements that have been withdrawn
+    const stealthBalancePromises = announcements.map((a) => getStealthBalance(a.token, a.receiver));
+    const stealthBalances = await Promise.all(stealthBalancePromises);
+    formattedAnnouncements.value.forEach((announcement, index) => {
+      announcement.isWithdrawn = stealthBalances[index].eq(BigNumber.from('0'));
+    });
     isLoading.value = false;
   });
 
