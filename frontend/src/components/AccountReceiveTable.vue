@@ -38,11 +38,7 @@
             <!-- Amount column -->
             <div v-else-if="col.name === 'amount'">
               <div class="row justify-start items-center no-wrap">
-                <img
-                  class="col-auto q-mr-md"
-                  :src="getTokenLogoUri(props.row.token)"
-                  style="width: 1.5rem"
-                />
+                <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.5rem" />
                 <div class="col-auto">
                   {{ formatAmount(col.value, props.row.token) }}
                   {{ getTokenSymbol(props.row.token) }}
@@ -92,9 +88,9 @@
                 :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
               />
               <div class="text-caption">
-                <span class="text-bold">WARNING</span>: Be sure you understand the security
-                implications before entering a withdrawal address. If you withdraw to an address
-                publicly associated with you, privacy for this transaction will be lost.
+                <span class="text-bold">WARNING</span>: Be sure you understand the security implications before entering
+                a withdrawal address. If you withdraw to an address publicly associated with you, privacy for this
+                transaction will be lost.
               </div>
             </q-form>
           </q-td>
@@ -109,12 +105,7 @@ import { defineComponent, onMounted, PropType, ref } from '@vue/composition-api'
 import { date } from 'quasar';
 import { Contract } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
-import {
-  Block,
-  ExternalProvider,
-  TransactionResponse,
-  Web3Provider,
-} from '@ethersproject/providers';
+import { Block, ExternalProvider, TransactionResponse, Web3Provider } from '@ethersproject/providers';
 import { formatUnits } from '@ethersproject/units';
 import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
@@ -163,17 +154,11 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   // Table formatters and helpers
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
   const formatTime = (timestamp: number) => date.formatDate(timestamp, 'H:mm A');
-  const isEth = (tokenAddress: string) => {
-    return tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-  };
-  const getTokenInfo = (tokenAddress: string) => {
-    return tokens.value.filter((token) => token.address === tokenAddress)[0];
-  };
+  const isEth = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+  const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
   const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
     if (isEth(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
-    const tokenPayment = (await umbra.value?.umbraContract.tokenPayments(
-      userAddress
-    )) as TokenPayment;
+    const tokenPayment = (await umbra.value?.umbraContract.tokenPayments(userAddress)) as TokenPayment;
     return tokenPayment.amount;
   };
   const getTokenSymbol = (tokenAddress: string) => getTokenInfo(tokenAddress).symbol;
@@ -223,9 +208,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     if (!umbra.value) throw new Error('Umbra instance not found');
     // Get token info and stealth private key
     const token = getTokenInfo(announcement.token);
-    const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(
-      announcement.randomNumber
-    );
+    const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
 
     // Send transaction
@@ -247,12 +230,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
         // Rinkeby we just use a value of 1 and the destinationAddress as a sanity check this functionality
         const sponsor = destinationAddress.value;
         const sponsorFee = '1';
-        const { v, r, s } = await Umbra.signWithdraw(
-          spendingPrivateKey,
-          destinationAddress.value,
-          sponsor,
-          sponsorFee
-        );
+        const { v, r, s } = await Umbra.signWithdraw(spendingPrivateKey, destinationAddress.value, sponsor, sponsorFee);
 
         // Configure GSN provider (hardcoded our Rinkeby paymaster address)
         const gsnConfig = {
@@ -270,11 +248,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
         // Send transaction
         const chainId = String((await provider.value.getNetwork()).chainId);
         const stealthSigner = gsnEthersProvider.getSigner(stealthKeyPair.address);
-        const umbraRelayRecipient = new Contract(
-          UmbraRelayRecipient.addresses[chainId as SupportedChainIds],
-          UmbraRelayRecipient.abi,
-          stealthSigner
-        );
+        const relayRecipientAddress = UmbraRelayRecipient.addresses[chainId as SupportedChainIds];
+        const umbraRelayRecipient = new Contract(relayRecipientAddress, UmbraRelayRecipient.abi, stealthSigner);
         tx = (await umbraRelayRecipient.withdrawTokenOnBehalf(
           stealthKeyPair.address,
           destinationAddress.value,

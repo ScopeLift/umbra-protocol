@@ -87,10 +87,7 @@ describe('RandomNumber class', () => {
   it('lets the user set a payload extension when generating a random number', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
       // Generate random hex string with the correct format
-      const randomHexString = `0x${padHex(
-        BigNumber.from(randomBytes(16)).toHexString().slice(2),
-        16
-      )}`;
+      const randomHexString = `0x${padHex(BigNumber.from(randomBytes(16)).toHexString().slice(2), 16)}`;
 
       random = new RandomNumber(randomHexString);
       const hex = random.asHex;

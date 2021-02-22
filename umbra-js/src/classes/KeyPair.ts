@@ -62,9 +62,7 @@ export class KeyPair {
       // Save off public key as hex, other forms computed as getters
       this.publicKeyHex = key;
     } else {
-      throw new Error(
-        'Key must be a 66 character hex private key or a 132 character hex public key'
-      );
+      throw new Error('Key must be a 66 character hex private key or a 132 character hex public key');
     }
   }
 
@@ -136,7 +134,7 @@ export class KeyPair {
    * @param randomNumber Random number as instance of RandomNumber class
    * @returns Hex strings of uncompressed 65 byte public key and 32 byte ciphertext
    */
-  encrypt(randomNumber: RandomNumber) {
+  encrypt(randomNumber: RandomNumber): EncryptedPayload {
     // Get shared secret to use as encryption key
     const ephemeralWallet = Wallet.createRandom();
     const privateKey = new SigningKey(ephemeralWallet.privateKey);
@@ -145,9 +143,8 @@ export class KeyPair {
     // XOR random number with shared secret to get encrypted value
     const ciphertext = randomNumber.value.xor(sharedSecret);
     const result = {
-      // Both outputs are hex strings
-      ephemeralPublicKey: ephemeralWallet.publicKey,
-      ciphertext: hexZeroPad(ciphertext.toHexString(), 32),
+      ephemeralPublicKey: ephemeralWallet.publicKey, // hex string
+      ciphertext: hexZeroPad(ciphertext.toHexString(), 32), // hex string
     };
     return result;
   }
@@ -257,10 +254,7 @@ export class KeyPair {
    * @param pkx x-coordinate of compressed public key, as BigNumber or hex string
    * @param prefix Prefix bit, must be 2 or 3
    */
-  static getUncompressedFromX(
-    pkx: BigNumber | string,
-    prefix: number | string | undefined = undefined
-  ) {
+  static getUncompressedFromX(pkx: BigNumber | string, prefix: number | string | undefined = undefined) {
     if (!prefix) {
       // Only safe to use this branch when uncompressed key is using for scanning your funds
       const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);

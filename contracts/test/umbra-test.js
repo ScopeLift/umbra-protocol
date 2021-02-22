@@ -10,16 +10,7 @@ const { toWei, BN } = web3.utils;
 
 describe('Umbra', () => {
   const ctx = {};
-  let owner,
-    tollCollector,
-    tollReceiver,
-    payer1,
-    receiver1,
-    payer2,
-    receiver2,
-    acceptor,
-    other,
-    relayer;
+  let owner, tollCollector, tollReceiver, payer1, receiver1, payer2, receiver2, acceptor, other, relayer;
 
   // The ethers wallet that will be used when testing meta tx withdrawals
   const metaWallet = ethers.Wallet.createRandom();
@@ -101,10 +92,7 @@ describe('Umbra', () => {
   });
 
   it('should not allow someone other than the owner to update the toll', async () => {
-    await expectRevert(
-      ctx.umbra.setToll(deployedToll, { from: other }),
-      'Ownable: caller is not the owner'
-    );
+    await expectRevert(ctx.umbra.setToll(deployedToll, { from: other }), 'Ownable: caller is not the owner');
   });
 
   it('should not allow someone to pay less than the toll amount', async () => {
@@ -233,13 +221,10 @@ describe('Umbra', () => {
   it('should allow someone to pay with a token', async () => {
     const toll = await ctx.umbra.toll();
     await ctx.token.approve(ctx.umbra.address, tokenAmount, { from: payer2 });
-    const receipt = await ctx.umbra.sendToken(
-      receiver2,
-      ctx.token.address,
-      tokenAmount,
-      ...argumentBytes,
-      { from: payer2, value: toll }
-    );
+    const receipt = await ctx.umbra.sendToken(receiver2, ctx.token.address, tokenAmount, ...argumentBytes, {
+      from: payer2,
+      value: toll,
+    });
 
     const contractBalance = await ctx.token.balanceOf(ctx.umbra.address);
 
@@ -257,13 +242,10 @@ describe('Umbra', () => {
   it('should allow someone to pay tokens to a previous ETH receiver', async () => {
     const toll = await ctx.umbra.toll();
     await ctx.token.approve(ctx.umbra.address, secondTokenAmount, { from: payer2 });
-    const receipt = await ctx.umbra.sendToken(
-      receiver1,
-      ctx.token.address,
-      secondTokenAmount,
-      ...argumentBytes,
-      { from: payer2, value: toll }
-    );
+    const receipt = await ctx.umbra.sendToken(receiver1, ctx.token.address, secondTokenAmount, ...argumentBytes, {
+      from: payer2,
+      value: toll,
+    });
 
     const contractBalance = await ctx.token.balanceOf(ctx.umbra.address);
 
@@ -318,10 +300,7 @@ describe('Umbra', () => {
   });
 
   it('should not allow a non-receiver to withdraw tokens', async () => {
-    await expectRevert(
-      ctx.umbra.withdrawToken(acceptor, { from: other }),
-      'Umbra: No tokens available for withdrawal'
-    );
+    await expectRevert(ctx.umbra.withdrawToken(acceptor, { from: other }), 'Umbra: No tokens available for withdrawal');
   });
 
   it('should allow receiver to withdraw their token', async () => {
@@ -350,13 +329,10 @@ describe('Umbra', () => {
     const toll = await ctx.umbra.toll();
     await ctx.token.approve(ctx.umbra.address, tokenAmount, { from: payer2 });
 
-    const receipt = await ctx.umbra.sendToken(
-      receiver2,
-      ctx.token.address,
-      tokenAmount,
-      ...argumentBytes,
-      { from: payer2, value: toll }
-    );
+    const receipt = await ctx.umbra.sendToken(receiver2, ctx.token.address, tokenAmount, ...argumentBytes, {
+      from: payer2,
+      value: toll,
+    });
 
     const contractBalance = await ctx.token.balanceOf(ctx.umbra.address);
 
@@ -372,24 +348,12 @@ describe('Umbra', () => {
   });
 
   it('should revert on a meta withdrawal when the stealth address does not have a balance', async () => {
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      relayer,
-      metaAcceptor,
-      relayerTokenFee
-    );
+    const { v, r, s } = await signMetaWithdrawal(metaWallet, relayer, metaAcceptor, relayerTokenFee);
 
     await expectRevert(
-      ctx.umbra.withdrawTokenOnBehalf(
-        metaWallet.address,
-        metaAcceptor,
-        relayer,
-        relayerTokenFee,
-        v,
-        r,
-        s,
-        { from: relayer }
-      ),
+      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, relayer, relayerTokenFee, v, r, s, {
+        from: relayer,
+      }),
       'Umbra: No balance to withdraw or fee exceeds balance'
     );
   });
@@ -398,33 +362,18 @@ describe('Umbra', () => {
     // Send the payment
     const toll = await ctx.umbra.toll();
     await ctx.token.approve(ctx.umbra.address, metaTokenTotal, { from: payer2 });
-    await ctx.umbra.sendToken(
-      metaWallet.address,
-      ctx.token.address,
-      metaTokenTotal,
-      ...argumentBytes,
-      { from: payer2, value: toll }
-    );
+    await ctx.umbra.sendToken(metaWallet.address, ctx.token.address, metaTokenTotal, ...argumentBytes, {
+      from: payer2,
+      value: toll,
+    });
 
     const wrongWallet = ethers.Wallet.createRandom();
-    const { v, r, s } = await signMetaWithdrawal(
-      wrongWallet,
-      relayer,
-      metaAcceptor,
-      relayerTokenFee
-    );
+    const { v, r, s } = await signMetaWithdrawal(wrongWallet, relayer, metaAcceptor, relayerTokenFee);
 
     await expectRevert(
-      ctx.umbra.withdrawTokenOnBehalf(
-        metaWallet.address,
-        metaAcceptor,
-        relayer,
-        relayerTokenFee,
-        v,
-        r,
-        s,
-        { from: relayer }
-      ),
+      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, relayer, relayerTokenFee, v, r, s, {
+        from: relayer,
+      }),
       'Umbra: Invalid Signature'
     );
   });
@@ -432,12 +381,7 @@ describe('Umbra', () => {
   it('should revert on meta withdrawal if the fee is more than the amount', async () => {
     const bigFee = sumTokenAmounts([metaTokenTotal, '100']);
 
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      relayer,
-      metaAcceptor,
-      relayerTokenFee
-    );
+    const { v, r, s } = await signMetaWithdrawal(metaWallet, relayer, metaAcceptor, relayerTokenFee);
 
     await expectRevert(
       ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, relayer, bigFee, v, r, s, {
@@ -448,12 +392,7 @@ describe('Umbra', () => {
   });
 
   it('perform a withdrawal when given a properly signed meta-tx', async () => {
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      relayer,
-      metaAcceptor,
-      relayerTokenFee
-    );
+    const { v, r, s } = await signMetaWithdrawal(metaWallet, relayer, metaAcceptor, relayerTokenFee);
 
     const receipt = await ctx.umbra.withdrawTokenOnBehalf(
       metaWallet.address,

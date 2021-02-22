@@ -46,14 +46,8 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
     return { spendingPublicKey: undefined, viewingPublicKey: undefined };
   }
 
-  const spendingPublicKey = KeyPair.getUncompressedFromX(
-    keys.spendingPubKey,
-    keys.spendingPubKeyPrefix.toNumber()
-  );
-  const viewingPublicKey = KeyPair.getUncompressedFromX(
-    keys.viewingPubKey,
-    keys.viewingPubKeyPrefix.toNumber()
-  );
+  const spendingPublicKey = KeyPair.getUncompressedFromX(keys.spendingPubKey, keys.spendingPubKeyPrefix.toNumber());
+  const viewingPublicKey = KeyPair.getUncompressedFromX(keys.viewingPubKey, keys.viewingPubKeyPrefix.toNumber());
 
   return { spendingPublicKey, viewingPublicKey };
 }
@@ -73,14 +67,12 @@ export async function setPublicKeys(
   provider: EthersProvider
 ) {
   // Break public keys into the required components
-  const {
-    prefix: spendingPublicKeyPrefix,
-    pubKeyXCoordinate: spendingPublicKeyX,
-  } = KeyPair.compressPublicKey(spendingPublicKey);
-  const {
-    prefix: viewingPublicKeyPrefix,
-    pubKeyXCoordinate: viewingPublicKeyX,
-  } = KeyPair.compressPublicKey(viewingPublicKey);
+  const { prefix: spendingPublicKeyPrefix, pubKeyXCoordinate: spendingPublicKeyX } = KeyPair.compressPublicKey(
+    spendingPublicKey
+  );
+  const { prefix: viewingPublicKeyPrefix, pubKeyXCoordinate: viewingPublicKeyX } = KeyPair.compressPublicKey(
+    viewingPublicKey
+  );
 
   // Send transaction to set the keys
   const ensResolverAddress = await getEnsResolverAddress(provider);

@@ -19,13 +19,7 @@
       <!-- Carousel Navigation Buttons, hidden on step 4 (the success step) -->
       <template v-slot:control v-if="carouselStep !== '4'">
         <q-carousel-control v-if="carouselStep !== '1'" position="left" class="row">
-          <q-btn
-            @click="$refs.carousel.previous()"
-            class="q-my-auto"
-            flat
-            icon="fas fa-arrow-left"
-            text-color="grey"
-          />
+          <q-btn @click="$refs.carousel.previous()" class="q-my-auto" flat icon="fas fa-arrow-left" text-color="grey" />
         </q-carousel-control>
         <q-carousel-control v-if="carouselStep !== '3'" position="right" class="row">
           <q-btn
@@ -52,14 +46,14 @@
             <!-- User does not have ENS name -->
             <div v-else>
               <p>
-                An ENS domain was not found for this address. If you do have an address, make sure
-                the reverse record is set.
+                An ENS domain was not found for this address. If you do have an address, make sure the reverse record is
+                set.
               </p>
               <p>
                 Either login with a different address and refresh the page, or use the
-                <a href="https://app.ens.domains/" class="hyperlink">ENS website</a> to purchase and
-                configure your domain so it resolves to your Ethereum address. Be sure to use the
-                Public Resolver and set the reverse record.
+                <a href="https://app.ens.domains/" class="hyperlink">ENS website</a> to purchase and configure your
+                domain so it resolves to your Ethereum address. Be sure to use the Public Resolver and set the reverse
+                record.
               </p>
             </div>
           </div>
@@ -72,9 +66,9 @@
           <h5 class="q-my-md q-pt-none">Step 2: Generate Keys</h5>
           <div class="q-mt-md">
             <p>
-              Use the button below to sign a message, which will be used to generate an
-              Umbra-specific pair of private keys. These keys allow you to securely use Umbra
-              without compromising the private keys of your connected wallet.
+              Use the button below to sign a message, which will be used to generate an Umbra-specific pair of private
+              keys. These keys allow you to securely use Umbra without compromising the private keys of your connected
+              wallet.
             </p>
             <p>You do not need to save these keys anywhere!</p>
           </div>
@@ -87,9 +81,9 @@
         <div class="q-mx-xl q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 3: Publish Keys</h5>
           <p class="q-mt-md">
-            You'll now be asked to send a transaction which associates the two public keys generated
-            with {{ userAddress.value }}. This means people can now securely send you funds through
-            Umbra by visiting this site and sending funds to {{ userAddress.value }}.
+            You'll now be asked to send a transaction which associates the two public keys generated with
+            {{ userAddress.value }}. This means people can now securely send you funds through Umbra by visiting this
+            site and sending funds to {{ userAddress.value }}.
           </p>
           <base-button @click="publishKeys" :disable="isWaitingForUser" label="Publish keys" />
         </div>
@@ -103,8 +97,7 @@
           </h5>
           <p class="q-mt-md">
             You may now return
-            <router-link class="hyperlink" :to="{ name: 'home' }">home</router-link> to send or
-            receive funds.
+            <router-link class="hyperlink" :to="{ name: 'home' }">home</router-link> to send or receive funds.
           </p>
         </div>
       </q-carousel-slide>
@@ -121,14 +114,7 @@ import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 
 function useKeys() {
-  const {
-    domainService,
-    getPrivateKeys,
-    userAddress,
-    userEns,
-    spendingKeyPair,
-    viewingKeyPair,
-  } = useWalletStore();
+  const { domainService, getPrivateKeys, userAddress, userEns, spendingKeyPair, viewingKeyPair } = useWalletStore();
   const { notifyUser, txNotify } = useAlerts();
   const carouselBtnRight = ref<QBtn>();
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
@@ -164,6 +150,7 @@ function useKeys() {
         String(viewingKeyPair.value?.publicKeyHex)
       )) as TransactionResponse;
       txNotify(tx.hash);
+
       await tx.wait();
       carouselStep.value = '4';
     } finally {

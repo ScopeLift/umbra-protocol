@@ -12,12 +12,7 @@
                 style="cursor: pointer"
                 @click="$router.push({ name: 'home' })"
               >
-                <img
-                  alt="Umbra logo"
-                  class="q-ml-md"
-                  src="~assets/app-logo-128x128.png"
-                  style="max-width: 50px"
-                />
+                <img alt="Umbra logo" class="q-ml-md" src="~assets/app-logo-128x128.png" style="max-width: 50px" />
                 <div class="text-h5 dark-toggle">
                   <span class="primary header-black q-ml-md">Umbra</span>
                 </div>
@@ -42,10 +37,7 @@
       <router-view />
     </q-page-container>
 
-    <q-footer
-      class="q-mx-md q-mb-md q-pt-xl"
-      style="color: #000000; background-color: rgba(0, 0, 0, 0)"
-    >
+    <q-footer class="q-mx-md q-mb-md q-pt-xl" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="row justify-between">
         <div class="col-auto">
           <q-icon
@@ -76,11 +68,7 @@
           <a href="https://t.me/UmbraCash" target="_blank" class="q-ml-md no-text-decoration">
             <q-icon class="dark-toggle" name="fab fa-telegram" size="xs" />
           </a>
-          <a
-            href="https://github.com/ScopeLift/umbra-protocol"
-            target="_blank"
-            class="q-ml-md no-text-decoration"
-          >
+          <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="q-ml-md no-text-decoration">
             <q-icon class="dark-toggle" name="fab fa-github" size="xs" />
           </a>
         </div>

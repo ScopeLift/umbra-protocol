@@ -40,7 +40,9 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
   // If a number is provided, verify chainId value is value and pull config from `chainConfigs`
   if (typeof chainConfig === 'number') {
     const validChainIds = Object.keys(chainConfigs);
-    if (validChainIds.includes(String(chainConfig))) return chainConfigs[chainConfig];
+    if (validChainIds.includes(String(chainConfig))) {
+      return chainConfigs[chainConfig];
+    }
     throw new Error('Unsupported chain ID provided');
   }
   // Otherwise return the user's provided chain config
@@ -66,11 +68,7 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(
-      this.chainConfig.umbraAddress,
-      abi,
-      provider
-    ) as UmbraContract;
+    this.umbraContract = new Contract(this.chainConfig.umbraAddress, abi, provider) as UmbraContract;
   }
 
   // ==================================== CONTRACT INTERACTION =====================================
@@ -119,10 +117,7 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Lookup recipient's public key
-    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(
-      recipientId,
-      this.provider
-    );
+    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider);
     if (!spendingPublicKey || !viewingPublicKey) {
       throw new Error('Could not retrieve public keys for provided recipient ID');
     }
@@ -130,9 +125,7 @@ export class Umbra {
     const viewingKeyPair = new KeyPair(viewingPublicKey);
 
     // Generate random number
-    const randomNumber = overrides.payloadExtension
-      ? new RandomNumber(overrides.payloadExtension)
-      : new RandomNumber();
+    const randomNumber = overrides.payloadExtension ? new RandomNumber(overrides.payloadExtension) : new RandomNumber();
 
     // Encrypt random number with recipient's public key
     const encrypted = viewingKeyPair.encrypt(randomNumber);
@@ -153,25 +146,12 @@ export class Umbra {
       const txOverrides = { ...filteredOverrides, value: toll.add(amount) };
       tx = await this.umbraContract
         .connect(txSigner)
-        .sendEth(
-          stealthKeyPair.address,
-          toll,
-          pubKeyXCoordinate,
-          encrypted.ciphertext,
-          txOverrides
-        );
+        .sendEth(stealthKeyPair.address, toll, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
     } else {
       const txOverrides = { ...filteredOverrides, value: toll };
       tx = await this.umbraContract
         .connect(txSigner)
-        .sendToken(
-          stealthKeyPair.address,
-          token,
-          amount,
-          pubKeyXCoordinate,
-          encrypted.ciphertext,
-          txOverrides
-        );
+        .sendToken(stealthKeyPair.address, token, amount, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
     }
 
     // We do not wait for the transaction to be mined before returning it
@@ -269,26 +249,12 @@ export class Umbra {
     const endBlock = overrides.endBlock || 'latest';
 
     // Get list of all Announcement events
-    const announcementFilter = this.umbraContract.filters.Announcement(
-      null,
-      null,
-      null,
-      null,
-      null
-    );
-    const announcements = await this.umbraContract.queryFilter(
-      announcementFilter,
-      startBlock,
-      endBlock
-    );
+    const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
+    const announcements = await this.umbraContract.queryFilter(announcementFilter, startBlock, endBlock);
 
     // Get list of all TokenWithdrawal events
     const withdrawalFilter = this.umbraContract.filters.TokenWithdrawal(null, null, null, null);
-    const withdrawalEvents = await this.umbraContract.queryFilter(
-      withdrawalFilter,
-      startBlock,
-      endBlock
-    );
+    const withdrawalEvents = await this.umbraContract.queryFilter(withdrawalFilter, startBlock, endBlock);
     withdrawalEvents; // to silence tsc error
 
     // Determine which announcements are for the user
@@ -313,7 +279,6 @@ export class Umbra {
 
       // If our receiving address matches the event's recipient, the transfer was for us
       if (computedReceivingAddress === receiver) {
-        // const promises = ;
         const [block, tx, receipt] = await Promise.all([
           event.getBlock(),
           event.getTransaction(),
@@ -328,7 +293,7 @@ export class Umbra {
           block,
           tx,
           receipt,
-          isWithdrawn: false, // assume false for now
+          isWithdrawn: false,
         });
       }
     }
@@ -336,7 +301,7 @@ export class Umbra {
     // For each of the user's announcement events, determine if the funds were withdrawn
     // TODO
 
-    return { userAnnouncements /* userWithdrawalEvents, userEvents */ };
+    return { userAnnouncements };
   }
 
   // ======================================= HELPER METHODS ========================================
@@ -364,10 +329,7 @@ export class Umbra {
     if (!isValidSignature(signature)) {
       const userAddress = await signer.getAddress();
       signature = String(
-        await this.provider.send('personal_sign', [
-          hexlify(toUtf8Bytes(message)),
-          userAddress.toLowerCase(),
-        ])
+        await this.provider.send('personal_sign', [hexlify(toUtf8Bytes(message)), userAddress.toLowerCase()])
       );
     }
 
@@ -421,17 +383,11 @@ export class Umbra {
    * @param sponsor Address of relayer
    * @param sponsorFee Amount sent to sponsor
    */
-  static async signWithdraw(
-    spendingPrivateKey: string,
-    acceptor: string,
-    sponsor: string,
-    sponsorFee: BigNumberish
-  ) {
+  static async signWithdraw(spendingPrivateKey: string, acceptor: string, sponsor: string, sponsorFee: BigNumberish) {
     const stealthWallet = new Wallet(spendingPrivateKey);
     const digest = keccak256(
       defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, sponsorFee])
     );
-
     const rawSig = await stealthWallet.signMessage(arrayify(digest));
     return splitSignature(rawSig);
   }

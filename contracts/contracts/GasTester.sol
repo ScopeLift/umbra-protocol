@@ -29,12 +29,7 @@ contract GasTester {
     bytes16 b7
   );
 
-  event BigString(
-    address indexed sender,
-    address indexed token,
-    uint256 indexed amount,
-    string strData
-  );
+  event BigString(address indexed sender, address indexed token, uint256 indexed amount, string strData);
 
   function manyBytes(
     bytes32 b1,
@@ -60,12 +55,7 @@ contract GasTester {
   }
 
   function bigString(string memory strData) public payable {
-    emit BigString(
-      msg.sender,
-      address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee),
-      msg.value,
-      strData
-    );
+    emit BigString(msg.sender, address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee), msg.value, strData);
   }
 
   function halfByte(

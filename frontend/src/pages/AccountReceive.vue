@@ -5,9 +5,7 @@
     <div class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
       <div v-if="keyStatus === 'denied' || keyStatus === 'waiting'" class="row justify-center">
-        <div class="col-12 text-center">
-          This app needs your signature to scan for funds you've received
-        </div>
+        <div class="col-12 text-center">This app needs your signature to scan for funds you've received</div>
         <div><base-button @click="getPrivateKeysHandler" label="Sign" /></div>
       </div>
 

@@ -41,12 +41,8 @@ describe('KeyPair class', () => {
   });
 
   it('should not initialize an instance without the 0x prefix', () => {
-    expect(() => new KeyPair(privateKey.slice(2))).to.throw(
-      'Key must be in hex format with 0x prefix'
-    );
-    expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(
-      'Key must be in hex format with 0x prefix'
-    );
+    expect(() => new KeyPair(privateKey.slice(2))).to.throw('Key must be in hex format with 0x prefix');
+    expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw('Key must be in hex format with 0x prefix');
   });
 
   it('initializes an instance with valid private key', () => {

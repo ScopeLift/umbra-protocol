@@ -23,12 +23,7 @@ contract Umbra is Ownable {
     bytes32 ciphertext
   );
 
-  event TokenWithdrawal(
-    address indexed receiver,
-    address indexed acceptor,
-    uint256 amount,
-    address indexed token
-  );
+  event TokenWithdrawal(address indexed receiver, address indexed acceptor, uint256 amount, address indexed token);
 
   address constant ETH_TOKEN_PLACHOLDER = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
@@ -82,10 +77,7 @@ contract Umbra is Ownable {
     bytes32 _ciphertext
   ) public payable {
     require(msg.value == toll, "Umbra: Must pay the exact toll");
-    require(
-      tokenPayments[_receiver].amount == 0,
-      "Umbra: Cannot send more tokens to stealth address"
-    );
+    require(tokenPayments[_receiver].amount == 0, "Umbra: Cannot send more tokens to stealth address");
 
     tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});
     emit Announcement(_receiver, _amount, _tokenAddr, _pkx, _ciphertext);
@@ -122,18 +114,12 @@ contract Umbra is Ownable {
 
     bytes32 _digest =
       keccak256(
-        abi.encodePacked(
-          "\x19Ethereum Signed Message:\n32",
-          keccak256(abi.encode(_sponsor, _acceptor, _sponsorFee))
-        )
+        abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encode(_sponsor, _acceptor, _sponsorFee)))
       );
 
     address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
 
-    require(
-      _recoveredAddress != address(0) && _recoveredAddress == _stealthAddr,
-      "Umbra: Invalid Signature"
-    );
+    require(_recoveredAddress != address(0) && _recoveredAddress == _stealthAddr, "Umbra: Invalid Signature");
 
     uint256 _withdrawalAmount = _amount - _sponsorFee;
     delete tokenPayments[_stealthAddr];

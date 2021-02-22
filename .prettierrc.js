@@ -3,7 +3,7 @@ module.exports = {
     {
       files: '**/*.sol',
       options: {
-        printWidth: 100,
+        printWidth: 120,
         tabWidth: 2,
       },
     },
@@ -13,7 +13,7 @@ module.exports = {
         bracketSpacing: true,
         trailingComma: 'es5',
         tabWidth: 2,
-        printWidth: 100,
+        printWidth: 120,
         singleQuote: true,
         semi: true,
       },

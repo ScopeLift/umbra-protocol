@@ -9,13 +9,7 @@
 
       <!-- Token -->
       <div>Select token to send</div>
-      <base-select
-        v-model="token"
-        filled
-        label="Token"
-        :options="tokenOptions"
-        option-label="symbol"
-      />
+      <base-select v-model="token" filled label="Token" :options="tokenOptions" option-label="symbol" />
 
       <!-- Amount -->
       <div>Amount to send</div>
@@ -41,14 +35,7 @@ import { TokenInfo } from 'components/models';
 import erc20 from 'src/contracts/erc20.json';
 
 function useSendForm() {
-  const {
-    tokens: tokenOptions,
-    getTokenBalances,
-    balances,
-    umbra,
-    signer,
-    userAddress,
-  } = useWalletStore();
+  const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, userAddress } = useWalletStore();
   const { txNotify } = useAlerts();
 
   const recipientId = ref<string>();
@@ -73,8 +60,7 @@ function useSendForm() {
   async function onFormSubmit() {
     try {
       // Form validation
-      if (!recipientId.value || !token.value || !humanAmount.value)
-        throw new Error('Please complete the form');
+      if (!recipientId.value || !token.value || !humanAmount.value) throw new Error('Please complete the form');
       if (!signer.value) throw new Error('Wallet not connected');
       if (!umbra.value) throw new Error('Umbra instance not configured');
 

@@ -79,10 +79,7 @@ const save = (value, field, subfield = undefined) => {
     console.log('UmbraForwarder contract deployed to address: ', umbraForwarder.address);
 
     const UmbraRelayRecipient = await ethers.getContractFactory('UmbraRelayRecipient', adminWallet);
-    const umbraRelayRecipient = await UmbraRelayRecipient.deploy(
-      umbra.address,
-      umbraForwarder.address
-    );
+    const umbraRelayRecipient = await UmbraRelayRecipient.deploy(umbra.address, umbraForwarder.address);
     await umbraRelayRecipient.deployed();
     save(umbraRelayRecipient.address, 'contracts', 'UmbraRelayRecipient');
     console.log('UmbraRelayRecipient contract deployed to address: ', umbraRelayRecipient.address);
@@ -94,9 +91,7 @@ const save = (value, field, subfield = undefined) => {
     console.log('UmbraPaymaster contract deployed to address: ', umbraPaymaster.address);
 
     // set the relayer address on the Paymaster contract
-    const setRelayHubTxReceipt = await umbraPaymaster.setRelayHub(
-      deployParamsForNetwork.payMasterPublicRelayer
-    );
+    const setRelayHubTxReceipt = await umbraPaymaster.setRelayHub(deployParamsForNetwork.payMasterPublicRelayer);
     setRelayHubTxReceipt.wait();
     save(deployParamsForNetwork.payMasterPublicRelayer, 'actions', 'SetPaymasterRelayHub');
     save(setRelayHubTxReceipt.hash, 'actions', 'SetPaymasterRelayHubTxHash');
@@ -107,9 +102,7 @@ const save = (value, field, subfield = undefined) => {
       setRelayHubTxReceipt.hash
     );
 
-    const setTrustedForwaderTxReceipt = await umbraPaymaster.setTrustedForwarder(
-      umbraForwarder.address
-    );
+    const setTrustedForwaderTxReceipt = await umbraPaymaster.setTrustedForwarder(umbraForwarder.address);
     setTrustedForwaderTxReceipt.wait();
     save(umbraForwarder.address, 'actions', 'SetTrustedForwarder');
     save(setTrustedForwaderTxReceipt.hash, 'actions', 'SetTrustedForwarderTxHash');

@@ -46,9 +46,7 @@ contract UmbraForwarder is IForwarder {
     (domainSeparator, requestTypeHash, suffixData, sig);
 
     // solhint-disable-next-line avoid-low-level-calls
-    (success, ret) = req.to.call{gas: req.gas, value: req.value}(
-      abi.encodePacked(req.data, req.from)
-    );
+    (success, ret) = req.to.call{gas: req.gas, value: req.value}(abi.encodePacked(req.data, req.from));
     if (address(this).balance > 0) {
       //can't fail: req.from signed (off-chain) the request, so it must be an EOA...
       payable(req.from).transfer(address(this).balance);
@@ -56,18 +54,12 @@ contract UmbraForwarder is IForwarder {
     return (success, ret);
   }
 
-  function registerRequestType(string calldata typeName, string calldata typeSuffix)
-    external
-    override
-  {
+  function registerRequestType(string calldata typeName, string calldata typeSuffix) external override {
     // silence compiler warning
     (typeName, typeSuffix);
   }
 
-  function registerDomainSeparator(string calldata name, string calldata version)
-    external
-    override
-  {
+  function registerDomainSeparator(string calldata name, string calldata version) external override {
     // silence compiler warning
     (name, version);
   }

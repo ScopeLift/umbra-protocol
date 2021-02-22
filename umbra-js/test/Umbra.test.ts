@@ -95,11 +95,7 @@ describe('Umbra class', () => {
     const tollCollector = ethers.constants.AddressZero; // doesn't matter for these tests
     const tollReceiver = ethers.constants.AddressZero; // doesn't matter for these tests
     const umbraFactory = new Umbra__factory(sender.signer);
-    const umbraContract = (await umbraFactory.deploy(
-      toll,
-      tollCollector,
-      tollReceiver
-    )) as UmbraContract;
+    const umbraContract = (await umbraFactory.deploy(toll, tollCollector, tollReceiver)) as UmbraContract;
     await umbraContract.deployTransaction.wait();
 
     // Deploy mock tokens
@@ -136,30 +132,22 @@ describe('Umbra class', () => {
     it('initializes correctly when passing a default chainId', async () => {
       // Localhost with URL provider
       const umbra1 = new Umbra(jsonRpcProvider, 1337);
-      expect(umbra1.chainConfig.umbraAddress).to.equal(
-        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
-      );
+      expect(umbra1.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
       expect(umbra1.chainConfig.startBlock).to.equal(8115377);
 
       // Localhost with Web3 provider
       const umbra2 = new Umbra(ethersProvider, 1337);
-      expect(umbra2.chainConfig.umbraAddress).to.equal(
-        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
-      );
+      expect(umbra2.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
       expect(umbra2.chainConfig.startBlock).to.equal(8115377);
 
       // Ropsten with URL provider
       const umbra3 = new Umbra(jsonRpcProvider, 4);
-      expect(umbra3.chainConfig.umbraAddress).to.equal(
-        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
-      );
+      expect(umbra3.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
       expect(umbra3.chainConfig.startBlock).to.equal(8115377);
 
       // Ropsten with Web3 provider
       const umbra4 = new Umbra(jsonRpcProvider, 4);
-      expect(umbra4.chainConfig.umbraAddress).to.equal(
-        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
-      );
+      expect(umbra4.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
       expect(umbra4.chainConfig.startBlock).to.equal(8115377);
     });
 
@@ -189,10 +177,7 @@ describe('Umbra class', () => {
 
     it('reverts if sender does not have enough tokens', async () => {
       const msg = `Insufficient balance to complete transfer. Has 0 tokens, tried to send ${quantity.toString()} tokens.`;
-      await expectRejection(
-        umbra.send(sender.signer, dai.address, quantity, receiver.wallet!.address),
-        msg
-      );
+      await expectRejection(umbra.send(sender.signer, dai.address, quantity, receiver.wallet!.address), msg);
     });
 
     it('reverts if sender does not have enough ETH', async () => {
@@ -207,20 +192,12 @@ describe('Umbra class', () => {
       await mintAndApproveDai(sender.signer, sender.wallet.address, quantity);
 
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(
-        sender.signer,
-        dai.address,
-        quantity,
-        receiver.wallet!.publicKey
-      );
+      const { tx, stealthKeyPair } = await umbra.send(sender.signer, dai.address, quantity, receiver.wallet!.publicKey);
       await tx.wait();
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const { userAnnouncements } = await umbra.scan(
-        receiver.wallet.publicKey,
-        receiver.wallet.privateKey
-      );
+      const { userAnnouncements } = await umbra.scan(receiver.wallet.publicKey, receiver.wallet.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
@@ -281,10 +258,7 @@ describe('Umbra class', () => {
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const { userAnnouncements } = await umbra.scan(
-        receiver.wallet.publicKey,
-        receiver.wallet.privateKey
-      );
+      const { userAnnouncements } = await umbra.scan(receiver.wallet.publicKey, receiver.wallet.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test withdraw by signature)
@@ -328,21 +302,13 @@ describe('Umbra class', () => {
     it('Without payload extension: send ETH, scan for it, withdraw it', async () => {
       // SENDER
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(
-        sender.signer,
-        ETH_ADDRESS,
-        quantity,
-        receiver.wallet!.publicKey
-      );
+      const { tx, stealthKeyPair } = await umbra.send(sender.signer, ETH_ADDRESS, quantity, receiver.wallet!.publicKey);
       await tx.wait();
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), quantity);
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const { userAnnouncements } = await umbra.scan(
-        receiver.wallet.publicKey,
-        receiver.wallet.privateKey
-      );
+      const { userAnnouncements } = await umbra.scan(receiver.wallet.publicKey, receiver.wallet.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal)
@@ -378,10 +344,7 @@ describe('Umbra class', () => {
 
       // RECEIVER
       // Receiver scans for funds send to them
-      const { userAnnouncements } = await umbra.scan(
-        receiver.wallet.publicKey,
-        receiver.wallet.privateKey
-      );
+      const { userAnnouncements } = await umbra.scan(receiver.wallet.publicKey, receiver.wallet.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal)

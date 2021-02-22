@@ -137,14 +137,8 @@ export default function useWalletStore() {
    * @notice Prompts user for a signature to generate Umbra-specific private keys
    */
   async function getPrivateKeys() {
-    if (!signer.value) {
-      throw new Error('No signer connected');
-    }
-    if (!umbra.value) {
-      throw new Error(
-        'No Umbra instance available. Please make sure you are on a supported network'
-      );
-    }
+    if (!signer.value) throw new Error('No signer connected');
+    if (!umbra.value) throw new Error('No Umbra instance available. Please make sure you are on a supported network');
     if (spendingKeyPair.value && viewingKeyPair.value) {
       return 'success';
     }

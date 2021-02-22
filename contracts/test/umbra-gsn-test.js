@@ -96,13 +96,10 @@ describe('Umbra GSN', () => {
   it('should allow someone to pay with a token', async () => {
     const toll = await ctx.umbra.toll();
     await ctx.token.approve(ctx.umbra.address, tokenAmount, { from: payer });
-    const receipt = await ctx.umbra.sendToken(
-      receiver,
-      ctx.token.address,
-      tokenAmount,
-      ...argumentBytes,
-      { from: payer, value: toll }
-    );
+    const receipt = await ctx.umbra.sendToken(receiver, ctx.token.address, tokenAmount, ...argumentBytes, {
+      from: payer,
+      value: toll,
+    });
 
     const contractBalance = await ctx.token.balanceOf(ctx.umbra.address);
 
@@ -129,21 +126,12 @@ describe('Umbra GSN', () => {
     const { v, r, s } = await signMetaWithdrawal(otherWallet, relayer, acceptor, relayerTokenFee);
 
     await expectRevert(
-      ctx.relayRecipient.withdrawTokenOnBehalf(
-        otherWallet.address,
-        acceptor,
-        relayer,
-        relayerTokenFee,
-        v,
-        r,
-        s,
-        {
-          from: relayer,
-          // When making a contract call with the RelayProvider, an additional options param is
-          // needed: the forwarder that will be used.
-          forwarder: ctx.forwarder,
-        }
-      ),
+      ctx.relayRecipient.withdrawTokenOnBehalf(otherWallet.address, acceptor, relayer, relayerTokenFee, v, r, s, {
+        from: relayer,
+        // When making a contract call with the RelayProvider, an additional options param is
+        // needed: the forwarder that will be used.
+        forwarder: ctx.forwarder,
+      }),
       'Umbra: No balance to withdraw or fee exceeds balance'
     );
   });
@@ -158,21 +146,12 @@ describe('Umbra GSN', () => {
     const { v, r, s } = await signMetaWithdrawal(otherWallet, relayer, acceptor, relayerTokenFee);
 
     await expectRevert(
-      ctx.relayRecipient.withdrawTokenOnBehalf(
-        receiverWallet.address,
-        acceptor,
-        relayer,
-        relayerTokenFee,
-        v,
-        r,
-        s,
-        {
-          from: relayer,
-          // When making a contract call with the RelayProvider, an additional options param is
-          // needed: the forwarder that will be used.
-          forwarder: ctx.forwarder,
-        }
-      ),
+      ctx.relayRecipient.withdrawTokenOnBehalf(receiverWallet.address, acceptor, relayer, relayerTokenFee, v, r, s, {
+        from: relayer,
+        // When making a contract call with the RelayProvider, an additional options param is
+        // needed: the forwarder that will be used.
+        forwarder: ctx.forwarder,
+      }),
       'Umbra: Invalid Signature'
     );
   });
@@ -180,12 +159,7 @@ describe('Umbra GSN', () => {
   it('should allow receiver to withdraw their tokens with GSN', async () => {
     UmbraRelayRecipient.web3.setProvider(ctx.gsnProvider);
 
-    const { v, r, s } = await signMetaWithdrawal(
-      receiverWallet,
-      relayer,
-      acceptor,
-      relayerTokenFee
-    );
+    const { v, r, s } = await signMetaWithdrawal(receiverWallet, relayer, acceptor, relayerTokenFee);
 
     await ctx.relayRecipient.withdrawTokenOnBehalf(
       receiverWallet.address,
@@ -213,29 +187,15 @@ describe('Umbra GSN', () => {
   it('should not allow a receiver to withdraw tokens twice with GSN', async () => {
     UmbraRelayRecipient.web3.setProvider(ctx.gsnProvider);
 
-    const { v, r, s } = await signMetaWithdrawal(
-      receiverWallet,
-      relayer,
-      acceptor,
-      relayerTokenFee
-    );
+    const { v, r, s } = await signMetaWithdrawal(receiverWallet, relayer, acceptor, relayerTokenFee);
 
     await expectRevert(
-      ctx.relayRecipient.withdrawTokenOnBehalf(
-        receiverWallet.address,
-        acceptor,
-        relayer,
-        relayerTokenFee,
-        v,
-        r,
-        s,
-        {
-          from: relayer,
-          // When making a contract call with the RelayProvider, an additional options param is
-          // needed: the forwarder that will be used.
-          forwarder: ctx.forwarder,
-        }
-      ),
+      ctx.relayRecipient.withdrawTokenOnBehalf(receiverWallet.address, acceptor, relayer, relayerTokenFee, v, r, s, {
+        from: relayer,
+        // When making a contract call with the RelayProvider, an additional options param is
+        // needed: the forwarder that will be used.
+        forwarder: ctx.forwarder,
+      }),
       'Umbra: No balance to withdraw or fee exceeds balance'
     );
   });

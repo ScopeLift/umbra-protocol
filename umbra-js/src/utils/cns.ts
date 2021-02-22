@@ -45,12 +45,7 @@ export function getPublicKeys(name: string, resolution: Resolution) {
  * @param signature user's signature of the Umbra protocol message, as hex string
  * @returns Transaction hash
  */
-export async function setPublicKeys(
-  name: string,
-  provider: EthersProvider,
-  resolution: Resolution,
-  signature: string
-) {
+export async function setPublicKeys(name: string, provider: EthersProvider, resolution: Resolution, signature: string) {
   // TODO: we can git of resolution parameter here, if we don't use its namehash function
   const domainNamehash = resolution.namehash(name);
   const cnsRegistry = createContract(CNS_REGISTRY, cnsRegistryAbi, provider);

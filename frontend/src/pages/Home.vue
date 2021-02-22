@@ -6,24 +6,14 @@
     </div>
 
     <div class="row justify-center q-pt-xl">
-      <home-action-card
-        class="col q-mx-md"
-        to="send"
-        text="Send"
-        description="Send funds to another user"
-      />
+      <home-action-card class="col q-mx-md" to="send" text="Send" description="Send funds to another user" />
       <home-action-card
         class="col q-mx-md"
         to="receive"
         text="Receive"
         description="View and withdraw received funds"
       />
-      <home-action-card
-        class="col q-mx-md"
-        to="setup"
-        text="Setup"
-        description="Setup your account to receive funds"
-      />
+      <home-action-card class="col q-mx-md" to="setup" text="Setup" description="Setup your account to receive funds" />
     </div>
 
     <div class="q-mt-xl row justify-center">
