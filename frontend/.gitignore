@@ -32,3 +32,7 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+# Firebase
+.firebaserc
+/.firebase
