@@ -36,6 +36,8 @@ const ETH_TOKEN = {
 // We do not publicly expose the state to provide control over when and how it's changed. It
 // can only be changed through actions and mutations, and it can only be accessed with getters.
 // As a result, only actions, mutations, and getters are returned from this function.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP-1193 provider
 const provider = ref<Provider>();
 const signer = ref<Signer>();
 const userAddress = ref<string>();
@@ -109,9 +111,14 @@ export default function useWalletStore() {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function setProvider(p: any) {
+  function setProvider(p: any) {
+    rawProvider.value = p;
+  }
+
+  async function configureProvider() {
     // Set network/wallet properties
-    provider.value = new ethers.providers.Web3Provider(p);
+    if (!rawProvider.value) return;
+    provider.value = new ethers.providers.Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
     userAddress.value = await signer.value.getAddress();
     userEns.value = await provider.value.lookupAddress(userAddress.value);
@@ -169,6 +176,7 @@ export default function useWalletStore() {
     getTokenList,
     getTokenBalances,
     setProvider,
+    configureProvider,
     getPrivateKeys,
   };
 }

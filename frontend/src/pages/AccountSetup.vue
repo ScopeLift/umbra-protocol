@@ -6,7 +6,7 @@
       v-model="carouselStep"
       animated
       class="shadow-2 rounded-borders q-mx-auto"
-      control-color="grey"
+      :control-color="carouselStep !== '4' ? 'grey' : undefined"
       height="300px"
       navigation
       navigation-icon="fas fa-circle"
@@ -16,24 +16,25 @@
       transition-next="slide-left"
       transition-prev="slide-right"
     >
-      <!-- Carousel Navigation Buttons -->
-      <template v-slot:control>
+      <!-- Carousel Navigation Buttons, hidden on step 4 (the success step) -->
+      <template v-slot:control v-if="carouselStep !== '4'">
         <q-carousel-control v-if="carouselStep !== '1'" position="left" class="row">
           <q-btn
+            @click="$refs.carousel.previous()"
             class="q-my-auto"
             flat
-            text-color="grey"
             icon="fas fa-arrow-left"
-            @click="$refs.carousel.previous()"
+            text-color="grey"
           />
         </q-carousel-control>
         <q-carousel-control v-if="carouselStep !== '3'" position="right" class="row">
           <q-btn
+            @click="$refs.carousel.next()"
             class="q-my-auto"
             flat
-            text-color="grey"
             icon="fas fa-arrow-right"
-            @click="$refs.carousel.next()"
+            ref="carouselBtnRight"
+            text-color="grey"
           />
         </q-carousel-control>
       </template>
@@ -55,15 +56,10 @@
                 the reverse record is set.
               </p>
               <p>
-                Either login with a different address and refresh the page, or follow
-                <a
-                  class="hyperlink"
-                  href="https://medium.com/@eric.conner/the-ultimate-guide-to-ens-names-aa541586067a"
-                  target="_blank"
-                  >this guide</a
-                >
-                to learn how to purchase a domain and configure it to resolve to your Ethereum
-                address. Be sure to use the Public Resolver and set the reverse record.
+                Either login with a different address and refresh the page, or use the
+                <a href="https://app.ens.domains/" class="hyperlink">ENS website</a> to purchase and
+                configure your domain so it resolves to your Ethereum address. Be sure to use the
+                Public Resolver and set the reverse record.
               </p>
             </div>
           </div>
@@ -82,7 +78,7 @@
             </p>
             <p>You do not need to save these keys anywhere!</p>
           </div>
-          <base-button @click="getPrivateKeysHandler" label="Sign" />
+          <base-button @click="getPrivateKeysHandler" :disable="isWaitingForUser" label="Sign" />
         </div>
       </q-carousel-slide>
 
@@ -95,7 +91,21 @@
             with {{ userAddress.value }}. This means people can now securely send you funds through
             Umbra by visiting this site and sending funds to {{ userAddress.value }}.
           </p>
-          <base-button @click="publishKeys" label="Publish keys" />
+          <base-button @click="publishKeys" :disable="isWaitingForUser" label="Publish keys" />
+        </div>
+      </q-carousel-slide>
+
+      <!-- Step 4: Success -->
+      <q-carousel-slide name="4" class="q-px-xl">
+        <div class="q-mx-xl q-pb-xl">
+          <h5 class="q-my-md q-pt-none">
+            <q-icon color="positive" class="q-mr-sm" name="fas fa-check" />Setup Complete!
+          </h5>
+          <p class="q-mt-md">
+            You may now return
+            <router-link class="hyperlink" :to="{ name: 'home' }">home</router-link> to send or
+            receive funds.
+          </p>
         </div>
       </q-carousel-slide>
     </q-carousel>
@@ -103,6 +113,7 @@
 </template>
 
 <script lang="ts">
+import { QBtn } from 'quasar';
 import { defineComponent, ref } from '@vue/composition-api';
 import { TransactionResponse } from '@ethersproject/providers';
 import BaseButton from 'src/components/BaseButton.vue';
@@ -119,16 +130,23 @@ function useKeys() {
     viewingKeyPair,
   } = useWalletStore();
   const { notifyUser, txNotify } = useAlerts();
-
+  const carouselBtnRight = ref<QBtn>();
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
   const carouselStep = ref('1');
+  const isWaitingForUser = ref(false);
 
   async function getPrivateKeysHandler() {
     if (keyStatus.value === 'success') {
       notifyUser('info', 'You have already signed. Please continue to the next step');
       return;
     }
-    keyStatus.value = await getPrivateKeys();
+    try {
+      isWaitingForUser.value = true;
+      keyStatus.value = await getPrivateKeys();
+      carouselBtnRight.value?.click();
+    } finally {
+      isWaitingForUser.value = false;
+    }
   }
 
   async function publishKeys() {
@@ -138,16 +156,31 @@ function useKeys() {
     }
     const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
     if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
-    const tx = (await domainService.value.setPublicKeys(
-      userEns.value,
-      String(spendingKeyPair.value?.publicKeyHex),
-      String(viewingKeyPair.value?.publicKeyHex)
-    )) as TransactionResponse;
-    txNotify(tx.hash);
-    await tx.wait();
+    try {
+      isWaitingForUser.value = true;
+      const tx = (await domainService.value.setPublicKeys(
+        userEns.value,
+        String(spendingKeyPair.value?.publicKeyHex),
+        String(viewingKeyPair.value?.publicKeyHex)
+      )) as TransactionResponse;
+      txNotify(tx.hash);
+      await tx.wait();
+      carouselStep.value = '4';
+    } finally {
+      isWaitingForUser.value = false;
+    }
   }
 
-  return { carouselStep, userAddress, userEns, keyStatus, getPrivateKeysHandler, publishKeys };
+  return {
+    carouselBtnRight,
+    carouselStep,
+    userAddress,
+    userEns,
+    keyStatus,
+    getPrivateKeysHandler,
+    publishKeys,
+    isWaitingForUser,
+  };
 }
 
 export default defineComponent({

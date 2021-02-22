@@ -11,7 +11,7 @@ import useWalletStore from 'src/store/wallet';
 import Onboard from 'bnc-onboard';
 
 function useWallet(context: SetupContext, to: string) {
-  const { setProvider, userAddress } = useWalletStore();
+  const { setProvider, configureProvider, userAddress } = useWalletStore();
 
   async function connectWallet() {
     // If user already connected wallet, continue
@@ -28,6 +28,7 @@ function useWallet(context: SetupContext, to: string) {
       { walletName: 'torus', preferred: true },
       { walletName: 'ledger', rpcUrl },
       { walletName: 'trezor', appUrl: 'https://umbra.cash/', email: 'matt@scopelift.co', rpcUrl },
+      { walletName: 'lattice', rpcUrl, appName: 'Umbra' },
       { walletName: 'fortmatic', apiKey: process.env.FORTMATIC_API_KEY, preferred: true },
       { walletName: 'portis', apiKey: process.env.PORTIS_API_KEY },
       { walletName: 'authereum' },
@@ -42,20 +43,21 @@ function useWallet(context: SetupContext, to: string) {
       { walletName: 'mykey', rpcUrl },
       { walletName: 'huobiwallet', rpcUrl },
     ];
+    const walletChecks = [{ checkName: 'connect' }, { checkName: 'network' }];
 
     const onboard = Onboard({
       dappId: process.env.BLOCKNATIVE_API_KEY,
       darkMode: Dark.isActive,
       networkId: 4, // always testnet for now
       walletSelect: { wallets },
+      walletCheck: walletChecks,
       subscriptions: {
-        wallet: async (wallet) => {
-          await setProvider(wallet.provider);
-        },
+        wallet: (wallet) => setProvider(wallet.provider),
       },
     });
     await onboard.walletSelect();
     await onboard.walletCheck();
+    await configureProvider();
 
     // Redirect to specified page
     await context.root.$router.push({ name: to });

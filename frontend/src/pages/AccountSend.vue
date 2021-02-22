@@ -19,12 +19,7 @@
 
       <!-- Amount -->
       <div>Amount to send</div>
-      <base-input
-        v-model="humanAmount"
-        placeholder="0"
-        lazy-rules
-        :rules="(val) => (val && val > 0) || 'Please enter an amount'"
-      />
+      <base-input v-model="humanAmount" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
 
       <!-- Send button -->
       <div>
@@ -37,7 +32,6 @@
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { BigNumber } from '@ethersproject/bignumber';
 import { MaxUint256 } from '@ethersproject/constants';
 import { Contract } from '@ethersproject/contracts';
 import { parseUnits } from '@ethersproject/units';
@@ -68,18 +62,28 @@ function useSendForm() {
     return 'Please enter an ENS or CNS name';
   }
 
+  function isValidTokenAmount(val: string) {
+    if (!val || !(Number(val) > 0)) return 'Please enter an amount';
+    if (!token.value) return 'Please select a token';
+    const { address: tokenAddress, decimals } = token.value;
+    const amount = parseUnits(val, decimals);
+    return amount.gt(balances.value[tokenAddress]) ? 'Amount exceeds wallet balance' : true;
+  }
+
   async function onFormSubmit() {
     try {
       // Form validation
       if (!recipientId.value || !token.value || !humanAmount.value)
         throw new Error('Please complete the form');
-      if (Object.keys(balances.value).length === 0) await getTokenBalances(); // get user token balances
-
-      const { address: tokenAddress, decimals } = token.value;
-      const amount = BigNumber.from(parseUnits(humanAmount.value, decimals));
-      if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
       if (!signer.value) throw new Error('Wallet not connected');
       if (!umbra.value) throw new Error('Umbra instance not configured');
+
+      // Ensure user has enough balance. We re-fetch user token balances in case amounts changed
+      // after wallet was connected
+      await getTokenBalances();
+      const { address: tokenAddress, decimals } = token.value;
+      const amount = parseUnits(humanAmount.value, decimals);
+      if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
 
       // If token, get approval
       isSendInProgress.value = true;
@@ -101,10 +105,8 @@ function useSendForm() {
       txNotify(tx.hash);
       await tx.wait();
       resetForm();
+    } finally {
       isSendInProgress.value = false;
-    } catch (err) {
-      isSendInProgress.value = false;
-      console.error(err);
     }
   }
 
@@ -124,6 +126,7 @@ function useSendForm() {
     token,
     onFormSubmit,
     isValidId,
+    isValidTokenAmount,
   };
 }
 

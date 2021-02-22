@@ -94,7 +94,7 @@
               <div class="text-caption">
                 <span class="text-bold">WARNING</span>: Be sure you understand the security
                 implications before entering a withdrawal address. If you withdraw to an address
-                publicly associated with you, privacy for this transaction will be lost
+                publicly associated with you, privacy for this transaction will be lost.
               </div>
             </q-form>
           </q-td>
@@ -288,8 +288,15 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       }
       txNotify(tx.hash);
       await tx.wait();
-      isWithdrawInProgress.value = false;
-    } catch (err) {
+
+      // Collapse expansion row and update table to show this was withdrawn
+      expanded.value = []; // hides expanded row
+      formattedAnnouncements.value.forEach((x) => {
+        if (announcement.receiver === x.receiver) {
+          x.isWithdrawn = true;
+        }
+      });
+    } finally {
       isWithdrawInProgress.value = false;
     }
   }

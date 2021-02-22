@@ -4,8 +4,9 @@ import BNotify from 'bnc-notify';
 // Instantiate Blocknative's notify.js
 const bNotify = BNotify({
   dappId: process.env.BLOCKNATIVE_API_KEY,
-  networkId: 4,
   darkMode: Dark.isActive,
+  desktopPosition: 'topRight',
+  networkId: 4,
 });
 
 // Some error messages we don't want to show to the user, so return in these cases
