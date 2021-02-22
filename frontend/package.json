@@ -12,7 +12,8 @@
     "dev": "quasar dev",
     "build": "quasar build",
     "clean": "rimraf build",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "deploy": "yarn build && firebase deploy"
   },
   "dependencies": {
     "@opengsn/gsn": "^2.1.0",
