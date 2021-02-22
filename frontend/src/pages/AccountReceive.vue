@@ -1,8 +1,8 @@
 <template>
   <q-page padding>
-    <h1 class="page-title">Receive</h1>
+    <h2 class="page-title">Receive</h2>
 
-    <div class="q-mx-auto">
+    <div class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
       <div v-if="keyStatus === 'denied' || keyStatus === 'waiting'" class="row justify-center">
         <div class="col-12 text-center">
@@ -39,11 +39,14 @@ function useScan() {
 
   async function getPrivateKeysHandler() {
     keyStatus.value = await getPrivateKeys();
+    if (keyStatus.value !== 'success') return; // user denied signature
     await scan(); // start scanning right after we get the user's signature
   }
 
   async function scan() {
-    if (!umbra.value) throw new Error('No umbra instance found');
+    if (!umbra.value) {
+      throw new Error('No umbra instance found. Please make sure you are on a supported network');
+    }
     scanStatus.value = 'scanning';
     const { userAnnouncements: announcements } = await umbra.value.scan(
       String(spendingKeyPair.value?.publicKeyHex),

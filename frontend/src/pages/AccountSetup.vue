@@ -1,16 +1,17 @@
 <template>
   <q-page padding>
-    <h1 class="page-title">Setup</h1>
+    <h2 class="page-title">Setup</h2>
 
     <q-carousel
       v-model="carouselStep"
       animated
-      class="shadow-2 rounded-borders"
+      class="shadow-2 rounded-borders q-mx-auto"
       control-color="black"
       height="300px"
       navigation
       navigation-icon="fas fa-circle"
       ref="carousel"
+      style="max-width: 800px"
       swipeable
       transition-next="slide-left"
       transition-prev="slide-right"
@@ -89,11 +90,11 @@
       <q-carousel-slide name="3" class="q-px-xl">
         <div class="q-mx-xl q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 3: Publish Keys</h5>
-          <div class="q-mt-md">
+          <p class="q-mt-md">
             You'll now be asked to send a transaction which associates the two public keys generated
             with {{ userAddress.value }}. This means people can now securely send you funds through
-            Umbra by visiting this site and sending funds to {{ userAddress.value }}
-          </div>
+            Umbra by visiting this site and sending funds to {{ userAddress.value }}.
+          </p>
           <base-button @click="publishKeys" label="Publish keys" />
         </div>
       </q-carousel-slide>
@@ -128,7 +129,9 @@ function useKeys() {
 
   async function publishKeys() {
     if (!domainService.value) throw new Error('Invalid DomainService. Please refresh the page');
-    if (!userEns.value) throw new Error('Invalid ENS or CNS name. Please return to the first step');
+    if (!userEns.value) {
+      throw new Error('ENS or CNS name not found. Please return to the first step');
+    }
     const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
     if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
     const tx = (await domainService.value.setPublicKeys(

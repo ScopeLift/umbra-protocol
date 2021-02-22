@@ -12,3 +12,6 @@ export interface MulticallResponse {
   blockNumber: ethers.BigNumber;
   returnData: string[];
 }
+
+// Set comprised of intersection of Chain IDs present for all contracts in src/contracts and supported by umbra-js
+export type SupportedChainIds = '4';

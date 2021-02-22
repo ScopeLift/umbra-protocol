@@ -9,6 +9,8 @@
       v-else
       :columns="mainTableColumns"
       :data="formattedAnnouncements"
+      :expanded.sync="expanded"
+      no-data-label="This account has not received any funds"
       :pagination="paginationConfig"
       row-key="randomNumber"
       title="Received Funds"
@@ -59,10 +61,10 @@
             </div>
           </q-td>
 
-          <!-- Expansion button -->
+          <!-- Expansion button, works accordian-style -->
           <q-td auto-width>
             <base-button
-              @click="props.expand = !props.expand"
+              @click="expanded = [props.key]"
               color="primary"
               :dense="true"
               :flat="true"
@@ -74,13 +76,8 @@
         <!-- Expansion row -->
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%" class="bg-grey-2">
-            <q-form class="q-pa-md">
+            <q-form class="form q-py-md" style="white-space: normal">
               <div>Enter address to withdraw funds to</div>
-              <div class="text-caption">
-                <span class="text-bold">WARNING</span>: Be sure you understand the security
-                implications before entering a withdrawal address. If you withdraw to an address
-                publicly associated with you, privacy for this transaction will be lost
-              </div>
               <base-input
                 v-model="destinationAddress"
                 @click="withdraw(props.row)"
@@ -89,6 +86,11 @@
                 lazy-rules
                 :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
               />
+              <div class="text-caption">
+                <span class="text-bold">WARNING</span>: Be sure you understand the security
+                implications before entering a withdrawal address. If you withdraw to an address
+                publicly associated with you, privacy for this transaction will be lost
+              </div>
             </q-form>
           </q-td>
         </q-tr>
@@ -111,15 +113,17 @@ import {
 import { formatUnits } from '@ethersproject/units';
 import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
-import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/relayclient/RelayClient';
+import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Aliases';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import UmbraRelayRecipient from 'src/contracts/umbra-relay-recipient.json';
+import { SupportedChainIds } from 'components/models';
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const { tokens, signer, provider, umbra, spendingKeyPair } = useWalletStore();
   const { txNotify } = useAlerts();
   const paginationConfig = { rowsPerPage: 25 };
+  const expanded = ref<string[]>([]); // for managing expansion rows
   const isLoading = ref(false);
   const destinationAddress = ref('');
 
@@ -149,7 +153,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     },
   ];
 
-  // Table formatters
+  // Table formatters and helpers
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
   const formatTime = (timestamp: number) => date.formatDate(timestamp, 'H:mm A');
   const getTokenInfo = (tokenAddress: string) => {
@@ -245,10 +249,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       const gsnEthersProvider = new Web3Provider((gsnProvider as unknown) as ExternalProvider);
 
       // Send transaction
-      const chainId = (await provider.value.getNetwork()).chainId;
+      const chainId = String((await provider.value.getNetwork()).chainId);
       const stealthSigner = gsnEthersProvider.getSigner(stealthKeyPair.address);
       const umbraRelayRecipient = new Contract(
-        UmbraRelayRecipient.addresses[String(chainId)] as string,
+        UmbraRelayRecipient.addresses[chainId as SupportedChainIds],
         UmbraRelayRecipient.abi,
         stealthSigner
       );
@@ -268,6 +272,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
 
   return {
     isLoading,
+    expanded,
     paginationConfig,
     mainTableColumns,
     formatDate,

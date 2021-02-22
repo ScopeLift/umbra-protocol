@@ -1,6 +1,18 @@
 import { Dark, Notify } from 'quasar';
 import BNotify from 'bnc-notify';
 
+// Instantiate Blocknative's notify.js
+const bNotify = BNotify({
+  dappId: process.env.BLOCKNATIVE_API_KEY,
+  networkId: 4,
+  darkMode: Dark.isActive,
+});
+
+// Some error messages we don't want to show to the user, so return in these cases
+const messagesToIgnore = [
+  'walletSelect must be called before walletCheck', // user decided not to connect wallet
+];
+
 export default function useAlerts() {
   /**
    * @notice Present notification alert to the user
@@ -8,6 +20,7 @@ export default function useAlerts() {
    * @param message Message to display on notification
    */
   function notifyUser(color: string, message: string) {
+    if (message.startsWith(messagesToIgnore[0])) return;
     Notify.create({
       color,
       message,
@@ -35,12 +48,7 @@ export default function useAlerts() {
    * @param txHash Transaction hash to monitor
    */
   function txNotify(txHash: string) {
-    const notify = BNotify({
-      dappId: process.env.BLOCKNATIVE_API_KEY,
-      networkId: 4,
-      darkMode: Dark.isActive,
-    });
-    notify.hash(txHash);
+    bNotify.hash(txHash);
   }
 
   return { notifyUser, handleError, txNotify };

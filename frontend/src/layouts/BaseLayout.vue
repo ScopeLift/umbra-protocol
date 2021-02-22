@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh Lpr fFf">
+  <q-layout view="hhh Lpr fff">
     <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="column all-content-format">
         <!-- Main header -->
@@ -28,38 +28,12 @@
               <div v-if="userAddress" class="text-caption dark-toggle">
                 {{ userAddress }}
               </div>
-              <div class="row justify-end items-center q-mt-xs">
-                <div
-                  v-if="userAddress && networkName !== 'rinkeby'"
-                  class="negative text-bold q-mr-md"
-                >
-                  You must be on the Rinkeby network to use this app
-                </div>
-                <q-icon
-                  v-if="!$q.dark.isActive"
-                  class="col-auto dark-toggle"
-                  name="fas fa-moon"
-                  style="cursor: pointer"
-                  @click="toggleDarkMode()"
-                />
-                <q-icon
-                  v-else
-                  class="col-auto dark-toggle"
-                  name="fas fa-sun"
-                  style="cursor: pointer"
-                  @click="toggleDarkMode()"
-                />
-              </div>
             </div>
           </div>
         </div>
         <!-- Alpha warning -->
-        <div
-          id="alpha"
-          class="dark-toggle text-center q-mt-lg"
-          style="max-width: 600px; margin: 1rem auto"
-        >
-          WARNING: This is alpha software and is only available on Rinkeby
+        <div class="dark-toggle text-center text-negative text-bold">
+          WARNING: This is unaudited software and is only available on Rinkeby
         </div>
       </div>
     </q-header>
@@ -67,6 +41,51 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <q-footer
+      class="q-mx-md q-mb-md q-pt-xl"
+      style="color: #000000; background-color: rgba(0, 0, 0, 0)"
+    >
+      <div class="row justify-between">
+        <div class="col-auto">
+          <q-icon
+            v-if="!$q.dark.isActive"
+            class="dark-toggle"
+            name="fas fa-moon"
+            size="xs"
+            style="cursor: pointer"
+            @click="toggleDarkMode()"
+          />
+          <q-icon
+            v-else
+            class="dark-toggle"
+            name="fas fa-sun"
+            size="xs"
+            style="cursor: pointer"
+            @click="toggleDarkMode()"
+          />
+        </div>
+        <div class="col-auto text-caption">
+          Built by
+          <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
+        </div>
+        <div class="col-auto">
+          <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
+            <q-icon class="dark-toggle" name="fab fa-twitter" size="xs" />
+          </a>
+          <a href="https://t.me/UmbraCash" target="_blank" class="q-ml-md no-text-decoration">
+            <q-icon class="dark-toggle" name="fab fa-telegram" size="xs" />
+          </a>
+          <a
+            href="https://github.com/ScopeLift/umbra-protocol"
+            target="_blank"
+            class="q-ml-md no-text-decoration"
+          >
+            <q-icon class="dark-toggle" name="fab fa-github" size="xs" />
+          </a>
+        </div>
+      </div>
+    </q-footer>
   </q-layout>
 </template>
 
@@ -108,13 +127,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="sass" scoped>
-#alpha
-  border: 2px solid $negative
-  border-radius: 15px
-  color: $negative
-  font-weight: bold
-  font-size: 1rem
-  padding: 1rem
-</style>

@@ -79,27 +79,11 @@ p, div
   hyphens: manual
   text-align: left
 
-// Card styling
-.action-card
-  cursor: pointer
-  margin: 0 auto
-  max-width: 200px
-  min-width: 100px
-  padding: 1rem
-
-.card-header
-  color: $primary
-  text-align: center
-
-.not-logged-in
-  opacity: 0.35
-  cursor: not-allowed
-
 // Generic
 .page-title
   @extend .header-black
   margin-top: 2rem
-  margin-bottom: 2rem
+  margin-bottom: 4rem
   text-align: center
 
 .form
@@ -110,11 +94,11 @@ p, div
   margin: 0 auto
 
 // Dark mode config
-.body--light,
+.body--light 
   .dark-toggle
     color: $dark
 
-.hyperlink
+  .hyperlink
     color: $primarydark
     text-decoration: underline
     cursor: pointer
@@ -124,7 +108,7 @@ p, div
   .dark-toggle
     color: $light
 
-.hyperlink
+  .hyperlink
     color: $primaryreg
     text-decoration: underline
     cursor: pointer
@@ -145,3 +129,6 @@ p, div
   border-width: 1px
   border-style: solid
   border-color: $primary
+
+.no-text-decoration
+  text-decoration: none

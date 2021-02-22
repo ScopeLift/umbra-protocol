@@ -9,6 +9,7 @@ import {
   TokenInfo,
   TokenList,
   MulticallResponse,
+  SupportedChainIds,
 } from 'components/models';
 import multicallInfo from 'src/contracts/multicall.json';
 import erc20 from 'src/contracts/erc20.json';
@@ -30,9 +31,6 @@ const ETH_TOKEN = {
   decimals: 18,
   logoURI: '/tokens/eth.svg',
 };
-
-// Must be the set of Chain IDs present for all contracts in src/contracts
-type SupportedChainIds = '4';
 
 // ============================================= State =============================================
 // We do not publicly expose the state to provide control over when and how it's changed. It
@@ -136,7 +134,9 @@ export default function useWalletStore() {
       throw new Error('No signer connected');
     }
     if (!umbra.value) {
-      throw new Error('No Umbra instance available');
+      throw new Error(
+        'No Umbra instance available. Please make sure you are on a supported network'
+      );
     }
     if (spendingKeyPair.value && viewingKeyPair.value) {
       return 'success';

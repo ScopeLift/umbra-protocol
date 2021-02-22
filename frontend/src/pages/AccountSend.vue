@@ -1,8 +1,8 @@
 <template>
   <q-page padding>
-    <h1 class="page-title">Send</h1>
+    <h2 class="page-title">Send</h2>
 
-    <q-form @submit="onFormSubmit">
+    <q-form @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
       <div>Recipient's ENS or CNS name</div>
       <base-input v-model="recipientId" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
@@ -28,7 +28,7 @@
 
       <!-- Send button -->
       <div>
-        <base-button label="Send" type="submit" color="primary" />
+        <base-button :full-width="true" label="Send" type="submit" />
       </div>
     </q-form>
   </q-page>
@@ -36,6 +36,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import { QForm } from 'quasar';
 import { BigNumber } from '@ethersproject/bignumber';
 import { MaxUint256 } from '@ethersproject/constants';
 import { Contract } from '@ethersproject/contracts';
@@ -59,6 +60,7 @@ function useSendForm() {
   const recipientId = ref<string>();
   const token = ref<TokenInfo>();
   const humanAmount = ref<string>();
+  const sendFormRef = ref<QForm>();
 
   function isValidId(val: string) {
     if (val && (val.endsWith('.eth') || val.endsWith('.crypto'))) return true;
@@ -102,9 +104,10 @@ function useSendForm() {
     recipientId.value = undefined;
     token.value = undefined;
     humanAmount.value = undefined;
+    sendFormRef.value?.resetValidation();
   }
 
-  return { recipientId, humanAmount, tokenOptions, token, onFormSubmit, isValidId };
+  return { sendFormRef, recipientId, humanAmount, tokenOptions, token, onFormSubmit, isValidId };
 }
 
 export default defineComponent({
