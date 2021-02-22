@@ -35,7 +35,7 @@ contract Umbra is Ownable {
   uint256 public toll;
   address public tollCollector;
   address payable public tollReceiver;
-  mapping(address => TokenPayment) tokenPayments;
+  mapping(address => TokenPayment) public tokenPayments;
 
   constructor(
     uint256 _toll,
