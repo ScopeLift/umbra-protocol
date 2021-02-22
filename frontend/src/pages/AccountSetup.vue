@@ -6,7 +6,7 @@
       v-model="carouselStep"
       animated
       class="shadow-2 rounded-borders q-mx-auto"
-      control-color="black"
+      control-color="grey"
       height="300px"
       navigation
       navigation-icon="fas fa-circle"
@@ -22,7 +22,7 @@
           <q-btn
             class="q-my-auto"
             flat
-            text-color="black"
+            text-color="grey"
             icon="fas fa-arrow-left"
             @click="$refs.carousel.previous()"
           />
@@ -31,7 +31,7 @@
           <q-btn
             class="q-my-auto"
             flat
-            text-color="black"
+            text-color="grey"
             icon="fas fa-arrow-right"
             @click="$refs.carousel.next()"
           />
@@ -118,12 +118,16 @@ function useKeys() {
     spendingKeyPair,
     viewingKeyPair,
   } = useWalletStore();
-  const { txNotify } = useAlerts();
+  const { notifyUser, txNotify } = useAlerts();
 
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
   const carouselStep = ref('1');
 
   async function getPrivateKeysHandler() {
+    if (keyStatus.value === 'success') {
+      notifyUser('info', 'You have already signed. Please continue to the next step');
+      return;
+    }
     keyStatus.value = await getPrivateKeys();
   }
 

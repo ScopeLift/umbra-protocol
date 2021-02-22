@@ -12,7 +12,6 @@ import { keccak256 } from '@ethersproject/keccak256';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { sha256 } from '@ethersproject/sha2';
 import { toUtf8Bytes } from '@ethersproject/strings';
-
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { lookupRecipient } from '../utils/utils';
@@ -32,21 +31,8 @@ const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.js
 
 // Mapping from chainId to contract information
 const chainConfigs: Record<number, ChainConfig> = {
-  // Ropsten
-  3: {
-    umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
-    startBlock: 9496718,
-  },
-  // Rinkeby
-  4: {
-    umbraAddress: '0x9116217a74bA46a327a824Bc4FB2e3d7dAA1d97a',
-    startBlock: 8055954,
-  },
-  // Local
-  1337: {
-    umbraAddress: '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0',
-    startBlock: 9496718,
-  },
+  4: { umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Rinkeby
+  1337: { umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Local
 };
 
 // Helper method to parse chainConfig input

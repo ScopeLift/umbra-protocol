@@ -116,8 +116,6 @@ describe('Umbra class', () => {
 
     // Get Umbra instance
     umbra = new Umbra(ethersProvider, chainConfig);
-    // umbra = await Umbra.create(sender.signer, chainConfig);
-    // umbraReadonly = await Umbra.createReadonly(JSON_RPC_URL, chainConfig);
   });
 
   describe('Initialization', () => {
@@ -139,30 +137,30 @@ describe('Umbra class', () => {
       // Localhost with URL provider
       const umbra1 = new Umbra(jsonRpcProvider, 1337);
       expect(umbra1.chainConfig.umbraAddress).to.equal(
-        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
       );
-      expect(umbra1.chainConfig.startBlock).to.equal(9496718);
+      expect(umbra1.chainConfig.startBlock).to.equal(8115377);
 
       // Localhost with Web3 provider
       const umbra2 = new Umbra(ethersProvider, 1337);
       expect(umbra2.chainConfig.umbraAddress).to.equal(
-        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
       );
-      expect(umbra2.chainConfig.startBlock).to.equal(9496718);
+      expect(umbra2.chainConfig.startBlock).to.equal(8115377);
 
       // Ropsten with URL provider
-      const umbra3 = new Umbra(jsonRpcProvider, 3);
+      const umbra3 = new Umbra(jsonRpcProvider, 4);
       expect(umbra3.chainConfig.umbraAddress).to.equal(
-        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
       );
-      expect(umbra3.chainConfig.startBlock).to.equal(9496718);
+      expect(umbra3.chainConfig.startBlock).to.equal(8115377);
 
       // Ropsten with Web3 provider
-      const umbra4 = new Umbra(jsonRpcProvider, 3);
+      const umbra4 = new Umbra(jsonRpcProvider, 4);
       expect(umbra4.chainConfig.umbraAddress).to.equal(
-        '0x3bB03be8dAB8969b16684D360eD2C7Aa47dC36f0'
+        '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'
       );
-      expect(umbra4.chainConfig.startBlock).to.equal(9496718);
+      expect(umbra4.chainConfig.startBlock).to.equal(8115377);
     });
 
     it('does not allow invalid default chain IDs to be provided', async () => {

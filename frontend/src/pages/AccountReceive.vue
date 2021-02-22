@@ -54,7 +54,6 @@ function useScan() {
     );
     userAnnouncements.value = announcements;
     scanStatus.value = 'complete';
-    console.log('userAnnouncements: ', userAnnouncements.value);
   }
 
   return { keyStatus, scanStatus, getPrivateKeysHandler, userAnnouncements };

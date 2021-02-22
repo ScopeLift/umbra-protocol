@@ -4,7 +4,7 @@
 
     <q-form @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
-      <div>Recipient's ENS or CNS name</div>
+      <div>Recipient's ENS name</div>
       <base-input v-model="recipientId" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
 
       <!-- Token -->
@@ -28,7 +28,7 @@
 
       <!-- Send button -->
       <div>
-        <base-button :full-width="true" label="Send" type="submit" />
+        <base-button :disable="isSendInProgress" :full-width="true" label="Send" type="submit" />
       </div>
     </q-form>
   </q-page>
@@ -61,6 +61,7 @@ function useSendForm() {
   const token = ref<TokenInfo>();
   const humanAmount = ref<string>();
   const sendFormRef = ref<QForm>();
+  const isSendInProgress = ref(false);
 
   function isValidId(val: string) {
     if (val && (val.endsWith('.eth') || val.endsWith('.crypto'))) return true;
@@ -68,36 +69,43 @@ function useSendForm() {
   }
 
   async function onFormSubmit() {
-    // Form validation
-    if (!recipientId.value || !token.value || !humanAmount.value)
-      throw new Error('Please complete the form');
-    if (Object.keys(balances.value).length === 0) await getTokenBalances(); // get user token balances
+    try {
+      // Form validation
+      if (!recipientId.value || !token.value || !humanAmount.value)
+        throw new Error('Please complete the form');
+      if (Object.keys(balances.value).length === 0) await getTokenBalances(); // get user token balances
 
-    const { address: tokenAddress, decimals } = token.value;
-    const amount = BigNumber.from(parseUnits(humanAmount.value, decimals));
-    if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
-    if (!signer.value) throw new Error('Wallet not connected');
-    if (!umbra.value) throw new Error('Umbra instance not configured');
+      const { address: tokenAddress, decimals } = token.value;
+      const amount = BigNumber.from(parseUnits(humanAmount.value, decimals));
+      if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
+      if (!signer.value) throw new Error('Wallet not connected');
+      if (!umbra.value) throw new Error('Umbra instance not configured');
 
-    // If token, get approval
-    if (token.value.symbol !== 'ETH') {
-      // Check allowance
-      const tokenContract = new Contract(token.value.address, erc20.abi, signer.value);
-      const umbraAddress = umbra.value.umbraContract.address;
-      const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
-      // If insufficient allowance, get approval
-      if (amount.gt(allowance)) {
-        const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
-        txNotify(approveTx.hash);
-        await approveTx.wait();
+      // If token, get approval
+      isSendInProgress.value = true;
+      if (token.value.symbol !== 'ETH') {
+        // Check allowance
+        const tokenContract = new Contract(token.value.address, erc20.abi, signer.value);
+        const umbraAddress = umbra.value.umbraContract.address;
+        const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
+        // If insufficient allowance, get approval
+        if (amount.gt(allowance)) {
+          const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
+          txNotify(approveTx.hash);
+          await approveTx.wait();
+        }
       }
-    }
 
-    // Send with Umbra
-    const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value);
-    txNotify(tx.hash);
-    resetForm();
-    await tx.wait();
+      // Send with Umbra
+      const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value);
+      txNotify(tx.hash);
+      await tx.wait();
+      resetForm();
+      isSendInProgress.value = false;
+    } catch (err) {
+      isSendInProgress.value = false;
+      console.error(err);
+    }
   }
 
   function resetForm() {
@@ -107,7 +115,16 @@ function useSendForm() {
     sendFormRef.value?.resetValidation();
   }
 
-  return { sendFormRef, recipientId, humanAmount, tokenOptions, token, onFormSubmit, isValidId };
+  return {
+    isSendInProgress,
+    sendFormRef,
+    recipientId,
+    humanAmount,
+    tokenOptions,
+    token,
+    onFormSubmit,
+    isValidId,
+  };
 }
 
 export default defineComponent({

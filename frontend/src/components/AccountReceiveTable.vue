@@ -75,13 +75,14 @@
 
         <!-- Expansion row -->
         <q-tr v-show="props.expand" :props="props">
-          <q-td colspan="100%" class="bg-grey-2">
+          <q-td colspan="100%" class="bg-muted">
             <q-form class="form q-py-md" style="white-space: normal">
               <div>Enter address to withdraw funds to</div>
               <base-input
                 v-model="destinationAddress"
                 @click="withdraw(props.row)"
                 appendButtonLabel="Withdraw"
+                :appendButtonDisable="isWithdrawInProgress"
                 label="Address"
                 lazy-rules
                 :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
@@ -126,6 +127,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const expanded = ref<string[]>([]); // for managing expansion rows
   const isLoading = ref(false);
   const destinationAddress = ref('');
+  const isWithdrawInProgress = ref(false);
 
   const mainTableColumns = [
     {
@@ -207,70 +209,74 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     );
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
 
-    console.log('spendingKeyPair.value?.privateKeyHex: ', spendingKeyPair.value?.privateKeyHex);
-    console.log('token.address: ', token.address);
-    console.log('announcement.receiver: ', announcement.receiver);
-    console.log('destinationAddress.value: ', destinationAddress.value);
     // Send transaction
-    let tx: TransactionResponse;
-    if (token.symbol === 'ETH') {
-      // Withdrawing ETH
-      tx = await umbra.value.withdraw(
-        spendingPrivateKey,
-        token.address,
-        announcement.receiver,
-        destinationAddress.value
-      );
-    } else {
-      // Withdrawing token
-      if (!signer.value || !provider.value) throw new Error('Signer or provider not found');
-      // Get user's signature. GSN doesn't care about sponsor address and fee, so for now on
-      // Rinkeby we just use a value of 1 and the destinationAddress as a sanity check this functionality
-      const sponsor = destinationAddress.value;
-      const sponsorFee = '1';
-      const { v, r, s } = await Umbra.signWithdraw(
-        spendingPrivateKey,
-        destinationAddress.value,
-        sponsor,
-        sponsorFee
-      );
+    try {
+      isWithdrawInProgress.value = true;
+      let tx: TransactionResponse;
+      if (token.symbol === 'ETH') {
+        // Withdrawing ETH
+        tx = await umbra.value.withdraw(
+          spendingPrivateKey,
+          token.address,
+          announcement.receiver,
+          destinationAddress.value
+        );
+      } else {
+        // Withdrawing token
+        if (!signer.value || !provider.value) throw new Error('Signer or provider not found');
+        // Get user's signature. GSN doesn't care about sponsor address and fee, so for now on
+        // Rinkeby we just use a value of 1 and the destinationAddress as a sanity check this functionality
+        const sponsor = destinationAddress.value;
+        const sponsorFee = '1';
+        const { v, r, s } = await Umbra.signWithdraw(
+          spendingPrivateKey,
+          destinationAddress.value,
+          sponsor,
+          sponsorFee
+        );
 
-      // Configure GSN provider (hardcoded our Rinkeby paymaster address)
-      const gsnConfig = {
-        paymasterAddress: '0x5b66358d33CEF7d2e0f064734C79a2f7A4b15666',
-        methodSuffix: '_v4', // MetaMask only
-        jsonStringifyRequest: true, // MetaMask only
-      };
-      const gsnProvider = await RelayProvider.newProvider({
-        provider: provider.value.provider as Web3ProviderBaseInterface,
-        config: gsnConfig,
-      }).init();
-      gsnProvider.addAccount(spendingPrivateKey);
-      const gsnEthersProvider = new Web3Provider((gsnProvider as unknown) as ExternalProvider);
+        // Configure GSN provider (hardcoded our Rinkeby paymaster address)
+        const gsnConfig = {
+          paymasterAddress: '0x53D07c0d1e382e3C66574E316ec97108C21d16DE',
+          methodSuffix: '_v4', // MetaMask only
+          jsonStringifyRequest: true, // MetaMask only
+        };
+        const gsnProvider = await RelayProvider.newProvider({
+          provider: provider.value.provider as Web3ProviderBaseInterface,
+          config: gsnConfig,
+        }).init();
+        gsnProvider.addAccount(spendingPrivateKey);
+        const gsnEthersProvider = new Web3Provider((gsnProvider as unknown) as ExternalProvider);
 
-      // Send transaction
-      const chainId = String((await provider.value.getNetwork()).chainId);
-      const stealthSigner = gsnEthersProvider.getSigner(stealthKeyPair.address);
-      const umbraRelayRecipient = new Contract(
-        UmbraRelayRecipient.addresses[chainId as SupportedChainIds],
-        UmbraRelayRecipient.abi,
-        stealthSigner
-      );
-      tx = (await umbraRelayRecipient.withdrawTokenOnBehalf(
-        stealthKeyPair.address,
-        destinationAddress.value,
-        sponsor,
-        sponsorFee,
-        v,
-        r,
-        s,
-        { gasLimit: '1000000' }
-      )) as TransactionResponse;
+        // Send transaction
+        const chainId = String((await provider.value.getNetwork()).chainId);
+        const stealthSigner = gsnEthersProvider.getSigner(stealthKeyPair.address);
+        const umbraRelayRecipient = new Contract(
+          UmbraRelayRecipient.addresses[chainId as SupportedChainIds],
+          UmbraRelayRecipient.abi,
+          stealthSigner
+        );
+        tx = (await umbraRelayRecipient.withdrawTokenOnBehalf(
+          stealthKeyPair.address,
+          destinationAddress.value,
+          sponsor,
+          sponsorFee,
+          v,
+          r,
+          s,
+          { gasLimit: '1000000' }
+        )) as TransactionResponse;
+      }
+      txNotify(tx.hash);
+      await tx.wait();
+      isWithdrawInProgress.value = false;
+    } catch (err) {
+      isWithdrawInProgress.value = false;
     }
-    txNotify(tx.hash);
   }
 
   return {
+    isWithdrawInProgress,
     isLoading,
     expanded,
     paginationConfig,

@@ -23,7 +23,12 @@
     @input="handleInput"
   >
     <template v-if="appendButtonLabel" v-slot:append>
-      <base-button class="cursor-pointer" :label="appendButtonLabel" @click="handleClick" />
+      <base-button
+        class="cursor-pointer"
+        :disable="appendButtonDisable"
+        :label="appendButtonLabel"
+        @click="handleClick"
+      />
     </template>
   </q-input>
 </template>
@@ -35,6 +40,12 @@ export default Vue.extend({
   name: 'BaseInput',
 
   props: {
+    appendButtonDisable: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+
     appendButtonLabel: {
       type: String,
       required: false,
