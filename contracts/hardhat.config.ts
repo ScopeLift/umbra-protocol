@@ -25,16 +25,16 @@ const chainIds = {
 };
 
 // Ensure that we have all the environment variables we need.
-let mnemonic: string;
+let mnemonic = '';
 if (!process.env.MNEMONIC) {
-  throw new Error('Please set your MNEMONIC in a .env file');
+  console.warn('Please set your MNEMONIC in a .env file');
 } else {
   mnemonic = process.env.MNEMONIC;
 }
 
-let infuraApiKey: string;
+let infuraApiKey = '';
 if (!process.env.INFURA_API_KEY) {
-  throw new Error('Please set your INFURA_API_KEY in a .env file');
+  console.warn('Please set your INFURA_API_KEY in a .env file');
 } else {
   infuraApiKey = process.env.INFURA_API_KEY;
 }

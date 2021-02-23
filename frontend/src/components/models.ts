@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-export { TokenList, TokenInfo } from '@uniswap/token-lists';
+export { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 
 export type Signer = ethers.providers.JsonRpcSigner;
 export type Provider = ethers.providers.Web3Provider;

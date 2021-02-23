@@ -64,7 +64,7 @@ describe('Utilities', () => {
       );
     });
 
-    it('looks up recipients by CNS', async () => {
+    it.skip('looks up recipients by CNS', async () => {
       throw new Error('Test not implemented');
     });
   });

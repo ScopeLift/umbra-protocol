@@ -51,8 +51,10 @@
     "typescript": "^3.9.7"
   },
   "files": [
-    "/contracts"
+    "typechain",
+    "contracts"
   ],
+  "types": "typechain/index.ts",
   "keywords": [
     "blockchain",
     "ethereum",

@@ -5,7 +5,7 @@
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "files": [
-    "build/**/*"
+    "build"
   ],
   "scripts": {
     "test": "yarn build && mocha -r ts-node/register ./test/*.test.ts --exit --timeout 0",

@@ -25,8 +25,7 @@
     "lint": "lerna run lint",
     "prettier": "lerna run prettier",
     "prepare": "lerna run prepare",
-    "test": "lerna run test",
-    "postinstall": "patch-package"
+    "test": "lerna run test"
   },
   "husky": {
     "hooks": {

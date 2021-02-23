@@ -59,7 +59,7 @@ describe('DomainService class', () => {
       // TODO
     });
 
-    it('gets the public keys associated with a CNS address', async function () {
+    it.skip('gets the public keys associated with a CNS address', async function () {
       this.timeout(10000);
       throw new Error('Test not implemented');
       // const publicKeys = await domainService.getPublicKeys(params.cns.name);

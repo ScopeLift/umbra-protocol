@@ -35,7 +35,7 @@ describe('СNS functions', () => {
     expect(hash).to.equal('0x4d5647e26ad24fd1087ddd2dc2d980f6f231d4f5694f63b321ec119848a460ba');
   });
 
-  it('gets the public keys associated with a CNS address', async function () {
+  it.skip('gets the public keys associated with a CNS address', async function () {
     this.timeout(10000);
     nameSpendingPublicKey; // silence errors
     nameViewingPublicKey; // silence errors
