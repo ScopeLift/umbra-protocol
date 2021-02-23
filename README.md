@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-	🚀 <a href="https://ropsten.umbra.cash">umbra.cash</a>
+	🚀 <a href="https://rinkeby.umbra.cash">umbra.cash</a>
 	👷 <a href="https://twitter.com/msolomon44">@msolomon44</a>
 	👷 <a href="https://twitter.com/BenDiFrancesco">@BenDiFrancesco</a>
 </p>
@@ -37,7 +37,7 @@ This repository has three components:
 
 * [Umbra JS](umbra-js/) — A JavaScript library for building Umbra-enabled web3 apps in node.js or in the browser.
 * [Umbra Contracts](contracts/) — Solidity contracts used in the Umbra Protocol.
-* [Umbra Pay](app/) — Frontend web3 app for setting up and using Umbra, deployed at [https://ropsten.umbra.cash](https://ropsten.umbra.cash)
+* [Umbra Pay](app/) — Frontend web3 app for setting up and using Umbra, deployed at [https://rinkeby.umbra.cash](https://rinkeby.umbra.cash)
 
 ### FAQ
 
