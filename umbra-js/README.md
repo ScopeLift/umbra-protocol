@@ -4,64 +4,72 @@ JavaScipt library for interacting with the Umbra Protocol
 
 ## Usage
 
-Install the package with `npm install umbra-js` or `yarn add umbra-js`.
+Install the package with `npm install @umbra/umbra-js` or `yarn add @umbra/umbra-js`.
+The sample code below demonstrates how to use the package.
 
 ```javascript
-const ethers = require("ethers");
-const umbra = require("umbra-js");
+import { ethers } from "ethers";
+import { DomainService, KeyPair, Umbra } from "@umbra/umbra-js";
 
-// utils and ens are not used below, but their APIs can be found in utils.js and ens.js
-const { RandomNumber, KeyPair, utils, ens } = umbra;
+// Recipient Setup ------------------------------------------------------------
+// Get user's account information
+const provider = new ethers.providers.Web3Provider(walletProvider);
+const signer = provider.getSigner();
+const userAddress = await signer.getAddress();
+const userEns = await provider.lookupAddress(userAddress); // resolves to e.g. yourname.eth
 
-// Setup ----------------------------------------------------------------------
-// Generate a random wallet to simulate the recipient
-wallet = ethers.Wallet.createRandom();
+// Create Umbra instance
+const chainId = provider.network.chainId;
+umbra = new Umbra(provider, chainId);
 
-// Sender ---------------------------------------------------------------------
-// Get a random 32-byte number
-const randomNumber = new RandomNumber();
+// Ask user to sign a message to get their Umbra-specific private keys
+const keyPairs = await umbra.generatePrivateKeys(signer);
+const { spendingKeyPair, viewingKeyPair } = keyPairs;
 
-// Generate a KeyPair instance from recipient's public key
-const recipientFromPublic = new KeyPair(wallet.publicKey);
-
-// Multiply public key by the random number to get a new KeyPair instance
-const stealthFromPublic = recipientFromPublic.mulPublicKey(randomNumber);
-
-// Send fund's to the recipient's stealth receiving address
-console.log("Stealth recipient address: ", stealthFromPublic.address);
-
-// Recipient ------------------------------------------------------------------
-// Generate a KeyPair instance based on their own private key
-const recipientFromPrivate = new KeyPair(wallet.privateKey);
-
-// Multiply their private key by the random number to get a new KeyPair instance
-const stealthFromPrivate = recipientFromPrivate.mulPrivateKey(randomNumber);
-
-// Access funds and confirm addresses match
-console.log(stealthFromPublic.address === stealthFromPrivate.address); // true
-console.log(
-  "Private key to access received funds: ",
-  stealthFromPrivate.privateKeyHex
+// Associate Public Keys to ENS records
+const domainService = new DomainService(provider);
+const tx1 = await domainService.setPublicKeys(
+  userEns,
+  spendingKeyPair.publicKeyHex,
+  viewingKeyPair.publicKeyHex
 );
-```
+await tx1.wait();
 
-Note that a `KeyPair` instance can be created from a public key, private key, or
-transaction hash.
+// Send funds -----------------------------------------------------------------
+// If sending a token, make sure to give allowance to the Umbra contract first
+const tokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"; // for ETH, but any token address can be specified here
+const amount = ethers.utils.parseUnits(amount, 18); // update decimals based on your token
+const recipientId = "yourname.eth";
+const { tx: tx2 } = await umbra.send(signer, tokenAddress, amount, recipientId);
+await tx2.wait();
 
-- For private keys, enter the full 66 character key as shown above.
-- For public keys, enter the full 132 character key as shown above.
-- For transaction hashes, instead of using the `new` keyword we call a static
-  asynchronous method on the `KeyPair` class, which is necessary because
-  we must first recover the public key from the transaction data. Use the syntax
-  below to create a `KeyPair` instances from a transaction hash.
+// Receive and withdraw funds -------------------------------------------------
+// Notice that we must have hte user's private keys from the Recipient Setup
+// steps above to withdraw funds
 
-```javascript
-// Create KeyPair instance from tx hash
-const txHash = "0x123.....";
-const recipientFromTxHash = await KeyPair.instanceFromTransaction(
-  txHash,
-  provider
+// Scan for received funds. Returns array of Announcement events for the user.
+const { userAnnouncements } = await umbra.value.scan(
+  spendingKeyPair.publicKeyHex,
+  viewingKeyPair.privateKeyHex
 );
+
+// Withdraw the ETH sent about, say this is this the first announcement
+const announcement = userAnnouncements[0];
+const stealthPrivateKey = Umbra.computeStealthPrivateKey(
+  spendingKeyPair.privateKeyHex,
+  announcement.randomNumber
+);
+const tx3 = await umbra.withdraw(
+  stealthPrivateKey,
+  announcement.token,
+  announcement.receiver,
+  destinationAddress // address ETH will be withdrawn to
+);
+await tx3.wait();
+
+// See the withdraw(), withdrawOnBehalf(), and relayWithdrawOnBehalf() methods
+// for more withdrawal options. The signWithdraw() method is used for obtaining
+// the signature needed when withdrawing via meta-transaction
 ```
 
 ## Development
