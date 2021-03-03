@@ -92,6 +92,15 @@ describe('Umbra GSN', () => {
     });
   });
 
+  it('should see the correct umbra version and chainid', async () => {
+    ctx.version = await ctx.umbra.version();
+    expect(ctx.version).to.equal('1');
+
+    ctx.chainId = await web3.eth.getChainId();
+    const chainId = await ctx.umbra.chainId();
+    expect(ctx.chainId).to.equal(chainId.toNumber());
+  });
+
   // Sending the token is done without GSN
   it('should allow someone to pay with a token', async () => {
     const toll = await ctx.umbra.toll();
@@ -123,7 +132,7 @@ describe('Umbra GSN', () => {
 
     const otherWallet = ethers.Wallet.createRandom();
 
-    const { v, r, s } = await signMetaWithdrawal(otherWallet, acceptor, ctx.token.address, relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(otherWallet, ctx.chainId, ctx.version, acceptor, ctx.token.address, relayer, relayerTokenFee);
 
     await expectRevert(
       ctx.relayRecipient.withdrawTokenOnBehalf(
@@ -153,7 +162,7 @@ describe('Umbra GSN', () => {
 
     const otherWallet = ethers.Wallet.createRandom();
 
-    const { v, r, s } = await signMetaWithdrawal(otherWallet, acceptor, ctx.token.address, relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(otherWallet, ctx.chainId, ctx.version, acceptor, ctx.token.address, relayer, relayerTokenFee);
 
     await expectRevert(
       ctx.relayRecipient.withdrawTokenOnBehalf(
@@ -178,7 +187,7 @@ describe('Umbra GSN', () => {
   it('should allow receiver to withdraw their tokens with GSN', async () => {
     UmbraRelayRecipient.web3.setProvider(ctx.gsnProvider);
 
-    const { v, r, s } = await signMetaWithdrawal(receiverWallet, acceptor, ctx.token.address, relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(receiverWallet, ctx.chainId, ctx.version, acceptor, ctx.token.address, relayer, relayerTokenFee);
 
     await ctx.relayRecipient.withdrawTokenOnBehalf(
       receiverWallet.address,
@@ -207,7 +216,7 @@ describe('Umbra GSN', () => {
   it('should not allow a receiver to withdraw tokens twice with GSN', async () => {
     UmbraRelayRecipient.web3.setProvider(ctx.gsnProvider);
 
-    const { v, r, s } = await signMetaWithdrawal(receiverWallet, acceptor, ctx.token.address, relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(receiverWallet, ctx.chainId, ctx.version, acceptor, ctx.token.address, relayer, relayerTokenFee);
 
     await expectRevert(
       ctx.relayRecipient.withdrawTokenOnBehalf(

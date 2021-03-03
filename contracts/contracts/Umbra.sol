@@ -10,6 +10,9 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 contract Umbra is Ownable {
   using SafeMath for uint256;
 
+  string public constant version = "1";
+  uint256 public immutable chainId;
+
   event Announcement(
     address indexed receiver,
     uint256 indexed amount,
@@ -36,6 +39,14 @@ contract Umbra is Ownable {
     toll = _toll;
     tollCollector = _tollCollector;
     tollReceiver = _tollReceiver;
+
+    uint256 _chainId;
+
+    assembly {
+      _chainId := chainid()
+    }
+
+    chainId = _chainId;
   }
 
   function setToll(uint256 _newToll) public onlyOwner {
@@ -109,7 +120,18 @@ contract Umbra is Ownable {
 
     bytes32 _digest =
       keccak256(
-        abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encode(_acceptor, _tokenAddr, _sponsor, _sponsorFee)))
+        abi.encodePacked("\x19Ethereum Signed Message:\n32",
+          keccak256(
+            abi.encode(
+              chainId,
+              version,
+              _acceptor,
+              _tokenAddr,
+              _sponsor,
+              _sponsorFee
+            )
+          )
+        )
       );
 
     address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
