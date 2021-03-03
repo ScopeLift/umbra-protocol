@@ -10,11 +10,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 contract Umbra is Ownable {
   using SafeMath for uint256;
 
-  struct TokenPayment {
-    address token;
-    uint256 amount;
-  }
-
   event Announcement(
     address indexed receiver,
     uint256 indexed amount,
@@ -30,7 +25,8 @@ contract Umbra is Ownable {
   uint256 public toll;
   address public tollCollector;
   address payable public tollReceiver;
-  mapping(address => TokenPayment) public tokenPayments;
+  // stealth address => token address => amount
+  mapping(address => mapping(address => uint256)) public tokenPayments;
 
   constructor(
     uint256 _toll,
@@ -77,44 +73,43 @@ contract Umbra is Ownable {
     bytes32 _ciphertext
   ) public payable {
     require(msg.value == toll, "Umbra: Must pay the exact toll");
-    require(tokenPayments[_receiver].amount == 0, "Umbra: Cannot send more tokens to stealth address");
+    require(tokenPayments[_receiver][_tokenAddr] == 0, "Umbra: Cannot send more tokens to stealth address");
 
-    tokenPayments[_receiver] = TokenPayment({token: _tokenAddr, amount: _amount});
+    tokenPayments[_receiver][_tokenAddr] = _amount;
     emit Announcement(_receiver, _amount, _tokenAddr, _pkx, _ciphertext);
 
     SafeERC20.safeTransferFrom(IERC20(_tokenAddr), msg.sender, address(this), _amount);
   }
 
-  function withdrawToken(address _acceptor) public {
-    uint256 amount = tokenPayments[msg.sender].amount;
-    address tokenAddr = tokenPayments[msg.sender].token;
+  function withdrawToken(address _acceptor, address _tokenAddr) public {
+    uint256 amount = tokenPayments[msg.sender][_tokenAddr];
 
     require(amount > 0, "Umbra: No tokens available for withdrawal");
 
-    delete tokenPayments[msg.sender];
-    emit TokenWithdrawal(msg.sender, _acceptor, amount, tokenAddr);
+    delete tokenPayments[msg.sender][_tokenAddr];
+    emit TokenWithdrawal(msg.sender, _acceptor, amount, _tokenAddr);
 
-    SafeERC20.safeTransfer(IERC20(tokenAddr), _acceptor, amount);
+    SafeERC20.safeTransfer(IERC20(_tokenAddr), _acceptor, amount);
   }
 
   function withdrawTokenOnBehalf(
     address _stealthAddr,
     address _acceptor,
+    address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
   ) external {
-    uint256 _amount = tokenPayments[_stealthAddr].amount;
-    address _tokenAddr = tokenPayments[_stealthAddr].token;
+    uint256 _amount = tokenPayments[_stealthAddr][_tokenAddr];
 
     // also protects from underflow
     require(_amount > _sponsorFee, "Umbra: No balance to withdraw or fee exceeds balance");
 
     bytes32 _digest =
       keccak256(
-        abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encode(_sponsor, _acceptor, _sponsorFee)))
+        abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encode(_acceptor, _tokenAddr, _sponsor, _sponsorFee)))
       );
 
     address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
@@ -122,7 +117,7 @@ contract Umbra is Ownable {
     require(_recoveredAddress != address(0) && _recoveredAddress == _stealthAddr, "Umbra: Invalid Signature");
 
     uint256 _withdrawalAmount = _amount - _sponsorFee;
-    delete tokenPayments[_stealthAddr];
+    delete tokenPayments[_stealthAddr][_tokenAddr];
     emit TokenWithdrawal(_stealthAddr, _acceptor, _withdrawalAmount, _tokenAddr);
 
     SafeERC20.safeTransfer(IERC20(_tokenAddr), _acceptor, _withdrawalAmount);

@@ -10,6 +10,7 @@ interface IUmbra {
   function withdrawTokenOnBehalf(
     address _stealthAddr,
     address _acceptor,
+    address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
     uint8 _v,
@@ -29,13 +30,14 @@ contract UmbraRelayRecipient is BaseRelayRecipient, IKnowForwarderAddress {
   function withdrawTokenOnBehalf(
     address _stealthAddr,
     address _acceptor,
+    address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
   ) external {
-    umbra.withdrawTokenOnBehalf(_stealthAddr, _acceptor, _sponsor, _sponsorFee, _v, _r, _s);
+    umbra.withdrawTokenOnBehalf(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _v, _r, _s);
   }
 
   function getTrustedForwarder() external view override returns (address) {

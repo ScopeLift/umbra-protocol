@@ -18,12 +18,13 @@ const sumTokenAmounts = (amounts) => {
 /**
  * Sign a transaction for a metawithdrawal
  * @param {object} signer Ethers Wallet or other Signer type
- * @param {string} sponsor Address of relayer
  * @param {string} acceptor Withdrawal destination
+ * @param {string} token Address of token being withdrawn
+ * @param {string} sponsor Address of relayer
  * @param {number|string} fee Amount sent to sponsor
  */
-const signMetaWithdrawal = async (signer, sponsor, acceptor, fee) => {
-  const digest = keccak256(defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, fee]));
+const signMetaWithdrawal = async (signer, acceptor, token, sponsor, fee) => {
+  const digest = keccak256(defaultAbiCoder.encode(['address', 'address', 'address', 'uint256'], [acceptor, token, sponsor, fee]));
 
   const rawSig = await signer.signMessage(arrayify(digest));
   return splitSignature(rawSig);

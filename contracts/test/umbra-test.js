@@ -178,7 +178,7 @@ describe('Umbra', () => {
 
   it('should not let the eth receiver withdraw tokens', async () => {
     await expectRevert(
-      ctx.umbra.withdrawToken(acceptor, { from: receiver1 }),
+      ctx.umbra.withdrawToken(acceptor, ctx.token.address, { from: receiver1 }),
       'Umbra: No tokens available for withdrawal'
     );
   });
@@ -300,11 +300,14 @@ describe('Umbra', () => {
   });
 
   it('should not allow a non-receiver to withdraw tokens', async () => {
-    await expectRevert(ctx.umbra.withdrawToken(acceptor, { from: other }), 'Umbra: No tokens available for withdrawal');
+    await expectRevert(
+      ctx.umbra.withdrawToken(acceptor, ctx.token.address, { from: other }),
+      'Umbra: No tokens available for withdrawal'
+    );
   });
 
   it('should allow receiver to withdraw their token', async () => {
-    const receipt = await ctx.umbra.withdrawToken(acceptor, { from: receiver2 });
+    const receipt = await ctx.umbra.withdrawToken(acceptor, ctx.token.address, { from: receiver2 });
 
     const acceptorBalance = await ctx.token.balanceOf(acceptor);
 
@@ -320,7 +323,7 @@ describe('Umbra', () => {
 
   it('should not allow a receiver to withdraw their tokens twice', async () => {
     await expectRevert(
-      ctx.umbra.withdrawToken(acceptor, { from: receiver2 }),
+      ctx.umbra.withdrawToken(acceptor, ctx.token.address, { from: receiver2 }),
       'Umbra: No tokens available for withdraw'
     );
   });
@@ -348,10 +351,10 @@ describe('Umbra', () => {
   });
 
   it('should revert on a meta withdrawal when the stealth address does not have a balance', async () => {
-    const { v, r, s } = await signMetaWithdrawal(metaWallet, relayer, metaAcceptor, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(metaWallet, metaAcceptor, ctx.token.address, relayer, relayerTokenFee);
 
     await expectRevert(
-      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, relayer, relayerTokenFee, v, r, s, {
+      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, ctx.token.address, relayer, relayerTokenFee, v, r, s, {
         from: relayer,
       }),
       'Umbra: No balance to withdraw or fee exceeds balance'
@@ -368,10 +371,10 @@ describe('Umbra', () => {
     });
 
     const wrongWallet = ethers.Wallet.createRandom();
-    const { v, r, s } = await signMetaWithdrawal(wrongWallet, relayer, metaAcceptor, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(wrongWallet, metaAcceptor, ctx.token.address,relayer, relayerTokenFee);
 
     await expectRevert(
-      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, relayer, relayerTokenFee, v, r, s, {
+      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, ctx.token.address, relayer, relayerTokenFee, v, r, s, {
         from: relayer,
       }),
       'Umbra: Invalid Signature'
@@ -381,10 +384,10 @@ describe('Umbra', () => {
   it('should revert on meta withdrawal if the fee is more than the amount', async () => {
     const bigFee = sumTokenAmounts([metaTokenTotal, '100']);
 
-    const { v, r, s } = await signMetaWithdrawal(metaWallet, relayer, metaAcceptor, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(metaWallet, metaAcceptor, ctx.token.address, relayer, relayerTokenFee);
 
     await expectRevert(
-      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, relayer, bigFee, v, r, s, {
+      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, ctx.token.address, relayer, bigFee, v, r, s, {
         from: relayer,
       }),
       'Umbra: No balance to withdraw or fee exceeds balance'
@@ -392,11 +395,12 @@ describe('Umbra', () => {
   });
 
   it('perform a withdrawal when given a properly signed meta-tx', async () => {
-    const { v, r, s } = await signMetaWithdrawal(metaWallet, relayer, metaAcceptor, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(metaWallet, metaAcceptor, ctx.token.address, relayer, relayerTokenFee);
 
     const receipt = await ctx.umbra.withdrawTokenOnBehalf(
       metaWallet.address,
       metaAcceptor,
+      ctx.token.address,
       relayer,
       relayerTokenFee,
       v,
