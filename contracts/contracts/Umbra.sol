@@ -104,7 +104,8 @@ contract Umbra is Ownable {
   /**
    * @notice Function only the toll collector can call to sweep funds to the toll receiver
    */
-  function collectTolls() public onlyCollector {
+  function collectTolls() public {
+    require(msg.sender == tollCollector, "Umbra: Not Toll Collector");
     tollReceiver.transfer(address(this).balance);
   }
 
@@ -226,12 +227,5 @@ contract Umbra is Ownable {
 
     SafeERC20.safeTransfer(IERC20(_tokenAddr), _acceptor, _withdrawalAmount);
     SafeERC20.safeTransfer(IERC20(_tokenAddr), _sponsor, _sponsorFee);
-  }
-
-  // ======================================= Modifiers ============================================
-
-  modifier onlyCollector() {
-    require(msg.sender == tollCollector, "Umbra: Not Toll Collector");
-    _;
   }
 }
