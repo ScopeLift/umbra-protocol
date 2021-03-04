@@ -15,7 +15,7 @@ contract Umbra is Ownable {
   /// @notice Emitted when a payment is sent
   event Announcement(
     address indexed receiver, // stealth address
-    uint256 indexed amount, // funds
+    uint256 amount, // funds
     address indexed token, // token address or ETH placeholder
     bytes32 pkx, // ephemeral public key x coordinate
     bytes32 ciphertext // encrypted entropy and payload extension
