@@ -33,7 +33,7 @@ export class DomainService {
    * @param name domain, e.g. myname.eth
    */
   namehash(name: string) {
-    if (isEnsDomain(name)) {
+    if (DomainService.isEnsDomain(name)) {
       return ens.namehash(name);
     } else {
       return cns.namehash(name, this.udResolution);
@@ -45,7 +45,7 @@ export class DomainService {
    * @param name domain, e.g. myname.eth
    */
   async getPublicKeys(name: string) {
-    if (isEnsDomain(name)) {
+    if (DomainService.isEnsDomain(name)) {
       return ens.getPublicKeys(name, this.provider);
     } else {
       return cns.getPublicKeys(name, this.udResolution);
@@ -59,14 +59,32 @@ export class DomainService {
    * @returns Transaction hash
    */
   async setPublicKeys(name: string, spendingPrivateKey: string, viewingPrivateKey: string) {
-    if (isEnsDomain(name)) {
+    if (DomainService.isEnsDomain(name)) {
       return ens.setPublicKeys(name, spendingPrivateKey, viewingPrivateKey, this.provider);
     } else {
       return cns.setPublicKeys(name, this.provider, this.udResolution, spendingPrivateKey);
     }
   }
-}
 
-function isEnsDomain(domainName: string) {
-  return domainName.endsWith('.eth');
+  /**
+   * @notice Returns supported ENS domains
+   * @dev Defined as a static method to simplify access to this data
+   */
+  static supportedEnsDomains() {
+    return ['.eth', '.xyz', '.kred', '.luxe', '.club', '.art'];
+  }
+
+  /**
+   * @notice Returns true if the provided name is an ENS domain, false otherwise
+   * @dev Defined as a static method to simplify access to this method
+   * @param domainName Name to check
+   */
+  static isEnsDomain(domainName: string) {
+    for (const suffix of DomainService.supportedEnsDomains()) {
+      if (domainName.endsWith(suffix)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
