@@ -81,7 +81,7 @@ contract Umbra is Ownable {
    * @notice Admin only function to update the toll
    * @param _newToll New ETH toll in wei
    */
-  function setToll(uint256 _newToll) public onlyOwner {
+  function setToll(uint256 _newToll) external onlyOwner {
     toll = _newToll;
   }
 
@@ -89,7 +89,7 @@ contract Umbra is Ownable {
    * @notice Admin only function to update the toll collector
    * @param _newTollCollector New address which has fund sweeping privileges
    */
-  function setTollCollector(address _newTollCollector) public onlyOwner {
+  function setTollCollector(address _newTollCollector) external onlyOwner {
     tollCollector = _newTollCollector;
   }
 
@@ -97,14 +97,14 @@ contract Umbra is Ownable {
    * @notice Admin only function to update the toll receiver
    * @param _newTollReceiver New address which receives collected funds
    */
-  function setTollReceiver(address payable _newTollReceiver) public onlyOwner {
+  function setTollReceiver(address payable _newTollReceiver) external onlyOwner {
     tollReceiver = _newTollReceiver;
   }
 
   /**
    * @notice Function only the toll collector can call to sweep funds to the toll receiver
    */
-  function collectTolls() public {
+  function collectTolls() external {
     require(msg.sender == tollCollector, "Umbra: Not Toll Collector");
     tollReceiver.transfer(address(this).balance);
   }
@@ -123,7 +123,7 @@ contract Umbra is Ownable {
     uint256 _tollCommitment,
     bytes32 _pkx, // ephemeral public key x coordinate
     bytes32 _ciphertext
-  ) public payable {
+  ) external payable {
     require(_tollCommitment == toll, "Umbra: Invalid or outdated toll commitment");
     require(msg.value > toll, "Umbra: Must pay more than the toll");
 
@@ -147,7 +147,7 @@ contract Umbra is Ownable {
     uint256 _amount,
     bytes32 _pkx, // ephemeral public key x coordinate
     bytes32 _ciphertext
-  ) public payable {
+  ) external payable {
     require(msg.value == toll, "Umbra: Must pay the exact toll");
     require(tokenPayments[_receiver][_tokenAddr] == 0, "Umbra: Cannot send more tokens to stealth address");
 
@@ -164,7 +164,7 @@ contract Umbra is Ownable {
    * @param _acceptor Address where withdrawn funds should be sent
    * @param _tokenAddr Address of the ERC20 token being withdrawn
    */
-  function withdrawToken(address _acceptor, address _tokenAddr) public {
+  function withdrawToken(address _acceptor, address _tokenAddr) external {
     uint256 amount = tokenPayments[msg.sender][_tokenAddr];
 
     require(amount > 0, "Umbra: No tokens available for withdrawal");
