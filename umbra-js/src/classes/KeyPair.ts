@@ -34,7 +34,7 @@ export class KeyPair {
       // Private key provided
       this.privateKeyHex = key;
       const publicKey = ec.g.mul(this.privateKeyHexSlim); // Multiply secp256k1 generator point by private key to get public key
-      this.publicKeyHex = `0x${publicKey.encode('hex')}`; // Save off public key, other forms computed as getters
+      this.publicKeyHex = `0x${publicKey.encode('hex') as string}`; // Save off public key, other forms computed as getters
     } else if (key.length === lengths.publicKey) {
       // Public key provided
       this.publicKeyHex = key; // Save off public key, other forms computed as getters
