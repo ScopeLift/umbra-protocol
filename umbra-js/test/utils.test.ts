@@ -14,6 +14,26 @@ const publicKey =
   '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
 const publicKeys = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 
+/**
+ * @notice Wrapper function to verify that an async function rejects with the specified message
+ * @param promise Promise to wait for
+ * @param message Expected rejection message
+ */
+const expectRejection = async (promise: Promise<any>, message: string) => {
+  // Error type requires strings, so we set them to an arbitrary value and
+  // later check the values. If unchanged, the promise did not reject
+  let error: Error = { name: 'default', message: 'default' };
+  try {
+    await promise;
+  } catch (e) {
+    error = e;
+  } finally {
+    expect(error.name).to.not.equal('default');
+    expect(error.message).to.not.equal('default');
+    expect(error.message).to.equal(message);
+  }
+};
+
 describe('Utilities', () => {
   describe('Helpers', () => {
     it('properly pads hex values', async () => {
@@ -66,6 +86,32 @@ describe('Utilities', () => {
 
     it.skip('looks up recipients by CNS', async () => {
       throw new Error('Test not implemented');
+    });
+  });
+
+  describe('Input validation', () => {
+    // ts-expect-error statements needed throughout this section to bypass TypeScript checks that would stop this file
+    // from being compiled/ran
+
+    it('throws when padHex is given a bad input', () => {
+      const errorMsg = 'Input must be a hex string without the 0x prefix';
+      expect(() => utils.padHex('q')).to.throw(errorMsg);
+      expect(() => utils.padHex('0x1')).to.throw(errorMsg);
+    });
+
+    it('throws when recoverPublicKeyFromTransaction is given a bad transaction hash', async () => {
+      const errorMsg = 'Invalid transaction hash provided';
+      await expectRejection(utils.recoverPublicKeyFromTransaction('q', ethersProvider), errorMsg);
+      // @ts-expect-error
+      await expectRejection(utils.recoverPublicKeyFromTransaction(1, ethersProvider), errorMsg);
+    });
+
+    it('throws when recoverPublicKeyFromTransaction is given a transaction that does not exist', async () => {
+      const mainnetTxHash = '0xce4209b4cf80e249502d770dd7f2b19ceb22bbb2cfb49500fe0a32d95b127e81';
+      await expectRejection(
+        utils.recoverPublicKeyFromTransaction(mainnetTxHash, ethersProvider),
+        'Transaction not found. Are the provider and transaction hash on the same network?'
+      );
     });
   });
 });

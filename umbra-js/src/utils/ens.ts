@@ -17,6 +17,10 @@ type StealthKeys = {
   viewingPubKey: BigNumber;
 };
 
+/**
+ * @notice Returns the address of the ENS resolver to use based on the provider's network
+ * @param provider Provider to fetch ENS resolver address for
+ */
 const getEnsResolverAddress = async (provider: EthersProvider) => {
   const chainId = (await provider.getNetwork()).chainId;
   if (chainId === 4 || chainId === 1337) {
@@ -26,10 +30,34 @@ const getEnsResolverAddress = async (provider: EthersProvider) => {
 };
 
 /**
+ * @notice Returns supported ENS domain endings
+ */
+export const supportedEnsDomains = ['.eth', '.xyz', '.kred', '.luxe', '.club', '.art'];
+
+/**
+ * @notice Returns true if the provided name is an ENS domain, false otherwise
+ * @param domainName Name to check
+ */
+export function isEnsDomain(domainName: string) {
+  for (const suffix of supportedEnsDomains) {
+    if (domainName.endsWith(suffix)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * @notice Computes ENS namehash of the input ENS domain, normalized to ENS compatibility
  * @param name ENS domain, e.g. myname.eth
  */
 export function namehash(name: string) {
+  if (typeof name !== 'string') {
+    throw new Error('Name must be a string with a supported suffix');
+  }
+  if (!isEnsDomain(name)) {
+    throw new Error(`Name does not end with supported suffix: ${supportedEnsDomains.join(', ')}`);
+  }
   return ensNamehash.hash(ensNamehash.normalize(name));
 }
 

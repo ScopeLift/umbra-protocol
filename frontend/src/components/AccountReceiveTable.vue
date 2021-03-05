@@ -220,7 +220,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
         tx = await umbra.value.withdraw(
           spendingPrivateKey,
           token.address,
-          announcement.receiver,
           destinationAddress.value
         );
       } else {

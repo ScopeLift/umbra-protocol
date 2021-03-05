@@ -14,7 +14,7 @@ import { sha256 } from '@ethersproject/sha2';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { lookupRecipient } from '../utils/utils';
+import { lengths, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import * as erc20Abi from '../abi/ERC20.json';
 import type {
@@ -35,8 +35,15 @@ const chainConfigs: Record<number, ChainConfig> = {
   1337: { umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Local
 };
 
-// Helper method to parse chainConfig input
+/**
+ * @notice Helper method to parse chainConfig input and return a valid chain configuration
+ * @param chainConfig Supported chainID as number, or custom ChainConfig
+ */
 const parseChainConfig = (chainConfig: ChainConfig | number) => {
+  if (!chainConfig) {
+    throw new Error('chainConfig not provided');
+  }
+
   // If a number is provided, verify chainId value is value and pull config from `chainConfigs`
   if (typeof chainConfig === 'number') {
     const validChainIds = Object.keys(chainConfigs);
@@ -45,15 +52,25 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
     }
     throw new Error('Unsupported chain ID provided');
   }
-  // Otherwise return the user's provided chain config
-  return chainConfig;
+
+  // Otherwise verify the user's provided chain config is valid and return it
+  const { umbraAddress, startBlock } = chainConfig;
+  const isValidStartBlock = typeof startBlock === 'number' && startBlock >= 0;
+  if (!isValidStartBlock) {
+    throw new Error(`Invalid start block provided in chainConfig. Got '${startBlock}'`);
+  }
+  return { umbraAddress: getAddress(umbraAddress), startBlock };
 };
 
-// Helper method to determine if the provided address is a token or ETH
-const isETH = (token: string) => {
-  if (token === 'ETH') return true;
-  const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-  return getAddress(token) === ETH_ADDRESS; // throws if not a valid address
+/**
+ * @notice Helper method to determine if the provided address is a token or ETH
+ * @param token Token address, where both 'ETH' and '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' return true
+ */
+const isEth = (token: string) => {
+  if (token === 'ETH') {
+    return true;
+  }
+  return getAddress(token) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'; // throws if `token` is not a valid address
 };
 
 export class Umbra {
@@ -95,15 +112,16 @@ export class Umbra {
   async send(
     signer: JsonRpcSigner | Wallet,
     token: string,
-    amount: BigNumber | string,
+    amount: BigNumberish,
     recipientId: string,
     overrides: SendOverrides = {}
   ) {
     // Configure signer
-    const txSigner = this.getConnectedSigner(signer);
+    const txSigner = this.getConnectedSigner(signer); // signer input validated
 
-    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send
-    if (!isETH(token)) {
+    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
+    // method also serves to validate the token input
+    if (!isEth(token)) {
       const tokenContract = new Contract(token, erc20Abi, signer) as ERC20;
       const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
       if (tokenBalance.lt(amount)) {
@@ -142,7 +160,7 @@ export class Umbra {
 
     // Send transaction
     let tx: ContractTransaction;
-    if (isETH(token)) {
+    if (isEth(token)) {
       const txOverrides = { ...filteredOverrides, value: toll.add(amount) };
       tx = await this.umbraContract
         .connect(txSigner)
@@ -164,29 +182,23 @@ export class Umbra {
    * @dev This method does not relay meta-transactions and requires signer to have ETH
    * @param spendingPrivateKey Receiver's spending private key
    * @param token Address of token to withdraw
-   * @param stealthAddress Stealth address funds were sent to
    * @param destination Address where funds will be withdrawn to
    * @param overrides Override the gas limit, gas price, or nonce
    */
-  async withdraw(
-    spendingPrivateKey: string,
-    token: string,
-    stealthAddress: string,
-    destination: string,
-    overrides: Overrides = {}
-  ) {
+  async withdraw(spendingPrivateKey: string, token: string, destination: string, overrides: Overrides = {}) {
     // Configure signer
-    const wallet = new Wallet(spendingPrivateKey);
-    const txSigner = this.getConnectedSigner(wallet);
+    const stealthWallet = new Wallet(spendingPrivateKey); // validates spendingPrivateKey input
+    const txSigner = this.getConnectedSigner(stealthWallet);
 
-    if (isETH(token)) {
+    // Handle ETH and tokens accordingly. The isEth method also serves to validate the token input
+    if (isEth(token)) {
       // Withdraw ETH
       // Based on gas price, compute how much ETH to transfer to avoid dust
-      const ethBalance = await this.provider.getBalance(stealthAddress);
+      const ethBalance = await this.provider.getBalance(stealthWallet.address); // stealthWallet.address is our stealthAddress
       const gasPrice = BigNumber.from(overrides.gasPrice || (await this.provider.getGasPrice()));
       const gasLimit = BigNumber.from(overrides.gasLimit || '21000');
       const txCost = gasPrice.mul(gasLimit);
-      return await txSigner.sendTransaction({
+      return txSigner.sendTransaction({
         to: destination,
         value: ethBalance.sub(txCost),
         gasPrice,
@@ -195,7 +207,7 @@ export class Umbra {
       });
     } else {
       // Withdrawing a token
-      return await this.umbraContract.connect(txSigner).withdrawToken(destination, overrides);
+      return this.umbraContract.connect(txSigner).withdrawToken(destination, overrides);
     }
   }
 
@@ -367,8 +379,8 @@ export class Umbra {
    * @param randomNumber Number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
   static computeStealthPrivateKey(spendingPrivateKey: string, randomNumber: RandomNumber | string) {
-    const spendingPrivateKeyPair = new KeyPair(spendingPrivateKey);
-    const stealthFromPrivate = spendingPrivateKeyPair.mulPrivateKey(randomNumber);
+    const spendingPrivateKeyPair = new KeyPair(spendingPrivateKey); // validates spendingPrivateKey
+    const stealthFromPrivate = spendingPrivateKeyPair.mulPrivateKey(randomNumber); // validates randomNumber
     if (!stealthFromPrivate.privateKeyHex) {
       throw new Error('Stealth key pair must have a private key: this should never occur');
     }
@@ -384,7 +396,16 @@ export class Umbra {
    * @param sponsorFee Amount sent to sponsor
    */
   static async signWithdraw(spendingPrivateKey: string, acceptor: string, sponsor: string, sponsorFee: BigNumberish) {
-    const stealthWallet = new Wallet(spendingPrivateKey);
+    // Validate addresses
+    acceptor = getAddress(acceptor);
+    sponsor = getAddress(sponsor);
+
+    const isValidSponsor = isHexString(sponsor) && sponsor.length === lengths.address;
+    if (!isValidSponsor) {
+      throw new Error('Invalid sponsor address');
+    }
+
+    const stealthWallet = new Wallet(spendingPrivateKey); // validates spendingPrivateKey
     const digest = keccak256(
       defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, sponsorFee])
     );

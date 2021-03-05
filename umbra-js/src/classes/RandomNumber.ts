@@ -21,19 +21,17 @@ export class RandomNumber {
    * hex string where the first two characters are 0x
    */
   constructor(readonly payloadExtension: string = zeroPrefix) {
+    // Validate it payload extension
+    if (!isHexString(payloadExtension)) {
+      throw new Error('Payload extension is not a valid hex string');
+    }
+    if (payloadExtension.length !== 34) {
+      throw new Error('Payload extension must be a 16 byte hex string with the 0x prefix');
+    }
+
     // Generate default random number without payload extension
     const randomNumberAsBytes = randomBytes(this.randomLength);
     this.value = BigNumber.from(randomNumberAsBytes);
-
-    // If a payload extension was provided, validate it
-    if (payloadExtension !== zeroPrefix) {
-      if (!isHexString(payloadExtension)) {
-        throw new Error('Payload extension is not a valid hex string');
-      }
-      if (payloadExtension.length !== 34) {
-        throw new Error('Payload extension must be a 16 byte hex string with the 0x prefix');
-      }
-    }
 
     // Payload extension is valid, so update the random number. If no payload extension is provided
     // the below is equivalent doing nothing, as it replaces the zero prefix with the zero prefix

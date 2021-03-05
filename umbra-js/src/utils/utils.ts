@@ -12,6 +12,14 @@ import { serialize as serializeTransaction } from '@ethersproject/transactions';
 import { DomainService } from '../classes/DomainService';
 import { EthersProvider, SignatureLike } from '../types';
 
+// Lengths of various properties when represented as full hex strings
+export const lengths = {
+  address: 42, // 20 bytes + 0x prefix
+  txHash: 66, // 32 bytes + 0x prefix
+  privateKey: 66, // 32 bytes + 0x prefix
+  publicKey: 132, // 64 bytes + 0x04 prefix
+};
+
 /**
  * @notice Adds leading zeroes to ensure hex strings are the expected length.
  * @dev We always expect a hex value to have the full number of characters for its size,
@@ -28,8 +36,7 @@ import { EthersProvider, SignatureLike } from '../types';
  * @param bytes Number of bytes string should have
  */
 export function padHex(hex: string, bytes = 32) {
-  if (!isHexString) throw new Error('Input is not a valid hex string');
-  if (hex.slice(0, 2) === '0x') throw new Error('Input must not contain 0x prefix');
+  if (!isHexString(`0x${hex}`)) throw new Error('Input must be a hex string without the 0x prefix');
   return hex.padStart(bytes * 2, '0');
 }
 
@@ -50,8 +57,13 @@ export function hexStringToBuffer(value: string | number | Bytes | Hexable) {
  */
 export async function recoverPublicKeyFromTransaction(txHash: string, provider: EthersProvider) {
   // Get transaction data
+  if (typeof txHash !== 'string' || txHash.length !== lengths.txHash) {
+    throw new Error('Invalid transaction hash provided');
+  }
   const tx = await provider.getTransaction(txHash);
-  if (!tx) throw new Error('Transaction not found');
+  if (!tx) {
+    throw new Error('Transaction not found. Are the provider and transaction hash on the same network?');
+  }
 
   // Get original signature
   const splitSignature: SignatureLike = { r: tx.r as string, s: tx.s, v: tx.v };

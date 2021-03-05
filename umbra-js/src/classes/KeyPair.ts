@@ -5,31 +5,19 @@
 import * as BN from 'bn.js';
 import { ec as EC } from 'elliptic';
 import { Wallet } from 'ethers';
-import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
-import { arrayify, hexZeroPad, isHexString } from '@ethersproject/bytes';
+import { hexZeroPad, isHexString } from '@ethersproject/bytes';
 import { computePublicKey, SigningKey } from '@ethersproject/signing-key';
-import { keccak256 } from 'js-sha3';
-import type { RandomNumber } from './RandomNumber';
-import { padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
-import { CompressedPublicKey, EthersProvider } from '../types';
+import { computeAddress } from '@ethersproject/transactions';
+import { RandomNumber } from './RandomNumber';
+import { lengths, padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
+import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
 
 const ec = new EC('secp256k1');
 
-export interface EncryptedPayload {
-  ephemeralPublicKey: string;
-  ciphertext: string;
-}
-
 export class KeyPair {
-  // Public key as hex string with 0x prefix
-  readonly publicKeyHex: string;
-
-  // Private key is optional, so initialize to null
-  readonly privateKeyHex: string | null = null;
-  readonly privateKeyHexSlim: string | null = null;
-  readonly privateKeyEC: EC.KeyPair | null = null;
-  readonly privateKeyBN: BigNumber | null = null;
+  readonly publicKeyHex: string; // Public key as hex string with 0x04 prefix
+  readonly privateKeyHex: string | null = null; // Private key as hex string with 0x prefix, or null if not provided
 
   /**
    * @notice Creates new instance from a public key or private key
@@ -37,104 +25,64 @@ export class KeyPair {
    */
   constructor(key: string) {
     // Input checks
-    if (!isHexString(key)) throw new Error('Key must be in hex format with 0x prefix');
+    if (typeof key !== 'string' || !isHexString(key)) {
+      throw new Error('Key must be a string in hex format with 0x prefix');
+    }
 
     // Handle input
-    if (key.length === 66) {
-      // PRIVATE KEY
-      // Save off various forms of the private key
+    if (key.length === lengths.privateKey) {
+      // Private key provided
       this.privateKeyHex = key;
-      this.privateKeyHexSlim = key.slice(2);
-      this.privateKeyEC = ec.keyFromPrivate(this.privateKeyHexSlim);
-      this.privateKeyBN = BigNumber.from(this.privateKeyHex);
-
-      // Multiply curve's generator point by private key to get public key
-      const publicKey = ec.g.mul(this.privateKeyHexSlim);
-
-      // Save off public key as hex, other forms computed as getters
-      const publicKeyHexCoordsSlim = {
-        x: padHex(publicKey.getX().toString('hex')),
-        y: padHex(publicKey.getY().toString('hex')),
-      };
-      this.publicKeyHex = `0x04${publicKeyHexCoordsSlim.x}${publicKeyHexCoordsSlim.y}`;
-    } else if (key.length === 132) {
-      // PUBLIC KEY
-      // Save off public key as hex, other forms computed as getters
-      this.publicKeyHex = key;
+      const publicKey = ec.g.mul(this.privateKeyHexSlim); // Multiply secp256k1 generator point by private key to get public key
+      this.publicKeyHex = `0x${publicKey.encode('hex')}`; // Save off public key, other forms computed as getters
+    } else if (key.length === lengths.publicKey) {
+      // Public key provided
+      this.publicKeyHex = key; // Save off public key, other forms computed as getters
     } else {
       throw new Error('Key must be a 66 character hex private key or a 132 character hex public key');
     }
   }
 
-  // GETTERS =======================================================================================
+  // ===================================================== GETTERS =====================================================
+
   /**
-   * @notice Returns the x,y public key coordinates as hex with 0x prefix
+   * @notice Returns the private key as an ethers BigNumber
    */
-  get publicKeyHexCoords() {
-    return {
-      x: `0x${padHex(this.publicKeyHexSlim.slice(0, 64))}`,
-      y: `0x${padHex(this.publicKeyHexSlim.slice(64))}`,
-    };
+  get privateKeyBN() {
+    return this.privateKeyHex ? BigNumber.from(this.privateKeyHex) : null;
   }
 
   /**
-   * @notice Returns the x,y public key coordinates as hex without 0x prefix
+   * @notice Returns the private key as a hex string without the 0x prefix
    */
-  get publicKeyHexCoordsSlim() {
-    return {
-      x: padHex(this.publicKeyHexSlim.slice(0, 64)),
-      y: padHex(this.publicKeyHexSlim.slice(64)),
-    };
-  }
-
-  /**
-   * @notice Returns the public key without the 0x prefix
-   */
-  get publicKeyHexSlim() {
-    return this.publicKeyHex.slice(4);
+  get privateKeyHexSlim() {
+    return this.privateKeyHex ? this.privateKeyHex.slice(2) : null;
   }
 
   /**
    * @notice Returns an elliptic instance generated from the public key
    */
   get publicKeyEC() {
-    return ec.keyFromPublic({
-      x: this.publicKeyHexCoordsSlim.x,
-      y: this.publicKeyHexCoordsSlim.y,
-    });
-  }
-
-  /**
-   * @notice Returns the public key as a BigNumber
-   */
-  get publicKeyBN() {
-    return BigNumber.from(this.publicKeyHex);
-  }
-
-  /**
-   * @notice Returns the public key as bytes array
-   */
-  get publicKeyBytes() {
-    return arrayify(this.publicKeyHex);
+    return ec.keyFromPublic(this.publicKeyHex.slice(2), 'hex');
   }
 
   /**
    * @notice Returns checksum address derived from this key
    */
   get address() {
-    const hash = keccak256(Buffer.from(this.publicKeyHexSlim, 'hex'));
-    const addressBuffer = Buffer.from(hash, 'hex');
-    const address = `0x${addressBuffer.slice(-20).toString('hex')}`;
-    return getAddress(address);
+    return computeAddress(this.publicKeyHex);
   }
 
-  // ENCRYPTION / DECRYPTION =======================================================================
+  // ============================================= ENCRYPTION / DECRYPTION =============================================
   /**
    * @notice Encrypt a random number with the instance's public key
    * @param randomNumber Random number as instance of RandomNumber class
    * @returns Hex strings of uncompressed 65 byte public key and 32 byte ciphertext
    */
   encrypt(randomNumber: RandomNumber): EncryptedPayload {
+    if (!(randomNumber instanceof RandomNumber)) {
+      throw new Error('Must provide instance of RandomNumber');
+    }
     // Get shared secret to use as encryption key
     const ephemeralWallet = Wallet.createRandom();
     const privateKey = new SigningKey(ephemeralWallet.privateKey);
@@ -143,8 +91,8 @@ export class KeyPair {
     // XOR random number with shared secret to get encrypted value
     const ciphertext = randomNumber.value.xor(sharedSecret);
     const result = {
-      ephemeralPublicKey: ephemeralWallet.publicKey, // hex string
-      ciphertext: hexZeroPad(ciphertext.toHexString(), 32), // hex string
+      ephemeralPublicKey: ephemeralWallet.publicKey, // hex string with 0x04 prefix
+      ciphertext: hexZeroPad(ciphertext.toHexString(), 32), // hex string with 0x prefix
     };
     return result;
   }
@@ -155,6 +103,9 @@ export class KeyPair {
    * @returns Decrypted ciphertext as hex string
    */
   decrypt(output: EncryptedPayload) {
+    if (!output.ephemeralPublicKey || !output.ciphertext) {
+      throw new Error('Input must be of type EncryptedPayload to decrypt');
+    }
     if (!this.privateKeyHex) {
       throw new Error('KeyPair has no associated private key to decrypt with');
     }
@@ -169,12 +120,19 @@ export class KeyPair {
     return hexZeroPad(plaintext.toHexString(), 32);
   }
 
-  // ELLIPTIC CURVE MATH ===========================================================================
+  // =============================================== ELLIPTIC CURVE MATH ===============================================
   /**
    * @notice Returns new KeyPair instance after multiplying this public key by some value
    * @param value number to multiply by, as RandomNumber or hex string with 0x prefix
    */
   mulPublicKey(value: RandomNumber | string) {
+    if (!(value instanceof RandomNumber) && typeof value !== 'string') {
+      throw new Error('Input must be instance of RandomNumber or string');
+    }
+    if (typeof value === 'string' && !value.startsWith('0x')) {
+      throw new Error('Strings must be in hex form with 0x prefix');
+    }
+
     const number = isHexString(value)
       ? (value as string).slice(2) // provided a valid hex string
       : (value as RandomNumber).asHexSlim; // provided RandomNumber
@@ -182,7 +140,7 @@ export class KeyPair {
     // Perform the multiplication
     const publicKey = this.publicKeyEC.getPublic().mul(new BN(number, 16));
 
-    // Get x,y hex strings
+    // Get x,y hex strings and pad each to 32 bytes
     const x = padHex(publicKey.getX().toString('hex'));
     const y = padHex(publicKey.getY().toString('hex'));
 
@@ -195,10 +153,17 @@ export class KeyPair {
    * @param value number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
   mulPrivateKey(value: RandomNumber | string) {
+    if (!(value instanceof RandomNumber) && typeof value !== 'string') {
+      throw new Error('Input must be instance of RandomNumber or string');
+    }
+    if (typeof value === 'string' && !isHexString(value)) {
+      throw new Error('Strings must be in hex form with 0x prefix');
+    }
     if (!this.privateKeyBN) {
-      throw new Error('KeyPair has no associated private key to multiply');
+      throw new Error('KeyPair has no associated private key');
     }
 
+    // Parse the number provided
     const number = isHexString(value)
       ? (value as string) // provided a valid hex string
       : (value as RandomNumber).asHex; // provided RandomNumber
@@ -218,13 +183,16 @@ export class KeyPair {
     return new KeyPair(privateKey);
   }
 
-  // STATIC METHODS ================================================================================
+  // ================================================= STATIC METHODS ==================================================
   /**
    * @notice Generate KeyPair instance asynchronously from a transaction hash
    * @param txHash Transaction hash to recover public key from
    * @param provider web3 provider to use (not an ethers provider)
    */
   static async instanceFromTransaction(txHash: string, provider: EthersProvider) {
+    if (typeof txHash !== 'string' || txHash.length !== lengths.txHash) {
+      throw new Error('Invalid transaction hash provided');
+    }
     const publicKeyHex = await recoverPublicKeyFromTransaction(txHash, provider);
     return new KeyPair(publicKeyHex);
   }
@@ -235,6 +203,9 @@ export class KeyPair {
    * @returns Object containing the prefix as an integer and compressed public key as hex, as separate parameters
    */
   static compressPublicKey(publicKey: string): CompressedPublicKey {
+    if (typeof publicKey !== 'string' || !isHexString(publicKey) || publicKey.length !== lengths.publicKey) {
+      throw new Error('Must provide uncompressed public key as hex string');
+    }
     const compressedPublicKey = computePublicKey(publicKey, true);
     return {
       prefix: Number(compressedPublicKey[3]), // prefix bit is the 4th character in the string (e.g. 0x03)
@@ -255,6 +226,9 @@ export class KeyPair {
    * @param prefix Prefix bit, must be 2 or 3
    */
   static getUncompressedFromX(pkx: BigNumber | string, prefix: number | string | undefined = undefined) {
+    if (!(pkx instanceof BigNumber) && typeof pkx !== 'string') {
+      throw new Error('Compressed public key must be a BigNumber or string');
+    }
     if (!prefix) {
       // Only safe to use this branch when uncompressed key is using for scanning your funds
       const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);

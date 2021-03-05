@@ -213,24 +213,14 @@ describe('Umbra class', () => {
       );
       const destinationWallet = ethers.Wallet.createRandom();
       verifyEqualValues(await dai.balanceOf(destinationWallet.address), 0);
-      const withdrawTxToken = await umbra.withdraw(
-        stealthPrivateKey,
-        dai.address,
-        stealthKeyPair.address,
-        destinationWallet.address
-      );
+      const withdrawTxToken = await umbra.withdraw(stealthPrivateKey, dai.address, destinationWallet.address);
       await withdrawTxToken.wait();
       verifyEqualValues(await dai.balanceOf(destinationWallet.address), quantity);
       verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
 
       // And for good measure let's withdraw the rest of the ETH
       const initialEthBalance = await getEthBalance(stealthKeyPair.address);
-      const withdrawTxEth = await umbra.withdraw(
-        stealthPrivateKey,
-        ETH_ADDRESS,
-        stealthKeyPair.address,
-        destinationWallet.address
-      );
+      const withdrawTxEth = await umbra.withdraw(stealthPrivateKey, ETH_ADDRESS, destinationWallet.address);
       await withdrawTxEth.wait();
       const withdrawEthReceipt = await ethersProvider.getTransactionReceipt(withdrawTxEth.hash);
       const withdrawTokenTxCost = withdrawEthReceipt.gasUsed.mul(withdrawTxEth.gasPrice);
@@ -318,12 +308,7 @@ describe('Umbra class', () => {
         userAnnouncements[0].randomNumber
       );
       const destinationWallet = ethers.Wallet.createRandom();
-      const withdrawTx = await umbra.withdraw(
-        stealthPrivateKey,
-        'ETH',
-        stealthKeyPair.address,
-        destinationWallet.address
-      );
+      const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
       const txCost = withdrawTx.gasLimit.mul(withdrawTx.gasPrice);
       verifyEqualValues(await getEthBalance(destinationWallet.address), quantity.sub(txCost));
@@ -354,16 +339,64 @@ describe('Umbra class', () => {
         userAnnouncements[0].randomNumber
       );
       const destinationWallet = ethers.Wallet.createRandom();
-      const withdrawTx = await umbra.withdraw(
-        stealthPrivateKey,
-        'ETH',
-        stealthKeyPair.address,
-        destinationWallet.address
-      );
+      const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
       const txCost = withdrawTx.gasLimit.mul(withdrawTx.gasPrice);
       verifyEqualValues(await getEthBalance(destinationWallet.address), quantity.sub(txCost));
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+    });
+  });
+
+  describe('Input validation', () => {
+    // ts-expect-error statements needed throughout this section to bypass TypeScript checks that would stop this file
+    // from being compiled/ran
+
+    it('throws when initializing with an invalid chainConfig', () => {
+      const errorMsg1 = "Invalid start block provided in chainConfig. Got 'undefined'";
+      const errorMsg2 = "Invalid start block provided in chainConfig. Got '1'";
+      const umbraAddress = '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'; // address does not matter here
+
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider)).to.throw('chainConfig not provided');
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider, {})).to.throw(errorMsg1);
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider, { umbraAddress })).to.throw(errorMsg1);
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider, { startBlock: 0 })).to.throw(
+        'invalid address (argument="address", value=undefined, code=INVALID_ARGUMENT, version=address/5.0.10)'
+      );
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider, { umbraAddress: '123', startBlock: '1' })).to.throw(errorMsg2);
+    });
+
+    it('throws when isEth is passed a bad address', async () => {
+      // These error messages come from ethers
+      await expectRejection(
+        umbra.send(sender.signer, '123', '1', '1'), // last two args are dummy args since we're testing the second input
+        'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.0.10)'
+      );
+      await expectRejection(
+        // @ts-expect-error
+        umbra.send(sender.signer, 123, '1', '1'), // last two args are dummy args since we're testing the second input
+        'invalid address (argument="address", value=123, code=INVALID_ARGUMENT, version=address/5.0.10)'
+      );
+    });
+
+    it('throws when signWithdraw is passed a bad address', async () => {
+      // Actual values of input parameters don't matter for this test
+      const privateKey = receiver.wallet.privateKey;
+      const goodAddress = receiver.wallet.address;
+      const badAddress = '0x123';
+      // These error messages come from ethers
+      await expectRejection(
+        Umbra.signWithdraw(privateKey, badAddress, goodAddress, '1'),
+        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
+      );
+      await expectRejection(
+        Umbra.signWithdraw(privateKey, goodAddress, badAddress, '1'),
+        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
+      );
     });
   });
 });

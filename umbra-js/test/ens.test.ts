@@ -16,6 +16,19 @@ const nameViewingPublicKey =
   '0x041190b7e2b61b8872c9ea5fff14770e7d3e78900282371b09ee9f2b8c4016b9967b5e9ee9e1e0bef30052e806321f0685a3ad69e2233be6813b81a5d293feea76';
 
 describe('ENS functions', () => {
+  it('properly identifies ENS domains', async () => {
+    ens.supportedEnsDomains.forEach((suffix) => {
+      // example suffixes: .eth, .xyz, etc.
+      expect(ens.isEnsDomain(`test${suffix}`)).to.be.true;
+    });
+  });
+
+  it('namehash throws when given a bad ENS suffix', async () => {
+    const badName = 'myname.com';
+    const errorMsg = `Name does not end with supported suffix: ${ens.supportedEnsDomains.join(', ')}`;
+    expect(() => ens.namehash(badName)).to.throw(errorMsg);
+  });
+
   it('computes the namehash of an ENS domain', () => {
     const hash = ens.namehash('msolomon.eth');
     expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');

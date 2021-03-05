@@ -1,5 +1,10 @@
 {
-    "files": [],
-    "references": [{ "path": "frontend" }, { "path": "umbra-js" }, { "path": "contracts" }],
-    "exclude": ["node_modules"]
+  "files": [],
+  "references": [
+    { "path": "frontend" },
+    { "path": "umbra-js" },
+    { "path": "contracts" }
+  ],
+  "exclude": ["node_modules"],
+  "typeRoots": ["./node_modules/@types"]
 }

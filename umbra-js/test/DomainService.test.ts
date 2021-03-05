@@ -35,13 +35,6 @@ describe('DomainService class', () => {
       expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');
     });
 
-    it('properly identifies ENS domains', async () => {
-      DomainService.supportedEnsDomains().forEach((suffix) => {
-        // example suffixes: .eth, .xyz, etc.
-        expect(DomainService.isEnsDomain(`test${suffix}`)).to.be.true;
-      });
-    });
-
     it.skip('sets the public keys for an ENS address', async function () {
       this.timeout(10000);
       // TODO

@@ -24,6 +24,12 @@ export interface ChainConfig {
   startBlock: number; // block Umbra contract was deployed at
 }
 
+// Used for passing around encrypted random number
+export interface EncryptedPayload {
+  ephemeralPublicKey: string; // hex string with 0x04 prefix
+  ciphertext: string; // hex string with 0x prefix
+}
+
 // Type for storing compressed public keys
 export interface CompressedPublicKey {
   prefix: number;
