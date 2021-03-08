@@ -20,6 +20,7 @@ export type EthersProvider = Web3Provider | JsonRpcProvider;
 // ======================================= Umbra class types =======================================
 // Settings when instantiating an instance of the Umbra class
 export interface ChainConfig {
+  chainId: number; // Chain ID of the deployed contract
   umbraAddress: string; // address of Umbra contract
   startBlock: number; // block Umbra contract was deployed at
 }

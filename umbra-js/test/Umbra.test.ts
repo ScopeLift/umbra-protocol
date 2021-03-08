@@ -103,9 +103,10 @@ describe('Umbra class', () => {
     dai = (await daiFactory.deploy('Dai', 'DAI')) as ERC20;
     await dai.deployTransaction.wait();
 
-    // Get chainConfig based on most recent Ropsten block number to minimize scanning time
+    // Get chainConfig based on most recent Rinkeby block number to minimize scanning time
     const lastBlockNumber = await ethersProvider.getBlockNumber();
     chainConfig = {
+      chainId: 4, // Rinkeby chainID
       umbraAddress: umbraContract.address,
       startBlock: lastBlockNumber,
     };
@@ -265,9 +266,21 @@ describe('Umbra class', () => {
         receiver.wallet.privateKey,
         userAnnouncements[0].randomNumber
       );
+
+      // TODO why are these 3 different? Perhaps bug in OpenZeppelin Test Environment forking -- try Hardhat?
+      console.log(
+        'TODO Why are these 3 different? Bug in OpenZeppelin Test Environment forking? Should switch to Hardhat anyway for consistency with /contracts'
+      );
+      console.log('umbra.chainConfig.chainId:     ', umbra.chainConfig.chainId); // returns 4
+      console.log('umbra.umbraContract.chainId(): ', (await umbra.umbraContract.chainId()).toNumber()); // returns 1
+      console.log('ethersProvider.getNetwork():   ', (await ethersProvider.getNetwork()).chainId); // returns 1337
+
       const { v, r, s } = await Umbra.signWithdraw(
         stealthPrivateKey,
+        (await umbra.umbraContract.chainId()).toNumber(),
+        await umbra.umbraContract.version(),
         destinationWallet.address,
+        dai.address,
         sponsorWallet.address,
         sponsorFee
       );
@@ -277,6 +290,7 @@ describe('Umbra class', () => {
         relayerWallet,
         stealthKeyPair.address,
         destinationWallet.address,
+        dai.address,
         sponsorWallet.address,
         sponsorFee,
         v,

@@ -31,8 +31,8 @@ const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.js
 
 // Mapping from chainId to contract information
 const chainConfigs: Record<number, ChainConfig> = {
-  4: { umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Rinkeby
-  1337: { umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Local
+  4: { chainId: 4, umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Rinkeby
+  1337: { chainId: 1337, umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Local
 };
 
 /**
@@ -207,7 +207,7 @@ export class Umbra {
       });
     } else {
       // Withdrawing a token
-      return this.umbraContract.connect(txSigner).withdrawToken(destination, overrides);
+      return await this.umbraContract.connect(txSigner).withdrawToken(destination, token, overrides);
     }
   }
 
@@ -218,6 +218,7 @@ export class Umbra {
    * @param signer Signer to send transaction from
    * @param stealthAddr Stealth address funds were sent to
    * @param destination Address where funds will be withdrawn to
+   * @param token Address of token to withdraw
    * @param sponsor Address that receives sponsorFee
    * @param sponsorFee Fee for relayer
    * @param v v-component of signature
@@ -229,6 +230,7 @@ export class Umbra {
     signer: JsonRpcSigner | Wallet,
     stealthAddr: string,
     destination: string,
+    token: string,
     sponsor: string,
     sponsorFee: BigNumberish,
     v: number,
@@ -239,7 +241,7 @@ export class Umbra {
     const txSigner = this.getConnectedSigner(signer);
     return await this.umbraContract
       .connect(txSigner)
-      .withdrawTokenOnBehalf(stealthAddr, destination, sponsor, sponsorFee, v, r, s, overrides);
+      .withdrawTokenOnBehalf(stealthAddr, destination, token, sponsor, sponsorFee, v, r, s, overrides);
   }
 
   /**
@@ -391,11 +393,22 @@ export class Umbra {
    * @notice Sign a transaction to be used with withdrawTokenOnBehalf
    * @dev Return type is an ethers Signature: { r: string; s: string; _vs: string, recoveryParam: number; v: number; }
    * @param spendingPrivateKey Receiver's spending private key that is doing the signing
+   * @param chainId Chain ID where contract is deployed
+   * @param version Umbra contract version
    * @param acceptor Withdrawal destination
+   * @param token Address of token to withdraw
    * @param sponsor Address of relayer
    * @param sponsorFee Amount sent to sponsor
    */
-  static async signWithdraw(spendingPrivateKey: string, acceptor: string, sponsor: string, sponsorFee: BigNumberish) {
+  static async signWithdraw(
+    spendingPrivateKey: string,
+    chainId: number,
+    version: string,
+    acceptor: string,
+    token: string,
+    sponsor: string,
+    sponsorFee: BigNumberish
+  ) {
     // Validate addresses
     acceptor = getAddress(acceptor);
     sponsor = getAddress(sponsor);
@@ -405,9 +418,12 @@ export class Umbra {
       throw new Error('Invalid sponsor address');
     }
 
-    const stealthWallet = new Wallet(spendingPrivateKey); // validates spendingPrivateKey
+    const stealthWallet = new Wallet(spendingPrivateKey);
     const digest = keccak256(
-      defaultAbiCoder.encode(['address', 'address', 'uint256'], [sponsor, acceptor, sponsorFee])
+      defaultAbiCoder.encode(
+        ['uint256', 'string', 'address', 'address', 'address', 'uint256'],
+        [chainId, version, acceptor, token, sponsor, sponsorFee]
+      )
     );
     const rawSig = await stealthWallet.signMessage(arrayify(digest));
     return splitSignature(rawSig);

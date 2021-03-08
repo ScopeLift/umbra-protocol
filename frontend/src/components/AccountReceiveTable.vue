@@ -225,11 +225,21 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value) throw new Error('Signer or provider not found');
-        // Get user's signature. GSN doesn't care about sponsor address and fee, so for now on
-        // Rinkeby we just use a value of 1 and the destinationAddress as a sanity check this functionality
+        // Get user's signature. GSN doesn't care about sponsor address and fee, so for now on Rinkeby
+        // we just use a value of 1 and the destinationAddress as a sanity check this functionality works
         const sponsor = destinationAddress.value;
-        const sponsorFee = '1';
-        const { v, r, s } = await Umbra.signWithdraw(spendingPrivateKey, destinationAddress.value, sponsor, sponsorFee);
+        const sponsorFee = '1'; // sponsor receives 1 unit of token being withdrawn, e.g. 1e-18 DAI or 1e-6 USDC
+        const chainId = (await provider.value.getNetwork()).chainId;
+        const version = '1'; // this is the only version, so hardcoded for now
+        const { v, r, s } = await Umbra.signWithdraw(
+          spendingPrivateKey,
+          chainId,
+          version,
+          destinationAddress.value,
+          token.address,
+          sponsor,
+          sponsorFee
+        );
 
         // Configure GSN provider (hardcoded our Rinkeby paymaster address)
         const gsnConfig = {
@@ -245,7 +255,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
         const gsnEthersProvider = new Web3Provider((gsnProvider as unknown) as ExternalProvider);
 
         // Send transaction
-        const chainId = String((await provider.value.getNetwork()).chainId);
         const stealthSigner = gsnEthersProvider.getSigner(stealthKeyPair.address);
         const relayRecipientAddress = UmbraRelayRecipient.addresses[chainId as SupportedChainIds];
         const umbraRelayRecipient = new Contract(relayRecipientAddress, UmbraRelayRecipient.abi, stealthSigner);
