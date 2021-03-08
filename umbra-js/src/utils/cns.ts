@@ -8,7 +8,7 @@ import type { EthersProvider } from '../types';
 import * as constants from '../constants.json';
 import * as cnsRegistryAbi from '../abi/CnsRegistry.json';
 import * as cnsResolverAbi from '../abi/CnsResolver.json';
-import { createContract } from '../inner/contract';
+import { createContract } from './utils';
 
 const { CNS_REGISTRY } = constants;
 
@@ -40,7 +40,7 @@ export function getPublicKeys(name: string, resolution: Resolution) {
 /**
  * @notice For a given CNS domain, sets the associated umbra signature
  * @param name CNS domain, e.g. myname.crypto
- * @param provider web3 provider to use (not an ethers provider)
+ * @param provider ethers provider to use
  * @param resolution Resolution instance of @unstoppabledomains/resolution
  * @param signature user's signature of the Umbra protocol message, as hex string
  * @returns Transaction hash

@@ -187,7 +187,7 @@ export class KeyPair {
   /**
    * @notice Generate KeyPair instance asynchronously from a transaction hash
    * @param txHash Transaction hash to recover public key from
-   * @param provider web3 provider to use (not an ethers provider)
+   * @param provider ethers provider to use
    */
   static async instanceFromTransaction(txHash: string, provider: EthersProvider) {
     if (typeof txHash !== 'string' || txHash.length !== lengths.txHash) {

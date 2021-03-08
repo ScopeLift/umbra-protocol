@@ -7,7 +7,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 import { KeyPair } from '../classes/KeyPair';
 import * as publicResolverAbi from '../abi/PublicResolver.json';
-import { createContract } from '../inner/contract';
+import { createContract } from './utils';
 const ensNamehash: EnsNamehash = require('eth-ens-namehash'); // doesn't include TypeScript definitions
 
 type StealthKeys = {

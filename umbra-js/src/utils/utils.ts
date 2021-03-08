@@ -2,6 +2,7 @@
  * @dev Assortment of helper methods
  */
 
+import { Contract, ContractInterface } from 'ethers';
 import { arrayify, Bytes, Hexable, isHexString, joinSignature } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { resolveProperties } from '@ethersproject/properties';
@@ -115,7 +116,7 @@ async function getSentTransaction(address: string, ethersProvider: EthersProvide
 /**
  * @notice Returns public keys from the recipientId
  * @param id Recipient identifier, must be an ENS name, CNS name, address, transaction hash, or public key
- * @param provider web3 provider to use (not an ethers provider)
+ * @param provider ethers provider to use
  */
 export async function lookupRecipient(id: string, provider: EthersProvider) {
   // Check if identifier is a public key. If so we just return that directly
@@ -154,4 +155,16 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
 
   // Invalid identifier provided
   throw new Error('Invalid identifier provided');
+}
+
+/**
+ * @notice Creates and returns a contract instance
+ * @param address Contract address
+ * @param abi Contract ABI
+ * @param provider ethers provider instance
+ */
+export function createContract(address: string, abi: ContractInterface, provider: EthersProvider) {
+  // Use signer if available, otherwise use provider
+  const signer = provider.getSigner();
+  return new Contract(address, abi, signer || provider);
 }
