@@ -173,7 +173,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const formatAddress = async (address: string) => {
     try {
       const ens = await provider.value?.lookupAddress(address);
-      return ens || `${address}...${address}`;
+      return ens || `${address.slice(0, 6)}...${address.slice(38)}`; // address format: 0x1234...abcd
     } catch (err) {
       return address;
     }
