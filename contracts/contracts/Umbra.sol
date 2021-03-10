@@ -4,7 +4,6 @@ pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 contract Umbra is Ownable {
@@ -38,7 +37,7 @@ contract Umbra is Ownable {
   uint256 public immutable chainId;
 
   /// @dev Placeholder address used to identify transfer of native ETH
-  address constant ETH_TOKEN_PLACHOLDER = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+  address constant ETH_TOKEN_PLACHOLDER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   /// @notice An ETH amount that must be sent alongside each payment; used as an anti-spam measure
   uint256 public toll;
