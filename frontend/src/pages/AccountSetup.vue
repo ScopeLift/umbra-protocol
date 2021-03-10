@@ -2,7 +2,14 @@
   <q-page padding>
     <h2 class="page-title">Setup</h2>
 
+    <!-- User has not connected wallet  -->
+    <div v-if="!userAddress">
+      <connect-wallet-card text="Connect your wallet to setup your account" />
+    </div>
+
+    <!-- Walk through of process -->
     <q-carousel
+      v-else
       v-model="carouselStep"
       animated
       class="shadow-2 rounded-borders q-mx-auto"
@@ -112,6 +119,7 @@ import { TransactionResponse } from '@ethersproject/providers';
 import BaseButton from 'src/components/BaseButton.vue';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
+import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 
 function useKeys() {
   const { domainService, getPrivateKeys, userAddress, userEns, spendingKeyPair, viewingKeyPair } = useWalletStore();
@@ -171,7 +179,7 @@ function useKeys() {
 }
 
 export default defineComponent({
-  components: { BaseButton },
+  components: { BaseButton, ConnectWalletCard },
   name: 'PageSetup',
   setup() {
     return { ...useKeys() };

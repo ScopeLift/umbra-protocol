@@ -12,6 +12,7 @@ const bNotify = BNotify({
 // Some error messages we don't want to show to the user, so return in these cases
 const messagesToIgnore = [
   'walletSelect must be called before walletCheck', // user decided not to connect wallet
+  'Navigating to current location', // e.g. user clicks "Home" in nav bar when already on home page
 ];
 
 export default function useAlerts() {
@@ -21,7 +22,9 @@ export default function useAlerts() {
    * @param message Message to display on notification
    */
   function notifyUser(color: string, message: string) {
-    if (message.startsWith(messagesToIgnore[0])) return;
+    // If message matches any of the substrings in messagesToIgnore, we return and don't show the alert
+    if (new RegExp(messagesToIgnore.join('|')).test(message)) return;
+
     Notify.create({
       color,
       message,

@@ -2,11 +2,16 @@
   <q-page padding>
     <h2 class="page-title">Receive</h2>
 
-    <div class="q-mx-auto" style="max-width: 800px">
+    <!-- User has not connected wallet  -->
+    <div v-if="!userAddress">
+      <connect-wallet-card text="Connect your wallet to scan for received funds" />
+    </div>
+
+    <div v-else class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
-      <div v-if="keyStatus === 'denied' || keyStatus === 'waiting'" class="row justify-center">
-        <div class="col-12 text-center">This app needs your signature to scan for funds you've received</div>
-        <div><base-button @click="getPrivateKeysHandler" label="Sign" /></div>
+      <div v-if="keyStatus === 'denied' || keyStatus === 'waiting'" class="form">
+        <div class="text-center q-mb-md">This app needs your signature to scan for funds you've received</div>
+        <base-button @click="getPrivateKeysHandler" class="text-center" label="Sign" />
       </div>
 
       <!-- Scanning in progress -->
@@ -28,9 +33,10 @@ import { defineComponent, ref } from '@vue/composition-api';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import useWallet from 'src/store/wallet';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';
+import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 
 function useScan() {
-  const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair } = useWallet();
+  const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, userAddress } = useWallet();
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
   const scanStatus = ref<'waiting' | 'scanning' | 'complete'>('waiting');
   const userAnnouncements = ref<UserAnnouncement[]>([]);
@@ -54,12 +60,12 @@ function useScan() {
     scanStatus.value = 'complete';
   }
 
-  return { keyStatus, scanStatus, getPrivateKeysHandler, userAnnouncements };
+  return { userAddress, keyStatus, scanStatus, getPrivateKeysHandler, userAnnouncements };
 }
 
 export default defineComponent({
   name: 'PageReceive',
-  components: { AccountReceiveTable },
+  components: { AccountReceiveTable, ConnectWalletCard },
   setup() {
     return { ...useScan() };
   },

@@ -2,7 +2,13 @@
   <q-page padding>
     <h2 class="page-title">Send</h2>
 
-    <q-form @submit="onFormSubmit" class="form" ref="sendFormRef">
+    <!-- User has not connected wallet  -->
+    <div v-if="!userAddress">
+      <connect-wallet-card text="Connect your wallet to send funds" />
+    </div>
+
+    <!-- Send form -->
+    <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
       <div>Recipient's ENS name</div>
       <base-input v-model="recipientId" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
@@ -33,6 +39,7 @@ import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import { TokenInfo } from 'components/models';
 import erc20 from 'src/contracts/erc20.json';
+import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 
 function useSendForm() {
   const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, userAddress } = useWalletStore();
@@ -104,6 +111,7 @@ function useSendForm() {
   }
 
   return {
+    userAddress,
     isSendInProgress,
     sendFormRef,
     recipientId,
@@ -118,6 +126,7 @@ function useSendForm() {
 
 export default defineComponent({
   name: 'PageSend',
+  components: { ConnectWalletCard },
   setup() {
     return { ...useSendForm() };
   },

@@ -21,18 +21,5 @@ export default route(function ({ Vue }) {
     base: process.env.VUE_ROUTER_BASE,
   });
 
-  Router.beforeEach((to, from, next) => {
-    // Only allow user to navigate directly to home page to ensure a wallet is connected when they
-    // visit any other page
-    if (to.name === 'home') {
-      // If visiting the home page, let the user go straight there
-      next();
-    } else if (from.name === null) {
-      // Otherwise, if we went directly to a page (e.g. /send), redirect to the home page
-      next({ name: 'home' });
-    }
-    next();
-  });
-
   return Router;
 });

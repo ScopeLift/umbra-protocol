@@ -60,7 +60,9 @@ function useWallet(context: SetupContext, to: string) {
     await configureProvider();
 
     // Redirect to specified page
-    await context.root.$router.push({ name: to });
+    if (to) {
+      await context.root.$router.push({ name: to });
+    }
   }
 
   return { connectWallet };
@@ -73,7 +75,8 @@ export default defineComponent({
     // Page name to redirect to after logging in
     to: {
       type: String,
-      required: true,
+      required: false,
+      default: undefined,
     },
   },
 

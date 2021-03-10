@@ -120,14 +120,20 @@ export default function useWalletStore() {
     if (!rawProvider.value) return;
     provider.value = new ethers.providers.Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
-    userAddress.value = await signer.value.getAddress();
-    userEns.value = await provider.value.lookupAddress(userAddress.value);
-    network.value = await provider.value.getNetwork();
+    const _userAddress = await signer.value.getAddress();
+    const _userEns = await provider.value.lookupAddress(_userAddress);
+    const _network = await provider.value.getNetwork();
 
     // Set Umbra and DomainService classes
     const chainId = provider.value.network.chainId;
     umbra.value = new Umbra(provider.value, chainId);
     domainService.value = new DomainService(provider.value);
+
+    // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
+    // parameters, and we want to ensure this method completed successfully before updating the UI
+    userAddress.value = _userAddress;
+    userEns.value = _userEns;
+    network.value = _network;
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
