@@ -9,6 +9,8 @@ const routes: RouteConfig[] = [
       { name: 'send', path: '/send', component: () => import('pages/AccountSend.vue') },
       { name: 'receive', path: '/receive', component: () => import('pages/AccountReceive.vue') },
       { name: 'setup', path: '/setup', component: () => import('pages/AccountSetup.vue') },
+      { name: 'contact', path: '/contact', component: () => import('src/pages/Contact.vue') },
+      { name: 'FAQ', path: '/faq', component: () => import('src/pages/FAQ.vue') },
     ],
   },
 

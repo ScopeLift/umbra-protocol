@@ -6,18 +6,53 @@
         <div>
           <div class="row justify-between items-center no-wrap all-content-format">
             <div class="col-auto">
-              <!-- LOGO AND TITLE -->
               <div
                 class="row justify-start items-center"
                 style="cursor: pointer"
                 @click="$router.push({ name: 'home' })"
               >
-                <img alt="Umbra logo" class="q-ml-md" src="~assets/app-logo-128x128.png" style="max-width: 50px" />
-                <div class="text-h5 dark-toggle">
+                <!-- LOGO AND TITLE -->
+                <img
+                  alt="Umbra logo"
+                  class="col-auto q-ml-md"
+                  src="~assets/app-logo-128x128.png"
+                  style="max-width: 50px"
+                />
+                <div class="col-auto text-h5 dark-toggle">
                   <span class="primary header-black q-ml-md">Umbra</span>
+                </div>
+
+                <!-- NAVIGATION LINKS -->
+                <div class="col-auto q-ml-xl">
+                  <router-link
+                    active-class="text-bold"
+                    class="no-text-decoration dark-toggle"
+                    exact
+                    :to="{ name: 'home' }"
+                    >Home</router-link
+                  >
+                </div>
+                <div class="col-auto q-ml-xl">
+                  <router-link
+                    active-class="text-bold"
+                    class="no-text-decoration dark-toggle"
+                    exact
+                    :to="{ name: 'FAQ' }"
+                    >FAQ</router-link
+                  >
+                </div>
+                <div class="col-auto q-ml-xl">
+                  <router-link
+                    active-class="text-bold"
+                    class="no-text-decoration dark-toggle"
+                    exact
+                    :to="{ name: 'contact' }"
+                    >Contact</router-link
+                  >
                 </div>
               </div>
             </div>
+
             <!-- ADDRESS AND SETTINGS AND SETTINGS -->
             <div class="col-auto q-mr-md">
               <div v-if="userAddress" class="text-caption dark-toggle">
@@ -27,7 +62,7 @@
           </div>
         </div>
         <!-- Alpha warning -->
-        <div class="dark-toggle text-center text-negative text-bold">
+        <div class="dark-toggle text-center text-negative text-bold q-my-md">
           WARNING: This is unaudited software and is only available on Rinkeby
         </div>
       </div>
