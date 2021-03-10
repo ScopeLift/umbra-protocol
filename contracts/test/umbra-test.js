@@ -426,7 +426,7 @@ describe('Umbra', () => {
   });
 
   it('should not allow someone else to move tolls to toll receiver', async () => {
-    await expectRevert(ctx.umbra.collectTolls({ from: other }), 'Umbra: Not Toll Collector');
+    await expectRevert(ctx.umbra.collectTolls({ from: other }), 'Umbra: Not toll collector');
   });
 
   it('should allow the toll collector to move tolls to toll receiver', async () => {

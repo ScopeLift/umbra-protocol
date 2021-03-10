@@ -105,7 +105,7 @@ contract Umbra is Ownable {
    * @notice Function only the toll collector can call to sweep funds to the toll receiver
    */
   function collectTolls() external {
-    require(msg.sender == tollCollector, "Umbra: Not Toll Collector");
+    require(msg.sender == tollCollector, "Umbra: Not toll collector");
     tollReceiver.transfer(address(this).balance);
   }
 
@@ -114,7 +114,9 @@ contract Umbra is Ownable {
   /**
    * @notice Send and announce ETH payment to a stealth address
    * @param _receiver Stealth address receiving the payment
-   * @param _tollCommitment Exact toll the sender is paying; should equal contract toll
+   * @param _tollCommitment Exact toll the sender is paying; should equal contract toll;
+   * the committment is used to prevent frontrunning attacks by the owner;
+   * see https://github.com/ScopeLift/umbra-protocol/issues/54 for more information
    * @param _pkx X-coordinate of the ephemeral public key used to encrypt the payload
    * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload extension
    */
@@ -160,7 +162,8 @@ contract Umbra is Ownable {
   // ======================================= Withdraw =============================================
 
   /**
-   * @notice Withdraw an ERC20 token payment sent to a stealth address, which must be the sender
+   * @notice Withdraw an ERC20 token payment sent to a stealth address
+   * @dev This method must be directly called by the stealth address
    * @param _acceptor Address where withdrawn funds should be sent
    * @param _tokenAddr Address of the ERC20 token being withdrawn
    */
@@ -182,9 +185,9 @@ contract Umbra is Ownable {
    * @param _tokenAddr Address of the ERC20 token being withdrawn
    * @param _sponsor Address which is compensated for submitting the withdrawal tx
    * @param _sponsorFee Amount of the token to pay to the transfer
-   * @param _v ECSDA signature prefix
-   * @param _r ECSDA signature x-coordinate
-   * @param _s ECSDA signature y-coordinate
+   * @param _v ECDSA signature component: Parity of the `y` coordinate of point `R`
+   * @param _r ECDSA signature component: x-coordinate of `R`
+   * @param _s ECDSA signature component: `s` value of the signature
    */
   function withdrawTokenOnBehalf(
     address _stealthAddr,
