@@ -377,7 +377,7 @@ describe('Umbra class', () => {
       // @ts-expect-error
       expect(() => new Umbra(ethersProvider, { umbraAddress })).to.throw(errorMsg1);
       // @ts-expect-error
-      expect(() => new Umbra(ethersProvider, { startBlock: 0 })).to.throw(
+      expect(() => new Umbra(ethersProvider, { startBlock: 0, chainId: 4 })).to.throw(
         'invalid address (argument="address", value=undefined, code=INVALID_ARGUMENT, version=address/5.0.10)'
       );
       // @ts-expect-error
@@ -402,13 +402,14 @@ describe('Umbra class', () => {
       const privateKey = receiver.wallet.privateKey;
       const goodAddress = receiver.wallet.address;
       const badAddress = '0x123';
+      const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // address does not matter here
       // These error messages come from ethers
       await expectRejection(
-        Umbra.signWithdraw(privateKey, badAddress, goodAddress, '1'),
+        Umbra.signWithdraw(privateKey, 4, '1', badAddress, tokenAddress, goodAddress, '1'),
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
       );
       await expectRejection(
-        Umbra.signWithdraw(privateKey, goodAddress, badAddress, '1'),
+        Umbra.signWithdraw(privateKey, 4, '1', goodAddress, tokenAddress, badAddress, '1'),
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
       );
     });

@@ -14,7 +14,7 @@ import { sha256 } from '@ethersproject/sha2';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { lengths, lookupRecipient } from '../utils/utils';
+import { lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import * as erc20Abi from '../abi/ERC20.json';
 import type {
@@ -54,12 +54,15 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
   }
 
   // Otherwise verify the user's provided chain config is valid and return it
-  const { umbraAddress, startBlock } = chainConfig;
+  const { umbraAddress, startBlock, chainId } = chainConfig;
   const isValidStartBlock = typeof startBlock === 'number' && startBlock >= 0;
   if (!isValidStartBlock) {
     throw new Error(`Invalid start block provided in chainConfig. Got '${startBlock}'`);
   }
-  return { umbraAddress: getAddress(umbraAddress), startBlock };
+  if (typeof chainId !== 'number' || !Number.isInteger(chainId)) {
+    throw new Error(`Invalid chainId provided in chainConfig. Got '${chainId}'`);
+  }
+  return { umbraAddress: getAddress(umbraAddress), startBlock, chainId };
 };
 
 /**
@@ -412,10 +415,11 @@ export class Umbra {
     // Validate addresses
     acceptor = getAddress(acceptor);
     sponsor = getAddress(sponsor);
+    token = getAddress(token);
 
-    const isValidSponsor = isHexString(sponsor) && sponsor.length === lengths.address;
-    if (!isValidSponsor) {
-      throw new Error('Invalid sponsor address');
+    // Validate chainId
+    if (typeof chainId !== 'number' || !Number.isInteger(chainId)) {
+      throw new Error(`Invalid chainId provided in chainConfig. Got '${chainId}'`);
     }
 
     const stealthWallet = new Wallet(spendingPrivateKey);
