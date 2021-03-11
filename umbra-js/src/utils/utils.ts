@@ -9,7 +9,7 @@ import { resolveProperties } from '@ethersproject/properties';
 import { EtherscanProvider } from '@ethersproject/providers';
 import { recoverPublicKey } from '@ethersproject/signing-key';
 import { serialize as serializeTransaction } from '@ethersproject/transactions';
-
+import * as ens from './ens';
 import { DomainService } from '../classes/DomainService';
 import { EthersProvider, SignatureLike } from '../types';
 
@@ -147,7 +147,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   }
 
   // Check if this is a valid ENS or CNS name
-  const isDomainService = id.endsWith('.eth') || id.endsWith('.crypto');
+  const isDomainService = ens.isEnsDomain(id) || id.endsWith('.crypto');
   if (isDomainService) {
     const domainService = new DomainService(provider);
     return domainService.getPublicKeys(id);

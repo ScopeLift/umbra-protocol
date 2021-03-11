@@ -217,11 +217,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       let tx: TransactionResponse;
       if (token.symbol === 'ETH') {
         // Withdrawing ETH
-        tx = await umbra.value.withdraw(
-          spendingPrivateKey,
-          token.address,
-          destinationAddress.value
-        );
+        tx = await umbra.value.withdraw(spendingPrivateKey, token.address, destinationAddress.value);
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value) throw new Error('Signer or provider not found');

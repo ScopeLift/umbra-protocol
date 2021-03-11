@@ -71,7 +71,7 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
   const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
   const keys = (await publicResolver.stealthKeys(namehash(name))) as StealthKeys;
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
-    return { spendingPublicKey: undefined, viewingPublicKey: undefined };
+    throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
   }
 
   const spendingPublicKey = KeyPair.getUncompressedFromX(keys.spendingPubKey, keys.spendingPubKeyPrefix.toNumber());

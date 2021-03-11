@@ -35,6 +35,7 @@ import { QForm } from 'quasar';
 import { MaxUint256 } from '@ethersproject/constants';
 import { Contract } from '@ethersproject/contracts';
 import { parseUnits } from '@ethersproject/units';
+import { ens } from '@umbra/umbra-js';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import { TokenInfo } from 'components/models';
@@ -52,7 +53,7 @@ function useSendForm() {
   const isSendInProgress = ref(false);
 
   function isValidId(val: string) {
-    if (val && (val.endsWith('.eth') || val.endsWith('.crypto'))) return true;
+    if (val && (ens.isEnsDomain(val) || val.endsWith('.crypto'))) return true;
     return 'Please enter an ENS or CNS name';
   }
 
