@@ -6,19 +6,16 @@
         <div>
           <div class="row justify-between items-center no-wrap all-content-format">
             <div class="col-auto">
-              <div
-                class="row justify-start items-center"
-                style="cursor: pointer"
-                @click="$router.push({ name: 'home' })"
-              >
+              <div class="row justify-start items-center">
                 <!-- LOGO AND TITLE -->
                 <img
+                  @click="$router.push({ name: 'home' })"
                   alt="Umbra logo"
-                  class="col-auto q-ml-md"
+                  class="col-auto cursor-pointer q-ml-md"
                   src="~assets/app-logo-128x128.png"
                   style="max-width: 50px"
                 />
-                <div class="col-auto text-h5 dark-toggle">
+                <div @click="$router.push({ name: 'home' })" class="col-auto text-h5 cursor-pointer dark-toggle">
                   <span class="primary header-black q-ml-md">Umbra</span>
                 </div>
 

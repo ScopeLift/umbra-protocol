@@ -48,7 +48,10 @@
 
             <!-- From column -->
             <div v-else-if="col.name === 'from'">
-              {{ col.value.from }}
+              <div @click="copySenderAddress(props.row)" class="cursor-pointer copy-icon-parent">
+                <span>{{ col.value.from }}</span>
+                <q-icon class="copy-icon" name="far fa-copy" right />
+              </div>
             </div>
 
             <!-- Default -->
@@ -102,7 +105,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
-import { date } from 'quasar';
+import { date, copyToClipboard } from 'quasar';
 import { Contract } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Block, ExternalProvider, TransactionResponse, Web3Provider } from '@ethersproject/providers';
@@ -117,7 +120,7 @@ import { SupportedChainIds } from 'components/models';
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const { tokens, signer, provider, umbra, spendingKeyPair } = useWalletStore();
-  const { txNotify } = useAlerts();
+  const { txNotify, notifyUser } = useAlerts();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const isLoading = ref(false);
@@ -188,7 +191,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     const formattedFromAddresses = await Promise.all(fromAddresses.map(formatAddress));
     formattedAnnouncements.value.forEach((announcement, index) => {
       announcement.receipt.from = formattedFromAddresses[index];
-      announcement.tx.from = formattedFromAddresses[index];
     });
 
     // Find announcements that have been withdrawn
@@ -199,6 +201,15 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     });
     isLoading.value = false;
   });
+
+  /**
+   * @notice Copies the sender's address to the clipboard
+   */
+  async function copySenderAddress(row: UserAnnouncement) {
+    // row.receipt.from has the truncated from address shown in the UI, so here we use the row.tx.from address
+    await copyToClipboard(row.tx.from);
+    notifyUser('positive', 'Sender address copied to clipboard');
+  }
 
   /**
    * @notice Withdraw funds from stealth address
@@ -284,6 +295,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     isWithdrawInProgress,
     isLoading,
     expanded,
+    copySenderAddress,
     paginationConfig,
     mainTableColumns,
     formatDate,
@@ -311,3 +323,11 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.copy-icon-parent:hover .copy-icon
+  color: $primary
+
+.copy-icon
+  color: transparent
+</style>
