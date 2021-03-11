@@ -10,6 +10,7 @@ import {
   TokenList,
   MulticallResponse,
   SupportedChainIds,
+  CnsQueryResponse,
 } from 'components/models';
 import multicallInfo from 'src/contracts/multicall.json';
 import erc20 from 'src/contracts/erc20.json';
@@ -38,17 +39,18 @@ const ETH_TOKEN = {
 // As a result, only actions, mutations, and getters are returned from this function.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP-1193 provider
-const provider = ref<Provider>();
-const signer = ref<Signer>();
-const userAddress = ref<string>();
-const userEns = ref<string>();
-const network = ref<Network>();
-const umbra = ref<Umbra>();
-const domainService = ref<DomainService>();
-const spendingKeyPair = ref<KeyPair>();
-const viewingKeyPair = ref<KeyPair>();
-const tokens = ref<TokenInfo[]>([]); // list of network tokens
-const balances = ref<Record<string, ethers.BigNumber>>({}); // mapping from token address to user's balance
+const provider = ref<Provider>(); // ethers provider
+const signer = ref<Signer>(); // ethers signer
+const userAddress = ref<string>(); // user's wallet address
+const userEns = ref<string>(); // user's ENS name
+const userCns = ref<string>(); // user's CNS name
+const network = ref<Network>(); // connected network, derived from provider
+const umbra = ref<Umbra>(); // instance of Umbra class
+const domainService = ref<DomainService>(); // instance DomainService class
+const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for spending receiving funds
+const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
+const tokens = ref<TokenInfo[]>([]); // list of supported tokens when scanning
+const balances = ref<Record<string, ethers.BigNumber>>({}); // mapping from token address to user's wallet balance
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -110,6 +112,28 @@ export default function useWalletStore() {
     });
   }
 
+  // Query the graph for a list of CNS names owned by the user, and return the first one found or undefined if none exists
+  async function getCnsName(chainId: number, userAddress: string) {
+    // Assume mainnet unless we're given the Rinkeby chainId
+    const baseUrl = 'https://api.thegraph.com/subgraphs/name/unstoppable-domains-integrations';
+    const url = chainId === 4 ? `${baseUrl}/dot-crypto-rinkeby-registry` : `${baseUrl}/dot-crypto-registry`;
+
+    // Send request to get names
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        variables: { owner: userAddress.toLowerCase() },
+        query: 'query domainsOfOwner($owner: String!) { domains(where: {owner: $owner}) { name } }',
+      }),
+    });
+
+    // Return the first name in the array, or undefined if user has no CNS names
+    const json = (await res.json()) as CnsQueryResponse;
+    const names = json.data.domains;
+    return names.length > 0 ? names[0].name : undefined;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function setProvider(p: any) {
     rawProvider.value = p;
@@ -121,8 +145,11 @@ export default function useWalletStore() {
     provider.value = new ethers.providers.Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
     const _userAddress = await signer.value.getAddress();
-    const _userEns = await provider.value.lookupAddress(_userAddress);
     const _network = await provider.value.getNetwork();
+
+    // Get ENS and CNS names
+    const _userEns = await provider.value.lookupAddress(_userAddress);
+    const _userCns = await getCnsName(_network.chainId, _userAddress);
 
     // Set Umbra and DomainService classes
     const chainId = provider.value.network.chainId;
@@ -133,6 +160,7 @@ export default function useWalletStore() {
     // parameters, and we want to ensure this method completed successfully before updating the UI
     userAddress.value = _userAddress;
     userEns.value = _userEns;
+    userCns.value = _userCns;
     network.value = _network;
 
     // Get token balances in the background. User may not be sending funds so we don't await this
