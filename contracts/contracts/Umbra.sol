@@ -5,6 +5,7 @@ pragma solidity ^0.6.12;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "./UmbraHookable.sol";
 
 contract Umbra is Ownable {
   using SafeMath for uint256;
@@ -167,7 +168,16 @@ contract Umbra is Ownable {
    * @param _tokenAddr Address of the ERC20 token being withdrawn
    */
   function withdrawToken(address _acceptor, address _tokenAddr) external {
-    _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0);
+    _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0, UmbraHookable(0), "");
+  }
+
+  function withdrawTokenAndCall(
+    address _acceptor,
+    address _tokenAddr,
+    UmbraHookable _hook,
+    bytes memory _data
+  ) external {
+    _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0, _hook, _data);
   }
 
   /**
@@ -210,7 +220,7 @@ contract Umbra is Ownable {
     address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
     require(_recoveredAddress != address(0) && _recoveredAddress == _stealthAddr, "Umbra: Invalid Signature");
 
-    _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee);
+    _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "");
   }
 
   /// @dev low level withdrawal function that should only be called after safety checks
@@ -219,11 +229,13 @@ contract Umbra is Ownable {
     address _acceptor,
     address _tokenAddr,
     address _sponsor,
-    uint256 _sponsorFee
+    uint256 _sponsorFee,
+    UmbraHookable _hook,
+    bytes memory _data
   ) internal {
     uint256 _amount = tokenPayments[_stealthAddr][_tokenAddr];
 
-    // also protects from underflow
+    // also protects from underflow and re-entrance
     require(_amount > _sponsorFee, "Umbra: No balance to withdraw or fee exceeds balance");
 
     uint256 _withdrawalAmount = _amount - _sponsorFee;
@@ -234,6 +246,10 @@ contract Umbra is Ownable {
 
     if (_sponsorFee > 0) {
       SafeERC20.safeTransfer(IERC20(_tokenAddr), _sponsor, _sponsorFee);
+    }
+
+    if (address(_hook) != address(0)) {
+      _hook.callHook(_withdrawalAmount, _stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _data);
     }
   }
 }
