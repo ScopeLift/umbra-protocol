@@ -15,3 +15,11 @@ export interface MulticallResponse {
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts and supported by umbra-js
 export type SupportedChainIds = '4';
+
+// CNS names owned by wallet are queried from The Graph, so these types help parse the response
+type CnsName = { name: string };
+export interface CnsQueryResponse {
+  data: {
+    domains: CnsName[];
+  };
+}
