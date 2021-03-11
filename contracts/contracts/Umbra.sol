@@ -167,14 +167,7 @@ contract Umbra is Ownable {
    * @param _tokenAddr Address of the ERC20 token being withdrawn
    */
   function withdrawToken(address _acceptor, address _tokenAddr) external {
-    uint256 amount = tokenPayments[msg.sender][_tokenAddr];
-
-    require(amount > 0, "Umbra: No tokens available for withdrawal");
-
-    delete tokenPayments[msg.sender][_tokenAddr];
-    emit TokenWithdrawal(msg.sender, _acceptor, amount, _tokenAddr);
-
-    SafeERC20.safeTransfer(IERC20(_tokenAddr), _acceptor, amount);
+    _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0);
   }
 
   /**
@@ -198,11 +191,6 @@ contract Umbra is Ownable {
     bytes32 _r,
     bytes32 _s
   ) external {
-    uint256 _amount = tokenPayments[_stealthAddr][_tokenAddr];
-
-    // also protects from underflow
-    require(_amount > _sponsorFee, "Umbra: No balance to withdraw or fee exceeds balance");
-
     bytes32 _digest =
       keccak256(
         abi.encodePacked("\x19Ethereum Signed Message:\n32",
@@ -220,14 +208,32 @@ contract Umbra is Ownable {
       );
 
     address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
-
     require(_recoveredAddress != address(0) && _recoveredAddress == _stealthAddr, "Umbra: Invalid Signature");
+
+    _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee);
+  }
+
+  /// @dev low level withdrawal function that should only be called after safety checks
+  function _withdrawTokenInternal(
+    address _stealthAddr,
+    address _acceptor,
+    address _tokenAddr,
+    address _sponsor,
+    uint256 _sponsorFee
+  ) internal {
+    uint256 _amount = tokenPayments[_stealthAddr][_tokenAddr];
+
+    // also protects from underflow
+    require(_amount > _sponsorFee, "Umbra: No balance to withdraw or fee exceeds balance");
 
     uint256 _withdrawalAmount = _amount - _sponsorFee;
     delete tokenPayments[_stealthAddr][_tokenAddr];
     emit TokenWithdrawal(_stealthAddr, _acceptor, _withdrawalAmount, _tokenAddr);
 
     SafeERC20.safeTransfer(IERC20(_tokenAddr), _acceptor, _withdrawalAmount);
-    SafeERC20.safeTransfer(IERC20(_tokenAddr), _sponsor, _sponsorFee);
+
+    if (_sponsorFee > 0) {
+      SafeERC20.safeTransfer(IERC20(_tokenAddr), _sponsor, _sponsorFee);
+    }
   }
 }

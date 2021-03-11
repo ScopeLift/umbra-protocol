@@ -186,7 +186,7 @@ describe('Umbra', () => {
   it('should not let the eth receiver withdraw tokens', async () => {
     await expectRevert(
       ctx.umbra.withdrawToken(acceptor, ctx.token.address, { from: receiver1 }),
-      'Umbra: No tokens available for withdrawal'
+      'Umbra: No balance to withdraw or fee exceeds balance'
     );
   });
 
@@ -309,7 +309,7 @@ describe('Umbra', () => {
   it('should not allow a non-receiver to withdraw tokens', async () => {
     await expectRevert(
       ctx.umbra.withdrawToken(acceptor, ctx.token.address, { from: other }),
-      'Umbra: No tokens available for withdrawal'
+      'Umbra: No balance to withdraw or fee exceeds balance'
     );
   });
 
@@ -331,7 +331,7 @@ describe('Umbra', () => {
   it('should not allow a receiver to withdraw their tokens twice', async () => {
     await expectRevert(
       ctx.umbra.withdrawToken(acceptor, ctx.token.address, { from: receiver2 }),
-      'Umbra: No tokens available for withdraw'
+      'Umbra: No balance to withdraw or fee exceeds balance'
     );
   });
 
@@ -391,7 +391,7 @@ describe('Umbra', () => {
   it('should revert on meta withdrawal if the fee is more than the amount', async () => {
     const bigFee = sumTokenAmounts([metaTokenTotal, '100']);
 
-    const { v, r, s } = await signMetaWithdrawal(metaWallet, ctx.chainId, ctx.version, metaAcceptor, ctx.token.address, relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(metaWallet, ctx.chainId, ctx.version, metaAcceptor, ctx.token.address, relayer, bigFee);
 
     await expectRevert(
       ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, ctx.token.address, relayer, bigFee, v, r, s, {
