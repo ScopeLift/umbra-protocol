@@ -201,25 +201,7 @@ contract Umbra is Ownable {
     bytes32 _r,
     bytes32 _s
   ) external {
-    bytes32 _digest =
-      keccak256(
-        abi.encodePacked("\x19Ethereum Signed Message:\n32",
-          keccak256(
-            abi.encode(
-              chainId,
-              version,
-              _acceptor,
-              _tokenAddr,
-              _sponsor,
-              _sponsorFee
-            )
-          )
-        )
-      );
-
-    address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
-    require(_recoveredAddress != address(0) && _recoveredAddress == _stealthAddr, "Umbra: Invalid Signature");
-
+    _validateWithdrawSignature(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _v, _r, _s);
     _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "");
   }
 
@@ -251,5 +233,36 @@ contract Umbra is Ownable {
     if (address(_hook) != address(0)) {
       _hook.callHook(_withdrawalAmount, _stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _data);
     }
+  }
+
+  /// @dev recovers address from signature of the parameters past and throws if not _stealthAddr
+  function _validateWithdrawSignature(
+    address _stealthAddr,
+    address _acceptor,
+    address _tokenAddr,
+    address _sponsor,
+    uint256 _sponsorFee,
+    uint8 _v,
+    bytes32 _r,
+    bytes32 _s
+  ) internal {
+    bytes32 _digest =
+      keccak256(
+        abi.encodePacked("\x19Ethereum Signed Message:\n32",
+          keccak256(
+            abi.encode(
+              chainId,
+              version,
+              _acceptor,
+              _tokenAddr,
+              _sponsor,
+              _sponsorFee
+            )
+          )
+        )
+      );
+
+    address _recoveredAddress = ecrecover(_digest, _v, _r, _s);
+    require(_recoveredAddress != address(0) && _recoveredAddress == _stealthAddr, "Umbra: Invalid Signature");
   }
 }
