@@ -62,7 +62,7 @@ export function namehash(name: string) {
 }
 
 /**
- * @notice For a given ENS domain, returns the public keys, or undefined if they don't exist
+ * @notice For a given ENS domain, returns the public keys, or throws if they don't exist
  * @param name ENS domain, e.g. myname.eth
  * @param provider Ethers provider
  */
@@ -83,8 +83,8 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
 /**
  * @notice For a given ENS domain, sets the associated umbra public keys
  * @param name ENS domain, e.g. myname.eth
- * @param spendingPublicKey The public key for generating a stealth address as BigNumber
- * @param viewingPublicKey The public key to use for encryption as BigNumber
+ * @param spendingPublicKey The public key for generating a stealth address as hex string
+ * @param viewingPublicKey The public key to use for encryption as hex string
  * @param provider Ethers provider
  * @returns Transaction
  */

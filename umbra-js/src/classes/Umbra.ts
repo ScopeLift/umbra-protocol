@@ -338,7 +338,7 @@ export class Umbra {
     const message = chainId === 1 ? baseMessage : `${baseMessage}\n\nChain ID: ${chainId}`;
 
     // Get 65 byte signature from user
-    const isValidSignature = (sig: string) => isHexString(sig) && sig.length === 132; // user to verify signature
+    const isValidSignature = (sig: string) => isHexString(sig) && sig.length === 132; // used to verify signature
     let signature: string;
     signature = await signer.signMessage(message); // prompt to user is here, uses eth_sign
 

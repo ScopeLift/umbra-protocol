@@ -23,19 +23,32 @@ const resolution = new Resolution({
 });
 
 // Truth parameters to test against
-const name = 'mvlabat.crypto';
+const name = 'udtestdev-msolomon.crypto';
 const nameSpendingPublicKey =
   '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e';
 const nameViewingPublicKey =
   '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e';
 
-describe('СNS functions', () => {
-  it('computes the namehash of a CNS domain', () => {
-    const hash = cns.namehash(name, resolution);
-    expect(hash).to.equal('0x4d5647e26ad24fd1087ddd2dc2d980f6f231d4f5694f63b321ec119848a460ba');
+describe.only('СNS functions', () => {
+  it('properly identifies CNS domains', async () => {
+    cns.supportedCnsDomains.forEach((suffix) => {
+      // example suffixes: .crypto, .zil, etc.
+      expect(cns.isCnsDomain(`test${suffix}`)).to.be.true;
+    });
   });
 
-  it.skip('gets the public keys associated with a CNS address', async function () {
+  it('namehash throws when given a bad CNS suffix', async () => {
+    const badName = 'myname.com';
+    const errorMsg = `Name does not end with supported suffix: ${cns.supportedCnsDomains.join(', ')}`;
+    expect(() => cns.namehash(badName, resolution)).to.throw(errorMsg);
+  });
+
+  it('computes the namehash of a CNS domain', () => {
+    const hash = cns.namehash(name, resolution);
+    expect(hash).to.equal('0xb523f834041c2aa484ca5f422d13e91a72ac459f925e26de7d63381bc26795f6');
+  });
+
+  it('gets the public keys associated with a CNS address', async function () {
     this.timeout(10000);
     nameSpendingPublicKey; // silence errors
     nameViewingPublicKey; // silence errors
@@ -46,7 +59,7 @@ describe('СNS functions', () => {
   });
 
   it.skip('sets the public keys', async () => {
-    // TODO currently would fail since provider account is not the mvlabat.crypto account, so
+    // TODO currently would fail since provider account is not the udtestdev-msolomon.crypto account, so
     // to implement this test we need to have the ganache account register an CNS domain
   });
 });

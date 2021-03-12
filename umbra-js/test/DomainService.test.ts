@@ -20,7 +20,7 @@ const params = {
       '0x041190b7e2b61b8872c9ea5fff14770e7d3e78900282371b09ee9f2b8c4016b9967b5e9ee9e1e0bef30052e806321f0685a3ad69e2233be6813b81a5d293feea76',
   },
   cns: {
-    name: 'mvlabat.crypto',
+    name: 'udtestdev-msolomon.crypto',
     nameSpendingPublicKey:
       '0x0462049e7062b5105bc8cafe3bff97a3929cf9563a125f5fdf9f9b55ebf9e09219199aa2427fc96801d1f472323188b19002bc0521cdc4236fe33554d17c850f0e',
     nameViewingPublicKey:
@@ -48,10 +48,10 @@ describe('DomainService class', () => {
     });
   });
 
-  describe('CNS', () => {
+  describe.only('CNS', () => {
     it('computes the namehash of a CNS domain', () => {
       const hash = domainService.namehash(params.cns.name);
-      expect(hash).to.equal('0x4d5647e26ad24fd1087ddd2dc2d980f6f231d4f5694f63b321ec119848a460ba');
+      expect(hash).to.equal('0xb523f834041c2aa484ca5f422d13e91a72ac459f925e26de7d63381bc26795f6');
     });
 
     it.skip('sets the public keys for a CNS address', async function () {
@@ -59,7 +59,7 @@ describe('DomainService class', () => {
       // TODO
     });
 
-    it.skip('gets the public keys associated with a CNS address', async function () {
+    it('gets the public keys associated with a CNS address', async function () {
       this.timeout(10000);
       throw new Error('Test not implemented');
       // const publicKeys = await domainService.getPublicKeys(params.cns.name);
