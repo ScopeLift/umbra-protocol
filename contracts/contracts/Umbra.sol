@@ -171,6 +171,14 @@ contract Umbra is Ownable {
     _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0, UmbraHookable(0), "");
   }
 
+  /**
+   * @notice Withdraw an ERC20 token payment sent to a stealth address
+   * @dev This method must be directly called by the stealth address
+   * @param _acceptor Address where withdrawn funds should be sent
+   * @param _tokenAddr Address of the ERC20 token being withdrawn
+   * @param _hook Contract that will be called after the token withdrawal has completed
+   * @param _data Arbitrary data that will be passed to the post-withdraw hook contract
+   */
   function withdrawTokenAndCall(
     address _acceptor,
     address _tokenAddr,
@@ -186,7 +194,7 @@ contract Umbra is Ownable {
    * @param _acceptor Address where withdrawn funds should be sent
    * @param _tokenAddr Address of the ERC20 token being withdrawn
    * @param _sponsor Address which is compensated for submitting the withdrawal tx
-   * @param _sponsorFee Amount of the token to pay to the transfer
+   * @param _sponsorFee Amount of the token to pay to the sponsor
    * @param _v ECDSA signature component: Parity of the `y` coordinate of point `R`
    * @param _r ECDSA signature component: x-coordinate of `R`
    * @param _s ECDSA signature component: `s` value of the signature
@@ -205,6 +213,19 @@ contract Umbra is Ownable {
     _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "");
   }
 
+  /**
+   * @notice Withdraw an ERC20 token payment on behalf of a stealth address via signed authorization
+   * @param _stealthAddr The stealth address whose token balance will be withdrawn
+   * @param _acceptor Address where withdrawn funds should be sent
+   * @param _tokenAddr Address of the ERC20 token being withdrawn
+   * @param _sponsor Address which is compensated for submitting the withdrawal tx
+   * @param _sponsorFee Amount of the token to pay to the sponsor
+   * @param _hook Contract that will be called after the token withdrawal has completed
+   * @param _data Arbitrary data that will be passed to the post-withdraw hook contract
+   * @param _v ECDSA signature component: Parity of the `y` coordinate of point `R`
+   * @param _r ECDSA signature component: x-coordinate of `R`
+   * @param _s ECDSA signature component: `s` value of the signature
+   */
   function withdrawTokenAndCallOnBehalf(
     address _stealthAddr,
     address _acceptor,
@@ -251,7 +272,7 @@ contract Umbra is Ownable {
     }
   }
 
-  /// @dev recovers address from signature of the parameters past and throws if not _stealthAddr
+  /// @dev recovers address from signature of the parameters and throws if not _stealthAddr
   function _validateWithdrawSignature(
     address _stealthAddr,
     address _acceptor,
