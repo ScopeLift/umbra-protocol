@@ -45,8 +45,16 @@
         <div class="q-mx-xl q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 1: ENS Registration</h5>
           <div class="q-mt-md">
+            <!-- User has ENS and CNS name -->
+            <div v-if="userEns && userCns">
+              <div>Please choose a name to continue</div>
+              <div class="row justify-start q-mt-lg">
+                <base-button @click="setName(userEns)" :label="userEns" :outline="true" />
+                <base-button @click="setName(userCns)" :label="userCns" :outline="true" class="q-ml-lg" />
+              </div>
+            </div>
             <!-- User has ENS name -->
-            <div v-if="userEns">
+            <div v-else-if="userEns || userCns">
               You are logged in with <span class="text-bold">{{ userAddress }}</span
               >. Please continue to the next step.
             </div>
@@ -79,7 +87,7 @@
             </p>
             <p>You do not need to save these keys anywhere!</p>
           </div>
-          <base-button @click="getPrivateKeysHandler" :disable="isWaitingForUser" label="Sign" />
+          <base-button @click="getPrivateKeysHandler" :disable="isWaiting" :loading="isWaiting" label="Sign" />
         </div>
       </q-carousel-slide>
 
@@ -92,7 +100,7 @@
             {{ userAddress.value }}. This means people can now securely send you funds through Umbra by visiting this
             site and sending funds to {{ userAddress.value }}.
           </p>
-          <base-button @click="publishKeys" :disable="isWaitingForUser" label="Publish keys" />
+          <base-button @click="publishKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
         </div>
       </q-carousel-slide>
 
@@ -114,7 +122,8 @@
 
 <script lang="ts">
 import { QBtn } from 'quasar';
-import { defineComponent, ref } from '@vue/composition-api';
+import { ens } from '@umbra/umbra-js';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import { TransactionResponse } from '@ethersproject/providers';
 import BaseButton from 'src/components/BaseButton.vue';
 import useWalletStore from 'src/store/wallet';
@@ -122,12 +131,32 @@ import useAlerts from 'src/utils/alerts';
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 
 function useKeys() {
-  const { domainService, getPrivateKeys, userAddress, userEns, spendingKeyPair, viewingKeyPair } = useWalletStore();
+  const {
+    domainService,
+    getPrivateKeys,
+    userAddress,
+    userEns,
+    userCns,
+    spendingKeyPair,
+    viewingKeyPair,
+  } = useWalletStore();
   const { notifyUser, txNotify } = useAlerts();
+  const selectedName = ref<string>(); // ENS or CNS name to be configured
   const carouselBtnRight = ref<QBtn>();
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
   const carouselStep = ref('1');
-  const isWaitingForUser = ref(false);
+  const isWaiting = ref(false);
+
+  onMounted(() => {
+    if (userEns && !userCns) selectedName.value = userEns.value;
+    else if (!userEns && userCns) selectedName.value = userCns.value;
+  });
+
+  function setName(name: string) {
+    selectedName.value = name;
+    console.log('selectedName.value: ', selectedName.value);
+    carouselBtnRight.value?.click();
+  }
 
   async function getPrivateKeysHandler() {
     if (keyStatus.value === 'success') {
@@ -135,34 +164,38 @@ function useKeys() {
       return;
     }
     try {
-      isWaitingForUser.value = true;
+      isWaiting.value = true;
       keyStatus.value = await getPrivateKeys();
       carouselBtnRight.value?.click();
     } finally {
-      isWaitingForUser.value = false;
+      isWaiting.value = false;
     }
   }
 
   async function publishKeys() {
     if (!domainService.value) throw new Error('Invalid DomainService. Please refresh the page');
-    if (!userEns.value) {
+    if (!selectedName.value) {
       throw new Error('ENS or CNS name not found. Please return to the first step');
     }
     const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
     if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
     try {
-      isWaitingForUser.value = true;
-      const tx = (await domainService.value.setPublicKeys(
-        userEns.value,
+      isWaiting.value = true;
+      // Send transaction to set keys
+      const tx = await domainService.value.setPublicKeys(
+        selectedName.value,
         String(spendingKeyPair.value?.publicKeyHex),
         String(viewingKeyPair.value?.publicKeyHex)
-      )) as TransactionResponse;
-      txNotify(tx.hash);
+      );
 
+      // Wait for the transaction(s) to be mined
+      txNotify(tx.hash);
       await tx.wait();
+
+      // Move on to next step
       carouselStep.value = '4';
     } finally {
-      isWaitingForUser.value = false;
+      isWaiting.value = false;
     }
   }
 
@@ -171,10 +204,12 @@ function useKeys() {
     carouselStep,
     userAddress,
     userEns,
+    userCns,
+    setName,
     keyStatus,
     getPrivateKeysHandler,
     publishKeys,
-    isWaitingForUser,
+    isWaiting,
   };
 }
 

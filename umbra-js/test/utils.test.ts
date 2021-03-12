@@ -52,6 +52,11 @@ describe('Utilities', () => {
   });
 
   describe('Recipient identifier lookups', () => {
+    before(async () => {
+      await ethersProvider.getNetwork();
+      ethersProvider.network.name = 'rinkeby'; // don't do this in prod, just for testing purposes so we use Rinkeby registry, not localhost
+    });
+
     it('looks up recipients by public key', async () => {
       const keys = await utils.lookupRecipient(publicKey, ethersProvider);
       expect(keys.spendingPublicKey).to.equal(publicKeys.spendingPublicKey);
@@ -84,8 +89,15 @@ describe('Utilities', () => {
       );
     });
 
-    it.skip('looks up recipients by CNS', async () => {
-      throw new Error('Test not implemented');
+    it('looks up recipients by CNS', async () => {
+      const keys = await utils.lookupRecipient('udtestdev-msolomon.crypto', ethersProvider);
+      // These values are set on the Rinkeby resolver
+      expect(keys.spendingPublicKey).to.equal(
+        '0x0445e52d17b8c845d0dcb490ba6701e3f31d24828768aa77e613b7f1be712b383240c1bf8f278ebb160c77a3d1cc84b200459ded5095ee50551c339b158a3a00e1'
+      );
+      expect(keys.viewingPublicKey).to.equal(
+        '0x041190b7e2b61b8872c9ea5fff14770e7d3e78900282371b09ee9f2b8c4016b9967b5e9ee9e1e0bef30052e806321f0685a3ad69e2233be6813b81a5d293feea76'
+      );
     });
   });
 

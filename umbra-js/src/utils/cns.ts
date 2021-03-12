@@ -1,18 +1,32 @@
 /**
  * @dev Functions for interacting with the Unstoppable Domains Crypto Name Service (CNS)
  */
-
-import { BigNumber } from '@ethersproject/bignumber';
+import { computePublicKey } from '@ethersproject/signing-key';
 import { default as Resolution } from '@unstoppabledomains/resolution';
-import type { EthersProvider } from '../types';
-import * as constants from '../constants.json';
-import * as cnsRegistryAbi from '../abi/CnsRegistry.json';
+import type { EthersProvider, TransactionResponse } from '../types';
 import * as cnsResolverAbi from '../abi/CnsResolver.json';
 import { createContract } from './utils';
 
-const { CNS_REGISTRY } = constants;
+export const cnsKeyPathSpending = 'crypto.ETH.umbra.spending_public_key';
+export const cnsKeyPathViewing = 'crypto.ETH.umbra.viewing_public_key';
 
-export const umbraKeySignature = 'crypto.ETH.signature-v0';
+/**
+ * @notice Returns supported CNS domain endings
+ */
+export const supportedCnsDomains = ['.crypto', '.zil'];
+
+/**
+ * @notice Returns true if the provided name is an CNS domain, false otherwise
+ * @param domainName Name to check
+ */
+export function isCnsDomain(domainName: string) {
+  for (const suffix of supportedCnsDomains) {
+    if (domainName.endsWith(suffix)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * @notice Computes CNS namehash of the input CNS domain, normalized to CNS compatibility
@@ -20,38 +34,67 @@ export const umbraKeySignature = 'crypto.ETH.signature-v0';
  * @param resolution Resolution instance of @unstoppabledomains/resolution
  */
 export function namehash(name: string, resolution: Resolution) {
+  if (typeof name !== 'string') {
+    throw new Error('Name must be a string with a supported suffix');
+  }
+  if (!isCnsDomain(name)) {
+    throw new Error(`Name does not end with supported suffix: ${supportedCnsDomains.join(', ')}`);
+  }
   return resolution.namehash(name);
 }
 
 /**
- * @notice For a given CNS domain, recovers and returns the public key from its signature
+ * @notice For a given ENS domain, returns the public keys, or throws if they don't exist
  * @param name CNS domain, e.g. myname.crypto
+ * @param provider ethers provider to use
  * @param resolution Resolution instance of @unstoppabledomains/resolution
  */
-export function getPublicKeys(name: string, resolution: Resolution) {
-  name; // silence errors
-  resolution; // silence errors
-  const spendingPublicKey = '';
-  const viewingPublicKey = '';
-
+export async function getPublicKeys(name: string, provider: EthersProvider, resolution: Resolution) {
+  // Read compressed public keys
+  const domainNamehash = resolution.namehash(name);
+  const resolverAddress = await resolution.resolver(name);
+  const cnsResolver = createContract(resolverAddress, cnsResolverAbi, provider);
+  const [compressedSpendingPublicKey, compressedViewingPublicKey] = await cnsResolver.getMany(
+    [cnsKeyPathSpending, cnsKeyPathViewing],
+    domainNamehash
+  );
+  if (!compressedSpendingPublicKey || !compressedViewingPublicKey) {
+    throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
+  }
+  // Return uncompressed public keys
+  const spendingPublicKey = computePublicKey(compressedSpendingPublicKey);
+  const viewingPublicKey = computePublicKey(compressedViewingPublicKey);
   return { spendingPublicKey, viewingPublicKey };
 }
 
 /**
  * @notice For a given CNS domain, sets the associated umbra signature
  * @param name CNS domain, e.g. myname.crypto
+ * @param spendingPublicKey The public key for generating a stealth address as hex string
+ * @param viewingPublicKey The public key to use for encryption as hex string
  * @param provider ethers provider to use
  * @param resolution Resolution instance of @unstoppabledomains/resolution
- * @param signature user's signature of the Umbra protocol message, as hex string
  * @returns Transaction hash
  */
-export async function setPublicKeys(name: string, provider: EthersProvider, resolution: Resolution, signature: string) {
-  // TODO: we can git of resolution parameter here, if we don't use its namehash function
+export async function setPublicKeys(
+  name: string,
+  spendingPublicKey: string,
+  viewingPublicKey: string,
+  provider: EthersProvider,
+  resolution: Resolution
+) {
+  // Compress public keys
+  const compressedSpendingPublicKey = computePublicKey(spendingPublicKey, true);
+  const compressedViewingPublicKey = computePublicKey(viewingPublicKey, true);
+
+  // Send transaction to set the keys
   const domainNamehash = resolution.namehash(name);
-  const cnsRegistry = createContract(CNS_REGISTRY, cnsRegistryAbi, provider);
-  const resolverAddress = await cnsRegistry.resolverOf(BigNumber.from(domainNamehash).toString());
+  const resolverAddress = await resolution.resolver(name);
   const cnsResolver = createContract(resolverAddress, cnsResolverAbi, provider);
-  const tx = await cnsResolver.set(umbraKeySignature, signature, domainNamehash);
-  await tx.wait();
-  return tx.hash as string;
+  const tx = await cnsResolver.setMany(
+    [cnsKeyPathSpending, cnsKeyPathViewing],
+    [compressedSpendingPublicKey, compressedViewingPublicKey],
+    domainNamehash
+  );
+  return tx as TransactionResponse;
 }

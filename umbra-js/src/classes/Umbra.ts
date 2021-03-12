@@ -141,7 +141,7 @@ export class Umbra {
     // Lookup recipient's public key
     const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider);
     if (!spendingPublicKey || !viewingPublicKey) {
-      throw new Error('Could not retrieve public keys for provided recipient ID');
+      throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
     }
     const spendingKeyPair = new KeyPair(spendingPublicKey);
     const viewingKeyPair = new KeyPair(viewingPublicKey);
@@ -339,7 +339,7 @@ export class Umbra {
     const message = chainId === 1 ? baseMessage : `${baseMessage}\n\nChain ID: ${chainId}`;
 
     // Get 65 byte signature from user
-    const isValidSignature = (sig: string) => isHexString(sig) && sig.length === 132; // user to verify signature
+    const isValidSignature = (sig: string) => isHexString(sig) && sig.length === 132; // used to verify signature
     let signature: string;
     signature = await signer.signMessage(message); // prompt to user is here, uses eth_sign
 

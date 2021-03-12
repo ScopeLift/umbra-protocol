@@ -6,15 +6,14 @@ import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/res
 import { EthersProvider } from '../types';
 import * as cns from '../utils/cns';
 import * as ens from '../utils/ens';
-import * as constants from '../constants.json';
-
-const { CNS_REGISTRY } = constants;
 
 export class DomainService {
   // Resolution instance of @unstoppabledomains/resolution
   readonly udResolution: Resolution;
 
   /**
+   * @dev You may need to call `await provider.getNetwork()` before passing in the provider to ensure the network
+   * property exists
    * @param provider ethers provider instance
    */
   constructor(readonly provider: EthersProvider) {
@@ -22,7 +21,7 @@ export class DomainService {
       blockchain: {
         cns: {
           provider: Eip1993Factories.fromEthersProvider(provider),
-          registry: CNS_REGISTRY,
+          network: provider.network.name,
         },
       },
     });
@@ -48,21 +47,22 @@ export class DomainService {
     if (ens.isEnsDomain(name)) {
       return ens.getPublicKeys(name, this.provider);
     } else {
-      return cns.getPublicKeys(name, this.udResolution);
+      return cns.getPublicKeys(name, this.provider, this.udResolution);
     }
   }
 
   /**
-   * @notice For a given domain, sets the associated umbra signature
+   * @notice For a given domain, sets the associated umbra public keys
    * @param name domain, e.g. myname.eth
-   * @param signature user's signature of the Umbra protocol message
+   * @param spendingPublicKey The public key for generating a stealth address as hex string
+   * @param viewingPublicKey The public key to use for encryption as hex string
    * @returns Transaction hash
    */
   async setPublicKeys(name: string, spendingPrivateKey: string, viewingPrivateKey: string) {
     if (ens.isEnsDomain(name)) {
       return ens.setPublicKeys(name, spendingPrivateKey, viewingPrivateKey, this.provider);
     } else {
-      return cns.setPublicKeys(name, this.provider, this.udResolution, spendingPrivateKey);
+      return cns.setPublicKeys(name, spendingPrivateKey, viewingPrivateKey, this.provider, this.udResolution);
     }
   }
 }
