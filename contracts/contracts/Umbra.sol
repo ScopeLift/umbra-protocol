@@ -205,6 +205,22 @@ contract Umbra is Ownable {
     _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "");
   }
 
+  function withdrawTokenAndCallOnBehalf(
+    address _stealthAddr,
+    address _acceptor,
+    address _tokenAddr,
+    address _sponsor,
+    uint256 _sponsorFee,
+    UmbraHookable _hook,
+    bytes memory _data,
+    uint8 _v,
+    bytes32 _r,
+    bytes32 _s
+  ) external {
+    _validateWithdrawSignature(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _hook, _data, _v, _r, _s);
+    _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _hook, _data);
+  }
+
   /// @dev low level withdrawal function that should only be called after safety checks
   function _withdrawTokenInternal(
     address _stealthAddr,
@@ -247,7 +263,7 @@ contract Umbra is Ownable {
     uint8 _v,
     bytes32 _r,
     bytes32 _s
-  ) internal {
+  ) internal view {
     bytes32 _digest =
       keccak256(
         abi.encodePacked("\x19Ethereum Signed Message:\n32",
