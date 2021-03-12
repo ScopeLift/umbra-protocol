@@ -201,7 +201,7 @@ contract Umbra is Ownable {
     bytes32 _r,
     bytes32 _s
   ) external {
-    _validateWithdrawSignature(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _v, _r, _s);
+    _validateWithdrawSignature(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "", _v, _r, _s);
     _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "");
   }
 
@@ -242,6 +242,8 @@ contract Umbra is Ownable {
     address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
+    UmbraHookable _hook,
+    bytes memory _data,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
@@ -256,7 +258,9 @@ contract Umbra is Ownable {
               _acceptor,
               _tokenAddr,
               _sponsor,
-              _sponsorFee
+              _sponsorFee,
+              address(_hook),
+              _data
             )
           )
         )

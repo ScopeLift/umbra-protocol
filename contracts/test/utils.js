@@ -3,6 +3,7 @@ const ethers = require('ethers');
 
 const { BN } = web3.utils;
 const { keccak256, defaultAbiCoder, arrayify, splitSignature } = ethers.utils;
+const { AddressZero } = ethers.constants;
 
 /**
  * Sum token amounts sent as strings and return a string
@@ -24,13 +25,25 @@ const sumTokenAmounts = (amounts) => {
  * @param {string} token Address of token being withdrawn
  * @param {string} sponsor Address of relayer
  * @param {number|string} fee Amount sent to sponsor
+ * @param {string} hook Address of post withdraw hook contract
+ * @param {string|array} data Call data to be past to post withdraw hook
  */
-const signMetaWithdrawal = async (signer, chainId, version, acceptor, token, sponsor, fee) => {
+const signMetaWithdrawal = async (
+  signer,
+  chainId,
+  version,
+  acceptor,
+  token,
+  sponsor,
+  fee,
+  hook = AddressZero,
+  data = []
+) => {
   const digest = keccak256(
     defaultAbiCoder.encode(
-      ['uint256', 'string', 'address', 'address', 'address', 'uint256'],
-      [chainId, version, acceptor, token, sponsor, fee],
-    ),
+      ['uint256', 'string', 'address', 'address', 'address', 'uint256', 'address', 'bytes'],
+      [chainId, version, acceptor, token, sponsor, fee, hook, data]
+    )
   );
 
   const rawSig = await signer.signMessage(arrayify(digest));
