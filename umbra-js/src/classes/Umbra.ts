@@ -12,6 +12,7 @@ import { keccak256 } from '@ethersproject/keccak256';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { sha256 } from '@ethersproject/sha2';
 import { toUtf8Bytes } from '@ethersproject/strings';
+import { AddressZero } from '@ethersproject/constants';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { lookupRecipient } from '../utils/utils';
@@ -402,6 +403,8 @@ export class Umbra {
    * @param token Address of token to withdraw
    * @param sponsor Address of relayer
    * @param sponsorFee Amount sent to sponsor
+   * @param hook Address of post withdraw hook contract
+   * @param data Call data to be past to post withdraw hook
    */
   static async signWithdraw(
     spendingPrivateKey: string,
@@ -410,23 +413,37 @@ export class Umbra {
     acceptor: string,
     token: string,
     sponsor: string,
-    sponsorFee: BigNumberish
+    sponsorFee: BigNumberish,
+    hook: string = AddressZero,
+    data: string | null = null
   ) {
     // Validate addresses
     acceptor = getAddress(acceptor);
     sponsor = getAddress(sponsor);
     token = getAddress(token);
+    hook = getAddress(hook);
 
     // Validate chainId
     if (typeof chainId !== 'number' || !Number.isInteger(chainId)) {
       throw new Error(`Invalid chainId provided in chainConfig. Got '${chainId}'`);
     }
 
+    let dataArg;
+    if (data === null) {
+      // Empty data should passed as an empty array to encode
+      dataArg = [];
+    } else if (typeof data !== 'string' || !data.startsWith('0x')) {
+      // Validate the data string
+      throw new Error('Data string must be in hex form with 0x prefix');
+    } else {
+      dataArg = data;
+    }
+
     const stealthWallet = new Wallet(spendingPrivateKey);
     const digest = keccak256(
       defaultAbiCoder.encode(
-        ['uint256', 'string', 'address', 'address', 'address', 'uint256'],
-        [chainId, version, acceptor, token, sponsor, sponsorFee]
+        ['uint256', 'string', 'address', 'address', 'address', 'uint256', 'address', 'bytes'],
+        [chainId, version, acceptor, token, sponsor, sponsorFee, hook, dataArg]
       )
     );
     const rawSig = await stealthWallet.signMessage(arrayify(digest));
