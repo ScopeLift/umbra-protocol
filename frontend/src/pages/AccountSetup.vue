@@ -122,9 +122,7 @@
 
 <script lang="ts">
 import { QBtn } from 'quasar';
-import { ens } from '@umbra/umbra-js';
 import { defineComponent, onMounted, ref } from '@vue/composition-api';
-import { TransactionResponse } from '@ethersproject/providers';
 import BaseButton from 'src/components/BaseButton.vue';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
@@ -154,7 +152,6 @@ function useKeys() {
 
   function setName(name: string) {
     selectedName.value = name;
-    console.log('selectedName.value: ', selectedName.value);
     carouselBtnRight.value?.click();
   }
 

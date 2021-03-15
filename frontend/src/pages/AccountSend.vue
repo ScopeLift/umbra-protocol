@@ -23,7 +23,13 @@
 
       <!-- Send button -->
       <div>
-        <base-button :disable="isSendInProgress" :full-width="true" label="Send" type="submit" />
+        <base-button
+          :disable="isSendInProgress"
+          :full-width="true"
+          label="Send"
+          :loading="isSendInProgress"
+          type="submit"
+        />
       </div>
     </q-form>
   </q-page>
