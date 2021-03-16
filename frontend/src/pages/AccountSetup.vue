@@ -145,10 +145,13 @@ function useKeys() {
   const carouselStep = ref('1');
   const isWaiting = ref(false);
 
-  onMounted(() => {
-    if (userEns && !userCns) selectedName.value = userEns.value;
-    else if (!userEns && userCns) selectedName.value = userCns.value;
-  });
+  onMounted(() => checkAndSetName());
+
+  function checkAndSetName() {
+    if (selectedName.value) return;
+    if (userEns.value && !userCns.value) selectedName.value = userEns.value;
+    else if (!userEns.value && userCns.value) selectedName.value = userCns.value;
+  }
 
   function setName(name: string) {
     selectedName.value = name;
@@ -171,6 +174,10 @@ function useKeys() {
 
   async function publishKeys() {
     if (!domainService.value) throw new Error('Invalid DomainService. Please refresh the page');
+
+    // If user had to choose between ENS and CNS, selectedName.value will be defined so we do nothing. If it's
+    // undefined, the user either only has ENS or CNS (so we set this for them), OR they have neither and we throw an error
+    checkAndSetName();
     if (!selectedName.value) {
       throw new Error('ENS or CNS name not found. Please return to the first step');
     }

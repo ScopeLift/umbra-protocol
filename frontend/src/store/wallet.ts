@@ -192,7 +192,7 @@ export default function useWalletStore() {
   return {
     provider: computed(() => provider.value),
     signer: computed(() => signer.value),
-    userAddress: computed(() => userEns.value || userAddress.value),
+    userAddress: computed(() => userEns.value || userCns.value || userAddress.value),
     userEns: computed(() => userEns.value),
     userCns: computed(() => userCns.value),
     network: computed(() => network.value),
