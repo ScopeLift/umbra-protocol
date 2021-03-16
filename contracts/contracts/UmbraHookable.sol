@@ -14,7 +14,7 @@ interface UmbraHookable {
    * @param _sponsorFee Amount of the token that was paid to the sponsor
    * @param _data Arbitrary data passed to this hook by the withdrawer
    */
-  function callHook(
+  function tokensWithdrawn(
     uint256 _amount,
     address _stealthAddr,
     address _acceptor,

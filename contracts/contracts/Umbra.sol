@@ -268,7 +268,7 @@ contract Umbra is Ownable {
     }
 
     if (address(_hook) != address(0)) {
-      _hook.callHook(_withdrawalAmount, _stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _data);
+      _hook.tokensWithdrawn(_withdrawalAmount, _stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _data);
     }
   }
 

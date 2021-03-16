@@ -19,7 +19,7 @@ contract MockHook is UmbraHookable {
 
     CallHookData public lastCallData;
 
-    function callHook (
+    function tokensWithdrawn (
         uint256 _amount,
         address _stealthAddr,
         address _acceptor,
