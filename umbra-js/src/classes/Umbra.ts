@@ -432,9 +432,9 @@ export class Umbra {
     if (data === null) {
       // Empty data should passed as an empty array to encode
       dataArg = [];
-    } else if (typeof data !== 'string' || !data.startsWith('0x')) {
+    } else if (typeof data !== 'string' || !isHexString(data)) {
       // Validate the data string
-      throw new Error('Data string must be in hex form with 0x prefix');
+      throw new Error('Data string must be null or in hex form with 0x prefix');
     } else {
       dataArg = data;
     }
