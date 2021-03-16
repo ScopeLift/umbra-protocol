@@ -37,7 +37,7 @@ const signMetaWithdrawal = async (
   sponsor,
   fee,
   hook = AddressZero,
-  data = []
+  data = '0x'
 ) => {
   const digest = keccak256(
     defaultAbiCoder.encode(

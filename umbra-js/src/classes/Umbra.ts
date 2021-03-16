@@ -415,7 +415,7 @@ export class Umbra {
     sponsor: string,
     sponsorFee: BigNumberish,
     hook: string = AddressZero,
-    data: string | null = null
+    data = '0x'
   ) {
     // Validate addresses
     acceptor = getAddress(acceptor);
@@ -428,22 +428,16 @@ export class Umbra {
       throw new Error(`Invalid chainId provided in chainConfig. Got '${chainId}'`);
     }
 
-    let dataArg;
-    if (data === null) {
-      // Empty data should passed as an empty array to encode
-      dataArg = [];
-    } else if (typeof data !== 'string' || !isHexString(data)) {
-      // Validate the data string
+    // Validate the data string
+    if (typeof data !== 'string' || !isHexString(data)) {
       throw new Error('Data string must be null or in hex form with 0x prefix');
-    } else {
-      dataArg = data;
     }
 
     const stealthWallet = new Wallet(spendingPrivateKey);
     const digest = keccak256(
       defaultAbiCoder.encode(
         ['uint256', 'string', 'address', 'address', 'address', 'uint256', 'address', 'bytes'],
-        [chainId, version, acceptor, token, sponsor, sponsorFee, hook, dataArg]
+        [chainId, version, acceptor, token, sponsor, sponsorFee, hook, data]
       )
     );
     const rawSig = await stealthWallet.signMessage(arrayify(digest));

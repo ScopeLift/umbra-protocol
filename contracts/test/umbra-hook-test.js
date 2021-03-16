@@ -93,7 +93,7 @@ describe('Umbra Hooks', () => {
     it('should call the hook contract when the stealth receiver withdraws directly with empty data', async () => {
       await mintAndSendToken(sender, receiver, '100');
 
-      await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, ctx.hook.address, [], {
+      await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, ctx.hook.address, '0x', {
         from: receiver,
       });
 
@@ -215,7 +215,7 @@ describe('Umbra Hooks', () => {
         relayer,
         relayerTokenFee,
         ctx.hook.address,
-        []
+        '0x'
       );
 
       const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
@@ -225,7 +225,7 @@ describe('Umbra Hooks', () => {
         relayer,
         relayerTokenFee,
         ctx.hook.address,
-        [],
+        '0x',
         v,
         r,
         s,
