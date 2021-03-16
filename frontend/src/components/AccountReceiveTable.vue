@@ -126,8 +126,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const isLoading = ref(false);
   const destinationAddress = ref('');
   const isWithdrawInProgress = ref(false);
-  type TokenPayment = { token: string; amount: BigNumber };
-
   const mainTableColumns = [
     {
       align: 'left',
@@ -161,8 +159,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
   const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
     if (isEth(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
-    const tokenPayment = (await umbra.value?.umbraContract.tokenPayments(userAddress)) as TokenPayment;
-    return tokenPayment.amount;
+    return (await umbra.value?.umbraContract.tokenPayments(userAddress, tokenAddress)) as BigNumber;
   };
   const getTokenSymbol = (tokenAddress: string) => getTokenInfo(tokenAddress).symbol;
   const getTokenLogoUri = (tokenAddress: string) => getTokenInfo(tokenAddress).logoURI;
@@ -250,7 +247,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
 
         // Configure GSN provider (hardcoded our Rinkeby paymaster address)
         const gsnConfig = {
-          paymasterAddress: '0x53D07c0d1e382e3C66574E316ec97108C21d16DE',
+          paymasterAddress: '0xcE5A3Ae0EFa0c0E2D1Bc41a2538E0E1217545e84',
           methodSuffix: '_v4', // MetaMask only
           jsonStringifyRequest: true, // MetaMask only
         };
@@ -263,7 +260,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
 
         // Send transaction
         const stealthSigner = gsnEthersProvider.getSigner(stealthKeyPair.address);
-        const relayRecipientAddress = UmbraRelayRecipient.addresses[chainId as SupportedChainIds];
+        const relayRecipientAddress = UmbraRelayRecipient.addresses[String(chainId) as SupportedChainIds];
         const umbraRelayRecipient = new Contract(relayRecipientAddress, UmbraRelayRecipient.abi, stealthSigner);
         tx = (await umbraRelayRecipient.withdrawTokenOnBehalf(
           stealthKeyPair.address,

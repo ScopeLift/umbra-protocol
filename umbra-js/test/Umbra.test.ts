@@ -133,23 +133,23 @@ describe('Umbra class', () => {
     it('initializes correctly when passing a default chainId', async () => {
       // Localhost with URL provider
       const umbra1 = new Umbra(jsonRpcProvider, 1337);
-      expect(umbra1.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
-      expect(umbra1.chainConfig.startBlock).to.equal(8115377);
+      expect(umbra1.chainConfig.umbraAddress).to.equal('0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF');
+      expect(umbra1.chainConfig.startBlock).to.equal(8218912);
 
       // Localhost with Web3 provider
       const umbra2 = new Umbra(ethersProvider, 1337);
-      expect(umbra2.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
-      expect(umbra2.chainConfig.startBlock).to.equal(8115377);
+      expect(umbra2.chainConfig.umbraAddress).to.equal('0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF');
+      expect(umbra2.chainConfig.startBlock).to.equal(8218912);
 
       // Ropsten with URL provider
       const umbra3 = new Umbra(jsonRpcProvider, 4);
-      expect(umbra3.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
-      expect(umbra3.chainConfig.startBlock).to.equal(8115377);
+      expect(umbra3.chainConfig.umbraAddress).to.equal('0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF');
+      expect(umbra3.chainConfig.startBlock).to.equal(8218912);
 
       // Ropsten with Web3 provider
       const umbra4 = new Umbra(jsonRpcProvider, 4);
-      expect(umbra4.chainConfig.umbraAddress).to.equal('0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC');
-      expect(umbra4.chainConfig.startBlock).to.equal(8115377);
+      expect(umbra4.chainConfig.umbraAddress).to.equal('0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF');
+      expect(umbra4.chainConfig.startBlock).to.equal(8218912);
     });
 
     it('does not allow invalid default chain IDs to be provided', async () => {
@@ -368,7 +368,7 @@ describe('Umbra class', () => {
     it('throws when initializing with an invalid chainConfig', () => {
       const errorMsg1 = "Invalid start block provided in chainConfig. Got 'undefined'";
       const errorMsg2 = "Invalid start block provided in chainConfig. Got '1'";
-      const umbraAddress = '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC'; // address does not matter here
+      const umbraAddress = '0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF'; // address does not matter here
 
       // @ts-expect-error
       expect(() => new Umbra(ethersProvider)).to.throw('chainConfig not provided');

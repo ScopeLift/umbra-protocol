@@ -32,8 +32,8 @@ const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.js
 
 // Mapping from chainId to contract information
 const chainConfigs: Record<number, ChainConfig> = {
-  4: { chainId: 4, umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Rinkeby
-  1337: { chainId: 1337, umbraAddress: '0xeD79a0Eb663d9aBA707aaBC94572251DE2E69cbC', startBlock: 8115377 }, // Local
+  4: { chainId: 4, umbraAddress: '0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF', startBlock: 8218912 }, // Rinkeby
+  1337: { chainId: 1337, umbraAddress: '0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF', startBlock: 8218912 }, // Local
 };
 
 /**
@@ -202,6 +202,9 @@ export class Umbra {
       const gasPrice = BigNumber.from(overrides.gasPrice || (await this.provider.getGasPrice()));
       const gasLimit = BigNumber.from(overrides.gasLimit || '21000');
       const txCost = gasPrice.mul(gasLimit);
+      if (txCost.gt(ethBalance)) {
+        throw new Error('Stealth address ETH balance is not enough to pay for withdrawal gas cost');
+      }
       return txSigner.sendTransaction({
         to: destination,
         value: ethBalance.sub(txCost),
