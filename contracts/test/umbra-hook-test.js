@@ -68,340 +68,346 @@ describe('Umbra Hooks', () => {
     expect(ctx.hook.address.length).to.equal(42);
   });
 
-  it('should call the hook contract when the stealth receiver withdraws directly', async () => {
-    await mintAndSendToken(sender, receiver, '100');
+  describe('Direct withdrawal + hooks', async () => {
+    it('should call the hook contract when the stealth receiver withdraws directly', async () => {
+      await mintAndSendToken(sender, receiver, '100');
 
-    await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, ctx.hook.address, '0xbeefc0ffee', {
-      from: receiver,
+      await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, ctx.hook.address, '0xbeefc0ffee', {
+        from: receiver,
+      });
+
+      const callData = await ctx.hook.lastCallData();
+
+      expect(fromWei(callData.amount)).to.equal('100');
+      expect(callData.stealthAddr).to.equal(receiver);
+      expect(callData.acceptor).to.equal(acceptor);
+      expect(callData.tokenAddr).to.equal(ctx.token.address);
+      expect(callData.sponsor).to.equal(AddressZero);
+      expect(fromWei(callData.sponsorFee)).to.equal('0');
+      expect(callData.data).to.equal('0xbeefc0ffee');
+
+      const balance = await ctx.token.balanceOf(acceptor);
+      expect(fromWei(balance)).to.equal('100');
     });
 
-    const callData = await ctx.hook.lastCallData();
+    it('should call the hook contract when the stealth receiver withdraws directly with empty data', async () => {
+      await mintAndSendToken(sender, receiver, '100');
 
-    expect(fromWei(callData.amount)).to.equal('100');
-    expect(callData.stealthAddr).to.equal(receiver);
-    expect(callData.acceptor).to.equal(acceptor);
-    expect(callData.tokenAddr).to.equal(ctx.token.address);
-    expect(callData.sponsor).to.equal(AddressZero);
-    expect(fromWei(callData.sponsorFee)).to.equal('0');
-    expect(callData.data).to.equal('0xbeefc0ffee');
+      await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, ctx.hook.address, [], {
+        from: receiver,
+      });
 
-    const balance = await ctx.token.balanceOf(acceptor);
-    expect(fromWei(balance)).to.equal('100');
-  });
+      const callData = await ctx.hook.lastCallData();
 
-  it('should call the hook contract when the stealth receiver withdraws directly with empty data', async () => {
-    await mintAndSendToken(sender, receiver, '100');
+      expect(fromWei(callData.amount)).to.equal('100');
+      expect(callData.stealthAddr).to.equal(receiver);
+      expect(callData.acceptor).to.equal(acceptor);
+      expect(callData.tokenAddr).to.equal(ctx.token.address);
+      expect(callData.sponsor).to.equal(AddressZero);
+      expect(fromWei(callData.sponsorFee)).to.equal('0');
+      expect(callData.data).to.equal(null);
 
-    await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, ctx.hook.address, [], {
-      from: receiver,
+      const balance = await ctx.token.balanceOf(acceptor);
+      expect(fromWei(balance)).to.equal('100');
     });
 
-    const callData = await ctx.hook.lastCallData();
+    it('should call the hook contract when the stealth receiver withdraws directly to the hook contract', async () => {
+      await mintAndSendToken(sender, receiver, '100');
 
-    expect(fromWei(callData.amount)).to.equal('100');
-    expect(callData.stealthAddr).to.equal(receiver);
-    expect(callData.acceptor).to.equal(acceptor);
-    expect(callData.tokenAddr).to.equal(ctx.token.address);
-    expect(callData.sponsor).to.equal(AddressZero);
-    expect(fromWei(callData.sponsorFee)).to.equal('0');
-    expect(callData.data).to.equal(null);
+      await ctx.umbra.withdrawTokenAndCall(ctx.hook.address, ctx.token.address, ctx.hook.address, '0xbeefc0ffee', {
+        from: receiver,
+      });
 
-    const balance = await ctx.token.balanceOf(acceptor);
-    expect(fromWei(balance)).to.equal('100');
-  });
+      const callData = await ctx.hook.lastCallData();
 
-  it('should call the hook contract when the stealth receiver withdraws directly to the hook contract', async () => {
-    await mintAndSendToken(sender, receiver, '100');
+      expect(fromWei(callData.amount)).to.equal('100');
+      expect(callData.stealthAddr).to.equal(receiver);
+      expect(callData.acceptor).to.equal(ctx.hook.address);
+      expect(callData.tokenAddr).to.equal(ctx.token.address);
+      expect(callData.sponsor).to.equal(AddressZero);
+      expect(fromWei(callData.sponsorFee)).to.equal('0');
+      expect(callData.data).to.equal('0xbeefc0ffee');
 
-    await ctx.umbra.withdrawTokenAndCall(ctx.hook.address, ctx.token.address, ctx.hook.address, '0xbeefc0ffee', {
-      from: receiver,
+      const balance = await ctx.token.balanceOf(ctx.hook.address);
+      expect(fromWei(balance)).to.equal('100');
     });
 
-    const callData = await ctx.hook.lastCallData();
+    it('should not call the hook when the stealth receiver withdraws directly if the hook address is 0', async () => {
+      await mintAndSendToken(sender, receiver, '100');
 
-    expect(fromWei(callData.amount)).to.equal('100');
-    expect(callData.stealthAddr).to.equal(receiver);
-    expect(callData.acceptor).to.equal(ctx.hook.address);
-    expect(callData.tokenAddr).to.equal(ctx.token.address);
-    expect(callData.sponsor).to.equal(AddressZero);
-    expect(fromWei(callData.sponsorFee)).to.equal('0');
-    expect(callData.data).to.equal('0xbeefc0ffee');
+      await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, AddressZero, '0xbeefc0ffee', {
+        from: receiver,
+      });
 
-    const balance = await ctx.token.balanceOf(ctx.hook.address);
-    expect(fromWei(balance)).to.equal('100');
-  });
+      const callData = await ctx.hook.lastCallData();
 
-  it('should not call the hook when the stealth receiver withdraws directly if the hook address is 0', async () => {
-    await mintAndSendToken(sender, receiver, '100');
+      // call data in the mock trigger should still be zeroes
+      expect(fromWei(callData.amount)).to.equal('0');
+      expect(callData.stealthAddr).to.equal(AddressZero);
+      expect(callData.acceptor).to.equal(AddressZero);
+      expect(callData.tokenAddr).to.equal(AddressZero);
+      expect(callData.sponsor).to.equal(AddressZero);
+      expect(fromWei(callData.sponsorFee)).to.equal('0');
+      expect(callData.data).to.equal(null);
 
-    await ctx.umbra.withdrawTokenAndCall(acceptor, ctx.token.address, AddressZero, '0xbeefc0ffee', {
-      from: receiver,
+      // the withdrawal transfer should still work
+      const balance = await ctx.token.balanceOf(acceptor);
+      expect(fromWei(balance)).to.equal('100');
     });
-
-    const callData = await ctx.hook.lastCallData();
-
-    // call data in the mock trigger should still be zeroes
-    expect(fromWei(callData.amount)).to.equal('0');
-    expect(callData.stealthAddr).to.equal(AddressZero);
-    expect(callData.acceptor).to.equal(AddressZero);
-    expect(callData.tokenAddr).to.equal(AddressZero);
-    expect(callData.sponsor).to.equal(AddressZero);
-    expect(fromWei(callData.sponsorFee)).to.equal('0');
-    expect(callData.data).to.equal(null);
-
-    // the withdrawal  transfer should still work
-    const balance = await ctx.token.balanceOf(acceptor);
-    expect(fromWei(balance)).to.equal('100');
   });
 
-  it('should call the hook contract when the stealth receiver withdraws via meta tx', async () => {
-    await mintAndSendToken(sender, metaWallet.address, '100');
+  describe('Meta withdrawal + hooks', async () => {
+    it('should call the hook contract when the stealth receiver withdraws via meta tx', async () => {
+      await mintAndSendToken(sender, metaWallet.address, '100');
 
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      ctx.chainId,
-      ctx.version,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      '0xbeefc0ffee'
-    );
-
-    const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
-      metaWallet.address,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      '0xbeefc0ffee',
-      v,
-      r,
-      s,
-      { from: relayer }
-    );
-
-    const callData = await ctx.hook.lastCallData();
-
-    expect(fromWei(callData.amount)).to.equal('98');
-    expect(callData.stealthAddr).to.equal(metaWallet.address);
-    expect(callData.acceptor).to.equal(acceptor);
-    expect(callData.tokenAddr).to.equal(ctx.token.address);
-    expect(callData.sponsor).to.equal(relayer);
-    expect(fromWei(callData.sponsorFee)).to.equal('2');
-    expect(callData.data).to.equal('0xbeefc0ffee');
-
-    const balance = await ctx.token.balanceOf(acceptor);
-    expect(fromWei(balance)).to.equal('98');
-
-    const sponsorBalance = await ctx.token.balanceOf(relayer);
-    expect(fromWei(sponsorBalance)).to.equal('2');
-  });
-
-  it('should call the hook contract when the stealth receiver withdraws via meta tx with empty data', async () => {
-    await mintAndSendToken(sender, metaWallet.address, '100');
-
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      ctx.chainId,
-      ctx.version,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      []
-    );
-
-    const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
-      metaWallet.address,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      [],
-      v,
-      r,
-      s,
-      { from: relayer }
-    );
-
-    const callData = await ctx.hook.lastCallData();
-
-    expect(fromWei(callData.amount)).to.equal('98');
-    expect(callData.stealthAddr).to.equal(metaWallet.address);
-    expect(callData.acceptor).to.equal(acceptor);
-    expect(callData.tokenAddr).to.equal(ctx.token.address);
-    expect(callData.sponsor).to.equal(relayer);
-    expect(fromWei(callData.sponsorFee)).to.equal('2');
-    expect(callData.data).to.equal(null);
-
-    const balance = await ctx.token.balanceOf(acceptor);
-    expect(fromWei(balance)).to.equal('98');
-
-    const sponsorBalance = await ctx.token.balanceOf(relayer);
-    expect(fromWei(sponsorBalance)).to.equal('2');
-  });
-
-  it('should not call the hook if the hook contract is 0 when the stealth receiver withdraws via meta tx', async () => {
-    await mintAndSendToken(sender, metaWallet.address, '100');
-
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      ctx.chainId,
-      ctx.version,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      AddressZero,
-      '0xbeefc0ffee'
-    );
-
-    const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
-      metaWallet.address,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      AddressZero,
-      '0xbeefc0ffee',
-      v,
-      r,
-      s,
-      { from: relayer }
-    );
-
-    const callData = await ctx.hook.lastCallData();
-
-    // call data in the mock trigger should still be zeroes
-    expect(fromWei(callData.amount)).to.equal('0');
-    expect(callData.stealthAddr).to.equal(AddressZero);
-    expect(callData.acceptor).to.equal(AddressZero);
-    expect(callData.tokenAddr).to.equal(AddressZero);
-    expect(callData.sponsor).to.equal(AddressZero);
-    expect(fromWei(callData.sponsorFee)).to.equal('0');
-    expect(callData.data).to.equal(null);
-
-    const balance = await ctx.token.balanceOf(acceptor);
-    expect(fromWei(balance)).to.equal('98');
-
-    const sponsorBalance = await ctx.token.balanceOf(relayer);
-    expect(fromWei(sponsorBalance)).to.equal('2');
-  });
-
-  it('should call the hook contract when the stealth receiver withdraws via meta tx to the hook contract', async () => {
-    await mintAndSendToken(sender, metaWallet.address, '100');
-
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      ctx.chainId,
-      ctx.version,
-      ctx.hook.address,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      '0xbeefc0ffee'
-    );
-
-    const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
-      metaWallet.address,
-      ctx.hook.address,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      '0xbeefc0ffee',
-      v,
-      r,
-      s,
-      { from: relayer }
-    );
-
-    const callData = await ctx.hook.lastCallData();
-
-    expect(fromWei(callData.amount)).to.equal('98');
-    expect(callData.stealthAddr).to.equal(metaWallet.address);
-    expect(callData.acceptor).to.equal(ctx.hook.address);
-    expect(callData.tokenAddr).to.equal(ctx.token.address);
-    expect(callData.sponsor).to.equal(relayer);
-    expect(fromWei(callData.sponsorFee)).to.equal('2');
-    expect(callData.data).to.equal('0xbeefc0ffee');
-
-    const balance = await ctx.token.balanceOf(ctx.hook.address);
-    expect(fromWei(balance)).to.equal('98');
-
-    const sponsorBalance = await ctx.token.balanceOf(relayer);
-    expect(fromWei(sponsorBalance)).to.equal('2');
-  });
-
-  it('should fail if the relayer sends the wrong hook address', async () => {
-    await mintAndSendToken(sender, metaWallet.address, '100');
-
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      ctx.chainId,
-      ctx.version,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      '0xbeefc0ffee'
-    );
-
-    await expectRevert(
-      ctx.umbra.withdrawTokenAndCallOnBehalf(
-        metaWallet.address,
+      const { v, r, s } = await signMetaWithdrawal(
+        metaWallet,
+        ctx.chainId,
+        ctx.version,
         acceptor,
         ctx.token.address,
         relayer,
         relayerTokenFee,
-        ethers.Wallet.createRandom().address, // this should be the hook address
-        '0xbeefc0ffee',
-        v,
-        r,
-        s,
-        { from: relayer }
-      ),
-      'Umbra: Invalid Signature'
-    );
-  });
+        ctx.hook.address,
+        '0xbeefc0ffee'
+      );
 
-  it('should fail if the relayer sends the wrong hook call cata', async () => {
-    await mintAndSendToken(sender, metaWallet.address, '100');
-
-    const { v, r, s } = await signMetaWithdrawal(
-      metaWallet,
-      ctx.chainId,
-      ctx.version,
-      acceptor,
-      ctx.token.address,
-      relayer,
-      relayerTokenFee,
-      ctx.hook.address,
-      '0xbeefc0ffee'
-    );
-
-    await expectRevert(
-      ctx.umbra.withdrawTokenAndCallOnBehalf(
+      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
         metaWallet.address,
         acceptor,
         ctx.token.address,
         relayer,
         relayerTokenFee,
         ctx.hook.address,
-        '0xbeefcafe', // this should be 0xbeefc0ffee
+        '0xbeefc0ffee',
         v,
         r,
         s,
         { from: relayer }
-      ),
-      'Umbra: Invalid Signature'
-    );
+      );
+
+      const callData = await ctx.hook.lastCallData();
+
+      expect(fromWei(callData.amount)).to.equal('98');
+      expect(callData.stealthAddr).to.equal(metaWallet.address);
+      expect(callData.acceptor).to.equal(acceptor);
+      expect(callData.tokenAddr).to.equal(ctx.token.address);
+      expect(callData.sponsor).to.equal(relayer);
+      expect(fromWei(callData.sponsorFee)).to.equal('2');
+      expect(callData.data).to.equal('0xbeefc0ffee');
+
+      const balance = await ctx.token.balanceOf(acceptor);
+      expect(fromWei(balance)).to.equal('98');
+
+      const sponsorBalance = await ctx.token.balanceOf(relayer);
+      expect(fromWei(sponsorBalance)).to.equal('2');
+    });
+
+    it('should call the hook contract when the stealth receiver withdraws via meta tx with empty data', async () => {
+      await mintAndSendToken(sender, metaWallet.address, '100');
+
+      const { v, r, s } = await signMetaWithdrawal(
+        metaWallet,
+        ctx.chainId,
+        ctx.version,
+        acceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        ctx.hook.address,
+        []
+      );
+
+      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
+        metaWallet.address,
+        acceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        ctx.hook.address,
+        [],
+        v,
+        r,
+        s,
+        { from: relayer }
+      );
+
+      const callData = await ctx.hook.lastCallData();
+
+      expect(fromWei(callData.amount)).to.equal('98');
+      expect(callData.stealthAddr).to.equal(metaWallet.address);
+      expect(callData.acceptor).to.equal(acceptor);
+      expect(callData.tokenAddr).to.equal(ctx.token.address);
+      expect(callData.sponsor).to.equal(relayer);
+      expect(fromWei(callData.sponsorFee)).to.equal('2');
+      expect(callData.data).to.equal(null);
+
+      const balance = await ctx.token.balanceOf(acceptor);
+      expect(fromWei(balance)).to.equal('98');
+
+      const sponsorBalance = await ctx.token.balanceOf(relayer);
+      expect(fromWei(sponsorBalance)).to.equal('2');
+    });
+
+    it('should not call the hook if the hook contract is 0 when the stealth receiver withdraws via meta tx', async () => {
+      await mintAndSendToken(sender, metaWallet.address, '100');
+
+      const { v, r, s } = await signMetaWithdrawal(
+        metaWallet,
+        ctx.chainId,
+        ctx.version,
+        acceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        AddressZero,
+        '0xbeefc0ffee'
+      );
+
+      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
+        metaWallet.address,
+        acceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        AddressZero,
+        '0xbeefc0ffee',
+        v,
+        r,
+        s,
+        { from: relayer }
+      );
+
+      const callData = await ctx.hook.lastCallData();
+
+      // call data in the mock trigger should still be zeroes
+      expect(fromWei(callData.amount)).to.equal('0');
+      expect(callData.stealthAddr).to.equal(AddressZero);
+      expect(callData.acceptor).to.equal(AddressZero);
+      expect(callData.tokenAddr).to.equal(AddressZero);
+      expect(callData.sponsor).to.equal(AddressZero);
+      expect(fromWei(callData.sponsorFee)).to.equal('0');
+      expect(callData.data).to.equal(null);
+
+      const balance = await ctx.token.balanceOf(acceptor);
+      expect(fromWei(balance)).to.equal('98');
+
+      const sponsorBalance = await ctx.token.balanceOf(relayer);
+      expect(fromWei(sponsorBalance)).to.equal('2');
+    });
+
+    it('should call the hook contract when the stealth receiver withdraws via meta tx to the hook contract', async () => {
+      await mintAndSendToken(sender, metaWallet.address, '100');
+
+      const { v, r, s } = await signMetaWithdrawal(
+        metaWallet,
+        ctx.chainId,
+        ctx.version,
+        ctx.hook.address,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        ctx.hook.address,
+        '0xbeefc0ffee'
+      );
+
+      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
+        metaWallet.address,
+        ctx.hook.address,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        ctx.hook.address,
+        '0xbeefc0ffee',
+        v,
+        r,
+        s,
+        { from: relayer }
+      );
+
+      const callData = await ctx.hook.lastCallData();
+
+      expect(fromWei(callData.amount)).to.equal('98');
+      expect(callData.stealthAddr).to.equal(metaWallet.address);
+      expect(callData.acceptor).to.equal(ctx.hook.address);
+      expect(callData.tokenAddr).to.equal(ctx.token.address);
+      expect(callData.sponsor).to.equal(relayer);
+      expect(fromWei(callData.sponsorFee)).to.equal('2');
+      expect(callData.data).to.equal('0xbeefc0ffee');
+
+      const balance = await ctx.token.balanceOf(ctx.hook.address);
+      expect(fromWei(balance)).to.equal('98');
+
+      const sponsorBalance = await ctx.token.balanceOf(relayer);
+      expect(fromWei(sponsorBalance)).to.equal('2');
+    });
+  });
+
+  describe('Meta withdrawal + hooks + dishonest relayer', async () => {
+    it('should fail if the relayer sends the wrong hook address', async () => {
+      await mintAndSendToken(sender, metaWallet.address, '100');
+
+      const { v, r, s } = await signMetaWithdrawal(
+        metaWallet,
+        ctx.chainId,
+        ctx.version,
+        acceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        ctx.hook.address,
+        '0xbeefc0ffee'
+      );
+
+      await expectRevert(
+        ctx.umbra.withdrawTokenAndCallOnBehalf(
+          metaWallet.address,
+          acceptor,
+          ctx.token.address,
+          relayer,
+          relayerTokenFee,
+          ethers.Wallet.createRandom().address, // this should be the hook address
+          '0xbeefc0ffee',
+          v,
+          r,
+          s,
+          { from: relayer }
+        ),
+        'Umbra: Invalid Signature'
+      );
+    });
+
+    it('should fail if the relayer sends the wrong hook call cata', async () => {
+      await mintAndSendToken(sender, metaWallet.address, '100');
+
+      const { v, r, s } = await signMetaWithdrawal(
+        metaWallet,
+        ctx.chainId,
+        ctx.version,
+        acceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        ctx.hook.address,
+        '0xbeefc0ffee'
+      );
+
+      await expectRevert(
+        ctx.umbra.withdrawTokenAndCallOnBehalf(
+          metaWallet.address,
+          acceptor,
+          ctx.token.address,
+          relayer,
+          relayerTokenFee,
+          ctx.hook.address,
+          '0xbeefcafe', // this should be 0xbeefc0ffee
+          v,
+          r,
+          s,
+          { from: relayer }
+        ),
+        'Umbra: Invalid Signature'
+      );
+    });
   });
 });
