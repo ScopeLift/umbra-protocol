@@ -69,7 +69,7 @@ describe('Umbra', () => {
 
   it('should have correct values initialized', async () => {
     ctx.version = await ctx.umbra.version();
-    expect(ctx.version).to.equal("1");
+    expect(ctx.version).to.equal('1');
 
     ctx.chainId = await web3.eth.getChainId();
     const chainId = await ctx.umbra.chainId();
@@ -358,12 +358,30 @@ describe('Umbra', () => {
   });
 
   it('should revert on a meta withdrawal when the stealth address does not have a balance', async () => {
-    const { v, r, s } = await signMetaWithdrawal(metaWallet, ctx.chainId, ctx.version, metaAcceptor, ctx.token.address, relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(
+      metaWallet,
+      ctx.chainId,
+      ctx.version,
+      metaAcceptor,
+      ctx.token.address,
+      relayer,
+      relayerTokenFee
+    );
 
     await expectRevert(
-      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, ctx.token.address, relayer, relayerTokenFee, v, r, s, {
-        from: relayer,
-      }),
+      ctx.umbra.withdrawTokenOnBehalf(
+        metaWallet.address,
+        metaAcceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        v,
+        r,
+        s,
+        {
+          from: relayer,
+        }
+      ),
       'Umbra: No balance to withdraw or fee exceeds balance'
     );
   });
@@ -378,12 +396,30 @@ describe('Umbra', () => {
     });
 
     const wrongWallet = ethers.Wallet.createRandom();
-    const { v, r, s } = await signMetaWithdrawal(wrongWallet, ctx.chainId, ctx.version, metaAcceptor, ctx.token.address,relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(
+      wrongWallet,
+      ctx.chainId,
+      ctx.version,
+      metaAcceptor,
+      ctx.token.address,
+      relayer,
+      relayerTokenFee
+    );
 
     await expectRevert(
-      ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, ctx.token.address, relayer, relayerTokenFee, v, r, s, {
-        from: relayer,
-      }),
+      ctx.umbra.withdrawTokenOnBehalf(
+        metaWallet.address,
+        metaAcceptor,
+        ctx.token.address,
+        relayer,
+        relayerTokenFee,
+        v,
+        r,
+        s,
+        {
+          from: relayer,
+        }
+      ),
       'Umbra: Invalid Signature'
     );
   });
@@ -391,7 +427,15 @@ describe('Umbra', () => {
   it('should revert on meta withdrawal if the fee is more than the amount', async () => {
     const bigFee = sumTokenAmounts([metaTokenTotal, '100']);
 
-    const { v, r, s } = await signMetaWithdrawal(metaWallet, ctx.chainId, ctx.version, metaAcceptor, ctx.token.address, relayer, bigFee);
+    const { v, r, s } = await signMetaWithdrawal(
+      metaWallet,
+      ctx.chainId,
+      ctx.version,
+      metaAcceptor,
+      ctx.token.address,
+      relayer,
+      bigFee
+    );
 
     await expectRevert(
       ctx.umbra.withdrawTokenOnBehalf(metaWallet.address, metaAcceptor, ctx.token.address, relayer, bigFee, v, r, s, {
@@ -402,7 +446,15 @@ describe('Umbra', () => {
   });
 
   it('perform a withdrawal when given a properly signed meta-tx', async () => {
-    const { v, r, s } = await signMetaWithdrawal(metaWallet, ctx.chainId, ctx.version, metaAcceptor, ctx.token.address, relayer, relayerTokenFee);
+    const { v, r, s } = await signMetaWithdrawal(
+      metaWallet,
+      ctx.chainId,
+      ctx.version,
+      metaAcceptor,
+      ctx.token.address,
+      relayer,
+      relayerTokenFee
+    );
 
     const receipt = await ctx.umbra.withdrawTokenOnBehalf(
       metaWallet.address,

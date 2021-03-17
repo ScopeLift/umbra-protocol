@@ -209,7 +209,18 @@ contract Umbra is Ownable {
     bytes32 _r,
     bytes32 _s
   ) external {
-    _validateWithdrawSignature(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, IUmbraHookReceiver(0), "", _v, _r, _s);
+    _validateWithdrawSignature(
+      _stealthAddr,
+      _acceptor,
+      _tokenAddr,
+      _sponsor,
+      _sponsorFee,
+      IUmbraHookReceiver(0),
+      "",
+      _v,
+      _r,
+      _s
+    );
     _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, IUmbraHookReceiver(0), "");
   }
 
@@ -308,19 +319,9 @@ contract Umbra is Ownable {
   ) internal view {
     bytes32 _digest =
       keccak256(
-        abi.encodePacked("\x19Ethereum Signed Message:\n32",
-          keccak256(
-            abi.encode(
-              chainId,
-              version,
-              _acceptor,
-              _tokenAddr,
-              _sponsor,
-              _sponsorFee,
-              address(_hook),
-              _data
-            )
-          )
+        abi.encodePacked(
+          "\x19Ethereum Signed Message:\n32",
+          keccak256(abi.encode(chainId, version, _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data))
         )
       );
 
