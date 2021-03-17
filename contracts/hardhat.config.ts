@@ -15,6 +15,7 @@ import 'hardhat-typechain';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
 
+
 const chainIds = {
   ganache: 1337,
   goerli: 5,
@@ -39,6 +40,8 @@ if (!process.env.INFURA_API_KEY) {
 } else {
   infuraApiKey = process.env.INFURA_API_KEY;
 }
+
+const shouldReportGas = process.env.REPORT_GAS === 'true';
 
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
   const url: string = 'https://' + network + '.infura.io/v3/' + infuraApiKey;
@@ -93,6 +96,12 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: 'typechain',
     target: 'ethers-v5',
+  },
+  gasReporter: {
+    enabled: shouldReportGas,
+    currency: 'USD',
+    gasPrice: 200,
+    excludeContracts: ['TestToken.sol', 'MockHook.sol', 'ERC20.sol', 'open_gsn/'],
   },
 };
 
