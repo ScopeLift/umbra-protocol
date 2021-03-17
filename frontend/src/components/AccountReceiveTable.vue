@@ -30,9 +30,17 @@
         <q-tr :props="props" :key="props.row.id">
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <!-- Asset column -->
-            <div v-if="col.name === 'date'">
-              <div>{{ formatDate(col.value.timestamp * 1000) }}</div>
-              <div class="text-caption text-grey">{{ formatTime(col.value.timestamp * 1000) }}</div>
+            <div v-if="col.name === 'date'" class="d-inline-block">
+              <div
+                @click="openInEtherscan(props.row)"
+                class="row justify-start items-center cursor-pointer external-link-icon-parent"
+              >
+                <div class="col-auto">
+                  <div>{{ formatDate(col.value.timestamp * 1000) }}</div>
+                  <div class="text-caption text-grey">{{ formatTime(col.value.timestamp * 1000) }}</div>
+                </div>
+                <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
+              </div>
             </div>
 
             <!-- Amount column -->
@@ -47,7 +55,7 @@
             </div>
 
             <!-- From column -->
-            <div v-else-if="col.name === 'from'">
+            <div v-else-if="col.name === 'from'" class="d-inline-block">
               <div @click="copySenderAddress(props.row)" class="cursor-pointer copy-icon-parent">
                 <span>{{ col.value.from }}</span>
                 <q-icon class="copy-icon" name="far fa-copy" right />
@@ -67,7 +75,7 @@
             </div>
             <base-button
               v-else
-              @click="expanded = [props.key]"
+              @click="expanded = expanded[0] === props.key ? [] : [props.key]"
               color="primary"
               :dense="true"
               :flat="true"
@@ -204,6 +212,17 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   }
 
   /**
+   * @notice Opens the transaction in etherscan
+   */
+  function openInEtherscan(row: UserAnnouncement) {
+    if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
+    // Assume mainnet unless we have Rinkeby chainId
+    const chainId = provider.value.network.chainId || 1;
+    const baseUrl = chainId === 4 ? 'https://rinkeby.etherscan.io' : 'https://rinkeby.etherscan.io';
+    window.open(`${baseUrl}/tx/${row.tx.hash}`);
+  }
+
+  /**
    * @notice Withdraw funds from stealth address
    * @param announcement Announcement to withdraw
    */
@@ -288,6 +307,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     isLoading,
     expanded,
     copySenderAddress,
+    openInEtherscan,
     paginationConfig,
     mainTableColumns,
     formatDate,
@@ -321,5 +341,11 @@ export default defineComponent({
   color: $primary
 
 .copy-icon
+  color: transparent
+
+.external-link-icon-parent:hover .external-link-icon
+  color: $primary
+
+.external-link-icon
   color: transparent
 </style>
