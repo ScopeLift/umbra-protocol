@@ -13,6 +13,7 @@ import '@nomiclabs/hardhat-truffle5';
 import '@nomiclabs/hardhat-ethers';
 import 'hardhat-typechain';
 import 'solidity-coverage';
+import 'hardhat-gas-reporter';
 
 const chainIds = {
   ganache: 1337,
