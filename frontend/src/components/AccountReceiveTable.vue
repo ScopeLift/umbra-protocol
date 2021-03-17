@@ -117,6 +117,7 @@ import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import UmbraRelayRecipient from 'src/contracts/umbra-relay-recipient.json';
 import { SupportedChainIds } from 'components/models';
+import { lookupOrFormatAddresses } from 'src/utils/address';
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const { tokens, signer, provider, umbra, spendingKeyPair } = useWalletStore();
@@ -170,24 +171,18 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       maximumFractionDigits: 10,
     });
   };
-  const formatAddress = async (address: string) => {
-    try {
-      const ens = await provider.value?.lookupAddress(address);
-      return ens || `${address.slice(0, 6)}...${address.slice(38)}`; // address format: 0x1234...abcd
-    } catch (err) {
-      return address;
-    }
-  };
 
-  // Format announcements so from addresses support ENS and can detect withdrawals
+  // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
   const formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
   onMounted(async () => {
     isLoading.value = true;
-    // Format addresses to use ENS
+    if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
+
+    // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.receipt.from);
-    const formattedFromAddresses = await Promise.all(fromAddresses.map(formatAddress));
+    const formattedAddresses = await lookupOrFormatAddresses(fromAddresses, provider.value);
     formattedAnnouncements.value.forEach((announcement, index) => {
-      announcement.receipt.from = formattedFromAddresses[index];
+      announcement.receipt.from = formattedAddresses[index];
     });
 
     // Find announcements that have been withdrawn

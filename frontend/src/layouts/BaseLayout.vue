@@ -52,8 +52,8 @@
 
             <!-- ADDRESS AND SETTINGS AND SETTINGS -->
             <div class="col-auto q-mr-md">
-              <div v-if="userAddress" class="text-caption dark-toggle">
-                {{ userAddress }}
+              <div v-if="userDisplayName" class="text-caption dark-toggle">
+                {{ userDisplayName }}
               </div>
             </div>
           </div>
@@ -128,7 +128,7 @@ function useDarkMode() {
 }
 
 function useWallet() {
-  const { userAddress, network } = useWalletStore();
+  const { userDisplayName, network } = useWalletStore();
   const networkName = ref('');
 
   watchEffect(() => {
@@ -137,7 +137,7 @@ function useWallet() {
     }
   });
 
-  return { userAddress, networkName };
+  return { userDisplayName, networkName };
 }
 
 export default defineComponent({

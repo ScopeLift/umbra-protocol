@@ -10,10 +10,10 @@ import {
   TokenList,
   MulticallResponse,
   SupportedChainIds,
-  CnsQueryResponse,
 } from 'components/models';
 import multicallInfo from 'src/contracts/multicall.json';
 import erc20 from 'src/contracts/erc20.json';
+import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -42,6 +42,7 @@ const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP
 const provider = ref<Provider>(); // ethers provider
 const signer = ref<Signer>(); // ethers signer
 const userAddress = ref<string>(); // user's wallet address
+const userDisplayName = ref<string>(); // user's ENS or CNS or wallet address to display
 const userEns = ref<string>(); // user's ENS name
 const userCns = ref<string>(); // user's CNS name
 const network = ref<Network>(); // connected network, derived from provider
@@ -112,28 +113,6 @@ export default function useWalletStore() {
     });
   }
 
-  // Query the graph for a list of CNS names owned by the user, and return the first one found or undefined if none exists
-  async function getCnsName(chainId: number, userAddress: string) {
-    // Assume mainnet unless we're given the Rinkeby chainId
-    const baseUrl = 'https://api.thegraph.com/subgraphs/name/unstoppable-domains-integrations';
-    const url = chainId === 4 ? `${baseUrl}/dot-crypto-rinkeby-registry` : `${baseUrl}/dot-crypto-registry`;
-
-    // Send request to get names
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        variables: { owner: userAddress.toLowerCase() },
-        query: 'query domainsOfOwner($owner: String!) { domains(where: {owner: $owner}) { name } }',
-      }),
-    });
-
-    // Return the first name in the array, or undefined if user has no CNS names
-    const json = (await res.json()) as CnsQueryResponse;
-    const names = json.data.domains;
-    return names.length > 0 ? names[0].name : undefined;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function setProvider(p: any) {
     rawProvider.value = p;
@@ -148,8 +127,8 @@ export default function useWalletStore() {
     const _network = await provider.value.getNetwork();
 
     // Get ENS and CNS names
-    const _userEns = await provider.value.lookupAddress(_userAddress);
-    const _userCns = await getCnsName(_network.chainId, _userAddress);
+    const _userEns = await lookupEnsName(_userAddress, provider.value);
+    const _userCns = await lookupCnsName(_userAddress, provider.value);
 
     // Set Umbra and DomainService classes
     const chainId = provider.value.network.chainId;
@@ -162,6 +141,7 @@ export default function useWalletStore() {
     userEns.value = _userEns;
     userCns.value = _userCns;
     network.value = _network;
+    userDisplayName.value = _userEns || _userCns || formatAddress(_userAddress);
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
@@ -192,7 +172,8 @@ export default function useWalletStore() {
   return {
     provider: computed(() => provider.value),
     signer: computed(() => signer.value),
-    userAddress: computed(() => userEns.value || userCns.value || userAddress.value),
+    userAddress: computed(() => userAddress.value),
+    userDisplayName: computed(() => userDisplayName.value),
     userEns: computed(() => userEns.value),
     userCns: computed(() => userCns.value),
     network: computed(() => network.value),
