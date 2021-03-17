@@ -148,9 +148,18 @@ function useKeys() {
   onMounted(() => checkAndSetName());
 
   function checkAndSetName() {
-    if (selectedName.value) return;
-    if (userEns.value && !userCns.value) selectedName.value = userEns.value;
-    else if (!userEns.value && userCns.value) selectedName.value = userCns.value;
+    // If the user has already selected which name to configure, we return and do nothing
+    if (selectedName.value) {
+      return;
+    }
+
+    // Otherwise, we select a domain name based on which type their address owns. If neither condition is true,
+    // publishKeys() will throw an error
+    if (userEns.value && !userCns.value) {
+      selectedName.value = userEns.value; // If user has an ENS name, but no CNS name, we select the ENS name
+    } else if (!userEns.value && userCns.value) {
+      selectedName.value = userCns.value; // If user has a CNS name, but no ENS name, we select the CNS name
+    }
   }
 
   function setName(name: string) {

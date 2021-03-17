@@ -44,7 +44,7 @@ export function namehash(name: string, resolution: Resolution) {
 }
 
 /**
- * @notice For a given ENS domain, returns the public keys, or throws if they don't exist
+ * @notice For a given CNS domain, returns the public keys, or throws if they don't exist
  * @param name CNS domain, e.g. myname.crypto
  * @param provider ethers provider to use
  * @param resolution Resolution instance of @unstoppabledomains/resolution
@@ -68,7 +68,7 @@ export async function getPublicKeys(name: string, provider: EthersProvider, reso
 }
 
 /**
- * @notice For a given CNS domain, sets the associated umbra signature
+ * @notice For a given CNS domain, sets the associated umbra public keys
  * @param name CNS domain, e.g. myname.crypto
  * @param spendingPublicKey The public key for generating a stealth address as hex string
  * @param viewingPublicKey The public key to use for encryption as hex string
