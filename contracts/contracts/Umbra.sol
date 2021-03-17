@@ -5,7 +5,7 @@ pragma solidity ^0.6.12;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./UmbraHookable.sol";
+import "./IUmbraHookReceiver.sol";
 
 contract Umbra is Ownable {
   using SafeMath for uint256;
@@ -168,7 +168,7 @@ contract Umbra is Ownable {
    * @param _tokenAddr Address of the ERC20 token being withdrawn
    */
   function withdrawToken(address _acceptor, address _tokenAddr) external {
-    _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0, UmbraHookable(0), "");
+    _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0, IUmbraHookReceiver(0), "");
   }
 
   /**
@@ -182,7 +182,7 @@ contract Umbra is Ownable {
   function withdrawTokenAndCall(
     address _acceptor,
     address _tokenAddr,
-    UmbraHookable _hook,
+    IUmbraHookReceiver _hook,
     bytes memory _data
   ) external {
     _withdrawTokenInternal(msg.sender, _acceptor, _tokenAddr, address(0), 0, _hook, _data);
@@ -209,8 +209,8 @@ contract Umbra is Ownable {
     bytes32 _r,
     bytes32 _s
   ) external {
-    _validateWithdrawSignature(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "", _v, _r, _s);
-    _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, UmbraHookable(0), "");
+    _validateWithdrawSignature(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, IUmbraHookReceiver(0), "", _v, _r, _s);
+    _withdrawTokenInternal(_stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, IUmbraHookReceiver(0), "");
   }
 
   /**
@@ -232,7 +232,7 @@ contract Umbra is Ownable {
     address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
-    UmbraHookable _hook,
+    IUmbraHookReceiver _hook,
     bytes memory _data,
     uint8 _v,
     bytes32 _r,
@@ -258,7 +258,7 @@ contract Umbra is Ownable {
     address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
-    UmbraHookable _hook,
+    IUmbraHookReceiver _hook,
     bytes memory _data
   ) internal {
     uint256 _amount = tokenPayments[_stealthAddr][_tokenAddr];
@@ -300,7 +300,7 @@ contract Umbra is Ownable {
     address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
-    UmbraHookable _hook,
+    IUmbraHookReceiver _hook,
     bytes memory _data,
     uint8 _v,
     bytes32 _r,

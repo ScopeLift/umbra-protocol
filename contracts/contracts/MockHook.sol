@@ -2,10 +2,10 @@
 
 pragma solidity ^0.6.12;
 
-import "./UmbraHookable.sol";
+import "./IUmbraHookReceiver.sol";
 
 /// @dev Mock implementation of UmbraHookable used for testing
-contract MockHook is UmbraHookable {
+contract MockHook is IUmbraHookReceiver {
 
     struct CallHookData {
         uint256 amount;

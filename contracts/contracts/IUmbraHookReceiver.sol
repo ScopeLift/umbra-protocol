@@ -3,7 +3,7 @@
 pragma solidity ^0.6.12;
 
 /// @dev Interface that post-withdraw hooks must implement to interop with Umbra
-interface UmbraHookable {
+interface IUmbraHookReceiver {
   /**
    * @notice Method called after a user completes an Umbra token withdrawal
    * @param _amount The amount of the token withdrawn _after_ subtracting the sponsor fee
