@@ -120,17 +120,17 @@ import { Contract } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Block, ExternalProvider, TransactionResponse, Web3Provider } from '@ethersproject/providers';
 import { formatUnits } from '@ethersproject/units';
-import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
+import { DomainService, Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
 import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Aliases';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import UmbraRelayRecipient from 'src/contracts/umbra-relay-recipient.json';
 import { SupportedChainIds } from 'components/models';
-import { lookupOrFormatAddresses } from 'src/utils/address';
+import { lookupOrFormatAddresses, toAddress } from 'src/utils/address';
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
-  const { tokens, signer, provider, umbra, spendingKeyPair } = useWalletStore();
+  const { tokens, signer, provider, umbra, spendingKeyPair, domainService } = useWalletStore();
   const { txNotify, notifyUser } = useAlerts();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
@@ -230,10 +230,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
    */
   async function withdraw(announcement: UserAnnouncement) {
     if (!umbra.value) throw new Error('Umbra instance not found');
-    // Get token info and stealth private key
+
+    // Get token info and stealth private key, and resolve ENS/CNS names to their address
     const token = getTokenInfo(announcement.token);
     const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
+    const destinationAddr = await toAddress(destinationAddress.value, domainService.value as DomainService);
 
     // Send transaction
     try {
@@ -241,13 +243,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       let tx: TransactionResponse;
       if (token.symbol === 'ETH') {
         // Withdrawing ETH
-        tx = await umbra.value.withdraw(spendingPrivateKey, token.address, destinationAddress.value);
+        tx = await umbra.value.withdraw(spendingPrivateKey, token.address, destinationAddr);
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value) throw new Error('Signer or provider not found');
         // Get user's signature. GSN doesn't care about sponsor address and fee, so for now on Rinkeby
         // we just use a value of 1 and the destinationAddress as a sanity check this functionality works
-        const sponsor = destinationAddress.value;
+        const sponsor = destinationAddr;
         const sponsorFee = '1'; // sponsor receives 1 unit of token being withdrawn, e.g. 1e-18 DAI or 1e-6 USDC
         const chainId = (await provider.value.getNetwork()).chainId;
         const version = '1'; // this is the only version, so hardcoded for now
@@ -255,7 +257,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
           spendingPrivateKey,
           chainId,
           version,
-          destinationAddress.value,
+          destinationAddr,
           token.address,
           sponsor,
           sponsorFee
@@ -280,7 +282,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
         const umbraRelayRecipient = new Contract(relayRecipientAddress, UmbraRelayRecipient.abi, stealthSigner);
         tx = (await umbraRelayRecipient.withdrawTokenOnBehalf(
           stealthKeyPair.address,
-          destinationAddress.value,
+          destinationAddr,
           sponsor,
           sponsorFee,
           v,
@@ -293,6 +295,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       await tx.wait();
 
       // Collapse expansion row and update table to show this was withdrawn
+      destinationAddress.value = '';
       expanded.value = []; // hides expanded row
       formattedAnnouncements.value.forEach((x) => {
         if (announcement.receiver === x.receiver) {
