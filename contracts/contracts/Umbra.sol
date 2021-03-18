@@ -3,13 +3,10 @@
 pragma solidity ^0.7.6;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IUmbraHookReceiver.sol";
 
 contract Umbra is Ownable {
-  using SafeMath for uint256;
-
   // =========================================== Events ============================================
 
   /// @notice Emitted when a payment is sent
@@ -127,9 +124,11 @@ contract Umbra is Ownable {
     bytes32 _ciphertext
   ) external payable {
     require(_tollCommitment == toll, "Umbra: Invalid or outdated toll commitment");
+
+    // also protects from underflow
     require(msg.value > toll, "Umbra: Must pay more than the toll");
 
-    uint256 amount = msg.value.sub(toll);
+    uint256 amount = msg.value - toll;
     emit Announcement(_receiver, amount, ETH_TOKEN_PLACHOLDER, _pkx, _ciphertext);
 
     _receiver.transfer(amount);
