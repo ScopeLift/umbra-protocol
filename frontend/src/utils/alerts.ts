@@ -13,6 +13,7 @@ const bNotify = BNotify({
 const messagesToIgnore = [
   'walletSelect must be called before walletCheck', // user decided not to connect wallet
   'Navigating to current location', // e.g. user clicks "Home" in nav bar when already on home page
+  "Cannot read property 'validate' of null", // user navigates off Send page too quickly after sending, so "resetValidation()" fails
 ];
 
 export default function useAlerts() {

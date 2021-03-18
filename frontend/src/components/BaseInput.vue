@@ -8,6 +8,7 @@
     class="q-my-sm"
     data-cy="base-input"
     :dense="dense"
+    :disable="disable"
     filled
     :hide-bottom-space="hideBottomSpace"
     :hint="hintString"
@@ -27,6 +28,7 @@
         class="cursor-pointer"
         :disable="appendButtonDisable"
         :label="appendButtonLabel"
+        :loading="appendButtonLoading"
         @click="handleClick"
       />
     </template>
@@ -52,6 +54,12 @@ export default Vue.extend({
       default: undefined,
     },
 
+    appendButtonLoading: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+
     autofocus: {
       type: Boolean,
       required: false,
@@ -71,6 +79,12 @@ export default Vue.extend({
     },
 
     dense: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+
+    disable: {
       type: Boolean,
       required: false,
       default: false,

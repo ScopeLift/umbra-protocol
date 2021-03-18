@@ -94,6 +94,8 @@
                 @click="withdraw(props.row)"
                 appendButtonLabel="Withdraw"
                 :appendButtonDisable="isWithdrawInProgress"
+                :appendButtonLoading="isWithdrawInProgress"
+                :disable="isWithdrawInProgress"
                 label="Address"
                 lazy-rules
                 :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"

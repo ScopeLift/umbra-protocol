@@ -163,6 +163,7 @@ export default function useWalletStore() {
       viewingKeyPair.value = keyPairs.viewingKeyPair;
       return 'success';
     } catch (err) {
+      console.error(err);
       return 'denied'; // most likely user rejected the signature
     }
   }
@@ -183,6 +184,7 @@ export default function useWalletStore() {
     domainService: computed(() => domainService.value),
     spendingKeyPair: computed(() => spendingKeyPair.value),
     viewingKeyPair: computed(() => viewingKeyPair.value),
+    hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     getTokenList,
     getTokenBalances,
     setProvider,

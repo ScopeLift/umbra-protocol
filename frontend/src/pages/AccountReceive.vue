@@ -9,7 +9,7 @@
 
     <div v-else class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
-      <div v-if="keyStatus === 'denied' || keyStatus === 'waiting'" class="form">
+      <div v-if="!hasKeys" class="form">
         <div class="text-center q-mb-md">This app needs your signature to scan for funds you've received</div>
         <base-button @click="getPrivateKeysHandler" class="text-center" label="Sign" />
       </div>
@@ -29,21 +29,27 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import useWallet from 'src/store/wallet';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 
 function useScan() {
-  const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, userAddress } = useWallet();
-  const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
+  const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress } = useWallet();
   const scanStatus = ref<'waiting' | 'scanning' | 'complete'>('waiting');
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
+  onMounted(async () => {
+    // If user already signed and we have their keys in memory, start scanning
+    if (hasKeys.value) {
+      await scan();
+    }
+  });
+
   async function getPrivateKeysHandler() {
-    keyStatus.value = await getPrivateKeys();
-    if (keyStatus.value !== 'success') return; // user denied signature
+    const success = await getPrivateKeys();
+    if (!success) return; // user denied signature or an error was thrown
     await scan(); // start scanning right after we get the user's signature
   }
 
@@ -60,7 +66,7 @@ function useScan() {
     scanStatus.value = 'complete';
   }
 
-  return { userAddress, keyStatus, scanStatus, getPrivateKeysHandler, userAnnouncements };
+  return { userAddress, hasKeys, scanStatus, getPrivateKeysHandler, userAnnouncements };
 }
 
 export default defineComponent({
