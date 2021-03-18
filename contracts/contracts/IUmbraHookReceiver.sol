@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.12;
+pragma solidity ^0.7.6;
 
 /// @dev Interface that post-withdraw hooks must implement to interop with Umbra
 interface IUmbraHookReceiver {
