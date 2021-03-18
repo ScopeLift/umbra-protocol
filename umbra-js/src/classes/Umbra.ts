@@ -32,8 +32,8 @@ const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.js
 
 // Mapping from chainId to contract information
 const chainConfigs: Record<number, ChainConfig> = {
-  4: { chainId: 4, umbraAddress: '0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF', startBlock: 8218912 }, // Rinkeby
-  1337: { chainId: 1337, umbraAddress: '0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF', startBlock: 8218912 }, // Local
+  4: { chainId: 4, umbraAddress: '0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e', startBlock: 8256468 }, // Rinkeby
+  1337: { chainId: 1337, umbraAddress: '0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e', startBlock: 8256468 }, // Local
 };
 
 /**

@@ -265,7 +265,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
 
         // Configure GSN provider (hardcoded our Rinkeby paymaster address)
         const gsnConfig = {
-          paymasterAddress: '0xcE5A3Ae0EFa0c0E2D1Bc41a2538E0E1217545e84',
+          paymasterAddress: '0x11ca9Ed79B93131e23EA4Ba0B1eD1a90bf17472F',
           methodSuffix: '_v4', // MetaMask only
           jsonStringifyRequest: true, // MetaMask only
         };
