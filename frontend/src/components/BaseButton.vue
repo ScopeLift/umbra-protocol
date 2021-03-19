@@ -14,6 +14,7 @@
       :outline="outline"
       :padding="padding"
       :text-color="textColor"
+      :to="to"
       :type="type"
       @click="handleClick"
     >
@@ -89,6 +90,12 @@ export default defineComponent({
 
     textColor: {
       type: String,
+      required: false,
+      default: undefined,
+    },
+
+    to: {
+      type: Object,
       required: false,
       default: undefined,
     },

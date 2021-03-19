@@ -1,5 +1,14 @@
 <template>
   <div>
+    <!-- Modal to show when warning user of bad privacy hygiene -->
+    <q-dialog v-model="showPrivacyModal">
+      <account-receive-table-warning
+        @acknowledged="showPrivacyModal = false"
+        :addressDescription="privacyModalAddressDescription"
+        class="q-pa-lg"
+      />
+    </q-dialog>
+
     <div v-if="isLoading" class="text-center">
       <loading-spinner />
       <div class="text-center text-italic">Scanning for funds...</div>
@@ -126,8 +135,10 @@ import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Al
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import UmbraRelayRecipient from 'src/contracts/umbra-relay-recipient.json';
+import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import { SupportedChainIds } from 'components/models';
 import { lookupOrFormatAddresses, toAddress } from 'src/utils/address';
+import BaseButton from './BaseButton.vue';
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const { tokens, signer, provider, umbra, spendingKeyPair, domainService } = useWalletStore();
@@ -135,6 +146,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const isLoading = ref(false);
+  const showPrivacyModal = ref(false);
+  const privacyModalAddressDescription = ref('a wallet that may be publicly associated with you');
   const destinationAddress = ref('');
   const isWithdrawInProgress = ref(false);
   const mainTableColumns = [
@@ -310,6 +323,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   return {
     isWithdrawInProgress,
     isLoading,
+    showPrivacyModal,
+    privacyModalAddressDescription,
     expanded,
     copySenderAddress,
     openInEtherscan,
@@ -328,6 +343,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
 
 export default defineComponent({
   name: 'AccountReceiveTable',
+  components: { AccountReceiveTableWarning, BaseButton },
   props: {
     announcements: {
       type: (undefined as unknown) as PropType<UserAnnouncement[]>,
