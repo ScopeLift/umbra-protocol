@@ -14,6 +14,7 @@
       <div class="text-center text-italic">Scanning for funds...</div>
     </div>
 
+    <!-- Received funds table -->
     <q-table
       v-else
       :columns="mainTableColumns"
@@ -27,9 +28,7 @@
       <!-- Header labels -->
       <template v-slot:header="props">
         <q-tr :props="props">
-          <q-th v-for="col in props.cols" :key="col.name" :props="props">
-            {{ col.label }}
-          </q-th>
+          <q-th v-for="col in props.cols" :key="col.name" :props="props"> {{ col.label }} </q-th>
           <q-th auto-width />
         </q-tr>
       </template>
@@ -72,19 +71,30 @@
             </div>
 
             <!-- Default -->
-            <div v-else>
-              {{ col.value }}
-            </div>
+            <div v-else>{{ col.value }}</div>
           </q-td>
 
           <!-- Expansion button, works accordian-style -->
+          <!-- 
+            The click modifier is a bit clunky because it touches state in two independent composition functions,
+             so we explain the two things it does here
+              1. First it calls hidePrivateKey(), which is an advancedMode only feature to show your private key.
+                 We call this to make sure a private key is never shown when initially expanding a row
+              2. If the new row key is the same as the value of the value of expanded[0], we clicked the currently
+                 expanded row and therefore set `expanded = []` to hide the row. Otherwise we update the `expanded`
+                 array so it's only element is the key of the new row. This enables showing/hiding of rows and ensures
+                 only one row is every expanded at a time
+          -->
           <q-td auto-width>
             <div v-if="props.row.isWithdrawn" class="text-positive">
               Withdrawn<q-icon name="fas fa-check" class="q-ml-sm" />
             </div>
             <base-button
               v-else
-              @click="expanded = expanded[0] === props.key ? [] : [props.key]"
+              @click="
+                hidePrivateKey();
+                expanded = expanded[0] === props.key ? [] : [props.key];
+              "
               color="primary"
               :dense="true"
               :disable="isWithdrawInProgress"
@@ -97,7 +107,7 @@
         <!-- Expansion row -->
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%" class="bg-muted">
-            <q-form class="form q-py-md" style="white-space: normal">
+            <q-form class="form-wide q-py-md" style="white-space: normal">
               <div>Enter address to withdraw funds to</div>
               <base-input
                 v-model="destinationAddress"
@@ -114,6 +124,21 @@
                 <span class="text-bold">WARNING</span>: Be sure you understand the security implications before entering
                 a withdrawal address. If you withdraw to an address publicly associated with you, privacy for this
                 transaction will be lost.
+              </div>
+
+              <!-- Advanced feature: show private key -->
+              <div v-if="advancedMode">
+                <div @click="togglePrivateKey(props.row)" class="text-caption hyperlink q-mt-lg">
+                  {{ spendingPrivateKey ? 'Hide' : 'Show' }} withdrawal private key
+                </div>
+                <div
+                  v-if="spendingPrivateKey"
+                  @click="copyPrivateKey(spendingPrivateKey)"
+                  class="cursor-pointer copy-icon-parent q-mt-sm"
+                >
+                  <span class="text-caption">{{ spendingPrivateKey }}</span>
+                  <q-icon class="copy-icon" name="far fa-copy" right />
+                </div>
               </div>
             </q-form>
           </q-td>
@@ -133,6 +158,7 @@ import { formatUnits } from '@ethersproject/units';
 import { DomainService, Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
 import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Aliases';
+import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import UmbraRelayRecipient from 'src/contracts/umbra-relay-recipient.json';
@@ -140,6 +166,33 @@ import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vu
 import { SupportedChainIds } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import BaseButton from './BaseButton.vue';
+
+function useAdvancedFeatures() {
+  const { spendingKeyPair } = useWalletStore();
+  const { notifyUser } = useAlerts();
+  const spendingPrivateKey = ref<string>();
+
+  function computePrivateKey(randomNumber: string) {
+    const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(randomNumber);
+    return stealthKeyPair.privateKeyHex as string;
+  }
+
+  function hidePrivateKey() {
+    spendingPrivateKey.value = undefined;
+  }
+
+  function togglePrivateKey(announcement: UserAnnouncement) {
+    spendingPrivateKey.value = spendingPrivateKey.value ? undefined : computePrivateKey(announcement.randomNumber);
+  }
+
+  async function copyPrivateKey(privateKey: string) {
+    await copyToClipboard(privateKey);
+    notifyUser('positive', 'Private key copied to clipboard');
+    hidePrivateKey();
+  }
+
+  return { hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
+}
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const { tokens, userAddress, signer, provider, umbra, spendingKeyPair, domainService } = useWalletStore();
@@ -379,7 +432,8 @@ export default defineComponent({
   },
 
   setup(props) {
-    return { ...useReceivedFundsTable(props.announcements) };
+    const { advancedMode } = useSettingsStore();
+    return { advancedMode, ...useAdvancedFeatures(), ...useReceivedFundsTable(props.announcements) };
   },
 });
 </script>
