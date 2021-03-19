@@ -87,6 +87,7 @@
               @click="expanded = expanded[0] === props.key ? [] : [props.key]"
               color="primary"
               :dense="true"
+              :disable="isWithdrawInProgress"
               :flat="true"
               :label="props.expand ? 'Hide' : 'Withdraw'"
             />

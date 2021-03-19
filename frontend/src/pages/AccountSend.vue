@@ -11,25 +11,26 @@
     <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
       <div>Recipient's ENS name</div>
-      <base-input v-model="recipientId" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
+      <base-input v-model="recipientId" :disable="isSending" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
 
       <!-- Token -->
       <div>Select token to send</div>
-      <base-select v-model="token" filled label="Token" :options="tokenOptions" option-label="symbol" />
+      <base-select
+        v-model="token"
+        :disable="isSending"
+        filled
+        label="Token"
+        :options="tokenOptions"
+        option-label="symbol"
+      />
 
       <!-- Amount -->
       <div>Amount to send</div>
-      <base-input v-model="humanAmount" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
+      <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
 
       <!-- Send button -->
       <div>
-        <base-button
-          :disable="isSendInProgress"
-          :full-width="true"
-          label="Send"
-          :loading="isSendInProgress"
-          type="submit"
-        />
+        <base-button :disable="isSending" :full-width="true" label="Send" :loading="isSending" type="submit" />
       </div>
     </q-form>
   </q-page>
@@ -52,11 +53,14 @@ function useSendForm() {
   const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, userAddress } = useWalletStore();
   const { txNotify } = useAlerts();
 
+  // Form parameters
   const recipientId = ref<string>();
   const token = ref<TokenInfo>();
   const humanAmount = ref<string>();
+
+  // Helpers
   const sendFormRef = ref<QForm>();
-  const isSendInProgress = ref(false);
+  const isSending = ref(false);
 
   function isValidId(val: string) {
     if (val && (ens.isEnsDomain(val) || val.endsWith('.crypto'))) return true;
@@ -86,7 +90,7 @@ function useSendForm() {
       if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
 
       // If token, get approval
-      isSendInProgress.value = true;
+      isSending.value = true;
       if (token.value.symbol !== 'ETH') {
         // Check allowance
         const tokenContract = new Contract(token.value.address, erc20.abi, signer.value);
@@ -106,7 +110,7 @@ function useSendForm() {
       await tx.wait();
       resetForm();
     } finally {
-      isSendInProgress.value = false;
+      isSending.value = false;
     }
   }
 
@@ -119,7 +123,7 @@ function useSendForm() {
 
   return {
     userAddress,
-    isSendInProgress,
+    isSending,
     sendFormRef,
     recipientId,
     humanAmount,
