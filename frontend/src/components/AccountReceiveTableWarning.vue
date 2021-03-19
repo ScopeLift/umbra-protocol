@@ -8,12 +8,15 @@
 
     <q-card-section>
       You are withdrawing to {{ addressDescription }}. <span class="text-bold">This is not recommended</span> unless you
-      know what you are doing, as this may reduce or entirely remove the privacy guarantees provided by Umbra.
+      know what you are doing, as this may reduce or entirely remove the privacy properties provided by Umbra.
     </q-card-section>
 
     <q-card-section>
       <div class="row justify-evenly">
-        <base-button label="Learn More" :outline="true" :to="{ name: 'FAQ' }" />
+        <router-link class="no-text-decoration" target="_blank" :to="{ name: 'FAQ' }">
+          <!-- Button does nothing on click, but we wrap with router-link to open the page in a new tab -->
+          <base-button label="Learn More" :outline="true" />
+        </router-link>
         <base-button label="I acknowledge the risks" @click="context.emit('acknowledged')" />
       </div>
     </q-card-section>
