@@ -243,7 +243,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
    * @param announcement Announcement to withdraw
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
-    // Check if withdrawal destination is safea
+    // Check if withdrawal destination is safe
     activeAnnouncement.value = announcement;
     const { safe, reason } = await isAddressSafe(
       destinationAddress.value,

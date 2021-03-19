@@ -100,22 +100,22 @@ export const isAddressSafe = async (name: string, userAddress: string, domainSer
   if (cns.isCnsDomain(name)) return { safe: false, reason: `${name}, which is a publicly viewable CNS name` };
 
   // We aren't withdrawing to a domain, so let's get the checksummed address.
-  const address = getAddress(name);
+  const destinationAddress = getAddress(name);
   const provider = domainService.provider as Provider;
 
   // Check if address resolves to an ENS name
-  const ensName = await lookupEnsName(address, provider);
+  const ensName = await lookupEnsName(destinationAddress, provider);
   if (ensName) return { safe: false, reason: `an address that resolves to the publicly viewable ENS name ${ensName}` };
 
   // Check if address owns a CNS name
-  const cnsName = await lookupCnsName(address, provider);
+  const cnsName = await lookupCnsName(destinationAddress, provider);
   if (cnsName) return { safe: false, reason: `an address that resolves to the publicly viewable CNS name ${cnsName}` };
 
   // Check if address is the wallet user is logged in with
-  if (address === userAddress) return { safe: false, reason: 'the same address as the connected wallet' };
+  if (destinationAddress === userAddress) return { safe: false, reason: 'the same address as the connected wallet' };
 
   // Check if address owns any POAPs
-  if (await hasPOAPs(userAddress)) return { safe: false, reason: 'an address that has POAP tokens' };
+  if (await hasPOAPs(destinationAddress)) return { safe: false, reason: 'an address that has POAP tokens' };
 
   // Check if address has contributed to Gitcoin Grants
   // TODO
