@@ -52,8 +52,13 @@
 
             <!-- ADDRESS AND SETTINGS AND SETTINGS -->
             <div class="col-auto q-mr-md">
-              <div v-if="userDisplayName" class="text-caption dark-toggle">
-                {{ userDisplayName }}
+              <div>
+                <span v-if="userDisplayName" class="text-caption dark-toggle">
+                  {{ userDisplayName }}
+                </span>
+                <span v-if="advancedMode" class="q-ml-md">
+                  🧙 <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md"> Advanced mode is on </q-tooltip>
+                </span>
               </div>
             </div>
           </div>
@@ -71,29 +76,44 @@
 
     <q-footer class="q-mx-md q-mb-md q-pt-xl" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="row justify-between">
-        <div class="col-auto">
+        <!-- Column 1: User settings -->
+        <div class="col">
+          <!-- Dark mode toggle -->
           <q-icon
             v-if="!$q.dark.isActive"
-            class="dark-toggle"
+            @click="toggleDarkMode"
+            class="dark-toggle cursor-pointer"
             name="fas fa-moon"
-            size="xs"
-            style="cursor: pointer"
-            @click="toggleDarkMode()"
           />
-          <q-icon
-            v-else
-            class="dark-toggle"
-            name="fas fa-sun"
-            size="xs"
-            style="cursor: pointer"
-            @click="toggleDarkMode()"
+          <q-icon v-else @click="toggleDarkMode" class="dark-toggle cursor-pointer" name="fas fa-sun" />
+
+          <!-- Advanced mode toggle -->
+          <q-toggle
+            @input="toggleAdvancedMode"
+            :value="advancedMode"
+            class="q-ml-lg"
+            color="primary"
+            icon="fas fa-cog"
           />
+          <span class="dark-toggle text-caption">Advanced mode {{ advancedMode ? 'on' : 'off' }}</span>
+          <span>
+            <q-icon class="dark-toggle" right name="fas fa-question-circle">
+              <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md" max-width="14rem">
+                Enables advanced features such as private key export, additional recipient ID options, and event
+                scanning settings. <span class="text-bold">Use with caution!</span>
+              </q-tooltip>
+            </q-icon>
+          </span>
         </div>
-        <div class="col-auto text-caption">
+
+        <!-- Column 2: Built by ScopeLift -->
+        <div class="col text-center text-caption">
           Built by
           <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
         </div>
-        <div class="col-auto">
+
+        <!-- Column 3: Links -->
+        <div class="col text-right">
           <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
             <q-icon class="dark-toggle" name="fab fa-twitter" size="xs" />
           </a>
@@ -112,19 +132,18 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect } from '@vue/composition-api';
 import { Dark, LocalStorage } from 'quasar';
+import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 
 function useDarkMode() {
+  onMounted(() => Dark.set(Boolean(LocalStorage.getItem('is-dark'))));
+
   function toggleDarkMode() {
     Dark.set(!Dark.isActive);
     LocalStorage.set('is-dark', Dark.isActive);
   }
 
-  const mounted = onMounted(function () {
-    Dark.set(Boolean(LocalStorage.getItem('is-dark')));
-  });
-
-  return { toggleDarkMode, mounted };
+  return { toggleDarkMode };
 }
 
 function useWallet() {
@@ -143,7 +162,8 @@ function useWallet() {
 export default defineComponent({
   name: 'BaseLayout',
   setup() {
-    return { ...useDarkMode(), ...useWallet() };
+    const { advancedMode, toggleAdvancedMode } = useSettingsStore();
+    return { advancedMode, toggleAdvancedMode, ...useDarkMode(), ...useWallet() };
   },
 });
 </script>
