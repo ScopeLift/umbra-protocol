@@ -87,3 +87,46 @@ export const lookupOrFormatAddresses = async (addresses: string[], provider: Pro
   const promises = addresses.map((address) => lookupOrFormatAddress(address, provider));
   return Promise.all(promises);
 };
+
+// ================================================== Privacy Checks ===================================================
+
+// Checks for any potential risks of withdrawing to the provided name or address, returns object containing
+// a true/false judgement about risk, and a short description string
+export const isAddressSafe = async (name: string, userAddress: string, domainService: DomainService) => {
+  userAddress = getAddress(userAddress);
+
+  // Check if we're withdrawing to an ENS or CNS name
+  if (ens.isEnsDomain(name)) return { safe: false, reason: `${name}, which is a publicly viewable ENS name` };
+  if (cns.isCnsDomain(name)) return { safe: false, reason: `${name}, which is a publicly viewable CNS name` };
+
+  // We aren't withdrawing to a domain, so let's get the checksummed address.
+  const address = getAddress(name);
+  const provider = domainService.provider as Provider;
+
+  // Check if address resolves to an ENS name
+  const ensName = await lookupEnsName(address, provider);
+  if (ensName) return { safe: false, reason: `an address that resolves to the publicly viewable ENS name ${ensName}` };
+
+  // Check if address owns a CNS name
+  const cnsName = await lookupCnsName(address, provider);
+  if (cnsName) return { safe: false, reason: `an address that resolves to the publicly viewable CNS name ${cnsName}` };
+
+  // Check if address is the wallet user is logged in with
+  if (address === userAddress) return { safe: false, reason: 'the same address as the connected wallet' };
+
+  // Check if address owns any POAPs
+  if (await hasPOAPs(userAddress)) return { safe: false, reason: 'an address that has POAP tokens' };
+
+  // Check if address has contributed to Gitcoin Grants
+  // TODO
+
+  return { safe: true, reason: '' };
+};
+
+const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
+
+// Returns true if the address owns any POAP tokens
+const hasPOAPs = async (address: string) => {
+  const poaps = await jsonFetch(`https://api.poap.xyz/actions/scan/${address}`);
+  return poaps.length > 0 ? true : false;
+};

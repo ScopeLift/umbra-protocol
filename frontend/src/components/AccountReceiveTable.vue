@@ -3,7 +3,7 @@
     <!-- Modal to show when warning user of bad privacy hygiene -->
     <q-dialog v-model="showPrivacyModal">
       <account-receive-table-warning
-        @acknowledged="showPrivacyModal = false"
+        @acknowledged="executeWithdraw"
         :addressDescription="privacyModalAddressDescription"
         class="q-pa-lg"
       />
@@ -100,7 +100,7 @@
               <div>Enter address to withdraw funds to</div>
               <base-input
                 v-model="destinationAddress"
-                @click="withdraw(props.row)"
+                @click="initializeWithdraw(props.row)"
                 appendButtonLabel="Withdraw"
                 :appendButtonDisable="isWithdrawInProgress"
                 :appendButtonLoading="isWithdrawInProgress"
@@ -137,11 +137,11 @@ import useAlerts from 'src/utils/alerts';
 import UmbraRelayRecipient from 'src/contracts/umbra-relay-recipient.json';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import { SupportedChainIds } from 'components/models';
-import { lookupOrFormatAddresses, toAddress } from 'src/utils/address';
+import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import BaseButton from './BaseButton.vue';
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
-  const { tokens, signer, provider, umbra, spendingKeyPair, domainService } = useWalletStore();
+  const { tokens, userAddress, signer, provider, umbra, spendingKeyPair, domainService } = useWalletStore();
   const { txNotify, notifyUser } = useAlerts();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
@@ -150,6 +150,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const privacyModalAddressDescription = ref('a wallet that may be publicly associated with you');
   const destinationAddress = ref('');
   const isWithdrawInProgress = ref(false);
+  const activeAnnouncement = ref<UserAnnouncement>();
   const mainTableColumns = [
     {
       align: 'left',
@@ -238,13 +239,36 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   }
 
   /**
-   * @notice Withdraw funds from stealth address
+   * @notice Initialize the withdraw process
    * @param announcement Announcement to withdraw
    */
-  async function withdraw(announcement: UserAnnouncement) {
-    if (!umbra.value) throw new Error('Umbra instance not found');
+  async function initializeWithdraw(announcement: UserAnnouncement) {
+    // Check if withdrawal destination is safea
+    activeAnnouncement.value = announcement;
+    const { safe, reason } = await isAddressSafe(
+      destinationAddress.value,
+      userAddress.value as string,
+      domainService.value as DomainService
+    );
 
-    // Get token info and stealth private key, and resolve ENS/CNS names to their address
+    if (safe) {
+      await executeWithdraw();
+    } else {
+      showPrivacyModal.value = true;
+      privacyModalAddressDescription.value = reason;
+    }
+  }
+
+  /**
+   * @notice Executes the withdraw process
+   */
+  async function executeWithdraw() {
+    if (!umbra.value) throw new Error('Umbra instance not found');
+    if (!activeAnnouncement.value) throw new Error('No announcement is selected for withdraw');
+    showPrivacyModal.value = false;
+
+    // Get token info, stealth private key, and destination (acceptor) address
+    const announcement = activeAnnouncement.value;
     const token = getTokenInfo(announcement.token);
     const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
@@ -317,6 +341,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
       });
     } finally {
       isWithdrawInProgress.value = false;
+      activeAnnouncement.value = undefined;
     }
   }
 
@@ -337,7 +362,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     formatAmount,
     formattedAnnouncements,
     destinationAddress,
-    withdraw,
+    initializeWithdraw,
+    executeWithdraw,
   };
 }
 

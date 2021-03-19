@@ -7,9 +7,8 @@
     </q-card-section>
 
     <q-card-section>
-      It looks like you are withdrawing to {{ addressDescription }}.
-      <span class="text-bold">This is not recommended</span> unless you know what you are doing, as this may reduce or
-      entirely remove the privacy guarantees provided by Umbra.
+      You are withdrawing to {{ addressDescription }}. <span class="text-bold">This is not recommended</span> unless you
+      know what you are doing, as this may reduce or entirely remove the privacy guarantees provided by Umbra.
     </q-card-section>
 
     <q-card-section>
