@@ -15,67 +15,71 @@
     </div>
 
     <!-- Received funds table -->
-    <q-table
-      v-else
-      :columns="mainTableColumns"
-      :data="formattedAnnouncements"
-      :expanded.sync="expanded"
-      no-data-label="This account has not received any funds"
-      :pagination="paginationConfig"
-      row-key="randomNumber"
-      title="Received Funds"
-    >
-      <!-- Header labels -->
-      <template v-slot:header="props">
-        <q-tr :props="props">
-          <q-th v-for="col in props.cols" :key="col.name" :props="props"> {{ col.label }} </q-th>
-          <q-th auto-width />
-        </q-tr>
-      </template>
+    <div v-else>
+      <div v-if="advancedMode" class="text-caption q-mb-sm">
+        {{ scanRangeString }}.
+        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">Change block range</span>.
+      </div>
+      <q-table
+        :columns="mainTableColumns"
+        :data="formattedAnnouncements"
+        :expanded.sync="expanded"
+        no-data-label="This account has not received any funds"
+        :pagination="paginationConfig"
+        row-key="randomNumber"
+        title="Received Funds"
+      >
+        <!-- Header labels -->
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th v-for="col in props.cols" :key="col.name" :props="props"> {{ col.label }} </q-th>
+            <q-th auto-width />
+          </q-tr>
+        </template>
 
-      <!-- Body row configuration -->
-      <template v-slot:body="props">
-        <q-tr :props="props" :key="props.row.id">
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            <!-- Asset column -->
-            <div v-if="col.name === 'date'" class="d-inline-block">
-              <div
-                @click="openInEtherscan(props.row)"
-                class="row justify-start items-center cursor-pointer external-link-icon-parent"
-              >
-                <div class="col-auto">
-                  <div>{{ formatDate(col.value.timestamp * 1000) }}</div>
-                  <div class="text-caption text-grey">{{ formatTime(col.value.timestamp * 1000) }}</div>
-                </div>
-                <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
-              </div>
-            </div>
-
-            <!-- Amount column -->
-            <div v-else-if="col.name === 'amount'">
-              <div class="row justify-start items-center no-wrap">
-                <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.5rem" />
-                <div class="col-auto">
-                  {{ formatAmount(col.value, props.row.token) }}
-                  {{ getTokenSymbol(props.row.token) }}
+        <!-- Body row configuration -->
+        <template v-slot:body="props">
+          <q-tr :props="props" :key="props.row.id">
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">
+              <!-- Asset column -->
+              <div v-if="col.name === 'date'" class="d-inline-block">
+                <div
+                  @click="openInEtherscan(props.row)"
+                  class="row justify-start items-center cursor-pointer external-link-icon-parent"
+                >
+                  <div class="col-auto">
+                    <div>{{ formatDate(col.value.timestamp * 1000) }}</div>
+                    <div class="text-caption text-grey">{{ formatTime(col.value.timestamp * 1000) }}</div>
+                  </div>
+                  <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
                 </div>
               </div>
-            </div>
 
-            <!-- From column -->
-            <div v-else-if="col.name === 'from'" class="d-inline-block">
-              <div @click="copySenderAddress(props.row)" class="cursor-pointer copy-icon-parent">
-                <span>{{ col.value.from }}</span>
-                <q-icon class="copy-icon" name="far fa-copy" right />
+              <!-- Amount column -->
+              <div v-else-if="col.name === 'amount'">
+                <div class="row justify-start items-center no-wrap">
+                  <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.5rem" />
+                  <div class="col-auto">
+                    {{ formatAmount(col.value, props.row.token) }}
+                    {{ getTokenSymbol(props.row.token) }}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <!-- Default -->
-            <div v-else>{{ col.value }}</div>
-          </q-td>
+              <!-- From column -->
+              <div v-else-if="col.name === 'from'" class="d-inline-block">
+                <div @click="copySenderAddress(props.row)" class="cursor-pointer copy-icon-parent">
+                  <span>{{ col.value.from }}</span>
+                  <q-icon class="copy-icon" name="far fa-copy" right />
+                </div>
+              </div>
 
-          <!-- Expansion button, works accordian-style -->
-          <!-- 
+              <!-- Default -->
+              <div v-else>{{ col.value }}</div>
+            </q-td>
+
+            <!-- Expansion button, works accordian-style -->
+            <!--
             The click modifier is a bit clunky because it touches state in two independent composition functions,
              so we explain the two things it does here
               1. First it calls hidePrivateKey(), which is an advancedMode only feature to show your private key.
@@ -85,71 +89,72 @@
                  array so it's only element is the key of the new row. This enables showing/hiding of rows and ensures
                  only one row is every expanded at a time
           -->
-          <q-td auto-width>
-            <div v-if="props.row.isWithdrawn" class="text-positive">
-              Withdrawn<q-icon name="fas fa-check" class="q-ml-sm" />
-            </div>
-            <base-button
-              v-else
-              @click="
-                hidePrivateKey();
-                expanded = expanded[0] === props.key ? [] : [props.key];
-              "
-              color="primary"
-              :dense="true"
-              :disable="isWithdrawInProgress"
-              :flat="true"
-              :label="props.expand ? 'Hide' : 'Withdraw'"
-            />
-          </q-td>
-        </q-tr>
-
-        <!-- Expansion row -->
-        <q-tr v-show="props.expand" :props="props">
-          <q-td colspan="100%" class="bg-muted">
-            <q-form class="form-wide q-py-md" style="white-space: normal">
-              <div>Enter address to withdraw funds to</div>
-              <base-input
-                v-model="destinationAddress"
-                @click="initializeWithdraw(props.row)"
-                appendButtonLabel="Withdraw"
-                :appendButtonDisable="isWithdrawInProgress"
-                :appendButtonLoading="isWithdrawInProgress"
+            <q-td auto-width>
+              <div v-if="props.row.isWithdrawn" class="text-positive">
+                Withdrawn<q-icon name="fas fa-check" class="q-ml-sm" />
+              </div>
+              <base-button
+                v-else
+                @click="
+                  hidePrivateKey();
+                  expanded = expanded[0] === props.key ? [] : [props.key];
+                "
+                color="primary"
+                :dense="true"
                 :disable="isWithdrawInProgress"
-                label="Address"
-                lazy-rules
-                :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
+                :flat="true"
+                :label="props.expand ? 'Hide' : 'Withdraw'"
               />
-              <div class="text-caption">
-                <span class="text-bold">WARNING</span>: Be sure you understand the security implications before entering
-                a withdrawal address. If you withdraw to an address publicly associated with you, privacy for this
-                transaction will be lost.
-              </div>
+            </q-td>
+          </q-tr>
 
-              <!-- Advanced feature: show private key -->
-              <div v-if="advancedMode">
-                <div @click="togglePrivateKey(props.row)" class="text-caption hyperlink q-mt-lg">
-                  {{ spendingPrivateKey ? 'Hide' : 'Show' }} withdrawal private key
+          <!-- Expansion row -->
+          <q-tr v-show="props.expand" :props="props">
+            <q-td colspan="100%" class="bg-muted">
+              <q-form class="form-wide q-py-md" style="white-space: normal">
+                <div>Enter address to withdraw funds to</div>
+                <base-input
+                  v-model="destinationAddress"
+                  @click="initializeWithdraw(props.row)"
+                  appendButtonLabel="Withdraw"
+                  :appendButtonDisable="isWithdrawInProgress"
+                  :appendButtonLoading="isWithdrawInProgress"
+                  :disable="isWithdrawInProgress"
+                  label="Address"
+                  lazy-rules
+                  :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
+                />
+                <div class="text-caption">
+                  <span class="text-bold">WARNING</span>: Be sure you understand the security implications before
+                  entering a withdrawal address. If you withdraw to an address publicly associated with you, privacy for
+                  this transaction will be lost.
                 </div>
-                <div
-                  v-if="spendingPrivateKey"
-                  @click="copyPrivateKey(spendingPrivateKey)"
-                  class="cursor-pointer copy-icon-parent q-mt-sm"
-                >
-                  <span class="text-caption">{{ spendingPrivateKey }}</span>
-                  <q-icon class="copy-icon" name="far fa-copy" right />
+
+                <!-- Advanced feature: show private key -->
+                <div v-if="advancedMode">
+                  <div @click="togglePrivateKey(props.row)" class="text-caption hyperlink q-mt-lg">
+                    {{ spendingPrivateKey ? 'Hide' : 'Show' }} withdrawal private key
+                  </div>
+                  <div
+                    v-if="spendingPrivateKey"
+                    @click="copyPrivateKey(spendingPrivateKey)"
+                    class="cursor-pointer copy-icon-parent q-mt-sm"
+                  >
+                    <span class="text-caption">{{ spendingPrivateKey }}</span>
+                    <q-icon class="copy-icon" name="far fa-copy" right />
+                  </div>
                 </div>
-              </div>
-            </q-form>
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
+              </q-form>
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date, copyToClipboard } from 'quasar';
 import { Contract } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
@@ -168,9 +173,19 @@ import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/add
 import BaseButton from './BaseButton.vue';
 
 function useAdvancedFeatures() {
+  const { startBlock, endBlock } = useSettingsStore();
   const { spendingKeyPair } = useWalletStore();
   const { notifyUser } = useAlerts();
   const spendingPrivateKey = ref<string>();
+
+  const scanRangeString = computed(() => {
+    const hasStartBlock = Number(startBlock.value) >= 0;
+    const hasEndBlock = Number(endBlock.value) >= 0;
+    if (!hasStartBlock && !hasEndBlock) return 'All blocks have been scanned';
+    if (!hasStartBlock && hasEndBlock) return `Scanned all blocks up to ${Number(endBlock.value)}`;
+    if (hasStartBlock && !hasEndBlock) return `Scanned from block ${Number(startBlock.value)} to current block`;
+    return `Scanned from block ${Number(startBlock.value)} to ${Number(endBlock.value)}`;
+  });
 
   function computePrivateKey(randomNumber: string) {
     const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(randomNumber);
@@ -191,7 +206,7 @@ function useAdvancedFeatures() {
     hidePrivateKey();
   }
 
-  return { hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
+  return { scanRangeString, hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
 }
 
 function useReceivedFundsTable(announcements: UserAnnouncement[]) {
@@ -431,9 +446,9 @@ export default defineComponent({
     },
   },
 
-  setup(props) {
+  setup(props, context) {
     const { advancedMode } = useSettingsStore();
-    return { advancedMode, ...useAdvancedFeatures(), ...useReceivedFundsTable(props.announcements) };
+    return { advancedMode, context, ...useAdvancedFeatures(), ...useReceivedFundsTable(props.announcements) };
   },
 });
 </script>

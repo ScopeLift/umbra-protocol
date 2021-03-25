@@ -175,6 +175,7 @@ export default Vue.extend({
 
     hideHint() {
       this.hintString = '';
+      this.$emit('blur', this.content);
     },
 
     showHint() {
