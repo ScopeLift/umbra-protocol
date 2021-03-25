@@ -130,21 +130,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, watchEffect } from '@vue/composition-api';
-import { Dark, LocalStorage } from 'quasar';
+import { defineComponent, ref, watchEffect } from '@vue/composition-api';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
-
-function useDarkMode() {
-  onMounted(() => Dark.set(Boolean(LocalStorage.getItem('is-dark'))));
-
-  function toggleDarkMode() {
-    Dark.set(!Dark.isActive);
-    LocalStorage.set('is-dark', Dark.isActive);
-  }
-
-  return { toggleDarkMode };
-}
 
 function useWallet() {
   const { userDisplayName, network } = useWalletStore();
@@ -162,8 +150,8 @@ function useWallet() {
 export default defineComponent({
   name: 'BaseLayout',
   setup() {
-    const { advancedMode, toggleAdvancedMode } = useSettingsStore();
-    return { advancedMode, toggleAdvancedMode, ...useDarkMode(), ...useWallet() };
+    const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
+    return { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode, ...useWallet() };
   },
 });
 </script>
