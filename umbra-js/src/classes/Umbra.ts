@@ -273,49 +273,51 @@ export class Umbra {
     const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
     const announcements = await this.umbraContract.queryFilter(announcementFilter, startBlock, endBlock);
 
-    // Get list of all TokenWithdrawal events
-    const withdrawalFilter = this.umbraContract.filters.TokenWithdrawal(null, null, null, null);
-    const withdrawalEvents = await this.umbraContract.queryFilter(withdrawalFilter, startBlock, endBlock);
-    withdrawalEvents; // to silence tsc error
-
     // Determine which announcements are for the user
     const userAnnouncements = [] as UserAnnouncement[];
     for (let i = 0; i < announcements.length; i += 1) {
-      const event = announcements[i];
+      try {
+        const event = announcements[i];
 
-      // Extract out event parameters
-      const { receiver, amount, token, pkx, ciphertext } = (event.args as unknown) as Announcement;
+        // Extract out event parameters
+        const { receiver, amount, token, pkx, ciphertext } = (event.args as unknown) as Announcement;
 
-      // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
-      const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
+        // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
+        const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
 
-      // Decrypt to get random number
-      const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
-      const viewingKeyPair = new KeyPair(viewingPrivateKey);
-      const randomNumber = viewingKeyPair.decrypt(payload);
+        // Decrypt to get random number
+        const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
+        const viewingKeyPair = new KeyPair(viewingPrivateKey);
+        const randomNumber = viewingKeyPair.decrypt(payload);
 
-      // Get what our receiving address would be with this random number
-      const spendingKeyPair = new KeyPair(spendingPublicKey);
-      const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
+        // Get what our receiving address would be with this random number
+        const spendingKeyPair = new KeyPair(spendingPublicKey);
+        const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
 
-      // If our receiving address matches the event's recipient, the transfer was for us
-      if (computedReceivingAddress === receiver) {
-        const [block, tx, receipt] = await Promise.all([
-          event.getBlock(),
-          event.getTransaction(),
-          event.getTransactionReceipt(),
-        ]);
-        userAnnouncements.push({
-          event,
-          randomNumber,
-          receiver,
-          amount,
-          token,
-          block,
-          tx,
-          receipt,
-          isWithdrawn: false,
-        });
+        // If our receiving address matches the event's recipient, the transfer was for us
+        if (computedReceivingAddress === receiver) {
+          const [block, tx, receipt] = await Promise.all([
+            event.getBlock(),
+            event.getTransaction(),
+            event.getTransactionReceipt(),
+          ]);
+          userAnnouncements.push({
+            event,
+            randomNumber,
+            receiver,
+            amount,
+            token,
+            block,
+            tx,
+            receipt,
+            isWithdrawn: false,
+          });
+        }
+      } catch (err) {
+        // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
+        // fail when uncompressing
+        console.log('The following event had the below error while processing:', announcements[i]);
+        console.error(err);
       }
     }
 
