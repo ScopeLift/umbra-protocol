@@ -17,8 +17,8 @@
     <!-- Received funds table -->
     <div v-else>
       <div v-if="advancedMode" class="text-caption q-mb-sm">
-        {{ scanRangeString }}.
-        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">Change block range</span>.
+        {{ scanDescriptionString }}.
+        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">Change scan settings</span>.
       </div>
       <q-table
         :columns="mainTableColumns"
@@ -172,23 +172,25 @@ import { SupportedChainIds } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import BaseButton from './BaseButton.vue';
 
-function useAdvancedFeatures() {
-  const { startBlock, endBlock } = useSettingsStore();
-  const { spendingKeyPair } = useWalletStore();
+function useAdvancedFeatures(spendingKeyPair: KeyPair) {
+  const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
   const { notifyUser } = useAlerts();
-  const spendingPrivateKey = ref<string>();
+  const spendingPrivateKey = ref<string>(); // used for hiding/showing private key in UI, so not a computed property
 
-  const scanRangeString = computed(() => {
+  const scanDescriptionString = computed(() => {
+    const suffix = scanPrivateKey.value ? ' with custom private key' : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    if (!hasStartBlock && !hasEndBlock) return 'All blocks have been scanned';
-    if (!hasStartBlock && hasEndBlock) return `Scanned all blocks up to ${Number(endBlock.value)}`;
-    if (hasStartBlock && !hasEndBlock) return `Scanned from block ${Number(startBlock.value)} to current block`;
-    return `Scanned from block ${Number(startBlock.value)} to ${Number(endBlock.value)}`;
+    let msg = `Scanned from block ${Number(startBlock.value)} to ${Number(endBlock.value)}`; // default message
+
+    if (!hasStartBlock && !hasEndBlock) msg = 'All blocks have been scanned';
+    if (!hasStartBlock && hasEndBlock) msg = `Scanned all blocks up to ${Number(endBlock.value)}`;
+    if (hasStartBlock && !hasEndBlock) msg = `Scanned from block ${Number(startBlock.value)} to current block`;
+    return `${msg}${suffix}`;
   });
 
   function computePrivateKey(randomNumber: string) {
-    const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(randomNumber);
+    const stealthKeyPair = spendingKeyPair.mulPrivateKey(randomNumber);
     return stealthKeyPair.privateKeyHex as string;
   }
 
@@ -206,11 +208,11 @@ function useAdvancedFeatures() {
     hidePrivateKey();
   }
 
-  return { scanRangeString, hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
+  return { scanDescriptionString, hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
 }
 
-function useReceivedFundsTable(announcements: UserAnnouncement[]) {
-  const { tokens, userAddress, signer, provider, umbra, spendingKeyPair, domainService } = useWalletStore();
+function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
+  const { tokens, userAddress, signer, provider, umbra, domainService } = useWalletStore();
   const { txNotify, notifyUser } = useAlerts();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
@@ -220,30 +222,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   const destinationAddress = ref('');
   const isWithdrawInProgress = ref(false);
   const activeAnnouncement = ref<UserAnnouncement>();
+
+  // Define table columns
+  const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
+  const toString = (val: BigNumber) => val.toString();
   const mainTableColumns = [
-    {
-      align: 'left',
-      field: 'block',
-      label: 'Date Received',
-      name: 'date',
-      sortable: true,
-      sort: (a: Block, b: Block) => b.timestamp - a.timestamp,
-    },
-    {
-      align: 'left',
-      field: 'amount',
-      label: 'Amount',
-      name: 'amount',
-      sortable: true,
-      format: (val: BigNumber) => val.toString(),
-    },
-    {
-      align: 'left',
-      field: 'receipt',
-      label: 'From',
-      name: 'from',
-      sortable: true,
-    },
+    { align: 'left', field: 'block', label: 'Date Received', name: 'date', sortable: true, sort: sortByTime },
+    { align: 'left', field: 'amount', label: 'Amount', name: 'amount', sortable: true, format: toString },
+    { align: 'left', field: 'receipt', label: 'From', name: 'from', sortable: true },
   ];
 
   // Table formatters and helpers
@@ -339,7 +325,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
     // Get token info, stealth private key, and destination (acceptor) address
     const announcement = activeAnnouncement.value;
     const token = getTokenInfo(announcement.token);
-    const stealthKeyPair = (spendingKeyPair.value as KeyPair).mulPrivateKey(announcement.randomNumber);
+    const stealthKeyPair = spendingKeyPair.mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
     const destinationAddr = await toAddress(destinationAddress.value, domainService.value as DomainService);
 
@@ -415,24 +401,24 @@ function useReceivedFundsTable(announcements: UserAnnouncement[]) {
   }
 
   return {
-    isWithdrawInProgress,
-    isLoading,
-    showPrivacyModal,
-    privacyModalAddressDescription,
-    expanded,
     copySenderAddress,
-    openInEtherscan,
-    paginationConfig,
-    mainTableColumns,
+    destinationAddress,
+    executeWithdraw,
+    expanded,
+    formatAmount,
     formatDate,
+    formattedAnnouncements,
     formatTime,
     getTokenLogoUri,
     getTokenSymbol,
-    formatAmount,
-    formattedAnnouncements,
-    destinationAddress,
     initializeWithdraw,
-    executeWithdraw,
+    isLoading,
+    isWithdrawInProgress,
+    mainTableColumns,
+    openInEtherscan,
+    paginationConfig,
+    privacyModalAddressDescription,
+    showPrivacyModal,
   };
 }
 
@@ -447,8 +433,21 @@ export default defineComponent({
   },
 
   setup(props, context) {
-    const { advancedMode } = useSettingsStore();
-    return { advancedMode, context, ...useAdvancedFeatures(), ...useReceivedFundsTable(props.announcements) };
+    const { advancedMode, scanPrivateKey } = useSettingsStore();
+
+    // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
+    const { spendingKeyPair: spendingKeyPairFromSig } = useWalletStore();
+    const spendingKeyPair = computed(() => {
+      if (advancedMode.value && scanPrivateKey.value) return new KeyPair(scanPrivateKey.value);
+      return spendingKeyPairFromSig.value as KeyPair;
+    });
+
+    return {
+      advancedMode,
+      context,
+      ...useAdvancedFeatures(spendingKeyPair.value),
+      ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
+    };
   },
 });
 </script>

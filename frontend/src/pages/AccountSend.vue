@@ -10,7 +10,8 @@
     <!-- Send form -->
     <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
-      <div>Recipient's ENS name</div>
+      <div v-if="!advancedMode">Recipient's ENS or CNS name</div>
+      <div v-else>Recipient's ENS name, CNS name, transaction hash, address, or uncompressed public key</div>
       <base-input v-model="recipientId" :disable="isSending" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
 
       <!-- Token -->
@@ -39,10 +40,12 @@
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
+import { isHexString } from '@ethersproject/bytes';
 import { MaxUint256 } from '@ethersproject/constants';
 import { Contract } from '@ethersproject/contracts';
 import { parseUnits } from '@ethersproject/units';
-import { ens } from '@umbra/umbra-js';
+import { ens, cns } from '@umbra/umbra-js';
+import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import { TokenInfo } from 'components/models';
@@ -50,6 +53,7 @@ import erc20 from 'src/contracts/erc20.json';
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 
 function useSendForm() {
+  const { advancedMode } = useSettingsStore();
   const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, userAddress } = useWalletStore();
   const { txNotify } = useAlerts();
 
@@ -63,7 +67,15 @@ function useSendForm() {
   const isSending = ref(false);
 
   function isValidId(val: string) {
-    if (val && (ens.isEnsDomain(val) || val.endsWith('.crypto'))) return true;
+    if (val && (ens.isEnsDomain(val) || cns.isCnsDomain(val))) return true;
+    if (advancedMode) {
+      // Also allow identifying recipient by transaction hash, address, or public key. We copy the checks
+      // used by utils.lookupRecipient() here
+      const isPublicKey = val.length === 132 && isHexString(val);
+      const isTxHash = val.length === 66 && isHexString(val);
+      const isValidAddress = val.length === 42 && isHexString(val);
+      return isPublicKey || isTxHash || isValidAddress || 'Please enter a valid recipient identifer';
+    }
     return 'Please enter an ENS or CNS name';
   }
 
@@ -122,16 +134,17 @@ function useSendForm() {
   }
 
   return {
-    userAddress,
-    isSending,
-    sendFormRef,
-    recipientId,
+    advancedMode,
     humanAmount,
-    tokenOptions,
-    token,
-    onFormSubmit,
+    isSending,
     isValidId,
     isValidTokenAmount,
+    onFormSubmit,
+    recipientId,
+    sendFormRef,
+    token,
+    tokenOptions,
+    userAddress,
   };
 }
 

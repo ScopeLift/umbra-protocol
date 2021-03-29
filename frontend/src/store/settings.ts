@@ -14,6 +14,7 @@ const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
+const scanPrivateKey = ref<string>(); // private key entered when scanning
 
 // Composition function for managing state
 export default function useSettingsStore() {
@@ -48,13 +49,19 @@ export default function useSettingsStore() {
     LocalStorage.set(settings.endBlock, endBlock_);
   }
 
+  function setScanPrivateKey(key: string) {
+    scanPrivateKey.value = key; // we save this in memory for access by components, but do not save it to LocalStorage
+  }
+
   return {
     toggleDarkMode,
     toggleAdvancedMode,
     setScanBlocks,
+    setScanPrivateKey,
     isDark: computed(() => isDark.value),
     advancedMode: computed(() => advancedMode.value),
     startBlock: computed(() => startBlock.value),
     endBlock: computed(() => endBlock.value),
+    scanPrivateKey: computed(() => scanPrivateKey.value),
   };
 }
