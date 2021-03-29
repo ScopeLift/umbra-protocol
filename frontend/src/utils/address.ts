@@ -34,19 +34,25 @@ export const lookupCnsName = async (address: string, provider: Provider) => {
   const url = chainId === 4 ? `${baseUrl}/dot-crypto-rinkeby-registry` : `${baseUrl}/dot-crypto-registry`;
 
   // Send request to get names
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      variables: { owner: address.toLowerCase() },
-      query: 'query domainsOfOwner($owner: String!) { domains(where: {owner: $owner}) { name } }',
-    }),
-  });
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        variables: { owner: address.toLowerCase() },
+        query: 'query domainsOfOwner($owner: String!) { domains(where: {owner: $owner}) { name } }',
+      }),
+    });
 
-  // Return the first name in the array, or undefined if user has no CNS names
-  const json = (await res.json()) as CnsQueryResponse;
-  const names = json.data.domains;
-  return names.length > 0 ? names[0].name : undefined;
+    // Return the first name in the array, or undefined if user has no CNS names
+    const json = (await res.json()) as CnsQueryResponse;
+    const names = json.data.domains;
+    return names.length > 0 ? names[0].name : undefined;
+  } catch (err) {
+    // Scenario that prompted this try/catch was that The Graph API threw with a CORS error on localhost, blocking login
+    console.error(err);
+    return undefined;
+  }
 };
 
 // Returns an ENS or CNS name if found, otherwise returns undefined

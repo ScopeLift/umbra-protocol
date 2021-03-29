@@ -29,6 +29,10 @@
       <div>Amount to send</div>
       <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
 
+      <!-- Memo (payload extension) -->
+      <div>Include a brief, optional<span v-if="advancedMode"> 16 byte</span> memo</div>
+      <base-input v-model="memo" :disable="isSending" placeholder="Memo" lazy-rules :rules="isValidMemo" />
+
       <!-- Send button -->
       <div>
         <base-button :disable="isSending" :full-width="true" label="Send" :loading="isSending" type="submit" />
@@ -38,12 +42,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { computed, defineComponent, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { isHexString } from '@ethersproject/bytes';
+import { isHexString, hexlify, hexZeroPad } from '@ethersproject/bytes';
 import { MaxUint256 } from '@ethersproject/constants';
 import { Contract } from '@ethersproject/contracts';
 import { parseUnits } from '@ethersproject/units';
+import { toUtf8Bytes } from '@ethersproject/strings';
 import { ens, cns } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
@@ -57,18 +62,22 @@ function useSendForm() {
   const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, userAddress } = useWalletStore();
   const { txNotify } = useAlerts();
 
+  // Helpers
+  const sendFormRef = ref<QForm>();
+  const isSending = ref(false);
+  const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
+  const is16BytesOrLess = (val: string) => isHexString(val) && val.length <= 34; // 0x + 16 hex bytes = 34 characters
+
   // Form parameters
   const recipientId = ref<string>();
   const token = ref<TokenInfo>();
   const humanAmount = ref<string>();
-
-  // Helpers
-  const sendFormRef = ref<QForm>();
-  const isSending = ref(false);
+  const memo = ref<string>();
+  const payloadExtension = computed(() => (memo.value ? hexlify(toUtf8Bytes(memo.value)) : zeroPrefix));
 
   function isValidId(val: string) {
     if (val && (ens.isEnsDomain(val) || cns.isCnsDomain(val))) return true;
-    if (advancedMode) {
+    if (advancedMode.value) {
       // Also allow identifying recipient by transaction hash, address, or public key. We copy the checks
       // used by utils.lookupRecipient() here
       const isPublicKey = val.length === 132 && isHexString(val);
@@ -87,12 +96,23 @@ function useSendForm() {
     return amount.gt(balances.value[tokenAddress]) ? 'Amount exceeds wallet balance' : true;
   }
 
+  function isValidMemo(val: string) {
+    // No memo is a valid value
+    if (!val) return true;
+
+    // Memo is limited to 16 bytes of data. Length of a Uint8Array is the number of bytes in that array, but since we
+    // pass it as hex we check the hex length in case there's bugs in hexlify that would make the length incorrect
+    const suffix = advancedMode.value ? ' (cannot be longer than 16 bytes)' : '';
+    return is16BytesOrLess(payloadExtension.value) || `Memo is too long${suffix}`;
+  }
+
   async function onFormSubmit() {
     try {
       // Form validation
       if (!recipientId.value || !token.value || !humanAmount.value) throw new Error('Please complete the form');
       if (!signer.value) throw new Error('Wallet not connected');
       if (!umbra.value) throw new Error('Umbra instance not configured');
+      if (!is16BytesOrLess(payloadExtension.value)) throw new Error('Memo too long. Cannot be longer than 16 bytes');
 
       // Ensure user has enough balance. We re-fetch user token balances in case amounts changed
       // after wallet was connected
@@ -117,7 +137,8 @@ function useSendForm() {
       }
 
       // Send with Umbra
-      const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value);
+      const overrides = { payloadExtension: hexZeroPad(payloadExtension.value, 16) };
+      const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value, overrides);
       txNotify(tx.hash);
       await tx.wait();
       resetForm();
@@ -130,6 +151,7 @@ function useSendForm() {
     recipientId.value = undefined;
     token.value = undefined;
     humanAmount.value = undefined;
+    memo.value = undefined;
     sendFormRef.value?.resetValidation();
   }
 
@@ -139,6 +161,8 @@ function useSendForm() {
     isSending,
     isValidId,
     isValidTokenAmount,
+    isValidMemo,
+    memo,
     onFormSubmit,
     recipientId,
     sendFormRef,

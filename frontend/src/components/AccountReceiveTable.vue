@@ -72,6 +72,9 @@
                   <span>{{ col.value.from }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
+                <div v-if="hasPayloadExtension(props.row.randomNumber)" class="text-caption text-grey">
+                  {{ formatPayloadExtensionText(props.row.randomNumber) }}
+                </div>
               </div>
 
               <!-- Default -->
@@ -158,7 +161,9 @@ import { computed, defineComponent, onMounted, PropType, ref } from '@vue/compos
 import { date, copyToClipboard } from 'quasar';
 import { Contract } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
+import { arrayify } from '@ethersproject/bytes';
 import { Block, ExternalProvider, TransactionResponse, Web3Provider } from '@ethersproject/providers';
+import { toUtf8String } from '@ethersproject/strings';
 import { formatUnits } from '@ethersproject/units';
 import { DomainService, Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
@@ -235,6 +240,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   // Table formatters and helpers
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
   const formatTime = (timestamp: number) => date.formatDate(timestamp, 'H:mm A');
+  const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
+  const hasPayloadExtension = (randomNumber: string) => randomNumber.slice(0, 34) !== zeroPrefix;
+  const formatPayloadExtensionText = (randomNumber: string) => toUtf8String(arrayify(randomNumber.slice(0, 34)));
   const isEth = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
   const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
@@ -407,10 +415,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     expanded,
     formatAmount,
     formatDate,
+    formatPayloadExtensionText,
     formattedAnnouncements,
     formatTime,
     getTokenLogoUri,
     getTokenSymbol,
+    hasPayloadExtension,
     initializeWithdraw,
     isLoading,
     isWithdrawInProgress,
