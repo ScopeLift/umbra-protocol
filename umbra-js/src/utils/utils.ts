@@ -9,7 +9,7 @@ import { resolveProperties } from '@ethersproject/properties';
 import { EtherscanProvider } from '@ethersproject/providers';
 import { recoverPublicKey } from '@ethersproject/signing-key';
 import { serialize as serializeTransaction } from '@ethersproject/transactions';
-import * as ens from './ens';
+import { ens, cns } from '..';
 import { DomainService } from '../classes/DomainService';
 import { EthersProvider, SignatureLike } from '../types';
 
@@ -120,20 +120,20 @@ async function getSentTransaction(address: string, ethersProvider: EthersProvide
  */
 export async function lookupRecipient(id: string, provider: EthersProvider) {
   // Check if identifier is a public key. If so we just return that directly
-  const isPublicKey = id.length === 132 && isHexString(id) && id.startsWith('0x04');
+  const isPublicKey = id.length === 132 && isHexString(id);
   if (isPublicKey) {
     return { spendingPublicKey: id, viewingPublicKey: id };
   }
 
   // Check if identifier is a transaction hash
-  const isTxHash = id.length === 66 && isHexString(id) && id.startsWith('0x');
+  const isTxHash = id.length === 66 && isHexString(id);
   if (isTxHash) {
     const publicKey = await recoverPublicKeyFromTransaction(id, provider);
     return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
   }
 
   // Check if this is a valid address
-  const isValidAddress = id.length === 42 && isHexString(id) && id.startsWith('0x');
+  const isValidAddress = id.length === 42 && isHexString(id);
   if (isValidAddress) {
     // Get last transaction hash sent by that address
     const txHash = await getSentTransaction(id, provider);
@@ -147,7 +147,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   }
 
   // Check if this is a valid ENS or CNS name
-  const isDomainService = ens.isEnsDomain(id) || id.endsWith('.crypto');
+  const isDomainService = ens.isEnsDomain(id) || cns.isCnsDomain(id);
   if (isDomainService) {
     const domainService = new DomainService(provider);
     return domainService.getPublicKeys(id);
