@@ -2,18 +2,15 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import * as BN from 'bn.js';
-import { ec as EC } from 'elliptic';
+import * as secp from 'noble-secp256k1';
 import { Wallet } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexZeroPad, isHexString } from '@ethersproject/bytes';
-import { computePublicKey, SigningKey } from '@ethersproject/signing-key';
+import { sha256 } from '@ethersproject/sha2';
 import { computeAddress } from '@ethersproject/transactions';
 import { RandomNumber } from './RandomNumber';
 import { lengths, padHex, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
-
-const ec = new EC('secp256k1');
 
 export class KeyPair {
   readonly publicKeyHex: string; // Public key as hex string with 0x04 prefix
@@ -33,8 +30,8 @@ export class KeyPair {
     if (key.length === lengths.privateKey) {
       // Private key provided
       this.privateKeyHex = key;
-      const publicKey = ec.g.mul(this.privateKeyHexSlim); // Multiply secp256k1 generator point by private key to get public key
-      this.publicKeyHex = `0x${publicKey.encode('hex') as string}`; // Save off public key, other forms computed as getters
+      const publicKey = secp.getPublicKey(this.privateKeyHexSlim as string); // hex without 0x prefix but with 04 prefix
+      this.publicKeyHex = `0x${publicKey}`; // Save off version with 0x prefix, other forms computed as getters
     } else if (key.length === lengths.publicKey) {
       // Public key provided
       this.publicKeyHex = key; // Save off public key, other forms computed as getters
@@ -60,13 +57,6 @@ export class KeyPair {
   }
 
   /**
-   * @notice Returns an elliptic instance generated from the public key
-   */
-  get publicKeyEC() {
-    return ec.keyFromPublic(this.publicKeyHex.slice(2), 'hex');
-  }
-
-  /**
    * @notice Returns checksum address derived from this key
    */
   get address() {
@@ -74,6 +64,7 @@ export class KeyPair {
   }
 
   // ============================================= ENCRYPTION / DECRYPTION =============================================
+
   /**
    * @notice Encrypt a random number with the instance's public key
    * @param randomNumber Random number as instance of RandomNumber class
@@ -85,8 +76,7 @@ export class KeyPair {
     }
     // Get shared secret to use as encryption key
     const ephemeralWallet = Wallet.createRandom();
-    const privateKey = new SigningKey(ephemeralWallet.privateKey);
-    const sharedSecret = privateKey.computeSharedSecret(this.publicKeyHex);
+    const sharedSecret = KeyPair.getSharedSecret(ephemeralWallet.privateKey, this.publicKeyHex);
 
     // XOR random number with shared secret to get encrypted value
     const ciphertext = randomNumber.value.xor(sharedSecret);
@@ -103,19 +93,16 @@ export class KeyPair {
    * @returns Decrypted ciphertext as hex string
    */
   decrypt(output: EncryptedPayload) {
-    if (!output.ephemeralPublicKey || !output.ciphertext) {
+    const { ephemeralPublicKey, ciphertext } = output;
+    if (!ephemeralPublicKey || !ciphertext) {
       throw new Error('Input must be of type EncryptedPayload to decrypt');
     }
     if (!this.privateKeyHex) {
       throw new Error('KeyPair has no associated private key to decrypt with');
     }
 
-    // Get shared secret to use as decryption key
-    const { ephemeralPublicKey, ciphertext } = output;
-    const privateKey = new SigningKey(this.privateKeyHex);
-    const sharedSecret = privateKey.computeSharedSecret(ephemeralPublicKey);
-
-    // Decrypt
+    // Get shared secret to use as decryption key, then decrypt with XOR
+    const sharedSecret = KeyPair.getSharedSecret(this.privateKeyHex, ephemeralPublicKey);
     const plaintext = BigNumber.from(ciphertext).xor(sharedSecret);
     return hexZeroPad(plaintext.toHexString(), 32);
   }
@@ -134,18 +121,14 @@ export class KeyPair {
     }
 
     const number = isHexString(value)
-      ? (value as string).slice(2) // provided a valid hex string
-      : (value as RandomNumber).asHexSlim; // provided RandomNumber
+      ? BigInt(value as string) // provided a valid hex string
+      : BigInt((value as RandomNumber).asHex); // provided RandomNumber
 
     // Perform the multiplication
-    const publicKey = this.publicKeyEC.getPublic().mul(new BN(number, 16));
+    const publicKey = secp.Point.fromHex(this.publicKeyHex.slice(2)).multiply(number);
 
-    // Get x,y hex strings and pad each to 32 bytes
-    const x = padHex(publicKey.getX().toString('hex'));
-    const y = padHex(publicKey.getY().toString('hex'));
-
-    // Instantiate and return new instance
-    return new KeyPair(`0x04${x}${y}`);
+    // Return new KeyPair instance
+    return new KeyPair(`0x${publicKey.toHex()}`);
   }
 
   /**
@@ -165,21 +148,18 @@ export class KeyPair {
 
     // Parse the number provided
     const number = isHexString(value)
-      ? (value as string) // provided a valid hex string
-      : (value as RandomNumber).asHex; // provided RandomNumber
+      ? BigInt(value as string) // provided a valid hex string
+      : BigInt((value as RandomNumber).asHex); // provided RandomNumber
 
-    // Get new private key. This gives us an arbitrarily large number that is not
-    // necessarily in the domain of the secp256k1 elliptic curve
-    const privateKeyFull = this.privateKeyBN.mul(number);
-
-    // Modulo operation to get private key to be in correct range, where ec.n gives the
-    // order of our curve. We add the 0x prefix as it's required by ethers.js
-    const privateKeyMod = privateKeyFull.mod(`0x${(ec.n as BN).toString('hex')}`);
+    // Get new private key. Multiplication gives us an arbitrarily large number that is not necessarily in the domain
+    // of the secp256k1 curve, so then we use modulus operation to get in the correct range. We save it as a BigNumber
+    // for converting to hex
+    const privateKeyMod = BigNumber.from((BigInt(this.privateKeyHex) * number) % secp.CURVE.n);
 
     // Remove 0x prefix to pad hex value, then add back 0x prefix
     const privateKey = `0x${padHex(privateKeyMod.toHexString().slice(2))}`;
 
-    // Instantiate and return new instance
+    // Return new KeyPair instance
     return new KeyPair(privateKey);
   }
 
@@ -198,6 +178,22 @@ export class KeyPair {
   }
 
   /**
+   * @notice Returns the shared secret for a given private key and public key
+   * @param privateKey Private key as hex string with 0x prefix
+   * @param publicKey Uncompressed public key as hex string with 0x04 prefix
+   * @returns 32-byte shared secret as 66 character hex string
+   */
+  static getSharedSecret(privateKey: string, publicKey: string) {
+    if (privateKey.length !== lengths.privateKey || !isHexString(privateKey)) throw new Error('Invalid private key');
+    if (publicKey.length !== lengths.publicKey || !isHexString(publicKey)) throw new Error('Invalid public key');
+
+    // We use getSharedSecret(pk,Pk,true).slice() to ensure the shared secret is not dependent on the prefix, which
+    // enables us to uncompress ephemeralPublicKey from Umbra.sol logs as explained in comments of getUncompressedFromX
+    const sharedSecretRaw = secp.getSharedSecret(privateKey.slice(2), publicKey.slice(2), true).slice(2);
+    return sha256(`0x${sharedSecretRaw}`);
+  }
+
+  /**
    * @notice Takes an uncompressed public key and returns the compressed public key
    * @param publicKey Uncompressed public key, as hex string starting with 0x
    * @returns Object containing the prefix as an integer and compressed public key as hex, as separate parameters
@@ -206,22 +202,23 @@ export class KeyPair {
     if (typeof publicKey !== 'string' || !isHexString(publicKey) || publicKey.length !== lengths.publicKey) {
       throw new Error('Must provide uncompressed public key as hex string');
     }
-    const compressedPublicKey = computePublicKey(publicKey, true);
+    const compressedPublicKey = secp.Point.fromHex(publicKey.slice(2)).toHex(true);
     return {
-      prefix: Number(compressedPublicKey[3]), // prefix bit is the 4th character in the string (e.g. 0x03)
-      pubKeyXCoordinate: `0x${compressedPublicKey.slice(4)}`,
+      prefix: Number(compressedPublicKey[1]), // prefix bit is the 2th character in the string (no 0x prefix)
+      pubKeyXCoordinate: `0x${compressedPublicKey.slice(2)}`,
     };
   }
 
   /**
    * @notice Given the x-coordinate of a public key, without the identifying prefix bit, returns
    * the uncompressed public key assuming the identifying bit is 02
-   * @dev We don't know if the identifying bit is 02 or 03 when uncompressing for the scanning use
-   * case, but it doesn't actually matter since we are not deriving an address from the public key.
-   * We use the public key to compute the shared secret to decrypt the random number, and since that
-   * involves multiplying this public key by a private key, the result is the same shared secret
-   * regardless of whether we assume the 02 or 03 prefix. Therefore if no prefix is provided, we
-   * can assume 02, and it's up to the user to make sure they are using this method safely.I
+   * @dev We don't know if the identifying bit is 02 or 03 when uncompressing for the scanning use case, but it
+   * doesn't actually matter since we are not deriving an address from the public key. We use the public key to
+   * compute the shared secret to decrypt the random number, and since that involves multiplying this public key
+   * by a private key, we can ensure the result is the same shared secret regardless of whether we assume the 02 or
+   * 03 prefix by using the compressed form of the hex shared secret and ignoring the prefix. Therefore if no prefix
+   * is provided, we can assume 02, and it's up to the user to make sure they are using this method safely. This is
+   * done because it saves gas in the Umbra contract
    * @param pkx x-coordinate of compressed public key, as BigNumber or hex string
    * @param prefix Prefix bit, must be 2 or 3
    */
@@ -229,13 +226,12 @@ export class KeyPair {
     if (!(pkx instanceof BigNumber) && typeof pkx !== 'string') {
       throw new Error('Compressed public key must be a BigNumber or string');
     }
+    const hexWithoutPrefix = padHex(BigNumber.from(pkx).toHexString().slice(2));
     if (!prefix) {
       // Only safe to use this branch when uncompressed key is using for scanning your funds
-      const hexWithoutPrefix = BigNumber.from(pkx).toHexString().slice(2);
-      return computePublicKey(BigNumber.from(`0x02${hexWithoutPrefix}`).toHexString());
+      return `0x${secp.Point.fromHex(`02${hexWithoutPrefix}`).toHex()}`;
     }
-    const hexWithoutPrefix = padHex(BigNumber.from(pkx).toHexString().slice(2));
-    const hexWithPrefix = `0x0${Number(prefix)}${hexWithoutPrefix}`;
-    return computePublicKey(BigNumber.from(hexWithPrefix).toHexString());
+    const hexWithPrefix = `0${Number(prefix)}${hexWithoutPrefix}`;
+    return `0x${secp.Point.fromHex(hexWithPrefix).toHex()}`;
   }
 }
