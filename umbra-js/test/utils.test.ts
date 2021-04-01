@@ -36,15 +36,6 @@ const expectRejection = async (promise: Promise<any>, message: string) => {
 
 describe('Utilities', () => {
   describe('Helpers', () => {
-    it('properly pads hex values', async () => {
-      const shortHex = '1234';
-      const fullHex16 = '00000000000000000000000000001234';
-      const fullHex32 = '0000000000000000000000000000000000000000000000000000000000001234';
-      expect(utils.padHex(shortHex)).to.equal(fullHex32);
-      expect(utils.padHex(shortHex, 32)).to.equal(fullHex32);
-      expect(utils.padHex(shortHex, 16)).to.equal(fullHex16);
-    });
-
     it('recovers public keys from transactions', async () => {
       const hash = '0x45fa716ee2d484ac67ef787625908072d851bfa369db40567e16ee08a7fdefd2';
       expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
@@ -104,12 +95,6 @@ describe('Utilities', () => {
   describe('Input validation', () => {
     // ts-expect-error statements needed throughout this section to bypass TypeScript checks that would stop this file
     // from being compiled/ran
-
-    it('throws when padHex is given a bad input', () => {
-      const errorMsg = 'Input must be a hex string without the 0x prefix';
-      expect(() => utils.padHex('q')).to.throw(errorMsg);
-      expect(() => utils.padHex('0x1')).to.throw(errorMsg);
-    });
 
     it('throws when recoverPublicKeyFromTransaction is given a bad transaction hash', async () => {
       const errorMsg = 'Invalid transaction hash provided';

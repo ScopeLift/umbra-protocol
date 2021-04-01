@@ -1,9 +1,8 @@
 import { RandomNumber } from '../src/classes/RandomNumber';
 import * as chai from 'chai';
 import { BigNumber } from '@ethersproject/bignumber';
-import { isHexString } from '@ethersproject/bytes';
+import { isHexString, hexZeroPad } from '@ethersproject/bytes';
 import { randomBytes } from '@ethersproject/random';
-import { padHex } from '../src/utils/utils';
 
 const { expect } = chai;
 const numberOfRuns = 1000; // number of runs for tests that execute in a loop
@@ -87,7 +86,7 @@ describe('RandomNumber class', () => {
   it('lets the user set a payload extension when generating a random number', () => {
     for (let i = 0; i < numberOfRuns; i += 1) {
       // Generate random hex string with the correct format
-      const randomHexString = `0x${padHex(BigNumber.from(randomBytes(16)).toHexString().slice(2), 16)}`;
+      const randomHexString = hexZeroPad(BigNumber.from(randomBytes(16)).toHexString(), 16);
 
       random = new RandomNumber(randomHexString);
       const hex = random.asHex;

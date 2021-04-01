@@ -1,7 +1,7 @@
 /**
  * @dev Functions for interacting with the Unstoppable Domains Crypto Name Service (CNS)
  */
-import { computePublicKey } from '@ethersproject/signing-key';
+import { Point } from 'noble-secp256k1';
 import { default as Resolution } from '@unstoppabledomains/resolution';
 import type { EthersProvider, TransactionResponse } from '../types';
 import * as cnsResolverAbi from '../abi/CnsResolver.json';
@@ -62,8 +62,8 @@ export async function getPublicKeys(name: string, provider: EthersProvider, reso
     throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
   }
   // Return uncompressed public keys
-  const spendingPublicKey = computePublicKey(compressedSpendingPublicKey);
-  const viewingPublicKey = computePublicKey(compressedViewingPublicKey);
+  const spendingPublicKey = `0x${Point.fromHex(compressedSpendingPublicKey.slice(2)).toHex()}`;
+  const viewingPublicKey = `0x${Point.fromHex(compressedViewingPublicKey.slice(2)).toHex()}`;
   return { spendingPublicKey, viewingPublicKey };
 }
 
@@ -84,8 +84,8 @@ export async function setPublicKeys(
   resolution: Resolution
 ) {
   // Compress public keys
-  const compressedSpendingPublicKey = computePublicKey(spendingPublicKey, true);
-  const compressedViewingPublicKey = computePublicKey(viewingPublicKey, true);
+  const compressedSpendingPublicKey = `0x${Point.fromHex(spendingPublicKey.slice(2)).toHex(true)}`;
+  const compressedViewingPublicKey = `0x${Point.fromHex(viewingPublicKey.slice(2)).toHex(true)}`;
 
   // Send transaction to set the keys
   const domainNamehash = resolution.namehash(name);

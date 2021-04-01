@@ -2,16 +2,16 @@
  * @dev Assortment of helper methods
  */
 
+import { Signature, recoverPublicKey } from 'noble-secp256k1';
 import { Contract, ContractInterface } from 'ethers';
-import { arrayify, Bytes, Hexable, isHexString, joinSignature } from '@ethersproject/bytes';
+import { arrayify, Bytes, Hexable, isHexString, splitSignature } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { resolveProperties } from '@ethersproject/properties';
 import { EtherscanProvider } from '@ethersproject/providers';
-import { recoverPublicKey } from '@ethersproject/signing-key';
 import { serialize as serializeTransaction } from '@ethersproject/transactions';
 import { ens, cns } from '..';
 import { DomainService } from '../classes/DomainService';
-import { EthersProvider, SignatureLike } from '../types';
+import { EthersProvider } from '../types';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -20,26 +20,6 @@ export const lengths = {
   privateKey: 66, // 32 bytes + 0x prefix
   publicKey: 132, // 64 bytes + 0x04 prefix
 };
-
-/**
- * @notice Adds leading zeroes to ensure hex strings are the expected length.
- * @dev We always expect a hex value to have the full number of characters for its size,
- * so we use this tool to ensure no errors occur due to wrong hex character lengths.
- * Specifically, we need to pad hex values during the following cases:
- *   1. It seems elliptic strips unnecessary leading zeros when pulling out x and y
- *      coordinates from public keys.
- *   2. When computing a new private key from a random number, the new number (i.e. the new
- *      private key) may not necessarily require all 32-bytes as ethers.js also seems to
- *      strip leading zeroes.
- *   3. When generating random numbers and returning them as hex strings, the leading
- *      zero bytes get stripped
- * @param hex String to pad, without leading 0x
- * @param bytes Number of bytes string should have
- */
-export function padHex(hex: string, bytes = 32) {
-  if (!isHexString(`0x${hex}`)) throw new Error('Input must be a hex string without the 0x prefix');
-  return hex.padStart(bytes * 2, '0');
-}
 
 /**
  * @notice Convert hex string with 0x prefix into Buffer
@@ -66,11 +46,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
     throw new Error('Transaction not found. Are the provider and transaction hash on the same network?');
   }
 
-  // Get original signature
-  const splitSignature: SignatureLike = { r: tx.r as string, s: tx.s, v: tx.v };
-  const signature = joinSignature(splitSignature);
-
-  // Reconstruct transaction data that was originally signed
+  // Reconstruct transaction payload that was originally signed
   const txData = {
     chainId: tx.chainId,
     data: tx.data,
@@ -81,15 +57,17 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
     value: tx.value,
   };
 
-  // Properly format it to get the correct message
+  // Properly format transaction payload to get the correct message
   const resolvedTx = await resolveProperties(txData);
   const rawTx = serializeTransaction(resolvedTx);
   const msgHash = keccak256(rawTx);
-  const msgBytes = arrayify(msgHash);
 
-  // Recover sender's public key and address
-  const publicKey = recoverPublicKey(msgBytes, signature);
-  return publicKey;
+  // Recover sender's public key
+  const signature = new Signature(BigInt(tx.r), BigInt(tx.s));
+  const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;
+  const publicKey = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
+  if (!publicKey) throw new Error('Could not recover public key');
+  return `0x${publicKey}`;
 }
 
 /**
