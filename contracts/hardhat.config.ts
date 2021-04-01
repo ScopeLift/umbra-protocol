@@ -15,7 +15,6 @@ import 'hardhat-typechain';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
 
-
 const chainIds = {
   ganache: 1337,
   goerli: 5,
@@ -27,24 +26,14 @@ const chainIds = {
 };
 
 // Ensure that we have all the environment variables we need.
-let mnemonic = '';
-if (!process.env.MNEMONIC) {
-  console.warn('Please set your MNEMONIC in a .env file');
-} else {
-  mnemonic = process.env.MNEMONIC;
-}
+const infuraApiKey = process.env.INFURA_API_KEY;
+if (!infuraApiKey) throw new Error('Please set your INFURA_API_KEY in a .env file');
 
-let infuraApiKey = '';
-if (!process.env.INFURA_API_KEY) {
-  console.warn('Please set your INFURA_API_KEY in a .env file');
-} else {
-  infuraApiKey = process.env.INFURA_API_KEY;
-}
-
+const mnemonic = 'test test test test test test test test test test test junk';
 const shouldReportGas = process.env.REPORT_GAS === 'true';
 
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
-  const url: string = 'https://' + network + '.infura.io/v3/' + infuraApiKey;
+  const url = `https://${network}.infura.io/v3/${infuraApiKey as string}`;
   return {
     accounts: {
       count: 10,
@@ -62,13 +51,13 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: 'https://rinkeby' + '.infura.io/v3/' + infuraApiKey,
+        url: `https://rinkeby.infura.io/v3/${infuraApiKey}`,
       },
       chainId: chainIds.hardhat,
       accounts: {
         count: 10,
         initialIndex: 0,
-        mnemonic,
+        mnemonic: 'test test test test test test test test test test test junk',
         path: "m/44'/60'/1'/0",
       },
     },

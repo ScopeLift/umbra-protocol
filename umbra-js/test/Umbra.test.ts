@@ -1,9 +1,12 @@
+import * as hre from 'hardhat';
 import { Umbra } from '../src/classes/Umbra';
-import { BigNumber, BigNumberish, ethers } from 'ethers';
-import { Web3Provider, JsonRpcSigner, JsonRpcProvider } from '@ethersproject/providers';
+import { BigNumber, BigNumberish } from 'ethers';
+import { JsonRpcSigner, JsonRpcProvider } from '@ethersproject/providers';
+// import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import * as chai from 'chai';
-import { accounts, provider } from '@openzeppelin/test-environment';
-import type { ChainConfig, ExternalProvider } from '../src/types';
+// import { accounts, provider } from '@openzeppelin/test-environment';
+
+import type { ChainConfig } from '../src/types';
 import {
   TestToken as ERC20,
   Umbra as UmbraContract,
@@ -12,11 +15,11 @@ import {
 } from '@umbra/contracts/typechain';
 import { node } from '../test-environment.config';
 
+const { ethers } = hre;
 const { expect } = chai;
 const { parseEther } = ethers.utils;
 
-const web3Provider = (provider as unknown) as ExternalProvider;
-const ethersProvider = new Web3Provider(web3Provider);
+const ethersProvider = ethers.provider;
 const JSON_RPC_URL = node.fork;
 const jsonRpcProvider = new JsonRpcProvider(JSON_RPC_URL);
 
@@ -67,18 +70,12 @@ describe('Umbra class', () => {
     expect(BigNumber.from(val1).toString()).to.equal(BigNumber.from(val2).toString());
   };
 
-  before(() => {
-    // Load private keys of ganache accounts
-    const keys = require('../test-keys.json');
-
-    // Create wallets for all ganache accounts
-    const wallets = accounts.map((account) => {
-      const key = keys.private_keys[account.toLowerCase()];
-      const wallet = new ethers.Wallet(`0x${key}`).connect(ethersProvider);
-      expect(wallet.address).to.equal(account);
-      return wallet;
-    });
-
+  before(async () => {
+    const wallets = await hre.ethers.getSigners();
+    console.log(wallets[0].address);
+    console.log(wallets[1].address);
+    const walletM = ethers.Wallet.fromMnemonic(process.env.MNEMONIC as string, "m/44'/60'/1'/0");
+    console.log(walletM.address);
     // Assign to our variables. Offset by 1 since openzeppelin skips first account by default, but
     // looping through the accounts above doesn't
     sender['wallet'] = wallets[signerIndex - 1];
