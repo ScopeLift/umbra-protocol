@@ -2,10 +2,9 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import { getSharedSecret as secpGetSharedSecret, getPublicKey, Point, CURVE } from 'noble-secp256k1';
-import { Wallet } from 'ethers';
+import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from 'noble-secp256k1';
 import { BigNumber } from '@ethersproject/bignumber';
-import { hexZeroPad, isHexString } from '@ethersproject/bytes';
+import { hexlify, hexZeroPad, isHexString } from '@ethersproject/bytes';
 import { sha256 } from '@ethersproject/sha2';
 import { computeAddress } from '@ethersproject/transactions';
 import { RandomNumber } from './RandomNumber';
@@ -92,16 +91,14 @@ export class KeyPair {
       throw new Error('Must provide instance of RandomNumber');
     }
     // Get shared secret to use as encryption key
-    const ephemeralWallet = Wallet.createRandom();
-    const sharedSecret = getSharedSecret(ephemeralWallet.privateKey, this.publicKeyHex);
+    const ephemeralPrivateKey = hexlify(utils.randomPrivateKey()); // private key as hex with 0x prefix
+    const ephemeralPublicKey = `0x${getPublicKey(ephemeralPrivateKey.slice(2))}`; // public key as hex with 0x prefix
+    const sharedSecret = getSharedSecret(ephemeralPrivateKey, this.publicKeyHex);
 
     // XOR random number with shared secret to get encrypted value
-    const ciphertext = number.value.xor(sharedSecret);
-    const result = {
-      ephemeralPublicKey: ephemeralWallet.publicKey, // hex string with 0x04 prefix
-      ciphertext: hexZeroPad(ciphertext.toHexString(), 32), // hex string with 0x prefix
-    };
-    return result;
+    const ciphertextBN = number.value.xor(sharedSecret);
+    const ciphertext = hexZeroPad(ciphertextBN.toHexString(), 32); // 32 byte hex string with 0x prefix
+    return { ephemeralPublicKey, ciphertext };
   }
 
   /**

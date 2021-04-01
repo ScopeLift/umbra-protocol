@@ -6,7 +6,7 @@
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexZeroPad, isHexString } from '@ethersproject/bytes';
-import { randomBytes } from '@ethersproject/random';
+import { utils } from 'noble-secp256k1';
 
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 
@@ -21,7 +21,7 @@ export class RandomNumber {
    * hex string where the first two characters are 0x
    */
   constructor(readonly payloadExtension: string = zeroPrefix) {
-    // Validate it payload extension
+    // Validate payload extension
     if (!isHexString(payloadExtension)) {
       throw new Error('Payload extension is not a valid hex string');
     }
@@ -30,7 +30,7 @@ export class RandomNumber {
     }
 
     // Generate default random number without payload extension
-    const randomNumberAsBytes = randomBytes(this.randomLength);
+    const randomNumberAsBytes = utils.randomPrivateKey(this.randomLength);
     this.value = BigNumber.from(randomNumberAsBytes);
 
     // Payload extension is valid, so update the random number. If no payload extension is provided
