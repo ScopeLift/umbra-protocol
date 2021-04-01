@@ -32,6 +32,17 @@
         @click="handleClick"
       />
     </template>
+    <template v-else-if="counter" v-slot:append>
+      <q-circular-progress
+        :value="counter"
+        size="2.75rem"
+        :color="counter > 100 ? 'negative' : 'primary'"
+        show-value
+        track-color="grey-4"
+      >
+        {{ counter }} %
+      </q-circular-progress>
+    </template>
   </q-input>
 </template>
 
@@ -74,6 +85,12 @@ export default Vue.extend({
 
     bgColor: {
       type: String,
+      required: false,
+      default: undefined,
+    },
+
+    counter: {
+      type: Number,
       required: false,
       default: undefined,
     },

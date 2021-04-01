@@ -31,7 +31,14 @@
 
       <!-- Memo (payload extension) -->
       <div>Include a brief, optional<span v-if="advancedMode"> 16 byte</span> memo</div>
-      <base-input v-model="memo" :disable="isSending" placeholder="Memo" lazy-rules :rules="isValidMemo" />
+      <base-input
+        v-model="memo"
+        :counter="payloadCounter"
+        :disable="isSending"
+        placeholder="Memo"
+        lazy-rules
+        :rules="isValidMemo"
+      />
 
       <!-- Send button -->
       <div>
@@ -74,6 +81,10 @@ function useSendForm() {
   const humanAmount = ref<string>();
   const memo = ref<string>();
   const payloadExtension = computed(() => (memo.value ? hexlify(toUtf8Bytes(memo.value)) : zeroPrefix));
+  const payloadCounter = computed(() =>
+    // Counts percentage progress of payload extension. Reaches 100% at 16 bytes
+    payloadExtension.value === zeroPrefix ? 0 : Math.round((100 * payloadExtension.value.slice(2).length) / 32)
+  );
 
   function isValidId(val: string) {
     if (val && (ens.isEnsDomain(val) || cns.isCnsDomain(val))) return true;
@@ -160,10 +171,11 @@ function useSendForm() {
     humanAmount,
     isSending,
     isValidId,
-    isValidTokenAmount,
     isValidMemo,
+    isValidTokenAmount,
     memo,
     onFormSubmit,
+    payloadCounter,
     recipientId,
     sendFormRef,
     token,
