@@ -138,7 +138,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
     // Get last transaction hash sent by that address
     const txHash = await getSentTransaction(id, provider);
     if (!txHash) {
-      throw new Error('The provider address has not sent any transactions');
+      throw new Error('Could not get public key because the provided address has not sent any transactions');
     }
 
     // Get public key from that transaction
