@@ -85,7 +85,7 @@ function useScan() {
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
   // Start and end blocks for advanced mode settings
-  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey } = useSettingsStore();
+  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey } = useSettingsStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
@@ -93,12 +93,14 @@ function useScan() {
   const settingsFormRef = ref<QForm>(); // for programtically verifying settings form
 
   // Form validators and configurations
-  const invalidPrivateKeyMsg = 'Please enter a valid private key starting with 0x';
-  const isValidPrivateKey = (val: string) => !val || (isHexString(val) && val.length === 66) || invalidPrivateKeyMsg;
+  const badPrivKeyMsg = 'Please enter a valid private key';
+  const isAnyHex = (val: string) => isHexString(val) || isHexString(`0x${val}`);
+  const isValidPrivateKey = (val: string) => !val || (isAnyHex(val) && [66, 64].includes(val.length)) || badPrivKeyMsg;
   const isValidStartBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const isValidEndBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const setFormStatus = (scanStatusVal: ScanStatus, scanPrivateKey: string) => {
     scanStatus.value = scanStatusVal;
+    if (scanPrivateKey.length === 64) scanPrivateKey = `0x${scanPrivateKey}`;
     setScanPrivateKey(scanPrivateKey);
     scanPrivateKeyLocal.value = scanPrivateKey;
   };
@@ -136,7 +138,7 @@ function useScan() {
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
     const chooseKey = (keyPair: string | undefined | null) => {
-      if (advancedMode.value && scanPrivateKeyLocal.value) return String(scanPrivateKeyLocal.value);
+      if (advancedMode.value && scanPrivateKey.value) return String(scanPrivateKey.value);
       return String(keyPair);
     };
 
