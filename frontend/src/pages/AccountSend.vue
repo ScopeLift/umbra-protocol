@@ -61,7 +61,7 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import { TokenInfo } from 'components/models';
-import erc20 from 'src/contracts/erc20.json';
+import ERC20 from 'src/contracts/ERC20.json';
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 
 function useSendForm() {
@@ -136,7 +136,7 @@ function useSendForm() {
       isSending.value = true;
       if (token.value.symbol !== 'ETH') {
         // Check allowance
-        const tokenContract = new Contract(token.value.address, erc20.abi, signer.value);
+        const tokenContract = new Contract(token.value.address, ERC20.abi, signer.value);
         const umbraAddress = umbra.value.umbraContract.address;
         const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
         // If insufficient allowance, get approval

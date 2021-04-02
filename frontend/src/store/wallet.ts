@@ -11,8 +11,8 @@ import {
   MulticallResponse,
   SupportedChainIds,
 } from 'components/models';
-import multicallInfo from 'src/contracts/multicall.json';
-import erc20 from 'src/contracts/erc20.json';
+import Multicall from 'src/contracts/Multicall.json';
+import ERC20 from 'src/contracts/ERC20.json';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 
 /**
@@ -83,8 +83,8 @@ export default function useWalletStore() {
     if (!provider.value) throw new Error('Provider not connected');
     await getTokenList(); // does nothing if we already have the list
     const chainId = String(provider.value.network.chainId) as SupportedChainIds;
-    const multicallAddress = multicallInfo.addresses[chainId];
-    const multicall = new ethers.Contract(multicallAddress, multicallInfo.abi, provider.value);
+    const multicallAddress = Multicall.addresses[chainId];
+    const multicall = new ethers.Contract(multicallAddress, Multicall.abi, provider.value);
 
     // Generate balance calls using Multicall contract
     const calls = tokens.value.map((token) => {
@@ -95,7 +95,7 @@ export default function useWalletStore() {
           callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
         };
       } else {
-        const tokenContract = new ethers.Contract(tokenAddress, erc20.abi, signer.value);
+        const tokenContract = new ethers.Contract(tokenAddress, ERC20.abi, signer.value);
         return {
           target: tokenAddress,
           callData: tokenContract.interface.encodeFunctionData('balanceOf', [userAddress.value]),
