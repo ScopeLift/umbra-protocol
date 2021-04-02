@@ -69,9 +69,3 @@ export interface UserAnnouncement {
   receipt: TransactionReceipt;
   isWithdrawn: boolean;
 }
-
-// ======================================= ENS-related types =======================================
-export type EnsNamehash = {
-  hash: (name: string) => string;
-  normalize: (name: string) => string;
-};

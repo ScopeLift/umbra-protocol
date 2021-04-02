@@ -2,13 +2,13 @@
  * @dev Functions for interacting with the Ethereum Name Service (ENS)
  */
 
-import { EthersProvider, EnsNamehash, TransactionResponse } from '../types';
+import { EthersProvider, TransactionResponse } from '../types';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
+import { namehash as ensNamehash } from '@ethersproject/hash';
 import { KeyPair } from '../classes/KeyPair';
 import * as publicResolverAbi from '../abi/PublicResolver.json';
 import { createContract } from './utils';
-const ensNamehash: EnsNamehash = require('eth-ens-namehash'); // doesn't include TypeScript definitions
 
 type StealthKeys = {
   spendingPubKeyPrefix: BigNumber;
@@ -58,7 +58,7 @@ export function namehash(name: string) {
   if (!isEnsDomain(name)) {
     throw new Error(`Name does not end with supported suffix: ${supportedEnsDomains.join(', ')}`);
   }
-  return ensNamehash.hash(ensNamehash.normalize(name));
+  return ensNamehash(name);
 }
 
 /**
