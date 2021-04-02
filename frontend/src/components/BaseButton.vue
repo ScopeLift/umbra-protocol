@@ -17,7 +17,7 @@
       :type="type"
       @click="handleClick"
     >
-      <q-icon v-if="icon" left size="0.875rem" :name="icon" />
+      <q-icon v-if="icon" right size="0.875rem" :name="icon" />
     </q-btn>
   </div>
 </template>

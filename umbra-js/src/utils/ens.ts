@@ -18,13 +18,13 @@ type StealthKeys = {
 };
 
 /**
- * @notice Returns the address of the ENS resolver to use based on the provider's network
- * @param provider Provider to fetch ENS resolver address for
+ * @notice Returns the address of the ENS stealth key resolver to use based on the provider's network
+ * @param provider Provider to fetch ENS stealth key resolver address for
  */
-const getEnsResolverAddress = async (provider: EthersProvider) => {
+const getEnsStealthKeyResolverAddress = async (provider: EthersProvider) => {
   const chainId = (await provider.getNetwork()).chainId;
   if (chainId === 4 || chainId === 1337) {
-    return '0x50ad87E547D5Dfbd6b62bfb6E5C3b9b4fb3c17cC';
+    return '0x291e2dfe31CE1a65DbEDD84eA38a12a4D5e01D39';
   }
   throw new Error('Unsupported chain ID');
 };
@@ -39,6 +39,7 @@ export const supportedEnsDomains = ['.eth', '.xyz', '.kred', '.luxe', '.club', '
  * @param domainName Name to check
  */
 export function isEnsDomain(domainName: string) {
+  if (!domainName) return false;
   for (const suffix of supportedEnsDomains) {
     if (domainName.endsWith(suffix)) {
       return true;
@@ -67,7 +68,7 @@ export function namehash(name: string) {
  * @param provider Ethers provider
  */
 export async function getPublicKeys(name: string, provider: EthersProvider) {
-  const ensResolverAddress = await getEnsResolverAddress(provider);
+  const ensResolverAddress = await getEnsStealthKeyResolverAddress(provider);
   const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
   const keys = (await publicResolver.stealthKeys(namehash(name))) as StealthKeys;
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
@@ -103,7 +104,7 @@ export async function setPublicKeys(
   );
 
   // Send transaction to set the keys
-  const ensResolverAddress = await getEnsResolverAddress(provider);
+  const ensResolverAddress = await getEnsStealthKeyResolverAddress(provider);
   const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
   const tx = await publicResolver.setStealthKeys(
     namehash(name),

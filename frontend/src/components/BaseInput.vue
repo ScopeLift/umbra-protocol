@@ -15,6 +15,7 @@
     :label="label"
     :lazy-rules="lazyRules"
     :rules="[(val) => rules(val)]"
+    :suffix="suffix"
     :type="type"
     :outlined="outlined"
     :placeholder="placeholder"
@@ -143,6 +144,12 @@ export default Vue.extend({
       default() {
         return true;
       },
+    },
+
+    suffix: {
+      type: String,
+      required: false,
+      default: undefined,
     },
 
     type: {
