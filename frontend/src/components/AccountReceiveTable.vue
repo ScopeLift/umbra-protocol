@@ -171,7 +171,7 @@ import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Al
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
-import UmbraRelayRecipient from 'src/contracts/umbra-relay-recipient.json';
+import UmbraRelayRecipient from 'src/contracts/UmbraRelayRecipient.json';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import { SupportedChainIds } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
