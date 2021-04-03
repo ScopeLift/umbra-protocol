@@ -39,7 +39,7 @@ export const hasPublicKeys = async (name: string, provider: Provider) => {
     await ens.getPublicKeys(name, provider); // throws if no keys found
     return true;
   } catch (err) {
-    console.error(err);
+    console.warn(err);
     return false;
   }
 };
