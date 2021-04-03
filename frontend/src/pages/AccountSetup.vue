@@ -128,14 +128,18 @@
           <h5 class="q-my-md q-pt-none">Step 3: Publish Keys</h5>
           <!-- User is migrating their own ENS name from public resolver -->
           <div v-if="!isSubdomain && ensStatus === 'no-public-keys'">
-            You'll now be asked to sign three transactions to upgrade your ENS name from the Public Resolver to Umbra's
-            Resolver and publish your public keys&mdash;don't worry, this will not break anything! To learn more, read
-            <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/issues/113" target="_blank">here</a>
+            <p>
+              You'll now be asked to sign three transactions to upgrade your ENS name from the Public Resolver to
+              Umbra's Resolver and publish your public keys&mdash;don't worry, this will not break anything! To learn
+              more, read
+              <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/issues/113" target="_blank">
+                here</a
+              >.
+            </p>
             <base-button @click="migrateKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
           </div>
           <!-- User does not need to migrate from public resolver-->
           <div v-else>
-            {{ ensStatus }}
             <p class="q-mt-md">
               You'll now be asked to send a transaction which associates the two public keys generated with
               {{ userAddress.value }}. This means people can now securely send you funds through Umbra by visiting this
@@ -170,8 +174,8 @@ import AccountSetupRegisterEnsSubdomain from 'src/components/AccountSetupRegiste
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
-import { isNameOwner, isUsingPublicResolver, hasPublicKeys } from 'src/utils/ens';
-import { Provider } from 'components/models';
+import { getPublicResolver, getRegistry, isNameOwner, isUsingPublicResolver, hasPublicKeys } from 'src/utils/ens';
+import { Provider, TransactionResponse } from 'components/models';
 
 function useKeys() {
   const {
@@ -182,7 +186,7 @@ function useKeys() {
     userCns,
     spendingKeyPair,
     viewingKeyPair,
-    provider,
+    signer,
   } = useWalletStore();
   const { notifyUser, txNotify } = useAlerts();
   const selectedName = ref<string>(); // ENS or CNS name to be configured
@@ -195,6 +199,7 @@ function useKeys() {
   const isWaiting = ref(false);
 
   const isSubdomain = computed(() => userEns.value?.endsWith('.umbra.eth'));
+  const setName = (name: string) => (selectedName.value = name);
   onMounted(() => checkAndSetName());
 
   // Required for UI to update if user connects wallet when already on this page
@@ -215,33 +220,23 @@ function useKeys() {
   });
 
   function checkAndSetName() {
-    // If the user has already selected which name to configure, we return and do nothing
-    if (selectedName.value) {
-      return;
-    }
-
-    // Otherwise, we select a domain name based on which type their address owns. If neither condition is true,
-    // publishKeys() will throw an error
-    if (userEns.value && !userCns.value) {
-      selectedName.value = userEns.value; // If user has an ENS name, but no CNS name, we select the ENS name
-    } else if (!userEns.value && userCns.value) {
-      selectedName.value = userCns.value; // If user has a CNS name, but no ENS name, we select the CNS name
-    }
-  }
-
-  function setName(name: string) {
-    selectedName.value = name;
+    // If the user has already selected which name to configure, we return and do nothing. Otherwise, we select
+    // a domain name based on which type their address owns. If neither condition is true, publishKeys() will throw
+    // an error later
+    if (selectedName.value) return;
+    else if (userEns.value && !userCns.value) setName(userEns.value);
+    else if (!userEns.value && userCns.value) setName(userCns.value);
   }
 
   // Check if user's ENS name is properly configured to support setting their public keys
   async function checkEnsStatus(name: string) {
     const address = userAddress.value as string;
-    const ethersProvider = provider.value as Provider;
-    if (!(await isNameOwner(address, name, ethersProvider))) {
+    const provider = signer.value?.provider as Provider;
+    if (!(await isNameOwner(address, name, provider))) {
       return 'not-owner';
-    } else if (!(await isUsingPublicResolver(name, ethersProvider))) {
+    } else if (!(await isUsingPublicResolver(name, provider))) {
       return 'not-public-resolver';
-    } else if (!(await hasPublicKeys(name, ethersProvider))) {
+    } else if (!(await hasPublicKeys(name, provider))) {
       return 'no-public-keys';
     }
     carouselBtnRight.value?.click();
@@ -262,36 +257,68 @@ function useKeys() {
     }
   }
 
-  function migrateKeys() {
-    // Sends multiple transactions to migrate user from the public resolver then set their keys
-    // TODO
+  // Migrate from ENS Public Resolver to Umbra Resolver
+  async function migrateKeys() {
+    // These checks are duplicated in publishKeys to facilitate TS type inference
+    if (!domainService.value) throw new Error('Invalid DomainService. Please refresh the page');
+    if (!signer.value) throw new Error('migrateKeys: Invalid provider');
+    checkAndSetName(); // does nothing if already set, and sets name if user only has one of ENS or CNS
+    if (!selectedName.value) throw new Error('ENS or CNS name not found. Please return to the first step');
+    const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
+    if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
+
+    try {
+      // Setup
+      const name = String(selectedName.value);
+      const node = ens.namehash(name);
+      const provider = signer.value.provider as Provider;
+
+      // Step 1: Authorize the Umbra Resolver to set records on the Public Resolver. This is required so it can
+      // properly act as a fallback resolver with permission to set records on Public Resolver as needed
+      isWaiting.value = true;
+      const publicResolver = getPublicResolver(provider).connect(signer.value);
+      const umbraResolverAddress = await ens.getUmbraResolverAddress(provider);
+      const tx1 = (await publicResolver.setAuthorisation(node, umbraResolverAddress, true)) as TransactionResponse;
+      txNotify(tx1.hash);
+
+      // Step 2: Set the stealth keys on the Umbra Resolver
+      const spendingPubKey = String(spendingKeyPair.value?.publicKeyHex);
+      const viewingPubKey = String(viewingKeyPair.value?.publicKeyHex);
+      const tx2 = await domainService.value.setPublicKeys(name, spendingPubKey, viewingPubKey);
+      txNotify(tx2.hash);
+
+      // Step 3: Change the user's resolver to the Umbra Resolver
+      const registry = getRegistry(provider).connect(signer.value);
+      const tx3 = (await registry.setResolver(node, umbraResolverAddress)) as TransactionResponse;
+      txNotify(tx3.hash);
+
+      // Wait for all transactions to be mined then move on to next step
+      await Promise.all([tx1.wait(), tx2.wait(), tx3.wait()]);
+      carouselStep.value = '4';
+    } finally {
+      isWaiting.value = false;
+    }
   }
 
   async function publishKeys() {
+    // These checks are duplicated in migrateKeys to facilitate TS type inference
     if (!domainService.value) throw new Error('Invalid DomainService. Please refresh the page');
-
-    // If user had to choose between ENS and CNS, selectedName.value will be defined so we do nothing. If it's
-    // undefined, the user either only has ENS or CNS (so we set this for them), OR they have neither and we throw an error
-    checkAndSetName();
-    if (!selectedName.value) {
-      throw new Error('ENS or CNS name not found. Please return to the first step');
-    }
+    checkAndSetName(); // does nothing if already set, and sets name if user only has one of ENS or CNS
+    if (!selectedName.value) throw new Error('ENS or CNS name not found. Please return to the first step');
     const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
     if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
+
     try {
       isWaiting.value = true;
       // Send transaction to set keys
-      const tx = await domainService.value.setPublicKeys(
-        selectedName.value,
-        String(spendingKeyPair.value?.publicKeyHex),
-        String(viewingKeyPair.value?.publicKeyHex)
-      );
+      const name = String(selectedName.value);
+      const spendingPubKey = String(spendingKeyPair.value?.publicKeyHex);
+      const viewingPubKey = String(viewingKeyPair.value?.publicKeyHex);
+      const tx = await domainService.value.setPublicKeys(name, spendingPubKey, viewingPubKey);
 
-      // Wait for the transaction(s) to be mined
+      // Wait for the transaction(s) to be mined then move on to the next step
       txNotify(tx.hash);
       await tx.wait();
-
-      // Move on to next step
       carouselStep.value = '4';
     } finally {
       isWaiting.value = false;
