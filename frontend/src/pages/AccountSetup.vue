@@ -51,19 +51,11 @@
                 An ENS domain was not found for this address. If you do have an address, please set the reverse record.
               </p>
               <p>
-                To continue, either visit the ENS site to register your own name, or stay here to register an
-                <span class="text-bold">umbra.eth</span> name, such as <span class="text-bold">yourname.umbra.eth</span>
+                To continue, register a subdomain below, or visit the
+                <a class="hyperlink" href="https://app.ens.domains" target="_blank">ENS site</a> to register and
+                configure your own name.
               </p>
-              <div class="row justify-start">
-                <base-button @click="registerSubdomain" label="Register subdomain" />
-                <base-button
-                  @click="open('https://app.ens.domains/')"
-                  class="q-ml-lg"
-                  icon="fas fa-external-link-alt"
-                  label="ENS Website"
-                  :outline="true"
-                />
-              </div>
+              <account-setup-register-ens-subdomain />
             </div>
             <!-- User has ENS and CNS name, and has not yet chose one -->
             <div v-else-if="userEns && userCns && !selectedName">
@@ -73,32 +65,41 @@
                 <base-button @click="setName(userCns)" :label="userCns" :outline="true" class="q-ml-lg" />
               </div>
             </div>
-            <!-- User only has ENS, or user chose to use ENS in the previous step -->
-            <div v-else-if="(userEns && !userCns) || selectedNameIsEns">
+            <!-- User only has ENS, or user chose to use ENS -->
+            <div v-else-if="(userEns && !userCns) || selectedNameType === 'ens'">
+              <!-- Loading ENS config status -->
+              <div v-if="ensStatus === 'not-ready'" class="text-center">
+                <loading-spinner />
+              </div>
               <!-- User does is not set as the owner -->
-              <div v-if="ensStatus === 'not-owner'">
+              <div v-else-if="ensStatus === 'not-owner'">
                 <p>
                   You are connected with <span class="text-bold">{{ userEns }}</span
-                  >, but are not the owner of that name.
+                  >, but are not the controller of that name.
                 </p>
-                <p>To continue setup, either register a subdomain, or switch to an ENS name you are the owner of.</p>
-                <base-input
-                  v-model="ensSubdomain"
-                  @click="registerSubdomain"
-                  appendButtonLabel="Register"
-                  suffix=".umbra.eth"
-                  style="max-width: 400px"
-                />
+                <p>
+                  To continue, register a subdomain below, become the controller of this name, or switch to an ENS name
+                  you are the controller of.
+                </p>
+                <account-setup-register-ens-subdomain />
+              </div>
+              <!-- User is not using the Public Resolver -->
+              <div v-else-if="ensStatus === 'not-public-resolver'">
+                <p>
+                  You are connected with <span class="text-bold">{{ userEns }}</span
+                  >, but are not using the Public Resolver.
+                </p>
+                <p>To continue, register a subdomain below, or configure your name to use the Public Resolver.</p>
+                <account-setup-register-ens-subdomain />
               </div>
               <div v-else>
-                {{ ensStatus }}
-                You are logged in with <span class="text-bold">{{ userAddress }}</span
+                You are connected with <span class="text-bold">{{ userEns }}</span
                 >. Please continue to the next step.
               </div>
             </div>
-            <!-- User only has CNS -->
-            <div v-else-if="!userEns && userCns">
-              You are logged in with <span class="text-bold">{{ userAddress }}</span
+            <!-- User only has CNS, or use chose to use CNS -->
+            <div v-else-if="(!userEns && userCns) || selectedNameType === 'cns'">
+              You are connected with <span class="text-bold">{{ userCns }}</span
               >. Please continue to the next step.
             </div>
           </div>
@@ -125,12 +126,23 @@
       <q-carousel-slide name="3" class="q-px-xl">
         <div class="q-mx-xl q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 3: Publish Keys</h5>
-          <p class="q-mt-md">
-            You'll now be asked to send a transaction which associates the two public keys generated with
-            {{ userAddress.value }}. This means people can now securely send you funds through Umbra by visiting this
-            site and sending funds to {{ userAddress.value }}.
-          </p>
-          <base-button @click="publishKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
+          <!-- User is migrating their own ENS name from public resolver -->
+          <div v-if="!isSubdomain && ensStatus === 'no-public-keys'">
+            You'll now be asked to sign three transactions to upgrade your ENS name from the Public Resolver to Umbra's
+            Resolver and publish your public keys&mdash;don't worry, this will not break anything! To learn more, read
+            <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/issues/113" target="_blank">here</a>
+            <base-button @click="migrateKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
+          </div>
+          <!-- User does not need to migrate from public resolver-->
+          <div v-else>
+            {{ ensStatus }}
+            <p class="q-mt-md">
+              You'll now be asked to send a transaction which associates the two public keys generated with
+              {{ userAddress.value }}. This means people can now securely send you funds through Umbra by visiting this
+              site and sending funds to {{ userAddress.value }}.
+            </p>
+            <base-button @click="publishKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
+          </div>
         </div>
       </q-carousel-slide>
 
@@ -152,13 +164,13 @@
 
 <script lang="ts">
 import { QBtn } from 'quasar';
-import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
-import { ens } from '@umbra/umbra-js';
-import BaseButton from 'src/components/BaseButton.vue';
+import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
+import { ens, cns } from '@umbra/umbra-js';
+import AccountSetupRegisterEnsSubdomain from 'src/components/AccountSetupRegisterEnsSubdomain.vue';
+import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import { isNameOwner, isUsingPublicResolver, hasPublicKeys } from 'src/utils/ens';
-import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 import { Provider } from 'components/models';
 
 function useKeys() {
@@ -174,7 +186,7 @@ function useKeys() {
   } = useWalletStore();
   const { notifyUser, txNotify } = useAlerts();
   const selectedName = ref<string>(); // ENS or CNS name to be configured
-  const selectedNameIsEns = ref(false);
+  const selectedNameType = ref<string>(); // 'ens' if user chose ENS, 'cns' if user chose CNS
   const ensSubdomain = ref<string>();
   const carouselBtnRight = ref<QBtn>();
   const ensStatus = ref<'not-ready' | 'not-owner' | 'not-public-resolver' | 'no-public-keys' | 'ready'>('not-ready');
@@ -182,11 +194,22 @@ function useKeys() {
   const carouselStep = ref('1');
   const isWaiting = ref(false);
 
+  const isSubdomain = computed(() => userEns.value?.endsWith('.umbra.eth'));
   onMounted(() => checkAndSetName());
 
+  // Required for UI to update if user connects wallet when already on this page
+  watch(userAddress, () => checkAndSetName());
+
+  // Fetch latest status for the selected ENS name
   watch(selectedName, async (newName) => {
-    selectedNameIsEns.value = newName ? ens.isEnsDomain(newName) : false;
-    if (selectedNameIsEns.value) {
+    // Determine if user chose ENS or CNS
+    if (!newName) selectedNameType.value = undefined;
+    else if (ens.isEnsDomain(newName)) selectedNameType.value = 'ens';
+    else if (cns.isCnsDomain(newName)) selectedNameType.value = 'cns';
+    else selectedNameType.value = undefined; // if here, it's some type of unsupported or invalid domain
+
+    // If ENS, check if they are ready to continue
+    if (selectedNameType.value === 'ens') {
       ensStatus.value = await checkEnsStatus(newName as string);
     }
   });
@@ -225,11 +248,6 @@ function useKeys() {
     return 'ready';
   }
 
-  function registerSubdomain() {
-    console.log('ensSubdomain: ', ensSubdomain.value);
-    console.log('not implemented');
-  }
-
   async function getPrivateKeysHandler() {
     if (keyStatus.value === 'success') {
       notifyUser('info', 'You have already signed. Please continue to the next step');
@@ -242,6 +260,11 @@ function useKeys() {
     } finally {
       isWaiting.value = false;
     }
+  }
+
+  function migrateKeys() {
+    // Sends multiple transactions to migrate user from the public resolver then set their keys
+    // TODO
   }
 
   async function publishKeys() {
@@ -281,12 +304,13 @@ function useKeys() {
     ensStatus,
     ensSubdomain,
     getPrivateKeysHandler,
+    isSubdomain,
     isWaiting,
     keyStatus,
+    migrateKeys,
     publishKeys,
-    registerSubdomain,
     selectedName,
-    selectedNameIsEns,
+    selectedNameType,
     setName,
     userAddress,
     userCns,
@@ -295,7 +319,7 @@ function useKeys() {
 }
 
 export default defineComponent({
-  components: { BaseButton, ConnectWalletCard },
+  components: { AccountSetupRegisterEnsSubdomain, ConnectWalletCard },
   name: 'PageSetup',
   setup() {
     const open = (url: string) => window.open(url, '_self');
