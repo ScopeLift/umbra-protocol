@@ -12,8 +12,14 @@ import { Provider } from 'components/models';
 
 type ChainId = keyof typeof ENSPublicResolver.addresses;
 
+// Returns instance of the Public Resolver
+export const getPublicResolver = (provider: Provider) => {
+  const chainId = String(provider.network.chainId) as ChainId;
+  return new Contract(ENSPublicResolver.addresses[chainId], ENSPublicResolver.abi, provider);
+};
+
 // Returns contract instance of the ENS registry
-const getRegistry = (provider: Provider) => {
+export const getRegistry = (provider: Provider) => {
   const chainId = String(provider.network.chainId) as ChainId;
   return new Contract(ENSRegistry.addresses[chainId], ENSRegistry.abi, provider);
 };

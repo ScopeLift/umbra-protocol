@@ -7,7 +7,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 import { namehash as ensNamehash } from '@ethersproject/hash';
 import { KeyPair } from '../classes/KeyPair';
-import * as publicResolverAbi from '../abi/PublicResolver.json';
+import * as UmbraForwardingResolverAbi from '../abi/PublicResolver.json';
 import { createContract } from './utils';
 
 type StealthKeys = {
@@ -21,7 +21,7 @@ type StealthKeys = {
  * @notice Returns the address of the ENS stealth key resolver to use based on the provider's network
  * @param provider Provider to fetch ENS stealth key resolver address for
  */
-const getEnsStealthKeyResolverAddress = async (provider: EthersProvider) => {
+export const getUmbraResolverAddress = async (provider: EthersProvider) => {
   const chainId = (await provider.getNetwork()).chainId;
   if (chainId === 4 || chainId === 1337) {
     return '0x291e2dfe31CE1a65DbEDD84eA38a12a4D5e01D39';
@@ -68,8 +68,8 @@ export function namehash(name: string) {
  * @param provider Ethers provider
  */
 export async function getPublicKeys(name: string, provider: EthersProvider) {
-  const ensResolverAddress = await getEnsStealthKeyResolverAddress(provider);
-  const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
+  const ensResolverAddress = await getUmbraResolverAddress(provider);
+  const publicResolver = createContract(ensResolverAddress, UmbraForwardingResolverAbi, provider);
   const keys = (await publicResolver.stealthKeys(namehash(name))) as StealthKeys;
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
     throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
@@ -104,8 +104,8 @@ export async function setPublicKeys(
   );
 
   // Send transaction to set the keys
-  const ensResolverAddress = await getEnsStealthKeyResolverAddress(provider);
-  const publicResolver = createContract(ensResolverAddress, publicResolverAbi, provider);
+  const ensResolverAddress = await getUmbraResolverAddress(provider);
+  const publicResolver = createContract(ensResolverAddress, UmbraForwardingResolverAbi, provider);
   const tx = await publicResolver.setStealthKeys(
     namehash(name),
     spendingPublicKeyPrefix,
