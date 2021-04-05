@@ -31,12 +31,24 @@ export const isNameOwner = async (user: string, name: string, provider: Provider
   return getAddress(user) === getAddress(owner);
 };
 
-// Checks if `name` is using the public resolver
-export const isUsingPublicResolver = async (name: string, provider: Provider) => {
+// Returns the address of the user's resolver contract
+export const getResolverAddress = async (name: string, provider: Provider) => {
   const registry = getRegistry(provider);
-  const resolver = await registry.resolver(namehash(name));
+  return (await registry.resolver(namehash(name))) as string;
+};
+
+// Checks if `name` is using the Public Resolver
+export const isUsingPublicResolver = (resolver: string, provider: Provider) => {
   const chainId = String(provider.network.chainId) as ChainId;
   return getAddress(resolver) === getAddress(ENSPublicResolver.addresses[chainId]);
+};
+
+// Checks if `name` is using the the Umbra Resolver
+// Checks if `name` is using the public resolver
+export const isUsingUmbraResolver = (resolver: string, provider: Provider) => {
+  const chainId = String(provider.network.chainId) as ChainId;
+  const umbraResolverAddress = ens.getUmbraResolverAddress(Number(chainId));
+  return getAddress(resolver) === getAddress(umbraResolverAddress);
 };
 
 // Wrapper around umbra-js's getPublicKeys that returns true if user has set Umbra public keys and false otherwise
