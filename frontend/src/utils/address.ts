@@ -24,7 +24,16 @@ export const lookupOrFormatAddress = async (address: string, provider: Provider)
 };
 
 // Returns ENS name that address resolves to, or null if not found
-export const lookupEnsName = async (address: string, provider: Provider) => provider.lookupAddress(address);
+export const lookupEnsName = async (address: string, provider: Provider) => {
+  try {
+    const name = await provider.lookupAddress(address);
+    return name;
+  } catch (err) {
+    console.warn('Error in lookupEnsName');
+    console.warn(err);
+    return undefined;
+  }
+};
 
 // Fetches all CNS names owned by an address and returns the first one
 export const lookupCnsName = async (address: string, provider: Provider) => {
@@ -50,7 +59,8 @@ export const lookupCnsName = async (address: string, provider: Provider) => {
     return names.length > 0 ? names[0].name : undefined;
   } catch (err) {
     // Scenario that prompted this try/catch was that The Graph API threw with a CORS error on localhost, blocking login
-    console.error(err);
+    console.warn('Error in lookupCnsName');
+    console.warn(err);
     return undefined;
   }
 };
