@@ -18,11 +18,16 @@ type StealthKeys = {
 };
 
 /**
- * @notice Returns the address of the ENS stealth key resolver to use based on the provider's network
- * @param provider Provider to fetch ENS stealth key resolver address for
+ * @notice Returns the chain ID of the provider
+ * @param provider Provider to get chain ID for
  */
-export const getUmbraResolverAddress = async (provider: EthersProvider) => {
-  const chainId = (await provider.getNetwork()).chainId;
+const getChainId = async (provider: EthersProvider) => (await provider.getNetwork()).chainId;
+
+/**
+ * @notice Returns the address of the ENS stealth key resolver to use based on the provider's network
+ * @param chainId Chain ID to get Umbra Resolver address for
+ */
+export const getUmbraResolverAddress = (chainId: number) => {
   if (chainId === 4 || chainId === 1337) {
     return '0x291e2dfe31CE1a65DbEDD84eA38a12a4D5e01D39';
   }
@@ -68,7 +73,8 @@ export function namehash(name: string) {
  * @param provider Ethers provider
  */
 export async function getPublicKeys(name: string, provider: EthersProvider) {
-  const ensResolverAddress = await getUmbraResolverAddress(provider);
+  const chainId = await getChainId(provider);
+  const ensResolverAddress = await getUmbraResolverAddress(chainId);
   const publicResolver = createContract(ensResolverAddress, UmbraForwardingResolverAbi, provider);
   const keys = (await publicResolver.stealthKeys(namehash(name))) as StealthKeys;
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
@@ -104,7 +110,8 @@ export async function setPublicKeys(
   );
 
   // Send transaction to set the keys
-  const ensResolverAddress = await getUmbraResolverAddress(provider);
+  const chainId = await getChainId(provider);
+  const ensResolverAddress = await getUmbraResolverAddress(chainId);
   const publicResolver = createContract(ensResolverAddress, UmbraForwardingResolverAbi, provider);
   const tx = await publicResolver.setStealthKeys(
     namehash(name),
