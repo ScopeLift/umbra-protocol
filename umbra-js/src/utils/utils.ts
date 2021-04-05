@@ -4,7 +4,7 @@
 
 import { Signature, recoverPublicKey } from 'noble-secp256k1';
 import { Contract, ContractInterface } from 'ethers';
-import { arrayify, Bytes, Hexable, isHexString, splitSignature } from '@ethersproject/bytes';
+import { isHexString, splitSignature } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { resolveProperties } from '@ethersproject/properties';
 import { EtherscanProvider } from '@ethersproject/providers';
@@ -20,14 +20,6 @@ export const lengths = {
   privateKey: 66, // 32 bytes + 0x prefix
   publicKey: 132, // 64 bytes + 0x04 prefix
 };
-
-/**
- * @notice Convert hex string with 0x prefix into Buffer
- * @param value Hex string to convert
- */
-export function hexStringToBuffer(value: string | number | Bytes | Hexable) {
-  return Buffer.from(arrayify(value));
-}
 
 /**
  * @notice Given a transaction hash, return the public key of the transaction's sender
