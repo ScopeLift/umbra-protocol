@@ -19,7 +19,6 @@
       navigation-icon="fas fa-circle"
       ref="carousel"
       style="max-width: 800px"
-      swipeable
       transition-next="slide-left"
       transition-prev="slide-right"
     >
@@ -89,7 +88,11 @@
                   You are connected with <span class="text-bold">{{ userEns }}</span
                   >, but are not using the Public Resolver.
                 </p>
-                <p>To continue, register a subdomain below, or configure your name to use the Public Resolver.</p>
+                <p>
+                  To continue, register a subdomain below, or
+                  <a class="hyperlink" :href="`https://app.ens.domains/name/${userEns}`" target="_blank">configure</a>
+                  your name to use the Public Resolver.
+                </p>
                 <account-setup-register-ens-subdomain />
               </div>
               <div v-else>
@@ -129,9 +132,12 @@
           <!-- User is migrating their own ENS name from public resolver -->
           <div v-if="!isSubdomain && isPublicResolver && ensStatus === 'no-public-keys'">
             <p>
-              You'll now be asked to sign three transactions to upgrade your ENS name from the Public Resolver to
-              Umbra's Resolver and publish your public keys&mdash;don't worry, this will not break anything! To learn
-              more, read
+              <span class="text-bold">You'll now be asked to approve three transactions</span> to upgrade your ENS name
+              from the Public Resolver to Umbra's Resolver and publish your public keys. Your existing ENS configuration
+              will carry over, and you'll be able to continue using ENS like normal.
+            </p>
+            <p>
+              To learn more, read
               <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/issues/113" target="_blank">
                 here</a
               >.
