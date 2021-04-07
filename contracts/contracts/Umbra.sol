@@ -28,9 +28,6 @@ contract Umbra is Ownable {
 
   // ======================================= State variables =======================================
 
-  /// @notice Version string for this Umbra contract
-  string public constant version = "1";
-
   /// @dev Placeholder address used to identify transfer of native ETH
   address constant ETH_TOKEN_PLACHOLDER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -313,7 +310,7 @@ contract Umbra is Ownable {
       keccak256(
         abi.encodePacked(
           "\x19Ethereum Signed Message:\n32",
-          keccak256(abi.encode(_chainId, version, _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data))
+          keccak256(abi.encode(_chainId, address(this), _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data))
         )
       );
 

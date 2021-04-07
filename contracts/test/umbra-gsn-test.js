@@ -96,11 +96,6 @@ describe('Umbra GSN', () => {
     });
   });
 
-  it('should see the correct umbra version and chainid', async () => {
-    ctx.version = await ctx.umbra.version();
-    expect(ctx.version).to.equal('1');
-  });
-
   // Sending the token is done without GSN
   it('should allow someone to pay with a token', async () => {
     const toll = await ctx.umbra.toll();
@@ -135,7 +130,7 @@ describe('Umbra GSN', () => {
     const { v, r, s } = await signMetaWithdrawal(
       otherWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       acceptor,
       ctx.token.address,
       relayer,
@@ -173,7 +168,7 @@ describe('Umbra GSN', () => {
     const { v, r, s } = await signMetaWithdrawal(
       otherWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       acceptor,
       ctx.token.address,
       relayer,
@@ -207,7 +202,7 @@ describe('Umbra GSN', () => {
     const { v, r, s } = await signMetaWithdrawal(
       receiverWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       acceptor,
       ctx.token.address,
       relayer,
@@ -244,7 +239,7 @@ describe('Umbra GSN', () => {
     const { v, r, s } = await signMetaWithdrawal(
       receiverWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       acceptor,
       ctx.token.address,
       relayer,

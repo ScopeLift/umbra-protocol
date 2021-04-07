@@ -69,9 +69,6 @@ describe('Umbra', () => {
   });
 
   it('should have correct values initialized', async () => {
-    ctx.version = await ctx.umbra.version();
-    expect(ctx.version).to.equal('1');
-
     const theOwner = await ctx.umbra.owner();
     expect(theOwner).to.equal(owner);
 
@@ -358,7 +355,7 @@ describe('Umbra', () => {
     const { v, r, s } = await signMetaWithdrawal(
       metaWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       metaAcceptor,
       ctx.token.address,
       relayer,
@@ -396,7 +393,7 @@ describe('Umbra', () => {
     const { v, r, s } = await signMetaWithdrawal(
       wrongWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       metaAcceptor,
       ctx.token.address,
       relayer,
@@ -427,7 +424,7 @@ describe('Umbra', () => {
     const { v, r, s } = await signMetaWithdrawal(
       metaWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       metaAcceptor,
       ctx.token.address,
       relayer,
@@ -446,7 +443,7 @@ describe('Umbra', () => {
     const { v, r, s } = await signMetaWithdrawal(
       metaWallet,
       ctx.chainId,
-      ctx.version,
+      ctx.umbra.address,
       metaAcceptor,
       ctx.token.address,
       relayer,

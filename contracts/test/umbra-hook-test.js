@@ -56,7 +56,6 @@ describe('Umbra Hooks', () => {
     ctx.umbra = await Umbra.new(toll, owner, owner, { from: owner });
     ctx.token = await TestToken.new('TestToken', 'TT');
     ctx.hook = await MockHook.new();
-    ctx.version = await ctx.umbra.version();
   });
 
   it('should see the deployed Umbra contract', async () => {
@@ -163,7 +162,7 @@ describe('Umbra Hooks', () => {
       const { v, r, s } = await signMetaWithdrawal(
         metaWallet,
         ctx.chainId,
-        ctx.version,
+        ctx.umbra.address,
         acceptor,
         ctx.token.address,
         relayer,
@@ -209,7 +208,7 @@ describe('Umbra Hooks', () => {
       const { v, r, s } = await signMetaWithdrawal(
         metaWallet,
         ctx.chainId,
-        ctx.version,
+        ctx.umbra.address,
         acceptor,
         ctx.token.address,
         relayer,
@@ -255,7 +254,7 @@ describe('Umbra Hooks', () => {
       const { v, r, s } = await signMetaWithdrawal(
         metaWallet,
         ctx.chainId,
-        ctx.version,
+        ctx.umbra.address,
         acceptor,
         ctx.token.address,
         relayer,
@@ -302,7 +301,7 @@ describe('Umbra Hooks', () => {
       const { v, r, s } = await signMetaWithdrawal(
         metaWallet,
         ctx.chainId,
-        ctx.version,
+        ctx.umbra.address,
         ctx.hook.address,
         ctx.token.address,
         relayer,
@@ -350,7 +349,7 @@ describe('Umbra Hooks', () => {
       const { v, r, s } = await signMetaWithdrawal(
         metaWallet,
         ctx.chainId,
-        ctx.version,
+        ctx.umbra.address,
         acceptor,
         ctx.token.address,
         relayer,
@@ -383,7 +382,7 @@ describe('Umbra Hooks', () => {
       const { v, r, s } = await signMetaWithdrawal(
         metaWallet,
         ctx.chainId,
-        ctx.version,
+        ctx.umbra.address,
         acceptor,
         ctx.token.address,
         relayer,
