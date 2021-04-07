@@ -1,13 +1,9 @@
 import * as chai from 'chai';
-import { ethers } from 'ethers';
-import { provider } from '@openzeppelin/test-environment';
-
+import { ethers } from 'hardhat';
 import { DomainService } from '../src/classes/DomainService';
-import type { ExternalProvider } from '../src/types';
 
 const { expect } = chai;
-const web3Provider = (provider as unknown) as ExternalProvider;
-const ethersProvider = new ethers.providers.Web3Provider(web3Provider);
+const ethersProvider = ethers.provider;
 
 // Truth parameters to test against (on Rinkeby)
 const params = {

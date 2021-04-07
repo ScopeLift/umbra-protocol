@@ -1,12 +1,9 @@
 import * as chai from 'chai';
-import { provider } from '@openzeppelin/test-environment';
-import { Web3Provider } from '@ethersproject/providers';
+import { ethers } from 'hardhat';
 import * as ens from '../src/utils/ens';
-import { ExternalProvider } from '../src/types';
 
 const { expect } = chai;
-const web3Provider = (provider as unknown) as ExternalProvider;
-const ethersProvider = new Web3Provider(web3Provider);
+const ethersProvider = ethers.provider;
 
 // Truth parameters to test against
 const name = 'msolomon.eth';

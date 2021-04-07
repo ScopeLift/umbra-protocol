@@ -1,13 +1,11 @@
-import { provider } from '@openzeppelin/test-environment';
-import { getDefaultProvider, Web3Provider } from '@ethersproject/providers';
+import { ethers } from 'hardhat';
+import { getDefaultProvider } from '@ethersproject/providers';
 import * as chai from 'chai';
 import * as utils from '../src/utils/utils';
-import type { ExternalProvider, EthersProvider } from '../src/types';
+import type { EthersProvider } from '../src/types';
 
 const { expect } = chai;
-
-const web3Provider = (provider as unknown) as ExternalProvider;
-const ethersProvider = new Web3Provider(web3Provider);
+const ethersProvider = ethers.provider;
 
 // Define truth values to test for when not testing ENS or CNS
 const publicKey =

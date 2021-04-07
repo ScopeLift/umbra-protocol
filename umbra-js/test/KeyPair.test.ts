@@ -1,19 +1,16 @@
 import * as chai from 'chai';
-import { provider } from '@openzeppelin/test-environment';
+import { ethers } from 'hardhat';
 import { Wallet } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexZeroPad } from '@ethersproject/bytes';
-import { Web3Provider } from '@ethersproject/providers';
 import { randomBytes } from '@ethersproject/random';
-import type { ExternalProvider } from '../src/types';
 import { RandomNumber } from '../src/classes/RandomNumber';
 import { KeyPair } from '../src/classes/KeyPair';
 import { Umbra } from '../src/classes/Umbra';
 import * as utils from '../src/utils/utils';
 
 const { expect } = chai;
-const web3Provider = (provider as unknown) as ExternalProvider;
-const ethersProvider = new Web3Provider(web3Provider);
+const ethersProvider = ethers.provider;
 const numberOfRuns = 100; // number of runs for tests that execute in a loop
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
 

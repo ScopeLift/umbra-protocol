@@ -1,13 +1,10 @@
 import * as chai from 'chai';
-import { provider } from '@openzeppelin/test-environment';
-import { Web3Provider } from '@ethersproject/providers';
+import { ethers } from 'hardhat';
 import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
-import { ExternalProvider } from '../src/types';
 import * as cns from '../src/utils/cns';
 
 const { expect } = chai;
-const web3Provider = (provider as unknown) as ExternalProvider;
-const ethersProvider = new Web3Provider(web3Provider);
+const ethersProvider = ethers.provider;
 
 const resolution = new Resolution({
   blockchain: {
