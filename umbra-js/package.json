@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "test": "yarn build && yarn hardhat test",
+    "coverage": "yarn build && nyc yarn hardhat test",
     "lint": "eslint --ext .js,.ts ./",
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
@@ -38,6 +39,7 @@
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^7.1.2",
+    "nyc": "^15.1.0",
     "ts-node": "^9.0.0"
   },
   "keywords": [
