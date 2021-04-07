@@ -31,9 +31,6 @@ contract Umbra is Ownable {
   /// @notice Version string for this Umbra contract
   string public constant version = "1";
 
-  /// @notice Chain identifier where this contract is deployed; set in constructor
-  uint256 public immutable chainId;
-
   /// @dev Placeholder address used to identify transfer of native ETH
   address constant ETH_TOKEN_PLACHOLDER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -64,14 +61,6 @@ contract Umbra is Ownable {
     toll = _toll;
     tollCollector = _tollCollector;
     tollReceiver = _tollReceiver;
-
-    uint256 _chainId;
-
-    assembly {
-      _chainId := chainid()
-    }
-
-    chainId = _chainId;
   }
 
   /**
@@ -316,11 +305,15 @@ contract Umbra is Ownable {
     bytes32 _r,
     bytes32 _s
   ) internal view {
+
+    uint256 _chainId;
+    assembly { _chainId := chainid() }
+
     bytes32 _digest =
       keccak256(
         abi.encodePacked(
           "\x19Ethereum Signed Message:\n32",
-          keccak256(abi.encode(chainId, version, _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data))
+          keccak256(abi.encode(_chainId, version, _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data))
         )
       );
 

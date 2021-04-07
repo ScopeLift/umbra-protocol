@@ -54,6 +54,7 @@ describe('Umbra', () => {
       other,
       relayer,
     ] = await web3.eth.getAccounts();
+    ctx.chainId = await web3.eth.getChainId();
     ctx.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, { from: owner });
     ctx.token = await TestToken.new('TestToken', 'TT');
 
@@ -70,10 +71,6 @@ describe('Umbra', () => {
   it('should have correct values initialized', async () => {
     ctx.version = await ctx.umbra.version();
     expect(ctx.version).to.equal('1');
-
-    ctx.chainId = await web3.eth.getChainId();
-    const chainId = await ctx.umbra.chainId();
-    expect(ctx.chainId).to.equal(chainId.toNumber());
 
     const theOwner = await ctx.umbra.owner();
     expect(theOwner).to.equal(owner);

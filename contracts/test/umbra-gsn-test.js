@@ -31,6 +31,10 @@ describe('Umbra GSN', () => {
 
   before(async () => {
     [owner, tollCollector, tollReceiver, payer, acceptor, relayer] = await web3.eth.getAccounts();
+
+    // Get the current chainId
+    ctx.chainId = await web3.eth.getChainId();
+
     // Deploy the Umbra contract
     ctx.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, { from: owner });
 
@@ -95,10 +99,6 @@ describe('Umbra GSN', () => {
   it('should see the correct umbra version and chainid', async () => {
     ctx.version = await ctx.umbra.version();
     expect(ctx.version).to.equal('1');
-
-    ctx.chainId = await web3.eth.getChainId();
-    const chainId = await ctx.umbra.chainId();
-    expect(ctx.chainId).to.equal(chainId.toNumber());
   });
 
   // Sending the token is done without GSN
