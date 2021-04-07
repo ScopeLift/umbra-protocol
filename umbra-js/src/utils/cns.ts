@@ -4,7 +4,7 @@
 import { Point } from 'noble-secp256k1';
 import { default as Resolution } from '@unstoppabledomains/resolution';
 import type { EthersProvider, TransactionResponse } from '../types';
-import * as cnsResolverAbi from '../abi/CnsResolver.json';
+import * as cnsResolverAbi from '../abi/CNSResolver.json';
 import { createContract } from './utils';
 
 export const cnsKeyPathSpending = 'crypto.ETH.umbra.spending_public_key';

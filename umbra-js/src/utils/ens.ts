@@ -7,7 +7,8 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 import { namehash as ensNamehash } from '@ethersproject/hash';
 import { KeyPair } from '../classes/KeyPair';
-import * as UmbraForwardingResolverAbi from '../abi/PublicResolver.json';
+import * as ForwardingStealthKeyResolverAbi from '../abi/ForwardingStealthKeyResolver.json';
+import * as ENSRegistryAbi from '../abi/ENSRegistry.json';
 import { createContract } from './utils';
 
 type StealthKeys = {
@@ -17,21 +18,24 @@ type StealthKeys = {
   viewingPubKey: BigNumber;
 };
 
-/**
- * @notice Returns the chain ID of the provider
- * @param provider Provider to get chain ID for
- */
-const getChainId = async (provider: EthersProvider) => (await provider.getNetwork()).chainId;
+const ENSRegistryAddress = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'; // same on all networks
 
 /**
  * @notice Returns the address of the ENS stealth key resolver to use based on the provider's network
- * @param chainId Chain ID to get Umbra Resolver address for
+ * @param name ENS domain, e.g. myname.eth
+ * @param provider Ethers provider
  */
-export const getUmbraResolverAddress = (chainId: number) => {
-  if (chainId === 4 || chainId === 1337) {
-    return '0x291e2dfe31CE1a65DbEDD84eA38a12a4D5e01D39';
-  }
-  throw new Error('Unsupported chain ID');
+export const getResolverContract = async (name: string, provider: EthersProvider) => {
+  const registry = createContract(ENSRegistryAddress, ENSRegistryAbi, provider);
+  const resolverAddress = (await registry.resolver(ensNamehash(name))) as string;
+  // When using this method we expect the user will have an Umbra-compatible StealthKey resolver. There are two types:
+  //   1. ForwardingStealthKeyResolver
+  //   2. PublicStealthKeyResolver
+  // Both can be found in this repo: https://github.com/ScopeLift/ens-resolvers
+  //
+  // Regardless of which type the user has, the ABI for getting and setting stealth keys is the same. Therefore
+  // it's ok that we use always use the same ABI here)
+  return createContract(resolverAddress, ForwardingStealthKeyResolverAbi, provider);
 };
 
 /**
@@ -73,10 +77,8 @@ export function namehash(name: string) {
  * @param provider Ethers provider
  */
 export async function getPublicKeys(name: string, provider: EthersProvider) {
-  const chainId = await getChainId(provider);
-  const ensResolverAddress = await getUmbraResolverAddress(chainId);
-  const publicResolver = createContract(ensResolverAddress, UmbraForwardingResolverAbi, provider);
-  const keys = (await publicResolver.stealthKeys(namehash(name))) as StealthKeys;
+  const resolver = await getResolverContract(name, provider);
+  const keys = (await resolver.stealthKeys(namehash(name))) as StealthKeys;
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
     throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
   }
@@ -110,10 +112,8 @@ export async function setPublicKeys(
   );
 
   // Send transaction to set the keys
-  const chainId = await getChainId(provider);
-  const ensResolverAddress = await getUmbraResolverAddress(chainId);
-  const publicResolver = createContract(ensResolverAddress, UmbraForwardingResolverAbi, provider);
-  const tx = await publicResolver.setStealthKeys(
+  const resolver = await getResolverContract(name, provider);
+  const tx = await resolver.setStealthKeys(
     namehash(name),
     spendingPublicKeyPrefix,
     spendingPublicKeyX,
