@@ -24,6 +24,11 @@
     @focus="showHint"
     @input="handleInput"
   >
+    <!-- 
+      If we have a button, never show the loading slot because it makes the button jump left and right when the
+      loading slot is shown / hidden 
+    -->
+    <template v-if="appendButtonLabel" v-slot:loading> </template>
     <template v-if="appendButtonLabel" v-slot:append>
       <base-button
         class="cursor-pointer"

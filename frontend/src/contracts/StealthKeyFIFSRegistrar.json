@@ -1,5 +1,7 @@
 {
-  "addresses": "0xdADAfCFBcf0186D3682F0510d5588e02502b92d5",
+  "addresses": {
+    "4": "0xdADAfCFBcf0186D3682F0510d5588e02502b92d5"
+  },
   "abi": [
     {
       "inputs": [

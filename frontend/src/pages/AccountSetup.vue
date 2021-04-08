@@ -54,15 +54,16 @@
                 <a class="hyperlink" href="https://app.ens.domains" target="_blank">ENS site</a> to register and
                 configure your own name.
               </p>
-              <account-setup-register-ens-subdomain />
+              <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
             <!-- User has ENS and CNS name, and has not yet chose one -->
             <div v-else-if="userEns && userCns && !selectedName">
-              <div>Please choose a name to continue</div>
+              <div>Please choose a name to continue, or register a new subdomain</div>
               <div class="row justify-start q-mt-lg">
                 <base-button @click="setName(userEns)" :label="userEns" :outline="true" />
                 <base-button @click="setName(userCns)" :label="userCns" :outline="true" class="q-ml-lg" />
               </div>
+              <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
             <!-- User only has ENS, or user chose to use ENS -->
             <div v-else-if="(userEns && !userCns) || selectedNameType === 'ens'">
@@ -80,7 +81,7 @@
                   To continue, register a subdomain below, become the controller of this name, or switch to an ENS name
                   you are the controller of.
                 </p>
-                <account-setup-register-ens-subdomain />
+                <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
               </div>
               <!-- User is not using the Public Resolver -->
               <div v-else-if="ensStatus === 'not-public-resolver'">
@@ -93,17 +94,25 @@
                   <a class="hyperlink" :href="`https://app.ens.domains/name/${userEns}`" target="_blank">configure</a>
                   your name to use the Public Resolver.
                 </p>
-                <account-setup-register-ens-subdomain />
+                <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
               </div>
               <div v-else>
-                You are connected with <span class="text-bold">{{ userEns }}</span
-                >. Please continue to the next step.
+                <p>
+                  You are connected with <span class="text-bold">{{ userEns }}</span
+                  >. Please continue to the next step to use this domain, or complete the field below to continue with
+                  an <span class="text-bold">umbra.eth</span> subdomain.
+                </p>
+                <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
               </div>
             </div>
             <!-- User only has CNS, or use chose to use CNS -->
             <div v-else-if="(!userEns && userCns) || selectedNameType === 'cns'">
-              You are connected with <span class="text-bold">{{ userCns }}</span
-              >. Please continue to the next step.
+              <p>
+                You are connected with <span class="text-bold">{{ userCns }}</span
+                >. Please continue to the next step to use this domain, or complete the field below to continue with an
+                <span class="text-bold">umbra.eth</span> subdomain.
+              </p>
+              <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
           </div>
         </div>
@@ -142,7 +151,7 @@
                 here</a
               >.
             </p>
-            <base-button @click="migrateKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
+            <base-button @click="setKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
           </div>
           <!-- User does not need to migrate from public resolver-->
           <div v-else>
@@ -151,7 +160,7 @@
               {{ userAddress.value }}. This means people can now securely send you funds through Umbra by visiting this
               site and sending funds to {{ userAddress.value }}.
             </p>
-            <base-button @click="migrateKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
+            <base-button @click="setKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
           </div>
         </div>
       </q-carousel-slide>
@@ -176,26 +185,17 @@
 import { QBtn } from 'quasar';
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { ens, cns } from '@umbra/umbra-js';
-import AccountSetupRegisterEnsSubdomain from 'src/components/AccountSetupRegisterEnsSubdomain.vue';
+import AccountSetupSetEnsSubdomain from 'src/components/AccountSetupSetEnsSubdomain.vue';
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 import { Provider, TransactionResponse } from 'components/models';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
 import * as ensHelpers from 'src/utils/ens';
-import { addresses as fskResolverAddresses } from 'src/contracts/ForwardingStealthKeyResolver.json';
 
 function useKeys() {
-  const {
-    domainService,
-    getPrivateKeys,
-    userAddress,
-    userEns,
-    userCns,
-    spendingKeyPair,
-    viewingKeyPair,
-    signer,
-  } = useWalletStore();
-  const { notifyUser, txNotify } = useAlerts();
+  // prettier-ignore
+  const { domainService, getPrivateKeys, userAddress, userEns, userCns, spendingKeyPair, viewingKeyPair, signer } = useWalletStore();
+  const { notifyUser } = useAlerts();
   const selectedName = ref<string>(); // ENS or CNS name to be configured
   const selectedNameType = ref<'ens' | 'cns'>(); // 'ens' if user chose ENS, 'cns' if user chose CNS
   const ensSubdomain = ref<string>();
@@ -228,12 +228,17 @@ function useKeys() {
   });
 
   function checkAndSetName() {
-    // If the user has already selected which name to configure, we return and do nothing. Otherwise, we select
-    // a domain name based on which type their address owns. If neither condition is true, migrateKeys() will throw
-    // an error later
+    // If the user has already selected which name to configure, return and do nothing. Otherwise, select a domain name
+    // based on which type their address owns. If neither condition is true, setKeys() will throw an error later
     if (selectedName.value) return;
     else if (userEns.value && !userCns.value) setName(userEns.value);
     else if (!userEns.value && userCns.value) setName(userCns.value);
+  }
+
+  // Handler for subdomains
+  function setSubdomain(payload: { name: string }) {
+    setName(payload.name);
+    carouselBtnRight.value?.click();
   }
 
   // Check if user's ENS name is properly configured to support setting their public keys
@@ -271,68 +276,49 @@ function useKeys() {
   }
 
   // Migrate from ENS Public Resolver to Umbra Resolver
-  async function migrateKeys() {
+  async function setKeys() {
     // Validation
     if (!domainService.value) throw new Error('Invalid DomainService. Please refresh the page');
-    if (!signer.value) throw new Error('migrateKeys: Invalid provider');
+    if (!signer.value) throw new Error('Signer not found. Please connect a wallet');
     checkAndSetName(); // does nothing if already set, and sets name if user only has one of ENS or CNS
     if (!selectedName.value) throw new Error('ENS or CNS name not found. Please return to the first step');
     const hasKeys = spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex;
     if (!hasKeys) throw new Error('Missing keys. Please return to the previous step');
 
     try {
-      // Setup
       isWaiting.value = true;
-      const name = String(selectedName.value);
-      const node = ens.namehash(name);
-      const provider = signer.value.provider as Provider;
-      const txs: TransactionResponse[] = []; // this will hold tx details from each transaction sent
-
-      // Get address of the ForwardingStealthKeyResolver. This is only used with ENS, not for CNS.
-      // For brevity we use fsk = ForwardingStealthKey
-      const chainId = String((await provider.getNetwork()).chainId) as keyof typeof fskResolverAddresses;
-      const fskResolverAddress = fskResolverAddresses[chainId];
-
-      // Now we execute the transactions needed to set the keys and optionally migrate resolver. If we're executing
-      // here, there's four potential resolvers the user may have
-      //   1. ENS PublicResolver (the ENS default)
-      //   2. ENS PublicStealthKeyResolver (typically used when registering an umbra.eth subdomain)
-      //   3. ENS ForwardingStealthKeyResolver (typically used when configuring a root ENS name, e.g. msolomon.eth)
-      //   4. CNS PublicResolver
-      // The first and third transactions below are only needed when migrating from the PublicResolver, and the
-      // second transaction below is needed in all three cases. We use isEnsPublicResolver.value, which was set
-      // in checkEnsStatus(), to handle this logic
-
-      // Step 1: Authorize the ForwardingStealthKeyResolver to set records on the PublicResolver. This is required
-      // so it can properly act as a fallback resolver with permission to set records on PublicResolver as needed
-      if (isEnsPublicResolver.value) {
-        const publicResolver = ensHelpers.getContract('ENSPublicResolver', provider).connect(signer.value);
-        const tx = (await publicResolver.setAuthorisation(node, fskResolverAddress, true)) as TransactionResponse;
-        txNotify(tx.hash);
-        txs.push(tx);
-      }
-
-      // Step 2: Set the stealth keys on the appropriate resolver
+      const name = selectedName.value;
       const spendingPubKey = String(spendingKeyPair.value?.publicKeyHex);
       const viewingPubKey = String(viewingKeyPair.value?.publicKeyHex);
-      const tx = await domainService.value.setPublicKeys(name, spendingPubKey, viewingPubKey);
-      txNotify(tx.hash);
-      txs.push(tx);
+      const txs: TransactionResponse[] = []; // this will hold tx details from each transaction sent
 
-      // Step 3: Change the user's resolver to the ForwardingStealthKeyResolver
-      if (isEnsPublicResolver.value) {
-        // Execute the setResolver transaction
-        const registry = ensHelpers.getContract('ENSRegistry', provider).connect(signer.value);
-        const tx = (await registry.setResolver(node, fskResolverAddress)) as TransactionResponse;
-        txNotify(tx.hash);
+      // Set keys (user alerts of transaction status are fired off in the setter methods used below)
+      if (name.endsWith(ensHelpers.rootName)) {
+        // If setting a subdomain
+        const userAddr = userAddress.value;
+        if (!userAddr) throw new Error('User address not found. Please connect a wallet');
+        const tx = await ensHelpers.setSubdomainKeys(name, userAddr, spendingPubKey, viewingPubKey, signer.value);
         txs.push(tx);
+      } else {
+        // If setting a regular name
+        const allTxs = await ensHelpers.setRootNameKeys(
+          name,
+          domainService.value,
+          isEnsPublicResolver.value,
+          spendingPubKey,
+          viewingPubKey,
+          signer.value
+        );
+        txs.push(...allTxs);
       }
 
       // Wait for all transactions to be mined then move on to next step
       await Promise.all(txs.map((tx) => tx.wait()));
       carouselStep.value = '4';
-    } finally {
       isWaiting.value = false;
+    } catch (err) {
+      isWaiting.value = false;
+      throw err;
     }
   }
 
@@ -346,10 +332,11 @@ function useKeys() {
     isSubdomain,
     isWaiting,
     keyStatus,
-    migrateKeys,
     selectedName,
     selectedNameType,
+    setKeys,
     setName,
+    setSubdomain,
     userAddress,
     userCns,
     userEns,
@@ -357,7 +344,7 @@ function useKeys() {
 }
 
 export default defineComponent({
-  components: { AccountSetupRegisterEnsSubdomain, ConnectWalletCard },
+  components: { AccountSetupSetEnsSubdomain, ConnectWalletCard },
   name: 'PageSetup',
   setup() {
     const open = (url: string) => window.open(url, '_self');
