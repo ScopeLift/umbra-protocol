@@ -6,11 +6,17 @@ import { getAddress } from '@ethersproject/address';
 import { Contract } from '@ethersproject/contracts';
 import { namehash } from '@ethersproject/hash';
 import { ens } from '@umbra/umbra-js';
-import ENSRegistry from 'src/contracts/ENSRegistry.json';
-import ENSPublicResolver from 'src/contracts/ENSPublicResolver.json';
 import { Provider } from 'components/models';
 
-type ChainId = keyof typeof ENSPublicResolver.addresses;
+// Contract imports
+import ENSRegistry from 'src/contracts/ENSRegistry.json';
+import ENSPublicResolver from 'src/contracts/ENSPublicResolver.json';
+import ForwardingStealthKeyResolver from 'src/contracts/ForwardingStealthKeyResolver.json';
+import PublicStealthKeyResolver from 'src/contracts/PublicStealthKeyResolver.json';
+
+// We can defined the ChainId type as the keys of any imported contract, but we use a contract that's defined
+// on the fewest number of networks to ensure type compatibility
+type ChainId = keyof typeof ForwardingStealthKeyResolver.addresses;
 
 // Returns instance of the Public Resolver
 export const getPublicResolver = (provider: Provider) => {
@@ -38,17 +44,20 @@ export const getResolverAddress = async (name: string, provider: Provider) => {
 };
 
 // Checks if `name` is using the Public Resolver
-export const isUsingPublicResolver = (resolver: string, provider: Provider) => {
+export const isUsingPublicResolver = (name: string, provider: Provider) => {
   const chainId = String(provider.network.chainId) as ChainId;
-  return getAddress(resolver) === getAddress(ENSPublicResolver.addresses[chainId]);
+  return getAddress(name) === getAddress(ENSPublicResolver.addresses[chainId]);
 };
 
-// Checks if `name` is using the the Umbra Resolver
-// Checks if `name` is using the public resolver
-export const isUsingUmbraResolver = (resolver: string, provider: Provider) => {
+// Checks if `name` is using one of the two Umbra-compatible StealthKey Resolvers
+export const isUsingUmbraResolver = (name: string, provider: Provider) => {
   const chainId = String(provider.network.chainId) as ChainId;
-  const umbraResolverAddress = ens.getUmbraResolverAddress(Number(chainId));
-  return getAddress(resolver) === getAddress(umbraResolverAddress);
+  const forwardingStealthResolverAddr = ForwardingStealthKeyResolver.addresses[chainId];
+  const publicStealthResolverAddr = PublicStealthKeyResolver.addresses[chainId];
+  return (
+    getAddress(name) === getAddress(forwardingStealthResolverAddr) ||
+    getAddress(name) === getAddress(publicStealthResolverAddr)
+  );
 };
 
 // Wrapper around umbra-js's getPublicKeys that returns true if user has set Umbra public keys and false otherwise

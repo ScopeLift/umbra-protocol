@@ -130,7 +130,7 @@
         <div class="q-mx-xl q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 3: Publish Keys</h5>
           <!-- User is migrating their own ENS name from public resolver -->
-          <div v-if="!isSubdomain && isPublicResolver && ensStatus === 'no-public-keys'">
+          <div v-if="!isSubdomain && isEnsPublicResolver && ensStatus === 'no-public-keys'">
             <p>
               <span class="text-bold">You'll now be asked to approve three transactions</span> to upgrade your ENS name
               from the Public Resolver to Umbra's Resolver and publish your public keys. Your existing ENS configuration
@@ -181,6 +181,7 @@ import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 import { Provider, TransactionResponse } from 'components/models';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
+import { addresses as fskResolverAddresses } from 'src/contracts/ForwardingStealthKeyResolver.json';
 import {
   getPublicResolver,
   getRegistry,
@@ -204,11 +205,11 @@ function useKeys() {
   } = useWalletStore();
   const { notifyUser, txNotify } = useAlerts();
   const selectedName = ref<string>(); // ENS or CNS name to be configured
-  const selectedNameType = ref<string>(); // 'ens' if user chose ENS, 'cns' if user chose CNS
+  const selectedNameType = ref<'ens' | 'cns'>(); // 'ens' if user chose ENS, 'cns' if user chose CNS
   const ensSubdomain = ref<string>();
   const carouselBtnRight = ref<QBtn>();
   const ensStatus = ref<'not-ready' | 'not-owner' | 'not-public-resolver' | 'no-public-keys' | 'ready'>('not-ready');
-  const isPublicResolver = ref(false); // true if user currently has the public resolver, false otherwise
+  const isEnsPublicResolver = ref(false); // true if user currently has the ENS public resolver, false otherwise
   const keyStatus = ref<'waiting' | 'success' | 'denied'>('waiting');
   const carouselStep = ref('1');
   const isWaiting = ref(false);
@@ -252,9 +253,9 @@ function useKeys() {
     if (!ownsName) return 'not-owner';
 
     const currentResolver = await getResolverAddress(name, provider);
-    isPublicResolver.value = isUsingPublicResolver(currentResolver, provider); // used to adjust copy in UI
+    isEnsPublicResolver.value = isUsingPublicResolver(currentResolver, provider); // used to adjust copy in UI
     const isUmbraResolver = isUsingUmbraResolver(currentResolver, provider);
-    if (!isPublicResolver.value && !isUmbraResolver) return 'not-public-resolver';
+    if (!isEnsPublicResolver.value && !isUmbraResolver) return 'not-public-resolver';
 
     const didSetPublicKeys = await hasPublicKeys(name, provider);
     if (!didSetPublicKeys) return 'no-public-keys';
@@ -289,38 +290,48 @@ function useKeys() {
 
     try {
       // Setup
+      isWaiting.value = true;
       const name = String(selectedName.value);
       const node = ens.namehash(name);
       const provider = signer.value.provider as Provider;
-      const chainId = (await provider.getNetwork()).chainId;
-      const txs: TransactionResponse[] = [];
+      const txs: TransactionResponse[] = []; // this will hold tx details from each transaction sent
 
-      // Now we execute the transactions needed to set the keys and optionally migrate resolver. This method
+      // Get address of the ForwardingStealthKeyResolver. This is only used with ENS, not for CNS.
+      // For brevity we use fsk = ForwardingStealthKey
+      const chainId = String((await provider.getNetwork()).chainId) as keyof typeof fskResolverAddresses;
+      const fskResolverAddress = fskResolverAddresses[chainId];
 
-      // Step 1: Authorize the Umbra Resolver to set records on the Public Resolver. This is required so it can
-      // properly act as a fallback resolver with permission to set records on Public Resolver as needed
-      isWaiting.value = true;
-      if (isPublicResolver.value) {
-        // If user is using Umbra Resolver, we skip this
+      // Now we execute the transactions needed to set the keys and optionally migrate resolver. If we're executing
+      // here, there's four potential resolvers the user may have
+      //   1. ENS PublicResolver (the ENS default)
+      //   2. ENS PublicStealthKeyResolver (typically used when registering an umbra.eth subdomain)
+      //   3. ENS ForwardingStealthKeyResolver (typically used when configuring a root ENS name, e.g. msolomon.eth)
+      //   4. CNS PublicResolver
+      // The first and third transactions below are only needed when migrating from the PublicResolver, and the
+      // second transaction below is needed in all three cases. We use isEnsPublicResolver.value, which was set
+      // in checkEnsStatus(), to handle this logic
+
+      // Step 1: Authorize the ForwardingStealthKeyResolver to set records on the PublicResolver. This is required
+      // so it can properly act as a fallback resolver with permission to set records on PublicResolver as needed
+      if (isEnsPublicResolver.value) {
         const publicResolver = getPublicResolver(provider).connect(signer.value);
-        const umbraResolverAddress = ens.getUmbraResolverAddress(chainId);
-        const tx = (await publicResolver.setAuthorisation(node, umbraResolverAddress, true)) as TransactionResponse;
+        const tx = (await publicResolver.setAuthorisation(node, fskResolverAddress, true)) as TransactionResponse;
         txNotify(tx.hash);
         txs.push(tx);
       }
 
-      // Step 2: Set the stealth keys on the Umbra Resolver
+      // Step 2: Set the stealth keys on the appropriate resolver
       const spendingPubKey = String(spendingKeyPair.value?.publicKeyHex);
       const viewingPubKey = String(viewingKeyPair.value?.publicKeyHex);
       const tx = await domainService.value.setPublicKeys(name, spendingPubKey, viewingPubKey);
       txNotify(tx.hash);
+      txs.push(tx);
 
-      // Step 3: Change the user's resolver to the Umbra Resolver
-      if (isPublicResolver.value) {
-        // If user is using Umbra Resolver, we skip this
+      // Step 3: Change the user's resolver to the ForwardingStealthKeyResolver
+      if (isEnsPublicResolver.value) {
+        // Execute the setResolver transaction
         const registry = getRegistry(provider).connect(signer.value);
-        const umbraResolverAddress = ens.getUmbraResolverAddress(chainId);
-        const tx = (await registry.setResolver(node, umbraResolverAddress)) as TransactionResponse;
+        const tx = (await registry.setResolver(node, fskResolverAddress)) as TransactionResponse;
         txNotify(tx.hash);
         txs.push(tx);
       }
@@ -339,7 +350,7 @@ function useKeys() {
     ensStatus,
     ensSubdomain,
     getPrivateKeysHandler,
-    isPublicResolver,
+    isEnsPublicResolver,
     isSubdomain,
     isWaiting,
     keyStatus,
