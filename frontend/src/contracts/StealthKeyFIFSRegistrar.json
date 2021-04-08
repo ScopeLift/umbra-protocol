@@ -1,0 +1,64 @@
+{
+  "addresses": "0xdADAfCFBcf0186D3682F0510d5588e02502b92d5",
+  "abi": [
+    {
+      "inputs": [
+        { "internalType": "contract ENS", "name": "_ens", "type": "address" },
+        { "internalType": "bytes32", "name": "_rootNode", "type": "bytes32" }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "ens",
+      "outputs": [
+        { "internalType": "contract ENS", "name": "", "type": "address" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "bytes32", "name": "_label", "type": "bytes32" },
+        { "internalType": "address", "name": "_owner", "type": "address" },
+        {
+          "internalType": "contract StealthKeyResolver",
+          "name": "_resolver",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_spendingPubKeyPrefix",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_spendingPubKey",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_viewingPubKeyPrefix",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_viewingPubKey",
+          "type": "uint256"
+        }
+      ],
+      "name": "register",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "rootNode",
+      "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

@@ -181,16 +181,8 @@ import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 import { Provider, TransactionResponse } from 'components/models';
 import useWalletStore from 'src/store/wallet';
 import useAlerts from 'src/utils/alerts';
+import * as ensHelpers from 'src/utils/ens';
 import { addresses as fskResolverAddresses } from 'src/contracts/ForwardingStealthKeyResolver.json';
-import {
-  getPublicResolver,
-  getRegistry,
-  getResolverAddress,
-  hasPublicKeys,
-  isNameOwner,
-  isUsingPublicResolver,
-  isUsingUmbraResolver,
-} from 'src/utils/ens';
 
 function useKeys() {
   const {
@@ -249,15 +241,15 @@ function useKeys() {
     const address = userAddress.value as string;
     const provider = signer.value?.provider as Provider;
 
-    const ownsName = await isNameOwner(address, name, provider);
+    const ownsName = await ensHelpers.isNameOwner(address, name, provider);
     if (!ownsName) return 'not-owner';
 
-    const currentResolver = await getResolverAddress(name, provider);
-    isEnsPublicResolver.value = isUsingPublicResolver(currentResolver, provider); // used to adjust copy in UI
-    const isUmbraResolver = isUsingUmbraResolver(currentResolver, provider);
+    const currentResolver = await ensHelpers.getResolverAddress(name, provider);
+    isEnsPublicResolver.value = ensHelpers.isUsingPublicResolver(currentResolver, provider);
+    const isUmbraResolver = ensHelpers.isUsingUmbraResolver(currentResolver, provider);
     if (!isEnsPublicResolver.value && !isUmbraResolver) return 'not-public-resolver';
 
-    const didSetPublicKeys = await hasPublicKeys(name, provider);
+    const didSetPublicKeys = await ensHelpers.hasPublicKeys(name, provider);
     if (!didSetPublicKeys) return 'no-public-keys';
 
     carouselBtnRight.value?.click();
@@ -314,7 +306,7 @@ function useKeys() {
       // Step 1: Authorize the ForwardingStealthKeyResolver to set records on the PublicResolver. This is required
       // so it can properly act as a fallback resolver with permission to set records on PublicResolver as needed
       if (isEnsPublicResolver.value) {
-        const publicResolver = getPublicResolver(provider).connect(signer.value);
+        const publicResolver = ensHelpers.getContract('ENSPublicResolver', provider).connect(signer.value);
         const tx = (await publicResolver.setAuthorisation(node, fskResolverAddress, true)) as TransactionResponse;
         txNotify(tx.hash);
         txs.push(tx);
@@ -330,7 +322,7 @@ function useKeys() {
       // Step 3: Change the user's resolver to the ForwardingStealthKeyResolver
       if (isEnsPublicResolver.value) {
         // Execute the setResolver transaction
-        const registry = getRegistry(provider).connect(signer.value);
+        const registry = ensHelpers.getContract('ENSRegistry', provider).connect(signer.value);
         const tx = (await registry.setResolver(node, fskResolverAddress)) as TransactionResponse;
         txNotify(tx.hash);
         txs.push(tx);
