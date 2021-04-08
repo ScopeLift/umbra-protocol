@@ -403,7 +403,7 @@ export class Umbra {
    * @dev Return type is an ethers Signature: { r: string; s: string; _vs: string, recoveryParam: number; v: number; }
    * @param spendingPrivateKey Receiver's spending private key that is doing the signing
    * @param chainId Chain ID where contract is deployed
-   * @param version Umbra contract version
+   * @param contract Umbra contract address that withdrawal transaction will be sent to
    * @param acceptor Withdrawal destination
    * @param token Address of token to withdraw
    * @param sponsor Address of relayer
@@ -414,7 +414,7 @@ export class Umbra {
   static async signWithdraw(
     spendingPrivateKey: string,
     chainId: number,
-    version: string,
+    contract: string,
     acceptor: string,
     token: string,
     sponsor: string,
@@ -423,6 +423,7 @@ export class Umbra {
     data = '0x'
   ) {
     // Validate addresses
+    contract = getAddress(contract);
     acceptor = getAddress(acceptor);
     sponsor = getAddress(sponsor);
     token = getAddress(token);
@@ -441,8 +442,8 @@ export class Umbra {
     const stealthWallet = new Wallet(spendingPrivateKey);
     const digest = keccak256(
       defaultAbiCoder.encode(
-        ['uint256', 'string', 'address', 'address', 'address', 'uint256', 'address', 'bytes'],
-        [chainId, version, acceptor, token, sponsor, sponsorFee, hook, data]
+        ['uint256', 'address', 'address', 'address', 'address', 'uint256', 'address', 'bytes'],
+        [chainId, contract, acceptor, token, sponsor, sponsorFee, hook, data]
       )
     );
     const rawSig = await stealthWallet.signMessage(arrayify(digest));

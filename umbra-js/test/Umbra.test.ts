@@ -272,13 +272,12 @@ describe('Umbra class', () => {
         'TODO Why are these 3 different? Bug in OpenZeppelin Test Environment forking? Should switch to Hardhat anyway for consistency with /contracts'
       );
       console.log('umbra.chainConfig.chainId:     ', umbra.chainConfig.chainId); // returns 4
-      console.log('umbra.umbraContract.chainId(): ', (await umbra.umbraContract.chainId()).toNumber()); // returns 1
       console.log('ethersProvider.getNetwork():   ', (await ethersProvider.getNetwork()).chainId); // returns 1337
 
       const { v, r, s } = await Umbra.signWithdraw(
         stealthPrivateKey,
-        (await umbra.umbraContract.chainId()).toNumber(),
-        await umbra.umbraContract.version(),
+        1, // TODO: Replace this with (await ethersProvider.getNetwork()).chainId after hardhat switch
+        umbra.umbraContract.address,
         destinationWallet.address,
         dai.address,
         sponsorWallet.address,
@@ -405,11 +404,15 @@ describe('Umbra class', () => {
       const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // address does not matter here
       // These error messages come from ethers
       await expectRejection(
-        Umbra.signWithdraw(privateKey, 4, '1', badAddress, tokenAddress, goodAddress, '1'),
+        Umbra.signWithdraw(privateKey, 4, umbra.umbraContract.address, badAddress, tokenAddress, goodAddress, '1'),
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
       );
       await expectRejection(
-        Umbra.signWithdraw(privateKey, 4, '1', goodAddress, tokenAddress, badAddress, '1'),
+        Umbra.signWithdraw(privateKey, 4, umbra.umbraContract.address, goodAddress, tokenAddress, badAddress, '1'),
+        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
+      );
+      await expectRejection(
+        Umbra.signWithdraw(privateKey, 4, badAddress, goodAddress, tokenAddress, goodAddress, '1'),
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
       );
     });
