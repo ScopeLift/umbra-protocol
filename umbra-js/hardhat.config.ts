@@ -21,8 +21,8 @@ const chainIds = {
 // Ensure that we have all the environment variables we need.
 const mnemonic = 'test test test test test test test test test test test junk';
 
-const infuraApiKey = process.env.INFURA_API_KEY;
-if (!infuraApiKey) throw new Error('Please set your INFURA_API_KEY in a .env file');
+const infuraApiKey = process.env.INFURA_ID;
+if (!infuraApiKey) throw new Error('Please set your INFURA_ID in a .env file');
 
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
   const url = `https://${network}.infura.io/v3/${infuraApiKey as string}`;

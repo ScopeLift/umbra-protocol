@@ -1,6 +1,6 @@
 import { config as dotenvConfig } from 'dotenv';
 import { resolve } from 'path';
-dotenvConfig({ path: resolve(__dirname, './.env') });
+dotenvConfig({ path: resolve(__dirname, '../.env') });
 
 import { HardhatUserConfig } from 'hardhat/config';
 import { NetworkUserConfig } from 'hardhat/types';
@@ -26,14 +26,26 @@ const chainIds = {
 };
 
 // Ensure that we have all the environment variables we need.
-const infuraApiKey = process.env.INFURA_API_KEY;
-if (!infuraApiKey) throw new Error('Please set your INFURA_API_KEY in a .env file');
+// Note: So that the monorepo can be imported to other projects, we make these env variables
+// optional so that typechain can still build its types without hard failing on this.
+let mnemonic = '';
+if (!process.env.MNEMONIC) {
+  console.warn('Please set your MNEMONIC in a .env file');
+} else {
+  mnemonic = process.env.MNEMONIC;
+}
 
-const mnemonic = 'test test test test test test test test test test test junk';
+let infuraApiKey = '';
+if (!process.env.INFURA_API_KEY) {
+  console.warn('Please set your INFURA_API_KEY in a .env file');
+} else {
+  infuraApiKey = process.env.INFURA_API_KEY;
+}
+
 const shouldReportGas = process.env.REPORT_GAS === 'true';
 
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
-  const url = `https://${network}.infura.io/v3/${infuraApiKey as string}`;
+  const url = `https://${network}.infura.io/v3/${infuraApiKey}`;
   return {
     accounts: {
       count: 10,

@@ -77,7 +77,6 @@ await tx3.wait();
 1. Create a file in this directory called `.env` that looks like the one below.
    ```bash
    INFURA_ID=yourInfuraId
-   TEST_ADDRESS=0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD
    ```
 2. Run `yarn` to install packages
 3. Run `yarn test` to run all tests.
