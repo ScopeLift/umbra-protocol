@@ -25,9 +25,16 @@ function useSubdomainRegistration(context: SetupContext) {
 
   // For form validation
   async function isValidSubdomain(val: string) {
-    if (!ensSubdomain.value) return true; // don't show error string if form is empty
+    // Don't show error string if form is empty
+    if (!ensSubdomain.value) return true;
+
+    // Only allow one subdomain, e.g. matt.solomon.umbra.eth has 4 parts when spliy by the dot so is disallowed
+    const fullName = `${val}.${rootName}`;
+    if (fullName.split('.').length > 3) return 'Please enter a valid name without any periods';
+
+    // Check availability
     const isAvailable = await isSubdomainAvailable(val, provider.value);
-    return isAvailable || `${val}.${rootName} is already registered`;
+    return isAvailable || `${fullName} is already registered`;
   }
 
   // For passing the selected, available subdomain to AccountSetup.vue. This does nothing if no subdomain is entered,

@@ -49,8 +49,6 @@ type ENSContract = keyof typeof address;
 // Returns an instance of the specified ENS contract
 export const getContract = (name: ENSContract, provider: Provider) => {
   const chainId = String(provider.network.chainId) as ChainId;
-  console.log('chainId: ', chainId);
-  console.log('address[name][chainId]: ', address[name][chainId]);
   return new Contract(address[name][chainId], abi[name], provider);
 };
 
@@ -116,16 +114,18 @@ export const setSubdomainKeys = async (
   viewingPublicKey: string,
   signer: Signer
 ) => {
+  // Verify subdomain has no periods
+  const splitName = name.split('.');
+  if (splitName.length > 3) throw new Error('Cannot not register a name with periods');
+
   // Verify subdomain availability
   const provider = signer.provider as Provider;
   const owner = await getContract('ENSRegistry', provider).owner(namehash(name));
   if (getAddress(owner) !== AddressZero) throw new Error(`${name} already registered`);
-  console.log(1);
 
   // Get instance of registrar contract we use to register the subdomain
   const registrar = 'StealthKeyFIFSRegistrar';
   const stealthKeyFIFSRegistrar = getContract(registrar, provider).connect(signer);
-  console.log(2);
 
   // Break public keys into the required components to store compressed public keys.
   // See @umbra/umbra-js/src/utils/ens.ts for the source of this logic
@@ -134,10 +134,7 @@ export const setSubdomainKeys = async (
   const { prefix: viewingPubKeyPrefix, pubKeyXCoordinate: viewingPubKeyX } = compressPublicKey(viewingPublicKey);
 
   // Send transaction
-  const subdomain = name.split('.')[0];
-  console.log('subdomain: ', subdomain);
-  console.log('subdomain: ', toUtf8Bytes(subdomain));
-  console.log('subdomain: ', keccak256(toUtf8Bytes(subdomain)));
+  const subdomain = splitName[0];
   const tx = (await stealthKeyFIFSRegistrar.register(
     keccak256(toUtf8Bytes(subdomain)), // label, e.g. keccak256('matt')
     userAddress, // user's wallet address, which will be the owner
@@ -148,7 +145,6 @@ export const setSubdomainKeys = async (
     viewingPubKeyX // compressed viewing public key without prefix
   )) as TransactionResponse;
 
-  console.log(4);
   txNotify(tx.hash);
   return tx;
 };
