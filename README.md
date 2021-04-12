@@ -93,6 +93,9 @@ Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts,
 
 ```sh
 # run these commands from workspace root!
+cp contracts/.env.example contracts/.env # please edit the .env with your own environment variable values
+cp frontend/.env.example frontend/.env # please edit the .env with your own environment variable values
+cp umbra-js/.env.example umbra-js/.env # please edit the .env with your own environment variable values
 yarn install # installs dependencies for each of the 3 packages. Also builds umbra-js.
 yarn build # builds each of the 3 packages
 yarn clean # removes build artifacts for each of the 3 packages

@@ -14,7 +14,7 @@
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
     "build": "tsc --build",
-    "clean": "rimraf build",
+    "clean": "rimraf build coverage .nyc_output cache",
     "prepare": "yarn build",
     "prepublishOnly": "yarn lint && yarn test",
     "precommit": "lint-staged"

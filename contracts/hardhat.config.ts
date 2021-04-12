@@ -36,10 +36,10 @@ if (!process.env.MNEMONIC) {
 }
 
 let infuraApiKey = '';
-if (!process.env.INFURA_API_KEY) {
-  console.warn('Please set your INFURA_API_KEY in a .env file');
+if (!process.env.INFURA_ID) {
+  console.warn('Please set your INFURA_ID in a .env file');
 } else {
-  infuraApiKey = process.env.INFURA_API_KEY;
+  infuraApiKey = process.env.INFURA_ID;
 }
 
 const shouldReportGas = process.env.REPORT_GAS === 'true';
