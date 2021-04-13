@@ -101,7 +101,7 @@ describe('Umbra class', () => {
     // Get chainConfig based on most recent Rinkeby block number to minimize scanning time
     const lastBlockNumber = await ethersProvider.getBlockNumber();
     chainConfig = {
-      chainId: 4, // Rinkeby chainID
+      chainId: (await ethersProvider.getNetwork()).chainId,
       umbraAddress: umbraContract.address,
       startBlock: lastBlockNumber,
     };
@@ -257,17 +257,9 @@ describe('Umbra class', () => {
 
       // Get signature
       const stealthPrivateKey = Umbra.computeStealthPrivateKey(receiver.privateKey, userAnnouncements[0].randomNumber);
-
-      // TODO why are these 3 different? Perhaps bug in OpenZeppelin Test Environment forking -- try Hardhat?
-      console.log(
-        'TODO Why are these 3 different? Bug in OpenZeppelin Test Environment forking? Should switch to Hardhat anyway for consistency with /contracts'
-      );
-      console.log('umbra.chainConfig.chainId:     ', umbra.chainConfig.chainId); // returns 4
-      console.log('ethersProvider.getNetwork():   ', (await ethersProvider.getNetwork()).chainId); // returns 1337
-
       const { v, r, s } = await Umbra.signWithdraw(
         stealthPrivateKey,
-        1, // TODO: Replace this with (await ethersProvider.getNetwork()).chainId after hardhat switch
+        (await ethersProvider.getNetwork()).chainId,
         umbra.umbraContract.address,
         destinationWallet.address,
         dai.address,
