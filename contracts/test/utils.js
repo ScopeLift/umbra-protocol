@@ -1,4 +1,4 @@
-const { web3 } = require('@openzeppelin/test-environment');
+const { web3 } = require('hardhat');
 const ethers = require('ethers');
 
 const { BN } = web3.utils;
@@ -11,9 +11,11 @@ const { AddressZero } = ethers.constants;
  * @return {string} Sum of amounts as string
  */
 const sumTokenAmounts = (amounts) => {
+  /* eslint-disable */
   const sum = amounts.map((amount) => new BN(amount)).reduce((acc, val) => acc.add(val), new BN('0'));
 
   return sum.toString();
+  /* eslint-enable */
 };
 
 /**
