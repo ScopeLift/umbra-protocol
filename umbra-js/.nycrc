@@ -17,7 +17,8 @@
     "types/contracts/**",
     ".eslintrc.js",
     ".lintstagedrc.js",
-    ".prettierrc.js"
+    ".prettierrc.js",
+    "hardhat.config.ts",
   ],
   "sourceMap": true,
   "reporter": [

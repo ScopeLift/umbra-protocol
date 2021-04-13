@@ -15,14 +15,12 @@ import {
   TestTokenFactory as ERC20__factory,
   UmbraFactory as Umbra__factory,
 } from '@umbra/contracts/typechain';
-import { node } from '../test-environment.config';
 
 const { expect } = chai;
 const { parseEther } = ethers.utils;
 
 const ethersProvider = ethers.provider;
-const JSON_RPC_URL = node.fork;
-const jsonRpcProvider = new JsonRpcProvider(JSON_RPC_URL);
+const jsonRpcProvider = new JsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
 
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const payloadExtension = '0x0123456789abcdef0123456789abcdef';
