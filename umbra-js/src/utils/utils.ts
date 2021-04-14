@@ -124,7 +124,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   }
 
   // Invalid identifier provided
-  throw new Error('Invalid identifier provided');
+  throw new Error(`Invalid identifier of ${id} provided`);
 }
 
 /**

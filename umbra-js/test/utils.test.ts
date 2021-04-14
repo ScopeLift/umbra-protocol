@@ -89,5 +89,18 @@ describe('Utilities', () => {
         'Transaction not found. Are the provider and transaction hash on the same network?'
       );
     });
+
+    it('throws if you lookup by an address that has not sent a transaction', async () => {
+      const address = '0x0000000000000000000000000000000000000002';
+      const ethersProvider = getDefaultProvider('rinkeby') as EthersProvider; // otherwise throws with unsupported network since we're on localhost
+      const errorMsg = 'Could not get public key because the provided address has not sent any transactions';
+      expectRejection(utils.lookupRecipient(address, ethersProvider), errorMsg);
+    });
+
+    it('throws if provide an invalid identifier', async () => {
+      const id = '123';
+      const errorMsg = `Invalid identifier of ${id} provided`;
+      expectRejection(utils.lookupRecipient(id, ethersProvider), errorMsg);
+    });
   });
 });
