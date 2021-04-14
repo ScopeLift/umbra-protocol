@@ -4,7 +4,7 @@
 
 import { EthersProvider, TransactionResponse } from '../types';
 import { BigNumber } from '@ethersproject/bignumber';
-import { Zero } from '@ethersproject/constants';
+import { AddressZero, Zero } from '@ethersproject/constants';
 import { namehash as ensNamehash } from '@ethersproject/hash';
 import { KeyPair } from '../classes/KeyPair';
 import * as ForwardingStealthKeyResolverAbi from '../abi/ForwardingStealthKeyResolver.json';
@@ -63,10 +63,10 @@ export function isEnsDomain(domainName: string) {
  */
 export function namehash(name: string) {
   if (typeof name !== 'string') {
-    throw new Error('Name must be a string with a supported suffix');
+    throw new Error('Name must be a string');
   }
   if (!isEnsDomain(name)) {
-    throw new Error(`Name does not end with supported suffix: ${supportedEnsDomains.join(', ')}`);
+    throw new Error(`Name ${name} does not end with supported suffix: ${supportedEnsDomains.join(', ')}`);
   }
   return ensNamehash(name);
 }
@@ -77,15 +77,28 @@ export function namehash(name: string) {
  * @param provider Ethers provider
  */
 export async function getPublicKeys(name: string, provider: EthersProvider) {
+  // Get the resolver used by `name`. If it's the zero address, they have no stealth keys
   const resolver = await getResolverContract(name, provider);
-  const keys = (await resolver.stealthKeys(namehash(name))) as StealthKeys;
+  if (resolver.address === AddressZero) {
+    throw new Error(`Name ${name} is not registered or user has not set their resolver`);
+  }
+
+  // Attempt to read stealth keys from the resolver contract
+  let keys: StealthKeys;
+  try {
+    keys = (await resolver.stealthKeys(namehash(name))) as StealthKeys;
+  } catch (err) {
+    throw new Error(`The configured resolver for ${name} does not support stealth keys`);
+  }
+
+  // Make sure the found keys are not zero
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
     throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
   }
 
+  // Uncompress keys and return them
   const spendingPublicKey = KeyPair.getUncompressedFromX(keys.spendingPubKey, keys.spendingPubKeyPrefix.toNumber());
   const viewingPublicKey = KeyPair.getUncompressedFromX(keys.viewingPubKey, keys.viewingPubKeyPrefix.toNumber());
-
   return { spendingPublicKey, viewingPublicKey };
 }
 

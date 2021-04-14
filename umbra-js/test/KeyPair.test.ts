@@ -8,6 +8,7 @@ import { RandomNumber } from '../src/classes/RandomNumber';
 import { KeyPair } from '../src/classes/KeyPair';
 import { Umbra } from '../src/classes/Umbra';
 import * as utils from '../src/utils/utils';
+import { expectRejection } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -28,26 +29,6 @@ const generateRandomNumber = (payloadExtension: string | undefined = undefined) 
   // Otherwise, generate a random one to use
   const randomPayloadExtension = hexZeroPad(BigNumber.from(randomBytes(16)).toHexString(), 16);
   return new RandomNumber(randomPayloadExtension);
-};
-
-/**
- * @notice Wrapper function to verify that an async function rejects with the specified message
- * @param promise Promise to wait for
- * @param message Expected rejection message
- */
-const expectRejection = async (promise: Promise<any>, message: string) => {
-  // Error type requires strings, so we set them to an arbitrary value and
-  // later check the values. If unchanged, the promise did not reject
-  let error: Error = { name: 'default', message: 'default' };
-  try {
-    await promise;
-  } catch (e) {
-    error = e;
-  } finally {
-    expect(error.name).to.not.equal('default');
-    expect(error.message).to.not.equal('default');
-    expect(error.message).to.equal(message);
-  }
 };
 
 describe('KeyPair class', () => {

@@ -3,6 +3,7 @@ import { getDefaultProvider } from '@ethersproject/providers';
 import * as chai from 'chai';
 import * as utils from '../src/utils/utils';
 import type { EthersProvider } from '../src/types';
+import { expectRejection } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -11,26 +12,6 @@ const ethersProvider = ethers.provider;
 const publicKey =
   '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
 const publicKeys = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
-
-/**
- * @notice Wrapper function to verify that an async function rejects with the specified message
- * @param promise Promise to wait for
- * @param message Expected rejection message
- */
-const expectRejection = async (promise: Promise<any>, message: string) => {
-  // Error type requires strings, so we set them to an arbitrary value and
-  // later check the values. If unchanged, the promise did not reject
-  let error: Error = { name: 'default', message: 'default' };
-  try {
-    await promise;
-  } catch (e) {
-    error = e;
-  } finally {
-    expect(error.name).to.not.equal('default');
-    expect(error.message).to.not.equal('default');
-    expect(error.message).to.equal(message);
-  }
-};
 
 describe('Utilities', () => {
   describe('Helpers', () => {

@@ -20,6 +20,7 @@ export const supportedCnsDomains = ['.crypto', '.zil'];
  * @param domainName Name to check
  */
 export function isCnsDomain(domainName: string) {
+  if (!domainName) return false;
   for (const suffix of supportedCnsDomains) {
     if (domainName.endsWith(suffix)) {
       return true;
@@ -35,10 +36,10 @@ export function isCnsDomain(domainName: string) {
  */
 export function namehash(name: string, resolution: Resolution) {
   if (typeof name !== 'string') {
-    throw new Error('Name must be a string with a supported suffix');
+    throw new Error('Name must be a string');
   }
   if (!isCnsDomain(name)) {
-    throw new Error(`Name does not end with supported suffix: ${supportedCnsDomains.join(', ')}`);
+    throw new Error(`Name ${name} does not end with supported suffix: ${supportedCnsDomains.join(', ')}`);
   }
   return resolution.namehash(name);
 }

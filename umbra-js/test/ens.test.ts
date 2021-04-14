@@ -1,6 +1,7 @@
 import * as chai from 'chai';
 import { ethers } from 'hardhat';
 import * as ens from '../src/utils/ens';
+import { expectRejection } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -20,9 +21,18 @@ describe('ENS functions', () => {
     });
   });
 
-  it('namehash throws when given a bad ENS suffix', async () => {
+  it('isCnsDomain returns false for empty ENS domains', () => {
+    expect(ens.isEnsDomain('')).to.be.false;
+  });
+
+  it('throws when namehash is not given a string', () => {
+    // @ts-expect-error
+    expect(() => ens.namehash(123)).to.throw('Name must be a string');
+  });
+
+  it('throws when namehash is given a bad ENS suffix', async () => {
     const badName = 'myname.com';
-    const errorMsg = `Name does not end with supported suffix: ${ens.supportedEnsDomains.join(', ')}`;
+    const errorMsg = `Name ${badName} does not end with supported suffix: ${ens.supportedEnsDomains.join(', ')}`;
     expect(() => ens.namehash(badName)).to.throw(errorMsg);
   });
 
@@ -35,6 +45,32 @@ describe('ENS functions', () => {
     const publicKeys = await ens.getPublicKeys(name, ethersProvider);
     expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
     expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
+  });
+
+  it('throws when the user has not set their resolver', async () => {
+    // Arbitrary name that is not registered on Rinkeby and therefore has no resolver set. If this test starts failing,
+    // a likely culprit is that this name is now registered
+    const unsetEnsName = 'superRandomQwertyHelloWhyWouldYouRegisterThis.eth';
+    const errorMsg = `Name ${unsetEnsName} is not registered or user has not set their resolver`;
+    await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
+  });
+
+  it('throws when the user has a resolver that does not support stealth keys', async () => {
+    // Arbitrary name that is registered on Rinkeby and has set a resolver, but has a resolver that does not support
+    // getting and setting stealth keys. If this test starts failing, a likely culprit is that this user has changed
+    // to a supported resolver or the name registration has expired
+    const unsetEnsName = 'abc.eth';
+    const errorMsg = `The configured resolver for ${unsetEnsName} does not support stealth keys`;
+    await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
+  });
+
+  it('throws when the user has not set their stealth keys', async () => {
+    // Arbitrary name that is registered on Rinkeby and has set a supported resolver, but has not set their stealth
+    // keys. If this test starts failing, a likely culprit is that this user has set their stealth keys or the name
+    // registration has expired
+    const unsetEnsName = 'unsetStealthKeys.eth';
+    const errorMsg = `Public keys not found for ${unsetEnsName}. User must setup their Umbra account`;
+    await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
   });
 
   it.skip('sets the public keys', async () => {
