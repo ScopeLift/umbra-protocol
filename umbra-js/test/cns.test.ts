@@ -2,6 +2,7 @@ import * as chai from 'chai';
 import { ethers } from 'hardhat';
 import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import * as cns from '../src/utils/cns';
+import { expectRejection } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -23,16 +24,25 @@ const nameViewingPublicKey =
   '0x041190b7e2b61b8872c9ea5fff14770e7d3e78900282371b09ee9f2b8c4016b9967b5e9ee9e1e0bef30052e806321f0685a3ad69e2233be6813b81a5d293feea76';
 
 describe('СNS functions', () => {
-  it('properly identifies CNS domains', async () => {
+  it('properly identifies CNS domains', () => {
     cns.supportedCnsDomains.forEach((suffix) => {
       // example suffixes: .crypto, .zil, etc.
       expect(cns.isCnsDomain(`test${suffix}`)).to.be.true;
     });
   });
 
-  it('namehash throws when given a bad CNS suffix', async () => {
+  it('isCnsDomain returns false for empty CNS domains', () => {
+    expect(cns.isCnsDomain('')).to.be.false;
+  });
+
+  it('throws when namehash is not given a string', () => {
+    // @ts-expect-error
+    expect(() => cns.namehash(123, resolution)).to.throw('Name must be a string');
+  });
+
+  it('throws when namehash is given a bad CNS suffix', () => {
     const badName = 'myname.com';
-    const errorMsg = `Name does not end with supported suffix: ${cns.supportedCnsDomains.join(', ')}`;
+    const errorMsg = `Name ${badName} does not end with supported suffix: ${cns.supportedCnsDomains.join(', ')}`;
     expect(() => cns.namehash(badName, resolution)).to.throw(errorMsg);
   });
 
@@ -47,7 +57,15 @@ describe('СNS functions', () => {
     expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 
-  it.skip('sets the public keys', async () => {
+  it('throws when the user has not set their stealth keys', async () => {
+    // Arbitrary name that is registered but does not have keys on Rinkeby. If this test starts failing, a likely
+    // culprit is that this name now has set stealth keys
+    const unsetCnsName = 'udtestdev--c38898.crypto';
+    const errorMsg = `Public keys not found for ${unsetCnsName}. User must setup their Umbra account`;
+    await expectRejection(cns.getPublicKeys(unsetCnsName, ethersProvider, resolution), errorMsg);
+  });
+
+  it.skip('sets the public keys', () => {
     // TODO currently would fail since provider account is not the udtestdev-msolomon.crypto account, so
     // to implement this test we need to have the ganache account register a CNS domain
   });

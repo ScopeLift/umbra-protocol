@@ -7,6 +7,7 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
 import * as chai from 'chai';
+import { expectRejection } from './utils';
 
 import type { ChainConfig } from '../src/types';
 import {
@@ -25,26 +26,6 @@ const jsonRpcProvider = new JsonRpcProvider(hardhatConfig.networks?.hardhat?.for
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const payloadExtension = '0x0123456789abcdef0123456789abcdef';
 const quantity = parseEther('5');
-
-/**
- * @notice Wrapper function to verify that an async function rejects with the specified message
- * @param promise Promise to wait for
- * @param message Expected rejection message
- */
-const expectRejection = async (promise: Promise<any>, message: string) => {
-  // Error type requires strings, so we set them to an arbitrary value and
-  // later check the values. If unchanged, the promise did not reject
-  let error: Error = { name: 'default', message: 'default' };
-  try {
-    await promise;
-  } catch (e) {
-    error = e;
-  } finally {
-    expect(error.name).to.not.equal('default');
-    expect(error.message).to.not.equal('default');
-    expect(error.message).to.equal(message);
-  }
-};
 
 // We don't use the 0 or 1 index just to reduce the chance of conflicting with a signer for another use case
 const senderIndex = 2;
