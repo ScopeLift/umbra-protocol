@@ -289,16 +289,23 @@ describe('KeyPair class', () => {
     // ts-expect-error statements needed throughout this section to bypass TypeScript checks that would stop this file
     // from being compiled/ran
 
+    it('returns null for private key parameters when created with a public key', () => {
+      const keyPair = new KeyPair(wallet.publicKey);
+      expect(keyPair.privateKeyHex).to.equal(null);
+      expect(keyPair.privateKeyHexSlim).to.equal(null);
+    });
+
     it('throws when initializing with an invalid key', () => {
-      const errorMsg = 'Key must be a string in hex format with 0x prefix';
+      const errorMsg1 = 'Key must be a string in hex format with 0x prefix';
+      const errorMsg2 = 'Key must be a 66 character hex private key or a 132 character hex public key';
       // @ts-expect-error
-      expect(() => new KeyPair(1)).to.throw(errorMsg);
-      expect(() => new KeyPair(privateKey.slice(2))).to.throw(errorMsg);
-      expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(errorMsg);
+      expect(() => new KeyPair(1)).to.throw(errorMsg1);
+      expect(() => new KeyPair(privateKey.slice(2))).to.throw(errorMsg1);
+      expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(errorMsg1);
+      expect(() => new KeyPair('0x1234')).to.throw(errorMsg2);
     });
 
     it('throws when trying to encrypt with a bad input', async () => {
-      const wallet = Wallet.createRandom();
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
       const errorMsg = 'Must provide instance of RandomNumber';
       // @ts-expect-error
@@ -308,7 +315,6 @@ describe('KeyPair class', () => {
     });
 
     it('throws when trying to decrypt with a bad input', async () => {
-      const wallet = Wallet.createRandom();
       const keyPairFromPrivate = new KeyPair(wallet.privateKey);
       const errorMsg = 'Input must be of type EncryptedPayload to decrypt';
       // @ts-expect-error
@@ -321,6 +327,16 @@ describe('KeyPair class', () => {
       expect(() => keyPairFromPrivate.decrypt(1)).to.throw(errorMsg);
     });
 
+    it('throws when trying to decrypt with a KeyPair that only has a public key', () => {
+      const keyPairFromPublic = new KeyPair(wallet.publicKey);
+
+      const dummyWallet = Wallet.createRandom();
+      const dummyEncryptedData = { ephemeralPublicKey: dummyWallet.publicKey, ciphertext: dummyWallet.privateKey };
+
+      const errorMsg = 'KeyPair has no associated private key to decrypt with';
+      expect(() => keyPairFromPublic.decrypt(dummyEncryptedData)).to.throw(errorMsg);
+    });
+
     it('throws when mulPublicKey is provided a bad input', async () => {
       const wallet = Wallet.createRandom();
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
@@ -330,7 +346,6 @@ describe('KeyPair class', () => {
     });
 
     it('throws when mulPrivateKey is provided a bad input', async () => {
-      const wallet = Wallet.createRandom();
       const keyPairFromPrivate = new KeyPair(wallet.privateKey);
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
       // @ts-expect-error
