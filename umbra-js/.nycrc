@@ -18,7 +18,7 @@
     ".eslintrc.js",
     ".lintstagedrc.js",
     ".prettierrc.js",
-    "hardhat.config.ts",
+    "hardhat.config.ts"
   ],
   "sourceMap": true,
   "reporter": [
