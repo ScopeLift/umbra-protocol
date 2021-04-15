@@ -15,7 +15,7 @@ import { toUtf8Bytes } from '@ethersproject/strings';
 import { AddressZero } from '@ethersproject/constants';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { lookupRecipient } from '../utils/utils';
+import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import * as erc20Abi from '../abi/ERC20.json';
 import type {
@@ -157,6 +157,9 @@ export class Umbra {
 
     // Compute stealth address
     const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
+
+    // Ensure that the stealthKeyPair's address is not on the block list
+    if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
 
     // Get overrides object that removes the payload extension, for use with ethers
     const filteredOverrides = { ...overrides };

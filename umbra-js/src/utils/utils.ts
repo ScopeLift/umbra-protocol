@@ -5,6 +5,7 @@
 import { Signature, recoverPublicKey } from 'noble-secp256k1';
 import { Contract, ContractInterface } from 'ethers';
 import { isHexString, splitSignature } from '@ethersproject/bytes';
+import { AddressZero } from '@ethersproject/constants';
 import { keccak256 } from '@ethersproject/keccak256';
 import { resolveProperties } from '@ethersproject/properties';
 import { EtherscanProvider } from '@ethersproject/providers';
@@ -20,6 +21,14 @@ export const lengths = {
   privateKey: 66, // 32 bytes + 0x prefix
   publicKey: 132, // 64 bytes + 0x04 prefix
 };
+
+// Define addresses that should never be used as the stealth address. If you're sending to these a mistake was
+// made somewhere and the funds will not be accessible. Ensure any addresses added to this list are checksum addresses
+export const blockedStealthAddresses = [
+  AddressZero,
+  '0xdcc703c0E500B653Ca82273B7BFAd8045D85a470', // generated from hashing an empty public key, e.g. keccak256('0x')
+  '0x59274E3aE531285c24e3cf57C11771ecBf72d9bf', // generated from hashing the zero public key, e.g. keccak256('0x000...000')
+];
 
 /**
  * @notice Given a transaction hash, return the public key of the transaction's sender

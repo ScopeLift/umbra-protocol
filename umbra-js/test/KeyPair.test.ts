@@ -298,11 +298,18 @@ describe('KeyPair class', () => {
     it('throws when initializing with an invalid key', () => {
       const errorMsg1 = 'Key must be a string in hex format with 0x prefix';
       const errorMsg2 = 'Key must be a 66 character hex private key or a 132 character hex public key';
+      const errorMsg3 = 'Cannot initialize KeyPair with the provided key';
+      const zeroPrivateKey = '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const zeroPublicKey =
+        '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
       // @ts-expect-error
       expect(() => new KeyPair(1)).to.throw(errorMsg1);
       expect(() => new KeyPair(privateKey.slice(2))).to.throw(errorMsg1);
       expect(() => new KeyPair(wallet.publicKey.slice(4))).to.throw(errorMsg1);
       expect(() => new KeyPair('0x1234')).to.throw(errorMsg2);
+      expect(() => new KeyPair(zeroPrivateKey)).to.throw(errorMsg3);
+      expect(() => new KeyPair(zeroPublicKey)).to.throw(errorMsg3);
     });
 
     it('throws when trying to encrypt with a bad input', async () => {
