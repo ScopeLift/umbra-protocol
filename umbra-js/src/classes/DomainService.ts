@@ -18,10 +18,10 @@ export class DomainService {
    */
   constructor(readonly provider: EthersProvider) {
     this.udResolution = new Resolution({
-      blockchain: {
+      sourceConfig: {
         cns: {
           provider: Eip1993Factories.fromEthersProvider(provider),
-          network: provider.network.name,
+          network: provider.network.name as 'mainnet' | 'rinkeby',
         },
       },
     });

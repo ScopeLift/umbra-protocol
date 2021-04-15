@@ -8,7 +8,7 @@ const { expect } = chai;
 const ethersProvider = ethers.provider;
 
 const resolution = new Resolution({
-  blockchain: {
+  sourceConfig: {
     cns: {
       provider: Eip1993Factories.fromEthersProvider(ethersProvider),
       network: 'rinkeby',
