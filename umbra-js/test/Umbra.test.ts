@@ -319,6 +319,8 @@ describe('Umbra class', () => {
     it('throws when initializing with an invalid chainConfig', () => {
       const errorMsg1 = "Invalid start block provided in chainConfig. Got 'undefined'";
       const errorMsg2 = "Invalid start block provided in chainConfig. Got '1'";
+      const badChainId = '1.1';
+      const errorMsg3 = `Invalid chainId provided in chainConfig. Got '${badChainId}'`;
       const umbraAddress = '0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e'; // address does not matter here
 
       // @ts-expect-error
@@ -333,6 +335,10 @@ describe('Umbra class', () => {
       );
       // @ts-expect-error
       expect(() => new Umbra(ethersProvider, { umbraAddress: '123', startBlock: '1' })).to.throw(errorMsg2);
+
+      const badChainConfig = { umbraAddress: '123', startBlock: 1, chainId: badChainId };
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider, badChainConfig)).to.throw(errorMsg3);
     });
 
     it('throws when isEth is passed a bad address', async () => {
@@ -366,6 +372,41 @@ describe('Umbra class', () => {
       await expectRejection(
         Umbra.signWithdraw(privateKey, 4, badAddress, goodAddress, tokenAddress, goodAddress, '1'),
         'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.0.10)'
+      );
+    });
+
+    it('throws when signWithdraw is passed a bad chainId', async () => {
+      // Actual values of input parameters don't matter for this test
+      const privateKey = receiver.privateKey;
+      const address = receiver.address;
+      const badChainId = '4';
+      const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // address does not matter here
+      await expectRejection(
+        // @ts-expect-error
+        Umbra.signWithdraw(privateKey, badChainId, umbra.umbraContract.address, address, tokenAddress, address, '1'),
+        `Invalid chainId provided in chainConfig. Got '${badChainId}'`
+      );
+    });
+
+    it('throws when signWithdraw is passed a bad data string', async () => {
+      // Actual values of input parameters don't matter for this test
+      const privateKey = receiver.privateKey;
+      const address = receiver.address;
+      const badData = 'qwerty';
+      const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'; // address does not matter here
+      await expectRejection(
+        Umbra.signWithdraw(
+          privateKey,
+          4,
+          umbra.umbraContract.address,
+          address,
+          tokenAddress,
+          address,
+          '1',
+          ethers.constants.AddressZero,
+          badData
+        ),
+        'Data string must be null or in hex format with 0x prefix'
       );
     });
   });

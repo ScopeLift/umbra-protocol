@@ -436,7 +436,7 @@ export class Umbra {
 
     // Validate the data string
     if (typeof data !== 'string' || !isHexString(data)) {
-      throw new Error('Data string must be null or in hex form with 0x prefix');
+      throw new Error('Data string must be null or in hex format with 0x prefix');
     }
 
     const stealthWallet = new Wallet(spendingPrivateKey);
