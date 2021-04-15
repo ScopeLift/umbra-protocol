@@ -10,9 +10,12 @@
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "skipLibCheck": true,
     "sourceMap": true,
-    "target": "es5"
+    "target": "es5",
+    "baseUrl": "./",
+    "paths": {
+      "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
+    }
   },
   "include": ["./src/**/*", "./src/**/*.json", "./types/**/*"]
 }
