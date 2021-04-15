@@ -8,7 +8,6 @@
     "outDir": "build",
     "resolveJsonModule": true,
     "rootDir": "src",
-    "skipLibCheck": true,
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],
@@ -16,7 +15,8 @@
       "layouts/*": ["src/layouts/*"],
       "pages/*": ["src/pages/*"],
       "assets/*": ["src/assets/*"],
-      "boot/*": ["src/boot/*"]
+      "boot/*": ["src/boot/*"],
+      "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
     }
   },
   "include": ["src", "src/**/*.json"]
