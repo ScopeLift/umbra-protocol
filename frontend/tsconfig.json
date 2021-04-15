@@ -2,12 +2,13 @@
   // "extends": "@quasar/app/tsconfig-preset",
   "extends": "../tsconfig.settings.json",
   "compilerOptions": {
-    "composite": true,
-    "outDir": "build",
-    "rootDir": "src",
     "baseUrl": ".",
+    "composite": true,
     "esModuleInterop": true,
+    "outDir": "build",
     "resolveJsonModule": true,
+    "rootDir": "src",
+    "skipLibCheck": true,
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],
