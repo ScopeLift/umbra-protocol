@@ -11,6 +11,13 @@ import { RandomNumber } from './RandomNumber';
 import { lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
 
+// List of private or public keys that we disallow initializing a KeyPair instance with, since they will lead to
+// unrecoverable funds.
+const blockedKeys = [
+  '0x0000000000000000000000000000000000000000000000000000000000000000', // private key of all zeros
+  '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', // public key of all zeroes
+];
+
 /**
  * @notice Private helper method to return the shared secret for a given private key and public key
  * @param privateKey Private key as hex string with 0x prefix
@@ -40,6 +47,9 @@ export class KeyPair {
     // Input checks
     if (typeof key !== 'string' || !isHexString(key)) {
       throw new Error('Key must be a string in hex format with 0x prefix');
+    }
+    if (blockedKeys.includes(key)) {
+      throw new Error('Cannot initialize KeyPair with the provided key');
     }
 
     // Handle input
