@@ -2,7 +2,7 @@
   <q-page padding class="text-center">
     <h2 class="page-title">Frequently Asked Questions</h2>
 
-    <q-list class="form" separator>
+    <q-list class="form-extra-wide" separator>
       <!-- Introduction -->
       <div class="text-center text-primary text-h6 header-black q-pb-none">Introduction</div>
 
@@ -22,13 +22,15 @@
       <f-a-q-item question="Can you walk me through an example?">
         <p>
           Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work.
-          Bob owns the ENS address bob.eth. If Alice sent the funds each week to bob.eth, anyone looking at the chain
-          could trivially know that Alice is paying Bob 1,000 Dai each week.
+          Bob owns the ENS address <span class="code">bob.eth</span>. If Alice sent the funds each week to
+          <span class="code">bob.eth</span>, anyone looking at the chain could trivially know that Alice is paying Bob
+          1,000 Dai each week.
         </p>
         <p>
           Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets
-          up his account with ENS, enabling anyone to privately pay him using the name bob.eth. Alice then uses Umbra to
-          send 1,000 Dai to Bob each week— she only needs to know his ENS name.
+          up his account with ENS, enabling anyone to privately pay him using the name
+          <span class="code">bob.eth</span>. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs to
+          know his ENS name.
         </p>
         <p>
           On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the
@@ -67,13 +69,13 @@
           </li>
           <li>
             Using the Umbra contract, the payer sends funds to the stealth address and the encrypted data is emitted as
-            an Announcement event.
+            an <span class="code">Announcement</span> event.
           </li>
           <li>
-            The receiver scans all announcement events from the Umbra contract. For each, they use their viewing private
-            key to decrypt the random number, then multiply that number by their spending private key to generate the
-            stealth private key. If the stealth private key controls the address funds were sent to, this payment was
-            for the receiver
+            The receiver scans all <span class="code">Announcement</span> events from the Umbra contract. For each, they
+            use their viewing private key to decrypt the random number, then multiply that number by their spending
+            private key to generate the stealth private key. If the stealth private key controls the address funds were
+            sent to, this payment was for the receiver
           </li>
           <li>
             The receiver can now use the private key to either directly send the transaction required to withdraw funds
@@ -86,9 +88,9 @@
       <f-a-q-item question="How private is Umbra?">
         <p>
           Umbra offers a limited set of privacy guarantees and it’s important to understand them before using the
-          protocol. Umbra does not offer “full” privacy like Aztec or Zcash. It simply makes it impossible for any
-          outside observers (i.e. anyone who is not the sender or the receiver) to know who the sender paid by looking
-          at the receiving address.
+          protocol. Umbra does <span class="text-bold">not</span> offer “full” privacy like Aztec or Zcash. It simply
+          makes it impossible for any outside observers (i.e. anyone who is not the sender or the receiver) to know who
+          the sender paid by looking at the receiving address.
         </p>
         <p>
           It’s important to understand that poor hygiene by the receiver— for example, sending the funds directly to a
@@ -169,20 +171,21 @@
 
       <f-a-q-item question="Should I use my own ENS/CNS name or an umbra.eth subdomain?">
         <p>
-          This is up to you, but there’s a few factors to consider here. Arguments in favor of an umbra.eth subdomain
-          include:
+          This is up to you, but there’s a few factors to consider here. Arguments in favor of an
+          <span class="code">umbra.eth</span> subdomain include:
         </p>
         <ol>
           <li>
             New account privacy: This is your standard ENS/CNS privacy issue— if you publicly share your ordinary name,
-            everyone can see what funds are in your regular wallet. If you use a brand new umbra.eth name with a new
-            address, you’ll have no funds in it, giving you an extra bit of privacy to start with. This choice does not
-            impact the privacy of funds received via Umbra in any way.
+            everyone can see what funds are in your regular wallet. If you use a brand new
+            <span class="code">umbra.eth</span> name with a new address, you’ll have no funds in it, giving you an extra
+            bit of privacy to start with. This choice does not impact the privacy of funds received via Umbra in any
+            way.
           </li>
           <li>
-            Convenience: Using a umbra.eth name is a smoother and cheaper setup process. It only takes one on-chain
-            transaction, whereas configuring an existing name requires three on-chain transactions (see “Why are there
-            so many transactions to setup my account?” for more info on this).
+            Convenience: Using a <span class="code">umbra.eth</span> name is a smoother and cheaper setup process. It
+            only takes one on-chain transaction, whereas configuring an existing name requires three on-chain
+            transactions (see “Why are there so many transactions to setup my account?” for more info on this).
           </li>
         </ol>
 
@@ -227,14 +230,14 @@
             target="_blank"
             >smart contract</a
           >
-          that allows anyone to claim and configure an Umbra subdomain, but as owners of the root umbra.eth domain, we
-          still have the ability to override this.
+          that allows anyone to claim and configure an Umbra subdomain, but as owners of the root
+          <span class="code">umbra.eth</span> domain, we still have the ability to override this.
         </p>
         <p>
-          To mitigate this risk to users, we intend to transfer ownership ofumbra.eth to a multi-sig address with
-          publicly known participants, however that step has not yet been taken. While we can promise you that we won’t
-          use this capability, your risk assessment should include that we can. If you’ll be receiving large, frequent
-          payments via Umbra, then configuring your own ENS/CNS name remains the safest route.
+          To mitigate this risk to users, we intend to transfer ownership of <span class="code">umbra.eth</span> to a
+          multi-sig address with publicly known participants, however that step has not yet been taken. While we can
+          promise you that we won’t use this capability, your risk assessment should include that we can. If you’ll be
+          receiving large, frequent payments via Umbra, then configuring your own ENS/CNS name remains the safest route.
         </p>
       </f-a-q-item>
 
@@ -252,10 +255,10 @@
           costly CREATE2 schemes). Instead, the tokens are held by the contract and can be released in one of two ways:
         </p>
         <ol>
-          <li>The stealth address directly calls the withdrawToken() method</li>
+          <li>The stealth address directly calls the <span class="code">withdrawToken()</span> method</li>
           <li>
-            Anyone calls withdrawTokenOnBehalf() and passses in a signature from the stealth address. This enables
-            meta-transactions to be used with the relayer of your choice.
+            Anyone calls <span class="code">withdrawTokenOnBehalf()</span> and passses in a signature from the stealth
+            address. This enables meta-transactions to be used with the relayer of your choice.
           </li>
         </ol>
         <p>
@@ -316,8 +319,8 @@
           other observers know Alice sent funds to someone, but they don’t know who that someone is.
         </p>
         <p>
-          If Bob withdraws those funds to his publicly known bob.eth address, which resolves to 0x123...def, then
-          observers know one of two things happened:
+          If Bob withdraws those funds to his publicly known <span class="code">bob.eth</span> address, which resolves
+          to <span class="code">0x123...def</span>, then observers know one of two things happened:
         </p>
 
         <ol>
@@ -339,7 +342,10 @@
           <li>Is the wallet you are logged in with</li>
           <li>(Coming soon): Withdrawing to an address that has contributed to Gitcoin.</li>
         </ol>
-        <p>This is not a comprehensive list of potentially dangerous withdrawal addresses, so use caution.</p>
+        <p>
+          This is <span class="text-bold">not</span> a comprehensive list of potentially dangerous withdrawal addresses,
+          so use caution.
+        </p>
       </f-a-q-item>
 
       <f-a-q-item question="Can Umbra make it easier to withdraw funds in a privacy preserving way?">
@@ -394,8 +400,8 @@
           >.
         </p>
         <p>
-          The umbra-js library that manages the bulk of the required off-chain logic has not yet been audited, but an
-          audited is scheduled for mid-May with Least Authority.
+          The <span class="code">umbra-js</span> library that manages the bulk of the required off-chain logic has not
+          yet been audited, but an audited is scheduled for mid-May with Least Authority.
         </p>
         <p>
           Off-chain elliptic curve cryptography is a core part of Umbra’s business logic, so we rely on
@@ -442,36 +448,54 @@
         <p>Let’s start with how the Umbra protocol (and more generally, how stealth addresses) work:</p>
 
         <p>
-          The recipient has public key P and private key p. The sender generates a random number r, and computes a
-          stealth public key as P_stealth = P * r using elliptic curve multiplication. The sender derives the Ethereum
-          address a_stealth from that public key, and sends funds to it. Thanks to the magic of elliptic curve math, the
-          recipient can generate the private key p_stealth needed to access funds at a_stealth by computing p_stealth =
-          p * r.
+          The recipient has public key <span class="code">P</span> and private key <span class="code">p</span>. The
+          sender generates a random number <span class="code">r</span>, and computes a stealth public key as
+          <span class="code">P_stealth = P * r</span> using elliptic curve multiplication. The sender derives the
+          Ethereum address <span class="code">a_stealth</span> from that public key, and sends funds to it. Thanks to
+          the magic of elliptic curve math, the recipient can generate the private key
+          <span class="code">p_stealth</span> needed to access funds at <span class="code">a_stealth</span> by computing
+          <span class="code">p_stealth = p * r</span>.
         </p>
         <p>
-          The first problem to solve is how does the sender get the value r to the receiver? If r was publicly known,
-          oberservers could determine who funds were sent to by computing P * r for various published P values until the
-          find the stealth address. So r needs to be encrypted.
+          T The first problem to solve is how does the sender get the value <span class="code">r</span> to the receiver?
+          If <span class="code">r</span> was publicly known, oberservers could determine who funds were sent to by
+          computing <span class="code">P * r</span> for various published <span class="code">P</span> values until the
+          find the stealth address. So <span class="code">r</span> needs to be encrypted.
         </p>
         <p>
-          Encryption is done with ECDH, meaning the sender uses the recipient’s public key to encrypt the random number.
-          The encrypted random number and stealth address are emitted as an Annoucement event from the Umbra contract.
-          ECDH requires the sender to generate an ephemeral private key for encryption, so the ephemeral public key
-          P_ephemeral that the receiver will need to decrypt is also emitted in this event.
+          Encryption is done with
+          <a
+            class="hyperlink"
+            href="https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman"
+            target="_blank"
+            >Elliptic Curve Diffie-Hellman</a
+          >
+          (ECDH), meaning the sender uses the recipient’s public key to encrypt the random number. The encrypted random
+          number gives us the cipertext <span class="code">c</span>. The encrypted random number
+          <span class="code">c</span> and stealth address <span class="code">a_stealth</span> are emitted as an
+          <span class="code">Annoucement</span> event from the Umbra contract. ECDH requires the sender to generate an
+          ephemeral private key for encryption, so the ephemeral public key <span class="code">P_ephemeral</span> that
+          the receiver will need to decrypt is also emitted in this event.
         </p>
-        <p>Now the receiver can scan through all Announcement events and find their funds as follows:</p>
+        <p>
+          Now the receiver can scan through all <span class="code">Announcement</span> events and find their funds as
+          follows:
+        </p>
         <ul>
           <li>
-            Using their private key p with P_ephemeral, the can compute the ECDH shared secret and decrypt the random
-            number. This will always decrypt to something, but we don’t yet know if it’s the correct number.
+            Using their private key <span class="code">p</span> with <span class="code">P_ephemeral</span>, they can
+            compute the ECDH shared secret and decrypt the random number. This will always decrypt to
+            <span class="text-italic">something</span>, but we don’t yet know if it decrypted to the correct number.
           </li>
           <li>
-            So the recipient multiplies the decrypted random number by p to get p_stealth, and computes the address
-            controlled by p_stealth
+            So the recipient multiplies the decrypted random number by <span class="code">p</span> to get
+            <span class="code">p_stealth</span>, and computes the address controlled by
+            <span class="code">p_stealth</span>
           </li>
           <li>
-            If that address matches the stealth address included in the Annoucement, the recipient knows that payment
-            was for them and can withdraw it.
+            If the address controlled by <span class="code">p_stealth</span> matches the
+            <span class="code">a_stealth</span> stealth address included in the <span class="code">Annoucement</span>,
+            the recipient knows that payment was for them and can withdraw it using <span class="code">p_stealth</span>.
           </li>
         </ul>
 
@@ -502,42 +526,50 @@
 
         <p class="text-bold">Scanning for Funds</p>
         <p>
-          The final consideration has to do with scanning. Because every single announcement needs to be scanned, it can
-          take a long time to find your finds.
+          The final consideration has to do with scanning. Because every single
+          <span class="code">Announcement</span> needs to be scanned, it can take a long time to find your finds.
         </p>
         <p>
-          One way to speed this up is to delegate scanning to a third-party service and have them notify you when you
-          receive funds. But the scanning service needs p to determine if you received funds, and if they have p they
-          can steal your funds!
+          One way to speed this up (from the user's perspective) is to delegate scanning to a third-party service and
+          have them notify you when you receive funds. But the scanning service needs your private key
+          <span class="code">p</span> to determine if you received funds, and if they have
+          <span class="code">p</span> they can steal your funds!
         </p>
         <p>
-          We can solve this by instead generating two app-specific private keys. One private key will be the viewing
-          private key, p_view, used for encrypting the random number. The other will be the spending private key,
-          p_spend, used for computing the stealth address and accessing those funds. Therefore, our send and receive
-          flow is now modified a bit to:
+          We can solve this by instead generating two application-specific private keys. One private key will be the
+          viewing private key, <span class="code">p_view</span>, used for encrypting the random number. The other will
+          be the spending private key, <span class="code">p_spend</span>, used for computing the stealth address and
+          accessing those funds. Therefore, our send and receive flow is now modified a bit to:
         </p>
         <ol>
           <li>
-            Recipient has two private keys, p_spend and p_view, and publishes the corresponding public keys P_spend and
-            P_view.
+            Recipient has two private keys, <span class="code">p_spend</span> and <span class="code">p_view</span>, and
+            publishes the corresponding public keys <span class="code">P_spend</span> and
+            <span class="code">P_view</span>.
           </li>
           <li>
-            The sender generates a random number r and encrypts it using P_view and an ephemeral private key p_ephemeral
-            to generate a ciphertext c
+            The sender generates a random number <span class="code">r</span> and encrypts it using
+            <span class="code">P_view</span> and an ephemeral private key <span class="code">p_ephemeral</span> to
+            generate a ciphertext <span class="code">c</span>
           </li>
           <li>
-            The sender computes the stealth address as the address derived from P_stealth = P_spend * r and sends funds
-            to that address
+            The sender computes the stealth address as the address derived from
+            <span class="code">P_stealth = P_spend * r</span> and sends funds to that address
           </li>
-          <li>The Umbra contract emits c, P_ephemeral, and stealth address a_stealth</li>
           <li>
-            For each event, the receiver uses p_view and P_ephemeral to decrypt r, then checks if p_stealth = p_spend *
-            r is the private key that controls a_stealth
+            The Umbra contract emits <span class="code">c</span>, <span class="code">P_ephemeral</span>, and stealth
+            address <span class="code">a_stealth</span>
+          </li>
+          <li>
+            For each event, the receiver uses <span class="code">p_view</span> and
+            <span class="code">P_ephemeral</span> to decrypt <span class="code">r</span>, then checks if
+            <span class="code">p_stealth = p_spend * r</span> is the private key that controls a_stealth
           </li>
         </ol>
         <p>
-          With this approach, the recipient can provide a third-party scanning service with p_view and P_spend. The
-          service can now check if the recipient has received funds without having the ability to spend them.
+          With this approach, the recipient can provide a third-party scanning service with
+          <span class="code">p_view</span> and <span class="code">P_spend</span>. The service can now check if the
+          recipient has received funds without having the ability to spend them.
         </p>
       </f-a-q-item>
 
@@ -546,10 +578,9 @@
         <a class="hyperlink" href="https://electriccoin.co/blog/explaining-viewing-keys/" target="_blank"
           >nomenclature</a
         >
-        from Zcash, Umbra allows, but does not require, users to use different private keys for the "encrypt r" and
-        “Compute stealth address” steps. This is the default behavior of the Umbra app, but it can be overriden by using
-        Advanced Mode.
-
+        from Zcash, Umbra allows, but does not require, users to use different private keys for the "encrypt random
+        number" and “compute stealth address” steps. This is the default behavior of the Umbra app, but it can be
+        overriden by using Advanced Mode.
         <p>
           See “Technical Details: How does it work?” [TODO add link] for more details on how spending and viewing keys
           work.
@@ -577,8 +608,8 @@
           <li>Navigate to the Send page and connect your wallet</li>
           <li>
             The recipient field normally only accepts ENS/CNS names, but it will now also accept a public key, an
-            address, or even a transaction hash! (Using a transaction hash is the same as entering the from address of
-            that transaction)
+            address, or even a transaction hash! (Using a transaction hash is effectively the same as entering the
+            <span class="code">from</span> address of that transaction)
           </li>
           <li>Continue to send funds like normal</li>
         </ol>
@@ -599,28 +630,36 @@
           transaction you sent, your funds can still be accessed.
         </p>
 
-        <p>The most secure way to do this is locally using the umbra-js package:</p>
+        <p>The most secure way to do this is locally using the <span class="code">umbra-js</span> package:</p>
 
         <ol>
-          <li>Setup a local JavaScript project with yarn init</li>
-          <li>Install ethers and umbra-js using yarn add ethers @umbra/umbra-js</li>
+          <li>Setup a local JavaScript project with <span class="code">yarn init</span></li>
+          <li>Install ethers.js and umbra-js using <span class="code">yarn add ethers @umbra/umbra-js</span></li>
           <li>
             In your script, perform the following:
             <ol>
               <li>Connect to a mainnet provider with ethers</li>
-              <li>Initialize an instance of the Umbra class with umbra = new Umbra(provider, 1);</li>
               <li>
-                Initialize an instance of the KeyPair class with your address’ private key, keyPair = new
-                KeyPair(myPrivateKey)
+                Initialize an instance of the Umbra class with
+                <span class="code">const umbra = new Umbra(provider, 1)</span>
               </li>
               <li>
-                Use the umbra.scan() method to search for your funds. The viewingPrivateKey input is now be given by
-                keyPair.privateKeyHex, and the spendingPublicKey input is given by keyPair.publicKeyHex
+                Initialize an instance of the KeyPair class with your address’ private key,
+                <span class="code">const keyPair = new KeyPair(myPrivateKey)</span>
               </li>
               <li>
-                For each announcement, you can use the static method
-                Umbra.computeStealthPrivateKey(keyPair.privateKeyHex, announcement.randomNumber) to compute the stealth
-                private key
+                Use the <span class="code">umbra.scan()</span> method to search for your funds. The
+                <span class="code">viewingPrivateKey</span> input is now be given by
+                <span class="code">keyPair.privateKeyHex</span>, and the
+                <span class="code">spendingPublicKey</span> input is given by
+                <span class="code">keyPair.publicKeyHex</span>
+              </li>
+              <li>
+                For each <span class="code">Announcement</span>, you can use the static method
+                <span class="code"
+                  >Umbra.computeStealthPrivateKey(keyPair.privateKeyHex, announcement.randomNumber)</span
+                >
+                to compute the stealth private key
               </li>
             </ol>
           </li>
@@ -695,48 +734,58 @@
 
         <ol>
           <li>
-            src/classes/Umbra.ts: The Umbra class is a high-level class intended for developers to directly interact
-            with. It abstracts away the complexity of the protocol into a few mian methods:
+            <span class="code">src/classes/Umbra.ts</span>: The <span class="code">Umbra</span> class is a high-level
+            class intended for developers to directly interact with. It abstracts away the complexity of the protocol
+            into a few mian methods:
             <ol>
               <li>
-                send() is used to send funds to another user, and automatically handles the underlying cryptography
-                required
+                <span class="code">send()</span> is used to send funds to another user, and automatically handles the
+                underlying cryptography required
               </li>
               <li>
-                generatePrivateKeys() prompts the user for a signature and generates their spending and viewing keys
+                <span class="code">generatePrivateKeys()</span> prompts the user for a signature and generates their
+                spending and viewing keys
               </li>
               <li>
-                scan() lets you find funds sent to the specified user, by providing just the user’s spending public key
-                and viewing private key
+                <span class="code">scan()</span> lets you find funds sent to the specified user, by providing just the
+                user’s spending public key and viewing private key
               </li>
-              <li>withdraw() lets a stealth address directly withdraw both tokens and ETH</li>
+              <li><span class="code">withdraw()</span> lets a stealth address directly withdraw both tokens and ETH</li>
               <li>
-                withdrawOnBehalf() uses meta-transactions to relay a withdraw transaction on behalf of another user, and
-                the signWithdraw() method is used to get the required signature
+                <span class="code">withdrawOnBehalf()</span> uses meta-transactions to relay a withdraw transaction on
+                behalf of another user, and the <span class="code">signWithdraw()</span> method is used to get the
+                required signature
               </li>
-              <li>relayWithdrawOnBehalf() can be used to relay a meta-transaction using the default Umbra relayer</li>
+              <li>
+                <span class="code">relayWithdrawOnBehalf()</span> can be used to relay a meta-transaction using the
+                default Umbra relayer
+              </li>
             </ol>
           </li>
           <li>
-            src/classes/KeyPair.ts: This class is where the core cryptography logic lives. A KeyPair class is
-            instantiated with either a private or public key, and the class methods help you perform various operations
-            with those keys, including encryption/decryption, multiplication, and compression/decompression of public
-            keys
+            <span class="code">src/classes/KeyPair.ts</span>: This class is where the core cryptography logic lives. A
+            <span class="code">KeyPair</span> class is instantiated with either a private or public key, and the class
+            methods help you perform various operations with those keys, including encryption/decryption,
+            multiplication, and compression/decompression of public keys
           </li>
           <li>
-            src/classes/RandomNumber.ts: This simple class is used to generate our 32 byte random number, and will
-            properly format the number when provided an optional 16 byte payload extension
+            <span class="code">src/classes/RandomNumber.ts</span>: This simple class is used to generate our 32 byte
+            random number, and will properly format the number when provided an optional 16 byte payload extension
           </li>
           <li>
-            src/classes/DomainService.ts: Since Umbra supports both ENS and CNS, this class wraps around the two name
-            services to help get or set public keys for the provided name. The two files files class delegates to are
-            src/utils/ens.ts and src/utils/cns.ts.
+            <span class="code">src/classes/DomainService.ts</span>: Since Umbra supports both ENS and CNS, this class
+            wraps around the two name services to help get or set public keys for the provided name. The two files files
+            class delegates to are <span class="code">src/utils/ens.ts</span> and
+            <span class="code">src/utils/cns.ts</span>.
           </li>
           <li>
-            src/utils/utils.ts contains various helper methods for a range of tasks, primarily related to getting a
-            recipient’s public keys
+            <span class="code">src/utils/utils.ts</span> contains various helper methods for a range of tasks, primarily
+            related to getting a recipient’s public keys
           </li>
-          <li>src/types.ts: You’ll see a few custom types used throughout, which are all defined here</li>
+          <li>
+            <span class="code">src/types.ts</span>: You’ll see a few custom types used throughout, which are all defined
+            here
+          </li>
         </ol>
 
         <p>
@@ -748,27 +797,39 @@
 
       <f-a-q-item question="How can I receive a user’s viewing key, but not their spending key?">
         <p>
-          Currently, the only way to do this is request a user’s signature using Umbra.generatePrivateKeys(), which will
-          return both their spending key and their viewing key. It’s up to you to discard the spending key and not use
-          it. A sample snippet to do this is below:
+          Currently, the only way to do this is request a user’s signature using
+          <span class="code">Umbra.generatePrivateKeys()</span>, which will return both their spending key and their
+          viewing key. It’s up to you to discard the spending key and not use it. A sample snippet to do this is below:
         </p>
 
-        <!-- // Import the Umbra class -->
-        <!-- import { Umbra } from '@umbra/umbra-js'; -->
-        <!--  -->
-        <!-- // Let `signer` be an ethers JsonRpcSigner generated when the user -->
-        <!-- // connected their wallet. The below line will request a signature -->
-        <!-- // from the user, compute both their spending and viewing keys, but -->
-        <!-- // only return the viewing KeyPair instance to the caller. -->
-        <!-- const { viewingKeyPair } = await Umbra.generatePrivateKeys(signer); -->
+        <div class="text-caption bg-muted q-pa-md">
+          <div class="code code-grey">// Import the Umbra class</div>
+          <div class="code code">
+            <span class="code-blue">import </span> <span class="text-grey">{</span> Umbra
+            <span class="text-grey">} </span> <span class="code-blue">from</span>
+            <span class="code-green">'@umbra/umbra-js'</span>;
+          </div>
+          <br />
+          <div class="code code-grey">// Let `signer` be an ethers JsonRpcSigner generated when the user</div>
+          <div class="code code-grey">// connected their wallet. The below line will request a signature</div>
+          <div class="code code-grey">// from the user, compute both their spending and viewing keys, but</div>
+          <div class="code code-grey">// only return the viewing KeyPair instance to the caller.</div>
+          <div class="code code">
+            <span class="code-blue">const </span> <span class="text-grey">{</span> viewingKeyPair
+            <span class="text-grey">}</span> = <span class="code-blue">await</span> Umbra.<span class="code-pink"
+              >generatePrivateKeys</span
+            >(signer);
+          </div>
+        </div>
       </f-a-q-item>
 
       <f-a-q-item question="What are Hooks and how do I use them?">
         <p>
-          If you’re familiar with ERC-777 or other similar standard, you are already familiar with the concept of hooks.
-          Hooks let the caller perform other actions in addition to the core logic of the method being called. In the
-          case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that
-          contract.
+          If you’re familiar with
+          <a class="hyperlink" href="https://eips.ethereum.org/EIPS/eip-777" target="_blank">ERC-777</a> or other
+          similar standard, you are already familiar with the concept of hooks. Hooks let the caller perform other
+          actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook can
+          be used to call a method on a contract after transferring tokens to that contract.
         </p>
         <p>
           Umbra works simiarly—when withdrawing funds from the contract, users might want to deposit them straight into
@@ -776,28 +837,30 @@
         </p>
         <p>You’ll notice the Umbra contract exposes multiple withdraw methods. First we have:</p>
         <ol>
-          <li>withdrawToken() for standard withdrawals, i.e. simple transfers</li>
+          <li><span class="code">withdrawToken()</span> for standard withdrawals, i.e. simple transfers</li>
           <li>
-            withdrawTokenOnBehalf() has the same functionality as withdrawToken(), but lets a relayer submit the
-            withdraw on your behalf to support meta-transactions.
+            <span class="code">withdrawTokenOnBehalf()</span> has the same functionality as
+            <span class="code">withdrawToken()</span>, but lets a relayer submit the withdraw on your behalf to support
+            meta-transactions.
           </li>
         </ol>
         <p>Then we have the two hook methods:</p>
         <ol>
           <li>
-            withdrawTokenAndCall() is analagous to withdrawToken(), but lets you pass in the address of a contract and
-            the data to call on that contract.
+            <span class="code">withdrawTokenAndCall()</span> is analagous to <span class="code">withdrawToken()</span>,
+            but lets you pass in the address of a contract and the data to call on that contract.
           </li>
           <li>
-            withdrawTokenAndCallOnBehalf() is analagous to withdrawTokenOnBehalf(), but also lets you pass in the
-            address of a contract and the data to call on that contract.
+            <span class="code">withdrawTokenAndCallOnBehalf()</span> is analagous to
+            <span class="code">withdrawTokenOnBehalf()</span>, but also lets you pass in the address of a contract and
+            the data to call on that contract.
           </li>
         </ol>
         <p>
-          To use hooks, first you need to write and deploy a hook contract conforming to the IUmbraHookReceiver
-          interface. This requires the contract to implement a method calls tokensWithdrawn that takes a handful of
-          parameters. The address of this contract would be passed as the value for the _hook input in the above
-          methods.
+          To use hooks, first you need to write and deploy a hook contract conforming to the
+          <span class="code">IUmbraHookReceiver</span> interface. This requires the contract to implement a method calls
+          <span class="code">tokensWithdrawn()</span> that takes a handful of parameters. The address of this contract
+          would be passed as the value for the <span class="code">_hook</span> input in the above methods.
         </p>
         <p>
           Then you need to encode the calldata that the hook contract will receive and can operate on. See the
