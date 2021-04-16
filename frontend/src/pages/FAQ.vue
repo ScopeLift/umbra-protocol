@@ -5,250 +5,841 @@
     <q-list class="form" separator>
       <!-- Introduction -->
       <div class="text-center text-primary text-h6 header-black q-pb-none">Introduction</div>
+
       <f-a-q-item question="What is Umbra?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Umbra is a stealth address protocol for Ethereum. That means it allows a payer to send funds to a fresh
+          address. That address is controlled by the intended receiver, but only the payer and the receiver know that.
+        </p>
+        <p>
+          One way to think of Umbra is this: Imagine if, before anyone sent you funds, you sent them a brand new, never
+          before used address. Only the sender would know you control that address, which adds a layer of privacy to
+          your payment. Payments via Umbra work similarly, but are non-interactive—you don’t need to give someone a
+          fresh address, they can just generate one they know only you will be able to access.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="Can you walk me through an example?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work.
+          Bob owns the ENS address bob.eth. If Alice sent the funds each week to bob.eth, anyone looking at the chain
+          could trivially know that Alice is paying Bob 1,000 Dai each week.
+        </p>
+        <p>
+          Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets
+          up his account with ENS, enabling anyone to privately pay him using the name bob.eth. Alice then uses Umbra to
+          send 1,000 Dai to Bob each week— she only needs to know his ENS name.
+        </p>
+        <p>
+          On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the
+          keys to each of these addresses via Umbra, but nobody except Alice and Bob knows this.
+        </p>
+        <p>
+          Bob uses Umbra to withdraw his 1,000 Dai each week. He only needs to provide an address to send it to. It’s
+          best for him to use an address that’s not tied to his identity. He usually chooses to send it straight to an
+          exchange, where he sells it for fiat as needed.
+        </p>
+        <p>
+          Consider another example: Liza runs a website that asks for donations. If everyone donated by directly sending
+          her funds, everyone would know how much Liza received in donations. If donations were sent with Umbra instead,
+          each donation would be sent to a different address, and only Liza would know the total amount of donations she
+          received.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="How does it work?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>Below is a high level description of how Umbra works:</p>
+        <ol>
+          <li>
+            When setting up your Umbra account, users sign a message. The hash of this message is used to generate two
+            private keys—a “spending key” and a “viewing key”.
+          </li>
+          <li>
+            The corresponding public keys are both published on-chain as records associated with your ENS or CNS name.
+          </li>
+          <li>
+            A payer uses your ENS or CNS name to look up your two public keys. Separately, the payer generates a random
+            number.
+          </li>
+          <li>
+            The random number is used with the spending public key to generate a “stealth address” to send funds to. The
+            same random number is used with the viewing public key to encrypt the random number.
+          </li>
+          <li>
+            Using the Umbra contract, the payer sends funds to the stealth address and the encrypted data is emitted as
+            an Announcement event.
+          </li>
+          <li>
+            The receiver scans all announcement events from the Umbra contract. For each, they use their viewing private
+            key to decrypt the random number, then multiply that number by their spending private key to generate the
+            stealth private key. If the stealth private key controls the address funds were sent to, this payment was
+            for the receiver
+          </li>
+          <li>
+            The receiver can now use the private key to either directly send the transaction required to withdraw funds
+            to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
+          </li>
+        </ol>
+        <p>See the Technical Details [TODO: add link] section for more details.</p>
       </f-a-q-item>
+
       <f-a-q-item question="How private is Umbra?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Umbra offers a limited set of privacy guarantees and it’s important to understand them before using the
+          protocol. Umbra does not offer “full” privacy like Aztec or Zcash. It simply makes it impossible for any
+          outside observers (i.e. anyone who is not the sender or the receiver) to know who the sender paid by looking
+          at the receiving address.
+        </p>
+        <p>
+          It’s important to understand that poor hygiene by the receiver— for example, sending the funds directly to a
+          publicly known address— eliminates the privacy benefits for both the sender and receiver.
+        </p>
+        <p>
+          The privacy properties of Umbra can also be diminished if an observer can narrow down the set of potential
+          recipients for a given a transaction. Any valid public key can be used as a recipient, and anyone who has sent
+          a transaction on Ethereum has a publicly available public key. Therefore, by default, the “anonymity set”—the
+          set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
+        </p>
+
+        <p>
+          In practice this isn’t necessarily the case, and an observer may be able to narrow down the list of recipients
+          in a few ways:
+        </p>
+        <ol>
+          <li>
+            Most users will use ENS names to send funds, so the recipient most likely has published keys under an ENS
+            name
+          </li>
+          <li>
+            Poor hygeine when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy
+            properties provided by Umbra. See the “What address are safe for withdrawing funds to?” for more details.
+            Always use caution when withdrawing!
+          </li>
+        </ol>
       </f-a-q-item>
+
       <f-a-q-item question="How does Umbra compare to Tornado Cash and Aztec?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Tornado Cash is an on chain mixer that uses zero knowledge proofs. You deposit funds and receive a secret
+          note, wait a while for other people to do the same, then use your note to prove you own some of the deposited
+          funds and withdraw them to another address. Since everyone’s funds are pooled in the mixer, the link between
+          the deposit address and withdrawal address is broken.
+        </p>
+        <p>
+          Aztec is a privacy-focused Layer 2 solution, that also uses zero knowledge proofs. You deposit funds from
+          Layer 1 (mainnet) into Aztec, and your funds effectively become “wrapped” in a private version. Regular
+          transfers become private by befault, meaning no one knows who you sent funds to, or how much you paid them.
+          Balances are often private, so no one can see how much money you’re holding.
+        </p>
+        <p>
+          Umbra is different than both of these and does not use zero knowledge proofs. Instead, Umbra is based on
+          ordinary elliptic curve cryptography. It’s meant for payments between two entities, and comes with a different
+          set of privacy tradeoffs. Rather than breaking the link between sending and receiving address, like Tornado
+          does, Umbra makes that link meaningless. Everyone can see who sent the funds, and everyone can see the address
+          funds were sent to, but that receiving addresss has never been seen on-chain so it’s impossible for any
+          outside observers to know who controls it.
+        </p>
       </f-a-q-item>
 
       <!-- Account Setup -->
       <div class="text-center text-primary text-h6 header-black q-pb-none q-mt-xl">Account Setup</div>
+
       <f-a-q-item question="What is account setup?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          A User signs a message, and from that an Umbra public key and private key are generated. A transaction is made
+          on the ENS registry associating this Umbra key with your ENS name.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="Is this step required?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>This step is not required, but is strongly recommended for two reasons:</p>
+        <ol>
+          <li>
+            Convenience: Setting up ENS makes it easy for anyone to send you stealth payments with a human readable
+            address
+          </li>
+          <li>
+            Security: In order to access stealth funds, the Umbra app needs your private keys. Inputting your wallet’s
+            private keys into any website is very dangerous, and we don’t want you do to that! By going through the
+            account setup process, you sign a message to generate an app-specific set of Umbra private keys. This is
+            much more secure, as Umbra never has your wallet’s private key.
+          </li>
+        </ol>
       </f-a-q-item>
+
       <f-a-q-item question="Should I use my own ENS/CNS name or an umbra.eth subdomain?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          This is up to you, but there’s a few factors to consider here. Arguments in favor of an umbra.eth subdomain
+          include:
+        </p>
+        <ol>
+          <li>
+            New account privacy: This is your standard ENS/CNS privacy issue— if you publicly share your ordinary name,
+            everyone can see what funds are in your regular wallet. If you use a brand new umbra.eth name with a new
+            address, you’ll have no funds in it, giving you an extra bit of privacy to start with. This choice does not
+            impact the privacy of funds received via Umbra in any way.
+          </li>
+          <li>
+            Convenience: Using a umbra.eth name is a smoother and cheaper setup process. It only takes one on-chain
+            transaction, whereas configuring an existing name requires three on-chain transactions (see “Why are there
+            so many transactions to setup my account?” for more info on this).
+          </li>
+        </ol>
+
+        <p>Arguments in favor of using your existing ENS/CNS name include:</p>
+        <ol>
+          <li>
+            Convenience: Everyone already knows your public ENS/CNS name, and you don’t want to deal with maintaining
+            two names or sharing a new ENS name.
+          </li>
+          <li>
+            Security: As the owner of your ENS/CNS name, there is no third-party that can ever control your public key
+            configuration except you. See “Can my subdomain be revoked?” [TODO add link] for more information.
+          </li>
+        </ol>
       </f-a-q-item>
+
       <f-a-q-item question="Why are there so many transactions to setup my account?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Most ENS users are using the default Public Resolver, but in order to store your app-specific public keys in a
+          gas-efficient way, Umbra relies on it’s own Stealth Key Resolver. This resolver falls back to the Public
+          Resolver for anything not related to stealth keys, so it can do everything the public resolver can and more.
+          This means you will not lose any functionality by switching to it.
+        </p>
+        <p>This migration from the Public Resolver to the Stealth Key Resolver takes 3 transactions:</p>
+        <ol>
+          <li>
+            Authorize the Stealth Key Resolver to set records on the Public Resolver on your behalf. This is required so
+            the Stealth Key Resolver can act as a fallback resolver with permission to set records on Public Resolver
+            whenver requested.
+          </li>
+          <li>Set your stealth keys on the Stealth Key Resolver</li>
+          <li>Set your new resolver as the Stealth Key Resolver</li>
+        </ol>
       </f-a-q-item>
+
       <f-a-q-item question="Can my subdomain be revoked?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          In ENS, the owner of a root domain has control of the associated subdomains. We’ve delegated that control to a
+          <a
+            class="hyperlink"
+            href="https://github.com/ScopeLift/ens-resolvers/blob/master/contracts/StealthKeyFIFSRegistrar.sol"
+            target="_blank"
+            >smart contract</a
+          >
+          that allows anyone to claim and configure an Umbra subdomain, but as owners of the root umbra.eth domain, we
+          still have the ability to override this.
+        </p>
+        <p>
+          To mitigate this risk to users, we intend to transfer ownership ofumbra.eth to a multi-sig address with
+          publicly known participants, however that step has not yet been taken. While we can promise you that we won’t
+          use this capability, your risk assessment should include that we can. If you’ll be receiving large, frequent
+          payments via Umbra, then configuring your own ENS/CNS name remains the safest route.
+        </p>
       </f-a-q-item>
 
       <!-- Sending Funds -->
       <div class="text-center text-primary text-h6 header-black q-pb-none q-mt-xl">Sending Funds</div>
+
       <f-a-q-item question="Why are only certain tokens available?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          When you send ETH, the ETH is sent directly to the computed stealth address. That stealth address now has ETH,
+          which is required to pay gas, so the receiver can easily transfer that ETH with an ordinary send.
+        </p>
+        <p>
+          When you send tokens, the tokens are not sent directly to the computed stealth address. If they were, you’d
+          first need to get ETH into the stealth address in order to pay for the gas to withdraw funds (or use some
+          costly CREATE2 schemes). Instead, the tokens are held by the contract and can be released in one of two ways:
+        </p>
+        <ol>
+          <li>The stealth address directly calls the withdrawToken() method</li>
+          <li>
+            Anyone calls withdrawTokenOnBehalf() and passses in a signature from the stealth address. This enables
+            meta-transactions to be used with the relayer of your choice.
+          </li>
+        </ol>
+        <p>
+          By default, the Umbra app uses a relayer from the Umbra team. Managing relayers and making sure you are
+          properly reimbursed for gas fees can be tricky, so to start only a few tokens are enabled and the list of
+          supported tokens will be expanded.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="When will the recipient receive their funds?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Immediately! The recipient recieives and can withdraw funds immediately after the send transaction is mined.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="Why is the maximum memo length so short?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Recall that the sender generates a random number, and uses it compute the receiver’s stealth address. This
+          random number is 32 bytes. However, 16 bytes of randomness is sufficient for security, meaning you have 16
+          free bytes to do whatever you want with. These 16 free bytes are what we call the
+          <span class="text-italic">payload extension</span>. The app uses the payload extension to allow you to send
+          short memos with your payment.
+        </p>
       </f-a-q-item>
 
       <!-- Receiving Funds -->
       <div class="text-center text-primary text-h6 header-black q-pb-none q-mt-xl">Receiving Funds</div>
+
       <f-a-q-item question="What addresses are safe for withdrawing funds to?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          We suggest 3 ways of withdrawing in a privacy-preserving way. Note that each comes with its own set of
+          tradeoffs.
+        </p>
+
+        <ol>
+          <li>
+            Withdraw to an address that is not publicly associated with your identity (tradeoff: the sender will now be
+            able to infer you control that address)
+          </li>
+          <li>
+            Generate a new address and withdraw into that (tradeoff: if you’ve received tokens, you’ll have to fund that
+            address with ETH for gas before you can use them)
+          </li>
+          <li>
+            Withdraw to an exchange address (tradeoff: if you withdraw to Coinbase, then Coinbase will know who sent you
+            funds)
+          </li>
+        </ol>
       </f-a-q-item>
+
       <f-a-q-item question="What addresses are NOT safe for withdrawing funds to?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          The risk to consider when withdrawing is that if you withdraw to an address that is associated with some
+          publicly known identity, then privacy is lost as follows:
+        </p>
+        <p>
+          Let’s say Alice sends funds to Bob via Umbra. Right now, only Alice and Bob know that Alice paid Bob. Any
+          other observers know Alice sent funds to someone, but they don’t know who that someone is.
+        </p>
+        <p>
+          If Bob withdraws those funds to his publicly known bob.eth address, which resolves to 0x123...def, then
+          observers know one of two things happened:
+        </p>
+
+        <ol>
+          <li>Scenario 1: Alice sent funds to Bob, then Bob withdrew them to his own address, OR</li>
+          <li>Scenario 2: Alice sent funds to someone that knows Bob, and paid Bob from their stealth address</li>
+        </ol>
+
+        <p>
+          Additionally, consider the case where Bob withdraws by directly paying his friend Charlie—Charlie now knows
+          that Alice paid Bob.
+        </p>
+        <p>
+          To help mitigate this, the Umbra app will try to warn you if you enter a withdrawal address that might reduce
+          your privacy. Therefore you’ll see warnings if the app detects you are withdrawing to an address that:
+        </p>
+        <ol>
+          <li>Has an ENS or CNS name</li>
+          <li>Owns POAP tokens</li>
+          <li>Is the wallet you are logged in with</li>
+          <li>(Coming soon): Withdrawing to an address that has contributed to Gitcoin.</li>
+        </ol>
+        <p>This is not a comprehensive list of potentially dangerous withdrawal addresses, so use caution.</p>
       </f-a-q-item>
+
       <f-a-q-item question="Can Umbra make it easier to withdraw funds in a privacy preserving way?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Yes! This is an area where we intend to make many improvements in the future, mostly by relying on Umbra’s
+          post-withdrawal hook functionality.
+        </p>
+        <p>Some examples of how we plan to leverage this include:</p>
+        <ol>
+          <li>Withdraw straight into Tornado Cash</li>
+          <li>Atomically swap some tokens to ETH and send all of it to a fresh address</li>
+          <li>Withdraw funds straight into DeFi protocols</li>
+        </ol>
+        <p>
+          There are many other options which we can pursue via hooks to greatly expand the privacy preserving withdrawal
+          options.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="Why does it take so long to scan for my funds?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          To find payments sent to you, the app needs to search through every payment that was sent and check if it was
+          for you. So the more payments that have been sent, the longer this will take.
+        </p>
+        <p>
+          This is an open research problem with various potential solutions (
+          <a
+            class="hyperlink"
+            href="https://ethresear.ch/t/open-problem-improving-stealth-addresses/7438"
+            target="_blank"
+            >1</a
+          >, <a class="hyperlink" href="https://eprint.iacr.org/2021/089.pdf" target="_blank">2</a>), and we hope to
+          improve this over time.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="When are my funds available to withdraw?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>Immediately! You recieive and can withdraw funds immediately after the send transaction is mined.</p>
       </f-a-q-item>
 
       <!-- Security -->
       <div class="text-center text-primary text-h6 header-black q-pb-none q-mt-xl">Security</div>
+
       <f-a-q-item question="Has Umbra been audited?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          The contracts have been audited by ConsenSys Diligence, and the audit report can be found
+          <a
+            class="hyperlink"
+            href="https://consensys.net/diligence/audits/2021/03/umbra-smart-contracts/"
+            target="_blank"
+            >here</a
+          >.
+        </p>
+        <p>
+          The umbra-js library that manages the bulk of the required off-chain logic has not yet been audited, but an
+          audited is scheduled for mid-May with Least Authority.
+        </p>
+        <p>
+          Off-chain elliptic curve cryptography is a core part of Umbra’s business logic, so we rely on
+          <a class="hyperlink" href="https://paulmillr.com/" target="_blank">Paul Miller</a>’s simple, zero-dependency
+          <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank">noble-secp256k1</a>
+          library to handle this. Thanks to the
+          <a
+            class="hyperlink"
+            href="https://gitcoin.co/grants/2451/audit-of-noble-secp256k1-cryptographic-library"
+            target="_blank"
+            >community</a
+          >, we were able to raise enough funds to pay for an audit of this library with Cure53.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="What are the risks of Umbra?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Like all software in the crypto ecosystem, using Umbra comes with risks. This includes risks of critical bugs,
+          hacks, or other attacks from malicious actors. Any or all of these scenarios could result in a loss of funds.
+        </p>
+        <p>To be more specific, here are a few of the risks we’ve seen play out with other projects in the past:</p>
+
+        <ol>
+          <li>Contract vulnerabilities that allow attackers to steal contract funds or leaves them stuck</li>
+          <li>A bug in our off-chain code that causes funds to be sent to an unrecoverable address</li>
+          <li>DNS being hijacked to steal user’s private keys</li>
+          <li>Supply chain attacks of frontend code to steal user’s private keys</li>
+        </ol>
+        <p>
+          It goes without saying that we’re working hard to prevent these, but that does not mean we’ll succeed. Umbra
+          is provided with absolutely no warranty, and you should use it at your own risk.
+        </p>
       </f-a-q-item>
 
       <!-- Technical Details -->
       <div class="text-center text-primary text-h6 header-black q-pb-none q-mt-xl">Technical Details</div>
+
       <f-a-q-item question="What networks is Umbra deployed on and what are the contract addresses?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        Umbra is deployed at 0xTODO on mainnet and Rinkeby.
       </f-a-q-item>
+
       <f-a-q-item question="How does it work?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p class="text-bold">Stealth Address Overview</p>
+        <p>Let’s start with how the Umbra protocol (and more generally, how stealth addresses) work:</p>
+
+        <p>
+          The recipient has public key P and private key p. The sender generates a random number r, and computes a
+          stealth public key as P_stealth = P * r using elliptic curve multiplication. The sender derives the Ethereum
+          address a_stealth from that public key, and sends funds to it. Thanks to the magic of elliptic curve math, the
+          recipient can generate the private key p_stealth needed to access funds at a_stealth by computing p_stealth =
+          p * r.
+        </p>
+        <p>
+          The first problem to solve is how does the sender get the value r to the receiver? If r was publicly known,
+          oberservers could determine who funds were sent to by computing P * r for various published P values until the
+          find the stealth address. So r needs to be encrypted.
+        </p>
+        <p>
+          Encryption is done with ECDH, meaning the sender uses the recipient’s public key to encrypt the random number.
+          The encrypted random number and stealth address are emitted as an Annoucement event from the Umbra contract.
+          ECDH requires the sender to generate an ephemeral private key for encryption, so the ephemeral public key
+          P_ephemeral that the receiver will need to decrypt is also emitted in this event.
+        </p>
+        <p>Now the receiver can scan through all Announcement events and find their funds as follows:</p>
+        <ul>
+          <li>
+            Using their private key p with P_ephemeral, the can compute the ECDH shared secret and decrypt the random
+            number. This will always decrypt to something, but we don’t yet know if it’s the correct number.
+          </li>
+          <li>
+            So the recipient multiplies the decrypted random number by p to get p_stealth, and computes the address
+            controlled by p_stealth
+          </li>
+          <li>
+            If that address matches the stealth address included in the Annoucement, the recipient knows that payment
+            was for them and can withdraw it.
+          </li>
+        </ul>
+
+        <p class="text-bold">Application Private Key</p>
+        <p>
+          As seen from the above explanation, the app will need access to your private key to perform the required math.
+          But when you connect your wallet to an app, the wallet does not share your private key with the app. This is
+          good, because if it did any app you use could steal your funds! So how does Umbra access your key? There’s a
+          few options:
+        </p>
+        <ol>
+          <li>
+            Ask the user to input their wallet’s private key into a form. This is terrible from both a security and
+            user-experience perspective, so we do not do this
+          </li>
+          <li>
+            Generate a random private key and ask you to back it up. This works, but having to backup an app-specific
+            secret is not ideal.
+          </li>
+          <li>Ask the user to sign a message, hash the signature, and generate the key from the signature.</li>
+        </ol>
+        <p>
+          Option 3 solves the issues of otpions 1 and 2, and is the approach used by the app. Similar approaches are
+          used by <a class="hyperlink" href="https://loopring.org/#/" target="_blank">Loopring</a> and
+          <a class="hyperlink" href="https://zksync.io/" target="_blank">zkSync</a> as well, and they were the
+          inspiration for this approach.
+        </p>
+
+        <p class="text-bold">Scanning for Funds</p>
+        <p>
+          The final consideration has to do with scanning. Because every single announcement needs to be scanned, it can
+          take a long time to find your finds.
+        </p>
+        <p>
+          One way to speed this up is to delegate scanning to a third-party service and have them notify you when you
+          receive funds. But the scanning service needs p to determine if you received funds, and if they have p they
+          can steal your funds!
+        </p>
+        <p>
+          We can solve this by instead generating two app-specific private keys. One private key will be the viewing
+          private key, p_view, used for encrypting the random number. The other will be the spending private key,
+          p_spend, used for computing the stealth address and accessing those funds. Therefore, our send and receive
+          flow is now modified a bit to:
+        </p>
+        <ol>
+          <li>
+            Recipient has two private keys, p_spend and p_view, and publishes the corresponding public keys P_spend and
+            P_view.
+          </li>
+          <li>
+            The sender generates a random number r and encrypts it using P_view and an ephemeral private key p_ephemeral
+            to generate a ciphertext c
+          </li>
+          <li>
+            The sender computes the stealth address as the address derived from P_stealth = P_spend * r and sends funds
+            to that address
+          </li>
+          <li>The Umbra contract emits c, P_ephemeral, and stealth address a_stealth</li>
+          <li>
+            For each event, the receiver uses p_view and P_ephemeral to decrypt r, then checks if p_stealth = p_spend *
+            r is the private key that controls a_stealth
+          </li>
+        </ol>
+        <p>
+          With this approach, the recipient can provide a third-party scanning service with p_view and P_spend. The
+          service can now check if the recipient has received funds without having the ability to spend them.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="What are spending and viewing keys?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        Borrowing the
+        <a class="hyperlink" href="https://electriccoin.co/blog/explaining-viewing-keys/" target="_blank"
+          >nomenclature</a
+        >
+        from Zcash, Umbra allows, but does not require, users to use different private keys for the "encrypt r" and
+        “Compute stealth address” steps. This is the default behavior of the Umbra app, but it can be overriden by using
+        Advanced Mode.
+
+        <p>
+          See “Technical Details: How does it work?” [TODO add link] for more details on how spending and viewing keys
+          work.
+        </p>
       </f-a-q-item>
 
       <!-- Advanced Mode -->
       <div class="text-center text-primary text-h6 header-black q-pb-none q-mt-xl">Advanced Mode</div>
+
       <f-a-q-item question="What is Advanced Mode?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          For power users who understand the protocol, how it works, and the risks involved, you may want to enable
+          Advanced Mode. This provides a range of additional capabilities, but improper use can result in privacy being
+          reduced or funds being lost. Use with caution!
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="How do I send funds to a user by their address or public key?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          As long as a user has sent at least one transaction on Ethereum, you can send funds to a stealth address they
+          control even if they have not setup an ENS name for use with Umbra. This works as follows:
+        </p>
+        <ol>
+          <li>Enable Advanced Mode</li>
+          <li>Navigate to the Send page and connect your wallet</li>
+          <li>
+            The recipient field normally only accepts ENS/CNS names, but it will now also accept a public key, an
+            address, or even a transaction hash! (Using a transaction hash is the same as entering the from address of
+            that transaction)
+          </li>
+          <li>Continue to send funds like normal</li>
+        </ol>
+        <p>Be aware of the following tradeoffs incurred when sending funds this way:</p>
+        <ol>
+          <li>This transaction does not use separate spending and viewing keys, and the same key is used for each</li>
+          <li>
+            To withdraw funds from the app, the recipient must enable Advanced Mode and manually paste their private key
+            into the website. This is the big tradeoff, so make sure the recipient is ok with this before sending funds
+            this way.
+          </li>
+        </ol>
       </f-a-q-item>
+
       <f-a-q-item question="How can I access funds sent to me by using my address as the recipient identifier?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          If funds were sent to you by using your public key directly, your address, or a transaction hash of a
+          transaction you sent, your funds can still be accessed.
+        </p>
+
+        <p>The most secure way to do this is locally using the umbra-js package:</p>
+
+        <ol>
+          <li>Setup a local JavaScript project with yarn init</li>
+          <li>Install ethers and umbra-js using yarn add ethers @umbra/umbra-js</li>
+          <li>
+            In your script, perform the following:
+            <ol>
+              <li>Connect to a mainnet provider with ethers</li>
+              <li>Initialize an instance of the Umbra class with umbra = new Umbra(provider, 1);</li>
+              <li>
+                Initialize an instance of the KeyPair class with your address’ private key, keyPair = new
+                KeyPair(myPrivateKey)
+              </li>
+              <li>
+                Use the umbra.scan() method to search for your funds. The viewingPrivateKey input is now be given by
+                keyPair.privateKeyHex, and the spendingPublicKey input is given by keyPair.publicKeyHex
+              </li>
+              <li>
+                For each announcement, you can use the static method
+                Umbra.computeStealthPrivateKey(keyPair.privateKeyHex, announcement.randomNumber) to compute the stealth
+                private key
+              </li>
+            </ol>
+          </li>
+          <li>
+            Now that you have the stealth private key(s), you can sign and relay withdrawal transactions using any
+            method you prefer. See the various withdrawal methods in the Umbra class that may be helpful here.
+          </li>
+        </ol>
+
+        <p>
+          If you prefer convenience over security, you can instead withdraw using the Umbra app, but be careful—entering
+          your private key into a website is never a good idea! If you do want to go this route:
+        </p>
+
+        <ol>
+          <li>Enable Advanced Mode</li>
+          <li>Navigate to the Receive page and connect your wallet</li>
+          <li>Before scanning, enter the appropriate private key in the form</li>
+          <li>Leave the start block and end block fields blank if you don’t need them</li>
+          <li>Click “Scan” to scan for funds</li>
+        </ol>
       </f-a-q-item>
+
       <f-a-q-item question="How can I scan just certain range of blocks?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          If you have an idea of approximately when you were sent funds, you can speed up the scanning process of only
+          querying events within a certain range of blocks. To do this:
+        </p>
+        <ol>
+          <li>Enable Advanced Mode</li>
+          <li>Navigate to the Receive page and connect your wallet</li>
+          <li>Before scanning, enter the desired start and end block numbers</li>
+          <li>Leave the private key field blank if you don’t need it</li>
+          <li>Click “Scan” to scan for funds</li>
+        </ol>
+        <p>
+          The start and end block numbers will be saved in local storage and automatically applied next time you scan
+          with advanced mode on. Leave both fields blank to clear the values and use the defaults.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="How can I view the stealth private keys?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        If you want to see the stealth private key for a certain payment you received:
+        <ol>
+          <li>Enable Advanced Mode</li>
+          <li>Navigate to the Receive page and scan for funds</li>
+          <li>For transactions that have not been withdrawn, click “Withdraw” to expand the row</li>
+          <li>
+            You’ll see text that says “Show withdrawal private key”, which will show the stealth private key needed to
+            withdraw this payment
+          </li>
+        </ol>
       </f-a-q-item>
 
       <!-- For Developers -->
       <div class="text-center text-primary text-h6 header-black q-pb-none q-mt-xl">For Developers</div>
+
       <f-a-q-item question="How can I build on top of Umbra?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Developer documentation is not yet written, but all code is thoroughly commented so it should be
+          straightforward to read the code to understand how things work and build on top of it.
+        </p>
+        <p>
+          The umbra-js library is a good starting point, as it will give you the full, big picture view of how Umbra
+          works, as well as go into the details. Afterwards, you can check out the contract and to understand exactly
+          where it fits in.
+        </p>
+        <p>
+          The below should be a good order for traversing the umbra-js codebase. If you find this confusing, please let
+          us know what a better order would be!
+        </p>
+
+        <ol>
+          <li>
+            src/classes/Umbra.ts: The Umbra class is a high-level class intended for developers to directly interact
+            with. It abstracts away the complexity of the protocol into a few mian methods:
+            <ol>
+              <li>
+                send() is used to send funds to another user, and automatically handles the underlying cryptography
+                required
+              </li>
+              <li>
+                generatePrivateKeys() prompts the user for a signature and generates their spending and viewing keys
+              </li>
+              <li>
+                scan() lets you find funds sent to the specified user, by providing just the user’s spending public key
+                and viewing private key
+              </li>
+              <li>withdraw() lets a stealth address directly withdraw both tokens and ETH</li>
+              <li>
+                withdrawOnBehalf() uses meta-transactions to relay a withdraw transaction on behalf of another user, and
+                the signWithdraw() method is used to get the required signature
+              </li>
+              <li>relayWithdrawOnBehalf() can be used to relay a meta-transaction using the default Umbra relayer</li>
+            </ol>
+          </li>
+          <li>
+            src/classes/KeyPair.ts: This class is where the core cryptography logic lives. A KeyPair class is
+            instantiated with either a private or public key, and the class methods help you perform various operations
+            with those keys, including encryption/decryption, multiplication, and compression/decompression of public
+            keys
+          </li>
+          <li>
+            src/classes/RandomNumber.ts: This simple class is used to generate our 32 byte random number, and will
+            properly format the number when provided an optional 16 byte payload extension
+          </li>
+          <li>
+            src/classes/DomainService.ts: Since Umbra supports both ENS and CNS, this class wraps around the two name
+            services to help get or set public keys for the provided name. The two files files class delegates to are
+            src/utils/ens.ts and src/utils/cns.ts.
+          </li>
+          <li>
+            src/utils/utils.ts contains various helper methods for a range of tasks, primarily related to getting a
+            recipient’s public keys
+          </li>
+          <li>src/types.ts: You’ll see a few custom types used throughout, which are all defined here</li>
+        </ol>
+
+        <p>
+          After reading through the above, you should be well-equipped to understand the Umbra.sol contract, which
+          you’ll notice is actually quite simple. The one new part in the contract which you won’t have seen anything
+          about yet is the hooks. You can read more about this in the “What are Hooks and how do I use them?” section.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="How can I receive a user’s viewing key, but not their spending key?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          Currently, the only way to do this is request a user’s signature using Umbra.generatePrivateKeys(), which will
+          return both their spending key and their viewing key. It’s up to you to discard the spending key and not use
+          it. A sample snippet to do this is below:
+        </p>
+
+        <!-- // Import the Umbra class -->
+        <!-- import { Umbra } from '@umbra/umbra-js'; -->
+        <!--  -->
+        <!-- // Let `signer` be an ethers JsonRpcSigner generated when the user -->
+        <!-- // connected their wallet. The below line will request a signature -->
+        <!-- // from the user, compute both their spending and viewing keys, but -->
+        <!-- // only return the viewing KeyPair instance to the caller. -->
+        <!-- const { viewingKeyPair } = await Umbra.generatePrivateKeys(signer); -->
       </f-a-q-item>
+
       <f-a-q-item question="What are Hooks and how do I use them?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          If you’re familiar with ERC-777 or other similar standard, you are already familiar with the concept of hooks.
+          Hooks let the caller perform other actions in addition to the core logic of the method being called. In the
+          case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that
+          contract.
+        </p>
+        <p>
+          Umbra works simiarly—when withdrawing funds from the contract, users might want to deposit them straight into
+          Tornado, or swap their DAI for ETH. Hooks let you do this.
+        </p>
+        <p>You’ll notice the Umbra contract exposes multiple withdraw methods. First we have:</p>
+        <ol>
+          <li>withdrawToken() for standard withdrawals, i.e. simple transfers</li>
+          <li>
+            withdrawTokenOnBehalf() has the same functionality as withdrawToken(), but lets a relayer submit the
+            withdraw on your behalf to support meta-transactions.
+          </li>
+        </ol>
+        <p>Then we have the two hook methods:</p>
+        <ol>
+          <li>
+            withdrawTokenAndCall() is analagous to withdrawToken(), but lets you pass in the address of a contract and
+            the data to call on that contract.
+          </li>
+          <li>
+            withdrawTokenAndCallOnBehalf() is analagous to withdrawTokenOnBehalf(), but also lets you pass in the
+            address of a contract and the data to call on that contract.
+          </li>
+        </ol>
+        <p>
+          To use hooks, first you need to write and deploy a hook contract conforming to the IUmbraHookReceiver
+          interface. This requires the contract to implement a method calls tokensWithdrawn that takes a handful of
+          parameters. The address of this contract would be passed as the value for the _hook input in the above
+          methods.
+        </p>
+        <p>
+          Then you need to encode the calldata that the hook contract will receive and can operate on. See the
+          <a
+            class="hyperlink"
+            href="https://docs.ethers.io/v5/single-page/#/v5/api/utils/abi/interface/-%23-Interface--encoding"
+            target="_blank"
+            >Encoding Data</a
+          >
+          section of the ethers.js docs for info on how to encode function data.
+        </p>
+        <p>
+          And that’s all there is to it. With the address of the hook contract and the encoded calldata, you are ready
+          to call one of the two hook-based methods.
+        </p>
       </f-a-q-item>
+
       <f-a-q-item question="What is the payload extension and how do I use it?">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-        laborum.
+        <p>
+          The Umbra contract expects a 32 byte random number to be used, but due to how elliptic curve cryptography
+          works, a random number over 16 bytes provides no added security*.
+        </p>
+        <p>
+          Therefore, we decided to use 16 byte random numbers to maximize security, and provide the other 16 bytes to
+          developers to do anything they want with. These free 16 bytes of arbitrary data are what we call the payload
+          extension.
+        </p>
+        <p>
+          In the case of the Umbra app, we use this to let senders write short messages to receivers. Other use cases
+          for this payload extension are only limited by your imagination!
+        </p>
+        <p class="text-caption text-italic">
+          * The strength of elliptic curve cryptography is roughly equal to
+          <a
+            class="hyperlink"
+            href="https://en.wikipedia.org/wiki/Elliptic-curve_cryptography#Key_sizes"
+            target="_blank"
+            >half the size</a
+          >
+          of the prime field, i.e. half the size of the private keys. Since Ethereum is based on the secp256k1 curve
+          with 256 bit (32 byte) keys, it really only offers 128 bits (16 bytes) of security.
+        </p>
       </f-a-q-item>
     </q-list>
   </q-page>
