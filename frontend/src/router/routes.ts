@@ -11,6 +11,7 @@ const routes: RouteConfig[] = [
       { name: 'setup', path: '/setup', component: () => import('pages/AccountSetup.vue') },
       { name: 'contact', path: '/contact', component: () => import('src/pages/Contact.vue') },
       { name: 'FAQ', path: '/faq', component: () => import('src/pages/FAQ.vue') },
+      { name: 'terms', path: '/terms', component: () => import('src/pages/TermsOfService.vue') },
     ],
   },
 

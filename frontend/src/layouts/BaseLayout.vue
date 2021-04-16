@@ -75,7 +75,7 @@
     </q-page-container>
 
     <q-footer class="q-mx-md q-mb-md q-pt-xl" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
-      <div class="row justify-between">
+      <div class="row justify-between items-center">
         <!-- Column 1: User settings -->
         <div class="col">
           <!-- Dark mode toggle -->
@@ -107,7 +107,7 @@
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
-        <div class="col text-center text-caption">
+        <div class="col text-center">
           Built by
           <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
         </div>
@@ -123,6 +123,11 @@
           <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="q-ml-md no-text-decoration">
             <q-icon class="dark-toggle" name="fab fa-github" size="xs" />
           </a>
+        </div>
+      </div>
+      <div class="row justify-center q-mt-lg">
+        <div class="col-auto">
+          <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
         </div>
       </div>
     </q-footer>
