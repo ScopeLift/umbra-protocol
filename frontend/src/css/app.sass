@@ -39,6 +39,9 @@
 .body, div, p
   font-family: 'body'
 
+.code
+  font-family: monospace
+
 // Color classes
 .primary
   color: $primary
@@ -95,6 +98,11 @@ p, div
   max-width: 525px
   margin: 0 auto
 
+.form-extra-wide
+  // Used only on the FAQ page for now
+  max-width: 600px
+  margin: 0 auto
+
 .horizontal-center
   margin: 0 auto
 
@@ -112,6 +120,15 @@ p, div
     cursor: pointer
     display: inline-block
 
+  .code-grey
+    color: grey
+  .code-blue
+    color: #0077aa
+  .code-green
+    color: #669900
+  .code-pink
+    color: #dd4a68
+
 
 .body--dark
   .dark-toggle
@@ -125,6 +142,15 @@ p, div
     text-decoration: underline
     cursor: pointer
     display: inline-block
+
+  .code-grey
+    color: grey
+  .code-blue
+    color: #42c6ff
+  .code-green
+    color: #ddff99
+  .code-pink
+    color: #eda1b0
 
 // Set max width for all content
 .all-content-format
