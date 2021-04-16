@@ -39,7 +39,7 @@
           </q-item-section>
 
           <q-item-section class="text-left">
-            <div>Email us at <a class="hyperlink" href="mailto:hello@umbra.cash">hello@umbra.cash</a></div>
+            <div>Email us at <a class="hyperlink" href="mailto:support@umbra.cash">support@umbra.cash</a></div>
           </q-item-section>
         </q-item>
       </q-list>
