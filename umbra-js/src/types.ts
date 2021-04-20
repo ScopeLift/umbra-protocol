@@ -1,20 +1,19 @@
-import { ethers } from 'ethers';
-import { BigNumber } from '@ethersproject/bignumber';
-import { Event, Overrides } from '@ethersproject/contracts';
 import {
+  BigNumber,
   Block,
+  Event,
+  ExternalProvider as EthersExternalProvider,
+  JsonRpcFetchFunc,
+  JsonRpcProvider,
+  Overrides,
   TransactionReceipt,
   TransactionResponse,
-  JsonRpcProvider,
   Web3Provider,
-} from '@ethersproject/providers';
+} from './ethers';
 
 // ========================================= Ethers types ==========================================
-export { SignatureLike } from '@ethersproject/bytes';
-export { TransactionResponse } from '@ethersproject/providers';
-
-export type ExternalProvider = ethers.providers.ExternalProvider | ethers.providers.JsonRpcFetchFunc;
-
+export { TransactionResponse } from './ethers';
+export type ExternalProvider = EthersExternalProvider | JsonRpcFetchFunc;
 export type EthersProvider = Web3Provider | JsonRpcProvider;
 
 // ======================================= Umbra class types =======================================

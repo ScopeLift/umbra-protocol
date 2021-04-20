@@ -2,30 +2,32 @@
  * @dev Simplifies interaction with the Umbra contracts
  */
 
-import { Contract, Wallet } from 'ethers';
-import { defaultAbiCoder } from '@ethersproject/abi';
-import { getAddress } from '@ethersproject/address';
-import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { arrayify, hexlify, isHexString, splitSignature } from '@ethersproject/bytes';
-import { ContractTransaction, Overrides } from '@ethersproject/contracts';
-import { keccak256 } from '@ethersproject/keccak256';
-import { JsonRpcSigner } from '@ethersproject/providers';
-import { sha256 } from '@ethersproject/sha2';
-import { toUtf8Bytes } from '@ethersproject/strings';
-import { AddressZero } from '@ethersproject/constants';
+import {
+  AddressZero,
+  arrayify,
+  BigNumber,
+  BigNumberish,
+  Contract,
+  ContractTransaction,
+  defaultAbiCoder,
+  getAddress,
+  hexlify,
+  isHexString,
+  JsonRpcSigner,
+  keccak256,
+  Overrides,
+  sha256,
+  splitSignature,
+  toUtf8Bytes,
+  Wallet,
+} from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import * as erc20Abi from '../abi/ERC20.json';
-import type {
-  Announcement,
-  UserAnnouncement,
-  ChainConfig,
-  EthersProvider,
-  SendOverrides,
-  ScanOverrides,
-} from '../types';
+// prettier-ignore
+import type { Announcement, UserAnnouncement, ChainConfig, EthersProvider, SendOverrides, ScanOverrides } from '../types';
 
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');

@@ -1,8 +1,7 @@
 import * as chai from 'chai';
 import { ethers } from 'hardhat';
 import { Wallet } from 'ethers';
-import { BigNumber } from '@ethersproject/bignumber';
-import { hexZeroPad } from '@ethersproject/bytes';
+import { BigNumber, hexZeroPad } from '../src/ethers';
 import { randomBytes } from '@ethersproject/random';
 import { RandomNumber } from '../src/classes/RandomNumber';
 import { KeyPair } from '../src/classes/KeyPair';

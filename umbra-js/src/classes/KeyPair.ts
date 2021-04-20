@@ -3,10 +3,7 @@
  */
 
 import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from 'noble-secp256k1';
-import { BigNumber } from '@ethersproject/bignumber';
-import { hexlify, hexZeroPad, isHexString } from '@ethersproject/bytes';
-import { sha256 } from '@ethersproject/sha2';
-import { computeAddress } from '@ethersproject/transactions';
+import { computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
 import { RandomNumber } from './RandomNumber';
 import { lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
