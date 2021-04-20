@@ -302,15 +302,18 @@ contract Umbra is Ownable {
     bytes32 _r,
     bytes32 _s
   ) internal view {
-
     uint256 _chainId;
-    assembly { _chainId := chainid() }
+    assembly {
+      _chainId := chainid()
+    }
 
     bytes32 _digest =
       keccak256(
         abi.encodePacked(
           "\x19Ethereum Signed Message:\n32",
-          keccak256(abi.encode(_chainId, address(this), _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data))
+          keccak256(
+            abi.encode(_chainId, address(this), _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data)
+          )
         )
       );
 
