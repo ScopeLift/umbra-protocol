@@ -2,14 +2,18 @@
  * @dev Assortment of helper methods
  */
 
+import {
+  AddressZero,
+  Contract,
+  ContractInterface,
+  EtherscanProvider,
+  isHexString,
+  keccak256,
+  resolveProperties,
+  serialize as serializeTransaction,
+  splitSignature,
+} from '../ethers';
 import { Signature, recoverPublicKey } from 'noble-secp256k1';
-import { Contract, ContractInterface } from 'ethers';
-import { isHexString, splitSignature } from '@ethersproject/bytes';
-import { AddressZero } from '@ethersproject/constants';
-import { keccak256 } from '@ethersproject/keccak256';
-import { resolveProperties } from '@ethersproject/properties';
-import { EtherscanProvider } from '@ethersproject/providers';
-import { serialize as serializeTransaction } from '@ethersproject/transactions';
 import { ens, cns } from '..';
 import { DomainService } from '../classes/DomainService';
 import { EthersProvider } from '../types';

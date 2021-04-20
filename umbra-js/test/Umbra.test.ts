@@ -1,14 +1,11 @@
 import { ethers } from 'hardhat';
 import hardhatConfig from '../hardhat.config';
 import { Umbra } from '../src/classes/Umbra';
-import { BigNumber, BigNumberish } from 'ethers';
-import type { Wallet } from 'ethers';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { BigNumberish, BigNumber, JsonRpcProvider, Wallet } from '../src/ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
 import * as chai from 'chai';
 import { expectRejection } from './utils';
-
 import type { ChainConfig } from '../src/types';
 import {
   TestToken as ERC20,

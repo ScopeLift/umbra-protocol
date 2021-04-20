@@ -4,8 +4,7 @@
  * last 16 bytes are the random number
  */
 
-import { BigNumber } from '@ethersproject/bignumber';
-import { hexZeroPad, isHexString } from '@ethersproject/bytes';
+import { BigNumber, hexZeroPad, isHexString } from '../ethers';
 import { utils } from 'noble-secp256k1';
 
 const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
