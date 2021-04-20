@@ -159,12 +159,17 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date, copyToClipboard } from 'quasar';
-import { Contract } from 'ethers';
-import { BigNumber } from '@ethersproject/bignumber';
-import { arrayify } from '@ethersproject/bytes';
-import { Block, ExternalProvider, TransactionResponse, Web3Provider } from '@ethersproject/providers';
-import { toUtf8String } from '@ethersproject/strings';
-import { formatUnits } from '@ethersproject/units';
+import {
+  arrayify,
+  BigNumber,
+  Block,
+  Contract,
+  ExternalProvider,
+  formatUnits,
+  toUtf8String,
+  TransactionResponse,
+  Web3Provider,
+} from 'src/utils/ethers';
 import { DomainService, Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
 import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Aliases';
