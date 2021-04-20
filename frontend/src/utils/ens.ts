@@ -2,12 +2,7 @@
  * @notice Methods for viewing properties of and managing ENS names
  */
 
-import { getAddress } from '@ethersproject/address';
-import { AddressZero } from '@ethersproject/constants';
-import { Contract } from '@ethersproject/contracts';
-import { namehash } from '@ethersproject/hash';
-import { keccak256 } from '@ethersproject/keccak256';
-import { toUtf8Bytes } from '@ethersproject/strings';
+import { AddressZero, Contract, keccak256, namehash, toUtf8Bytes, getAddress } from 'src/utils/ethers';
 import { DomainService, ens, KeyPair } from '@umbra/umbra-js';
 import { Provider, Signer, TransactionResponse } from 'components/models';
 import useAlerts from 'src/utils/alerts';

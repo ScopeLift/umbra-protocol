@@ -72,7 +72,7 @@
 import { computed, defineComponent, onMounted, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
 import { UserAnnouncement } from '@umbra/umbra-js';
-import { isHexString } from '@ethersproject/bytes';
+import { isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
 import useWallet from 'src/store/wallet';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';

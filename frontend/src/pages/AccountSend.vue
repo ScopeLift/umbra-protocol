@@ -51,11 +51,7 @@
 <script lang="ts">
 import { computed, defineComponent, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { isHexString, hexlify, hexZeroPad } from '@ethersproject/bytes';
-import { MaxUint256 } from '@ethersproject/constants';
-import { Contract } from '@ethersproject/contracts';
-import { parseUnits } from '@ethersproject/units';
-import { toUtf8Bytes } from '@ethersproject/strings';
+import { hexlify, hexZeroPad, isHexString, MaxUint256, parseUnits, toUtf8Bytes, Contract } from 'src/utils/ethers';
 import { ens, cns } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
