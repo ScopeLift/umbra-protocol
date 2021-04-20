@@ -3,9 +3,7 @@
  */
 
 import { EthersProvider, TransactionResponse } from '../types';
-import { BigNumber } from '@ethersproject/bignumber';
-import { AddressZero, Zero } from '@ethersproject/constants';
-import { namehash as ensNamehash } from '@ethersproject/hash';
+import { AddressZero, BigNumber, namehash as ensNamehash, Zero } from '../ethers';
 import { KeyPair } from '../classes/KeyPair';
 import * as ForwardingStealthKeyResolverAbi from '../abi/ForwardingStealthKeyResolver.json';
 import * as ENSRegistryAbi from '../abi/ENSRegistry.json';

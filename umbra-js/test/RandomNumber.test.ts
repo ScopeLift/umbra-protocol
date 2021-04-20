@@ -1,7 +1,6 @@
 import { RandomNumber } from '../src/classes/RandomNumber';
 import * as chai from 'chai';
-import { BigNumber } from '@ethersproject/bignumber';
-import { isHexString, hexZeroPad } from '@ethersproject/bytes';
+import { BigNumber, hexZeroPad, isHexString } from '../src/ethers';
 import { randomBytes } from '@ethersproject/random';
 
 const { expect } = chai;
