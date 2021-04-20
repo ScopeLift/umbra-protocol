@@ -290,7 +290,14 @@
       FINANCIAL CHARGES AND LEGAL LIABILITY THAT HE OR SHE MAY INCUR.
     </p>
 
-    <div class="text-bold">13. Dispute Resolution; Arbitration</div>
+    <div class="text-bold">13. Privacy Policy</div>
+    <p>
+      Our Privacy Policy describes the ways we collect, use, store and disclose your personal information, and is hereby
+      incorporated by this reference into these Terms. You agree to the collection, use, storage, and disclosure of your
+      data in accordance with our Privacy Policy.
+    </p>
+
+    <div class="text-bold">14. Dispute Resolution; Arbitration</div>
     <p>
       PLEASE READ THIS SECTION CAREFULLY. IT MAY SIGNIFICANTLY AFFECT YOUR LEGAL RIGHTS, INCLUDING YOUR RIGHT TO FILE A
       LAWSUIT IN COURT.
@@ -349,7 +356,7 @@
       attention of federal, state, or local agencies and, if the law allows, they can seek relief against us for you.
     </p>
 
-    <div class="text-bold">14. Waiver and Severability</div>
+    <div class="text-bold">15. Waiver and Severability</div>
     <p>
       No waiver by the Company of any term or condition set out in these Terms of Use shall be deemed a further or
       continuing waiver of such term or condition or a waiver of any other term or condition, and any failure of the
@@ -359,7 +366,7 @@
       minimum extent such that the remaining provisions of the Terms of Use will continue in full force and effect.
     </p>
 
-    <div class="text-bold">15. Content Standards</div>
+    <div class="text-bold">16. Content Standards</div>
     <p>
       These content standards apply to any and all contributions and use by you to the App or Site. Your use and
       contributions must in their entirety comply with all applicable federal, state, local, and international laws and
@@ -396,13 +403,13 @@
       </li>
     </ol>
 
-    <div class="text-bold">16. Not an Investment Company</div>
+    <div class="text-bold">17. Not an Investment Company</div>
     <p>
       The Company is not be registered as an “investment company” under the Investment Company Act of 1940, as amended
       or under equivalent laws of any other jurisdiction.
     </p>
 
-    <div class="text-bold">17. Defamation</div>
+    <div class="text-bold">18. Defamation</div>
     <p>
       You agree you will not disparage or criticize the Company or its Affiliates, or their respective businesses,
       management, directors, business practices, or equity holders (the “Company Entities”) and that you will not
@@ -410,13 +417,13 @@
       of the Company Entities and we agree we will not publicly disparage or criticize you.
     </p>
 
-    <div class="text-bold">18. Refunds</div>
+    <div class="text-bold">19. Refunds</div>
     <p>
       Due to the irrevocable nature of the blockchain, and our lack of control over user assets, we are unable to offer
       refunds on any purchases.
     </p>
 
-    <div class="text-bold">19. General</div>
+    <div class="text-bold">20. General</div>
     <p>
       These Terms constitute the entire legal agreement between you and ScopeLift, govern your access to and use of the
       App, and completely replace any prior or contemporaneous agreements between the parties related to your access to
