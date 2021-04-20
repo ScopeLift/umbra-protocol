@@ -12,6 +12,7 @@ const routes: RouteConfig[] = [
       { name: 'contact', path: '/contact', component: () => import('src/pages/Contact.vue') },
       { name: 'FAQ', path: '/faq', component: () => import('src/pages/FAQ.vue') },
       { name: 'terms', path: '/terms', component: () => import('src/pages/TermsOfService.vue') },
+      { name: 'privacy', path: '/privacy', component: () => import('src/pages/PrivacyPolicy.vue') },
     ],
   },
 
