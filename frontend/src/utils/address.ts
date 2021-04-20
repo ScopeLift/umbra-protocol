@@ -4,7 +4,7 @@
 
 import { CnsQueryResponse, Provider } from 'components/models';
 import { DomainService, cns, ens } from '@umbra/umbra-js';
-import { getAddress } from '@ethersproject/address';
+import { getAddress } from 'src/utils/ethers';
 
 // ================================================== Address Helpers ==================================================
 

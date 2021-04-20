@@ -1,6 +1,5 @@
 import { computed, onMounted, ref } from '@vue/composition-api';
-import { ethers } from 'ethers';
-import { BigNumber } from '@ethersproject/bignumber';
+import { BigNumber, Contract, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
 import {
   Signer,
@@ -51,7 +50,7 @@ const domainService = ref<DomainService>(); // instance DomainService class
 const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for spending receiving funds
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
 const tokens = ref<TokenInfo[]>([]); // list of supported tokens when scanning
-const balances = ref<Record<string, ethers.BigNumber>>({}); // mapping from token address to user's wallet balance
+const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -84,7 +83,7 @@ export default function useWalletStore() {
     await getTokenList(); // does nothing if we already have the list
     const chainId = String(provider.value.network.chainId) as SupportedChainIds;
     const multicallAddress = Multicall.addresses[chainId];
-    const multicall = new ethers.Contract(multicallAddress, Multicall.abi, provider.value);
+    const multicall = new Contract(multicallAddress, Multicall.abi, provider.value);
 
     // Generate balance calls using Multicall contract
     const calls = tokens.value.map((token) => {
@@ -95,7 +94,7 @@ export default function useWalletStore() {
           callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
         };
       } else {
-        const tokenContract = new ethers.Contract(tokenAddress, ERC20.abi, signer.value);
+        const tokenContract = new Contract(tokenAddress, ERC20.abi, signer.value);
         return {
           target: tokenAddress,
           callData: tokenContract.interface.encodeFunctionData('balanceOf', [userAddress.value]),
@@ -121,7 +120,7 @@ export default function useWalletStore() {
   async function configureProvider() {
     // Set network/wallet properties
     if (!rawProvider.value) return;
-    provider.value = new ethers.providers.Web3Provider(rawProvider.value);
+    provider.value = new Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
     const _userAddress = await signer.value.getAddress();
     const _network = await provider.value.getNetwork();
