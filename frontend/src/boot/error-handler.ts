@@ -1,6 +1,5 @@
 import { boot } from 'quasar/wrappers';
-import useAlerts from 'src/utils/alerts';
-const { handleError } = useAlerts();
+import { handleError } from 'src/utils/alerts';
 
 export default boot(({ Vue }) => {
   // Source: https://stackoverflow.com/questions/52071212/how-to-implement-global-error-handling-in-vue

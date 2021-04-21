@@ -189,13 +189,12 @@ import AccountSetupSetEnsSubdomain from 'src/components/AccountSetupSetEnsSubdom
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 import { Provider, TransactionResponse } from 'components/models';
 import useWalletStore from 'src/store/wallet';
-import useAlerts from 'src/utils/alerts';
+import { notifyUser } from 'src/utils/alerts';
 import * as ensHelpers from 'src/utils/ens';
 
 function useKeys() {
   // prettier-ignore
   const { domainService, getPrivateKeys, userAddress, userEns, userCns, spendingKeyPair, viewingKeyPair, signer } = useWalletStore();
-  const { notifyUser } = useAlerts();
   const selectedName = ref<string>(); // ENS or CNS name to be configured
   const selectedNameType = ref<'ens' | 'cns'>(); // 'ens' if user chose ENS, 'cns' if user chose CNS
   const ensSubdomain = ref<string>();

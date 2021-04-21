@@ -17,45 +17,41 @@ const messagesToIgnore = [
   'Document is not focused', // happens when user unfocuses DOM while app was trying to copy something to clipboard
 ];
 
-export default function useAlerts() {
-  /**
-   * @notice Present notification alert to the user
-   * @param color Alert color, choose positive, negative, warning, info, or others
-   * @param message Message to display on notification
-   */
-  function notifyUser(color: string, message: string) {
-    // If message matches any of the substrings in messagesToIgnore, we return and don't show the alert
-    if (new RegExp(messagesToIgnore.join('|')).test(message)) return;
+/**
+ * @notice Present notification alert to the user
+ * @param color Alert color, choose positive, negative, warning, info, or others
+ * @param message Message to display on notification
+ */
+export function notifyUser(color: string, message: string) {
+  // If message matches any of the substrings in messagesToIgnore, we return and don't show the alert
+  if (new RegExp(messagesToIgnore.join('|')).test(message)) return;
 
-    Notify.create({
-      color,
-      message,
-      timeout: color.toLowerCase() === 'negative' ? 10000 : 5000,
-      position: 'top',
-      actions: [{ label: 'Dismiss', color: 'white' }],
-    });
-  }
+  Notify.create({
+    color,
+    message,
+    timeout: color.toLowerCase() === 'negative' ? 10000 : 5000,
+    position: 'top',
+    actions: [{ label: 'Dismiss', color: 'white' }],
+  });
+}
 
-  /**
-   * @notice Show error message to user
-   * @param err Error object thrown
-   * @param msg Optional, fallback error message if one is not provided by the err object
-   */
-  function handleError(err: Error, msg = 'An unknown error occurred') {
-    console.error(err);
-    if (!err) notifyUser('negative', msg);
-    else if ('message' in err) notifyUser('negative', err.message);
-    else if (typeof err === 'string') notifyUser('negative', err);
-    else notifyUser('negative', msg);
-  }
+/**
+ * @notice Show error message to user
+ * @param err Error object thrown
+ * @param msg Optional, fallback error message if one is not provided by the err object
+ */
+export function handleError(err: Error, msg = 'An unknown error occurred') {
+  console.error(err);
+  if (!err) notifyUser('negative', msg);
+  else if ('message' in err) notifyUser('negative', err.message);
+  else if (typeof err === 'string') notifyUser('negative', err);
+  else notifyUser('negative', msg);
+}
 
-  /**
-   * @notice Transaction monitoring
-   * @param txHash Transaction hash to monitor
-   */
-  function txNotify(txHash: string) {
-    bNotify.hash(txHash);
-  }
-
-  return { notifyUser, handleError, txNotify };
+/**
+ * @notice Transaction monitoring
+ * @param txHash Transaction hash to monitor
+ */
+export function txNotify(txHash: string) {
+  bNotify.hash(txHash);
 }
