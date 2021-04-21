@@ -1119,10 +1119,9 @@
 import { defineComponent, onMounted, ref, SetupContext } from '@vue/composition-api';
 import FAQItem from 'components/FAQItem.vue';
 import { copyToClipboard, scroll } from 'quasar';
-import useAlerts from 'src/utils/alerts';
+import { notifyUser } from 'src/utils/alerts';
 
 function useScrollToElement(context: SetupContext) {
-  const { notifyUser } = useAlerts();
   const { getScrollTarget, setScrollPosition } = scroll;
   const selectedId = ref('');
 
