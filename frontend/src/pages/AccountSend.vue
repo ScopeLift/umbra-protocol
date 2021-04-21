@@ -55,7 +55,7 @@ import { hexlify, hexZeroPad, isHexString, MaxUint256, parseUnits, toUtf8Bytes, 
 import { ens, cns } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
-import useAlerts from 'src/utils/alerts';
+import { txNotify } from 'src/utils/alerts';
 import { TokenInfo } from 'components/models';
 import ERC20 from 'src/contracts/ERC20.json';
 import ConnectWalletCard from 'components/ConnectWalletCard.vue';
@@ -63,7 +63,6 @@ import ConnectWalletCard from 'components/ConnectWalletCard.vue';
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
   const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, userAddress } = useWalletStore();
-  const { txNotify } = useAlerts();
 
   // Helpers
   const sendFormRef = ref<QForm>();

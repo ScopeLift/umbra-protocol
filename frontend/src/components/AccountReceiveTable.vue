@@ -175,7 +175,7 @@ import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
 import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Aliases';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
-import useAlerts from 'src/utils/alerts';
+import { txNotify, notifyUser } from 'src/utils/alerts';
 import UmbraRelayRecipient from 'src/contracts/UmbraRelayRecipient.json';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import { SupportedChainIds } from 'components/models';
@@ -184,7 +184,6 @@ import BaseButton from './BaseButton.vue';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
-  const { notifyUser } = useAlerts();
   const spendingPrivateKey = ref<string>(); // used for hiding/showing private key in UI, so not a computed property
 
   const scanDescriptionString = computed(() => {
@@ -223,7 +222,6 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
   const { tokens, userAddress, signer, provider, umbra, domainService } = useWalletStore();
-  const { txNotify, notifyUser } = useAlerts();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const isLoading = ref(false);

@@ -5,8 +5,7 @@
 import { AddressZero, Contract, keccak256, namehash, toUtf8Bytes, getAddress } from 'src/utils/ethers';
 import { DomainService, ens, KeyPair } from '@umbra/umbra-js';
 import { Provider, Signer, TransactionResponse } from 'components/models';
-import useAlerts from 'src/utils/alerts';
-const { txNotify } = useAlerts();
+import { txNotify } from 'src/utils/alerts';
 
 // Contract imports
 import ENSRegistry from 'src/contracts/ENSRegistry.json';
