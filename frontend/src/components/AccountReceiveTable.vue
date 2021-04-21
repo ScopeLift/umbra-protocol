@@ -17,6 +17,7 @@
     <!-- Received funds table -->
     <div v-else>
       <div v-if="advancedMode" class="text-caption q-mb-sm">
+        <!-- This scanDescriptionString describes scan settings that were used -->
         {{ scanDescriptionString }}.
         <span @click="context.emit('reset')" class="cursor-pointer hyperlink">Change scan settings</span>.
       </div>
@@ -84,7 +85,7 @@
             <!-- Expansion button, works accordian-style -->
             <!--
             The click modifier is a bit clunky because it touches state in two independent composition functions,
-             so we explain the two things it does here
+             so we explain the two things it does here:
               1. First it calls hidePrivateKey(), which is an advancedMode only feature to show your private key.
                  We call this to make sure a private key is never shown when initially expanding a row
               2. If the new row key is the same as the value of the value of expanded[0], we clicked the currently
@@ -186,6 +187,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
   const spendingPrivateKey = ref<string>(); // used for hiding/showing private key in UI, so not a computed property
 
+  // Generate string that explains scan settings that were used
   const scanDescriptionString = computed(() => {
     const suffix = scanPrivateKey.value ? ' with custom private key' : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
@@ -198,24 +200,23 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
     return `${msg}${suffix}`;
   });
 
-  function computePrivateKey(randomNumber: string) {
-    const stealthKeyPair = spendingKeyPair.mulPrivateKey(randomNumber);
-    return stealthKeyPair.privateKeyHex as string;
-  }
+  // For advanced mode: compute the stealth private key for a given random number
+  const computePrivateKey = (randomNumber: string) => String(spendingKeyPair.mulPrivateKey(randomNumber).privateKeyHex);
 
-  function hidePrivateKey() {
-    spendingPrivateKey.value = undefined;
-  }
-
-  function togglePrivateKey(announcement: UserAnnouncement) {
+  // For advanced mode: toggles visibility of the stealth private key
+  const togglePrivateKey = (announcement: UserAnnouncement) => {
     spendingPrivateKey.value = spendingPrivateKey.value ? undefined : computePrivateKey(announcement.randomNumber);
-  }
+  };
 
-  async function copyPrivateKey(privateKey: string) {
+  // For advanced mode: hides the stealth private key after it's shown
+  const hidePrivateKey = () => (spendingPrivateKey.value = undefined);
+
+  // For advanced mode: copyies the provided stealth private key to the clipboard
+  const copyPrivateKey = async (privateKey: string) => {
     await copyToClipboard(privateKey);
     notifyUser('positive', 'Private key copied to clipboard');
     hidePrivateKey();
-  }
+  };
 
   return { scanDescriptionString, hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
 }
