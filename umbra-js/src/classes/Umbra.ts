@@ -336,6 +336,8 @@ export class Umbra {
 
   /**
    * @notice Asks a user to sign a message to generate two Umbra-specific private keys for them
+   * @dev Only safe for use with wallets that implement deterministic ECDSA signatures as specified by RFC 6979 (which
+   * might be all of them?)
    * @param signer Signer to sign message from
    * @returns Two KeyPair instances, for the spendingKeyPair and viewingKeyPair
    */
