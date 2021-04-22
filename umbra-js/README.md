@@ -126,7 +126,7 @@ import { signer } from "the/users/connected/wallet"; // assume user previously c
 // Prompt the user for their signature to get their private keys
 const {
   spendingKeyPair,
-  viewingKeyPair,
+  viewingKeyPair
 } = await umbra.value.generatePrivateKeys(signer.value);
 
 // Define a custom range of blocks to scan. Leave this parameter out to scan all blocks
@@ -160,7 +160,7 @@ const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 // Prompt the user for their signature to get their private keys
 const {
   spendingKeyPair,
-  viewingKeyPair,
+  viewingKeyPair
 } = await umbra.value.generatePrivateKeys(signer.value);
 
 // Let's assume we're working with the first announcement outputs from the above snippet
@@ -222,7 +222,8 @@ if (tokenAddress === ETH_ADDRESS) {
 
 ## API Reference
 
-TODO using typedoc? https://github.com/TypeStrong/typedoc
+For a full API reference, navigate to the `umbra-js` folder in your terminal and run `yarn typedoc src/`. Open
+the resulting `umbra-js/docs/index.html` file in your browser to view the documentation.
 
 ## Development
 
