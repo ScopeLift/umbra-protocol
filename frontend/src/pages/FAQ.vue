@@ -535,7 +535,8 @@
               href="https://gitcoin.co/grants/2451/audit-of-noble-secp256k1-cryptographic-library"
               target="_blank"
               >community</a
-            >, we were able to raise enough funds to pay for an audit of this library with Cure53.
+            >, we were able to raise enough funds to pay for an audit of this library with Cure53. You can read the
+            report <a class="hyperlink" href="https://cure53.de/pentest-report_noble-lib.pdf" target="_blank">here</a>.
           </p>
         </f-a-q-item>
       </div>
