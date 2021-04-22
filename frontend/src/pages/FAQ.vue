@@ -70,7 +70,7 @@
           <ol>
             <li>
               When setting up your Umbra account, users sign a message. The hash of this message is used to generate two
-              private keys—a “spending key” and a “viewing key”.
+              private keys—a "spending key" and a "viewing key".
             </li>
             <li>
               The corresponding public keys are both published on-chain as records associated with your ENS or CNS name.
@@ -80,7 +80,7 @@
               random number.
             </li>
             <li>
-              The random number is used with the spending public key to generate a “stealth address” to send funds to.
+              The random number is used with the spending public key to generate a "stealth address" to send funds to.
               The same random number is used with the viewing public key to encrypt the random number.
             </li>
             <li>
@@ -99,7 +99,11 @@
               relayer.
             </li>
           </ol>
-          <p>See the Technical Details [TODO: add link] section for more details.</p>
+          <p>
+            See the "<span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')"
+              >Technical Details: How does it work?</span
+            >" section for more details.
+          </p>
         </f-a-q-item>
       </div>
 
@@ -107,7 +111,7 @@
         <f-a-q-item :expanded="selectedId === 'how-private-is-umbra'" question="How private is Umbra?">
           <p>
             Umbra offers a limited set of privacy guarantees and it’s important to understand them before using the
-            protocol. Umbra does <span class="text-bold">not</span> offer “full” privacy like Aztec or Zcash. It simply
+            protocol. Umbra does <span class="text-bold">not</span> offer "full" privacy like Aztec or Zcash. It simply
             makes it impossible for any outside observers (i.e. anyone who is not the sender or the receiver) to know
             who the sender paid by looking at the receiving address.
           </p>
@@ -118,8 +122,8 @@
           <p>
             The privacy properties of Umbra can also be diminished if an observer can narrow down the set of potential
             recipients for a given a transaction. Any valid public key can be used as a recipient, and anyone who has
-            sent a transaction on Ethereum has a publicly available public key. Therefore, by default, the “anonymity
-            set”—the set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
+            sent a transaction on Ethereum has a publicly available public key. Therefore, by default, the "anonymity
+            set"—the set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
           </p>
           <p>
             In practice this isn’t necessarily the case, and an observer may be able to narrow down the list of
@@ -132,7 +136,7 @@
             </li>
             <li>
               Poor hygeine when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy
-              properties provided by Umbra. See the “What address are safe for withdrawing funds to?” for more details.
+              properties provided by Umbra. See the "What address are safe for withdrawing funds to?" for more details.
               Always use caution when withdrawing!
             </li>
           </ol>
@@ -152,7 +156,7 @@
           </p>
           <p>
             Aztec is a privacy-focused Layer 2 solution, that also uses zero knowledge proofs. You deposit funds from
-            Layer 1 (mainnet) into Aztec, and your funds effectively become “wrapped” in a private version. Regular
+            Layer 1 (mainnet) into Aztec, and your funds effectively become "wrapped" in a private version. Regular
             transfers become private by befault, meaning no one knows who you sent funds to, or how much you paid them.
             Balances are often private, so no one can see how much money you’re holding.
           </p>
@@ -226,7 +230,7 @@
             <li>
               Convenience: Using a <span class="code">umbra.eth</span> name is a smoother and cheaper setup process. It
               only takes one on-chain transaction, whereas configuring an existing name requires three on-chain
-              transactions (see “Why are there so many transactions to setup my account?” for more info on this).
+              transactions (see "Why are there so many transactions to setup my account?" for more info on this).
             </li>
           </ol>
           <p>Arguments in favor of using your existing ENS/CNS name include:</p>
@@ -237,7 +241,11 @@
             </li>
             <li>
               Security: As the owner of your ENS/CNS name, there is no third-party that can ever control your public key
-              configuration except you. See “Can my subdomain be revoked?” [TODO add link] for more information.
+              configuration except you. See "<span
+                class="hyperlink"
+                @click="expandAndScrollToElement('can-my-subdomain-be-revoked')"
+                >Can my subdomain be revoked?</span
+              >" for more information.
             </li>
           </ol>
         </f-a-q-item>
@@ -714,11 +722,12 @@
             >nomenclature</a
           >
           from Zcash, Umbra allows, but does not require, users to use different private keys for the "encrypt random
-          number" and “compute stealth address” steps. This is the default behavior of the Umbra app, but it can be
+          number" and "compute stealth address" steps. This is the default behavior of the Umbra app, but it can be
           overriden by using Advanced Mode.
           <p>
-            See “Technical Details: How does it work?” [TODO add link] for more details on how spending and viewing keys
-            work.
+            See "<span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')"
+              >Technical Details: How does it work?</span
+            >" for more details on how spending and viewing keys work.
           </p>
         </f-a-q-item>
       </div>
@@ -831,7 +840,7 @@
             <li>Navigate to the Receive page and connect your wallet</li>
             <li>Before scanning, enter the appropriate private key in the form</li>
             <li>Leave the start block and end block fields blank if you don’t need them</li>
-            <li>Click “Scan” to scan for funds</li>
+            <li>Click "Scan" to scan for funds</li>
           </ol>
         </f-a-q-item>
       </div>
@@ -850,7 +859,7 @@
             <li>Navigate to the Receive page and connect your wallet</li>
             <li>Before scanning, enter the desired start and end block numbers</li>
             <li>Leave the private key field blank if you don’t need it</li>
-            <li>Click “Scan” to scan for funds</li>
+            <li>Click "Scan" to scan for funds</li>
           </ol>
           <p>
             The start and end block numbers will be saved in local storage and automatically applied next time you scan
@@ -868,9 +877,9 @@
           <ol>
             <li>Enable Advanced Mode</li>
             <li>Navigate to the Receive page and scan for funds</li>
-            <li>For transactions that have not been withdrawn, click “Withdraw” to expand the row</li>
+            <li>For transactions that have not been withdrawn, click "Withdraw" to expand the row</li>
             <li>
-              You’ll see text that says “Show withdrawal private key”, which will show the stealth private key needed to
+              You’ll see text that says "Show withdrawal private key", which will show the stealth private key needed to
               withdraw this payment
             </li>
           </ol>
@@ -911,7 +920,7 @@
             <li>
               <span class="code">src/classes/Umbra.ts</span>: The <span class="code">Umbra</span> class is a high-level
               class intended for developers to directly interact with. It abstracts away the complexity of the protocol
-              into a few mian methods:
+              into a few main methods:
               <ol>
                 <li>
                   <span class="code">send()</span> is used to send funds to another user, and automatically handles the
@@ -919,7 +928,11 @@
                 </li>
                 <li>
                   <span class="code">generatePrivateKeys()</span> prompts the user for a signature and generates their
-                  spending and viewing keys
+                  spending and viewing keys.
+                  <span class="text-italic">
+                    Note: make sure the wallet being used supports deterministic ECDSA signatures with
+                    <a class="hyperlink" href="https://tools.ietf.org/html/rfc6979" target="_blank">RFC 6979</a>.
+                  </span>
                 </li>
                 <li>
                   <span class="code">scan()</span> lets you find funds sent to the specified user, by providing just the
@@ -967,7 +980,7 @@
           <p>
             After reading through the above, you should be well-equipped to understand the Umbra.sol contract, which
             you’ll notice is actually quite simple. The one new part in the contract which you won’t have seen anything
-            about yet is the hooks. You can read more about this in the “What are Hooks and how do I use them?” section.
+            about yet is the hooks. You can read more about this in the "What are Hooks and how do I use them?" section.
           </p>
         </f-a-q-item>
       </div>
@@ -1013,7 +1026,7 @@
           <p>
             If you’re familiar with
             <a class="hyperlink" href="https://eips.ethereum.org/EIPS/eip-777" target="_blank">ERC-777</a> or other
-            similar standard, you are already familiar with the concept of hooks. Hooks let the caller perform other
+            similar standards, you are already familiar with the concept of hooks. Hooks let the caller perform other
             actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook
             can be used to call a method on a contract after transferring tokens to that contract.
           </p>
@@ -1115,9 +1128,10 @@ function useScrollToElement(context: SetupContext) {
   // Hepler methods
   const getElementIdFromUrl = () => context.root.$router.currentRoute.hash.slice(1); // .slice(1) to remove '#'
 
-  const scrollToElement = (elementId: string) => {
+  const expandAndScrollToElement = (elementId: string) => {
     // Get element
     const el = document.getElementById(elementId);
+    console.log(el);
     if (!el) return;
     selectedId.value = elementId;
 
@@ -1138,9 +1152,9 @@ function useScrollToElement(context: SetupContext) {
   };
 
   // Scrolls to element, and when applicable clicks the expansion item to open it
-  onMounted(() => scrollToElement(getElementIdFromUrl()));
+  onMounted(() => expandAndScrollToElement(getElementIdFromUrl()));
 
-  return { selectedId, scrollToElement, copyUrl };
+  return { selectedId, expandAndScrollToElement, copyUrl };
 }
 
 export default defineComponent({
