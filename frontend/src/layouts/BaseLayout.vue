@@ -136,14 +136,14 @@
           <p>
             <a href="https://t.me/UmbraCash" target="_blank" class="no-text-decoration">
               <q-icon class="dark-toggle" name="fab fa-telegram" size="xs" />
+              <span class="hyperlink text-caption q-ml-md">Telegram</span>
             </a>
-            <span class="hyperlink text-caption q-ml-md">Telegram</span>
           </p>
           <p>
             <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="no-text-decoration">
               <q-icon class="dark-toggle" name="fab fa-github" size="xs" />
+              <span class="hyperlink text-caption q-ml-md">GitHub</span>
             </a>
-            <span class="hyperlink text-caption q-ml-md">GitHub</span>
           </p>
         </div>
       </div>
