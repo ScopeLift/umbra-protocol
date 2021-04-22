@@ -1142,13 +1142,15 @@ function useScrollToElement(context: SetupContext) {
     setScrollPosition(target, offset, duration);
   };
 
-  // Copy the URL to go directly to the clicked element
+  // Copy the URL to go directly to the clicked element and update URL in navigation bar
   const copyUrl = async (e: MouseEvent) => {
     const el = e.currentTarget as HTMLElement;
     const elementId = el.id;
     const slug = context.root.$router.currentRoute.path; // includes the leading forward slash
-    await copyToClipboard(`${window.location.origin}${slug}#${elementId}`);
+    const page = `${slug}#${elementId}`;
+    await copyToClipboard(`${window.location.origin}${page}`);
     if (el.getAttribute('isHeader')) notifyUser('positive', 'URL successfully copied to clipboard');
+    window.history.pushState('', '', page); // updates URL in navigation bar
   };
 
   // Scrolls to element, and when applicable clicks the expansion item to open it
