@@ -40,7 +40,8 @@
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
-    "ts-node": "^9.0.0"
+    "ts-node": "^9.0.0",
+    "typedoc": "^0.20.35"
   },
   "keywords": [
     "ethereum",
