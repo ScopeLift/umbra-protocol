@@ -126,7 +126,7 @@ import { signer } from "the/users/connected/wallet"; // assume user previously c
 // Prompt the user for their signature to get their private keys
 const {
   spendingKeyPair,
-  viewingKeyPair
+  viewingKeyPair,
 } = await umbra.value.generatePrivateKeys(signer.value);
 
 // Define a custom range of blocks to scan. Leave this parameter out to scan all blocks
@@ -160,7 +160,7 @@ const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 // Prompt the user for their signature to get their private keys
 const {
   spendingKeyPair,
-  viewingKeyPair
+  viewingKeyPair,
 } = await umbra.value.generatePrivateKeys(signer.value);
 
 // Let's assume we're working with the first announcement outputs from the above snippet
