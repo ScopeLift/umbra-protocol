@@ -7,6 +7,7 @@ import {
   Contract,
   ContractInterface,
   EtherscanProvider,
+  getAddress,
   isHexString,
   keccak256,
   resolveProperties,
@@ -82,6 +83,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
  * @param provider ethers provider instance
  */
 async function getSentTransaction(address: string, ethersProvider: EthersProvider) {
+  address = getAddress(address); // address input validation
   const network = await ethersProvider.getNetwork();
   const etherscanProvider = new EtherscanProvider(network.chainId);
   const history = await etherscanProvider.getHistory(address);
@@ -119,7 +121,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   const isValidAddress = id.length === 42 && isHexString(id);
   if (isValidAddress) {
     // Get last transaction hash sent by that address
-    const txHash = await getSentTransaction(id, provider);
+    const txHash = await getSentTransaction(getAddress(id), provider);
     if (!txHash) {
       throw new Error('Could not get public key because the provided address has not sent any transactions');
     }

@@ -190,11 +190,15 @@ export class Umbra {
    * @dev The provider used for sending the transaction is the one associated with the Umbra instance
    * @dev This method does not relay meta-transactions and requires signer to have ETH
    * @param spendingPrivateKey Receiver's spending private key
-   * @param token Address of token to withdraw
+   * @param token Address of token to withdraw,
    * @param destination Address where funds will be withdrawn to
    * @param overrides Override the gas limit, gas price, or nonce
    */
   async withdraw(spendingPrivateKey: string, token: string, destination: string, overrides: Overrides = {}) {
+    // Address input validations
+    // token === 'ETH' is valid so we don't verify that, and let ethers verify it during the function call
+    destination = getAddress(destination);
+
     // Configure signer
     const stealthWallet = new Wallet(spendingPrivateKey); // validates spendingPrivateKey input
     const txSigner = this.getConnectedSigner(stealthWallet);
@@ -250,6 +254,13 @@ export class Umbra {
     s: string,
     overrides: Overrides = {}
   ) {
+    // Address input validations
+    stealthAddr = getAddress(stealthAddr);
+    destination = getAddress(destination);
+    token = getAddress(token);
+    sponsor = getAddress(sponsor);
+
+    // Send withdraw transaction
     const txSigner = this.getConnectedSigner(signer);
     return await this.umbraContract
       .connect(txSigner)
@@ -300,7 +311,7 @@ export class Umbra {
         const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
 
         // If our receiving address matches the event's recipient, the transfer was for us
-        if (computedReceivingAddress === receiver) {
+        if (computedReceivingAddress === getAddress(receiver)) {
           const [block, tx, receipt] = await Promise.all([
             event.getBlock(),
             event.getTransaction(),
@@ -311,7 +322,7 @@ export class Umbra {
             randomNumber,
             receiver,
             amount,
-            token,
+            token: getAddress(token),
             block,
             tx,
             receipt,
@@ -429,7 +440,7 @@ export class Umbra {
     hook: string = AddressZero,
     data = '0x'
   ) {
-    // Validate addresses
+    // Address input validations
     contract = getAddress(contract);
     acceptor = getAddress(acceptor);
     sponsor = getAddress(sponsor);
