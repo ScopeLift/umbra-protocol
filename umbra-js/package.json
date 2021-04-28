@@ -17,7 +17,8 @@
     "clean": "rimraf build coverage .nyc_output cache",
     "prepare": "yarn build",
     "prepublishOnly": "yarn lint && yarn test",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "docs": "typedoc src/"
   },
   "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",
   "license": "ISC",

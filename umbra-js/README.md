@@ -222,7 +222,7 @@ if (tokenAddress === ETH_ADDRESS) {
 
 ## API Reference
 
-For a full API reference, navigate to the `umbra-js` folder in your terminal and run `yarn typedoc src/`. Open
+For a full API reference, navigate to the `umbra-js` folder in your terminal and run `yarn docs`. Open
 the resulting `umbra-js/docs/index.html` file in your browser to view the documentation.
 
 ## Development
