@@ -1,6 +1,6 @@
 {
   "name": "@umbra/frontend",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Send and receive stealth payments with the Umbra protocol",
   "productName": "Umbra",
   "author": "Matt Solomon <matt@mattsolomon.dev>",
@@ -18,7 +18,7 @@
   "dependencies": {
     "@opengsn/gsn": "^2.1.0",
     "@quasar/extras": "^1.0.0",
-    "@umbra/umbra-js": "^0.0.1",
+    "@umbra/umbra-js": "^0.0.1-alpha.0",
     "@uniswap/token-lists": "^1.0.0-beta.19",
     "@vue/composition-api": "^0.6.4",
     "bnc-notify": "^1.5.1",

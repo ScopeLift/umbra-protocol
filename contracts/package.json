@@ -1,6 +1,6 @@
 {
   "name": "@umbra/contracts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Contracts for the Umbra Protocol",
   "dependencies": {
     "@opengsn/gsn": "^2.1.0",
