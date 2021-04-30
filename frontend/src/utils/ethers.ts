@@ -11,6 +11,14 @@ export { AddressZero, MaxUint256 } from '@ethersproject/constants';
 export { Contract } from '@ethersproject/contracts';
 export { namehash } from '@ethersproject/hash';
 export { keccak256 } from '@ethersproject/keccak256';
-export { Block, ExternalProvider, TransactionResponse, Web3Provider } from '@ethersproject/providers';
+export {
+  Block,
+  ExternalProvider,
+  JsonRpcSigner,
+  Network,
+  TransactionReceipt,
+  TransactionResponse,
+  Web3Provider,
+} from '@ethersproject/providers';
 export { toUtf8Bytes, toUtf8String } from '@ethersproject/strings';
 export { parseUnits, formatUnits } from '@ethersproject/units';

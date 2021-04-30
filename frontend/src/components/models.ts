@@ -1,12 +1,11 @@
 import { ethers } from 'ethers';
+import { TransactionReceipt, JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
+import { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 
 export { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
-
-export type Signer = ethers.providers.JsonRpcSigner;
-export type Provider = ethers.providers.Web3Provider;
-export type Network = ethers.providers.Network;
-export type BigNumber = ethers.BigNumber;
-export type TransactionResponse = ethers.providers.TransactionResponse;
+export { BigNumber, Network, TransactionResponse } from 'src/utils/ethers';
+export type Signer = JsonRpcSigner;
+export type Provider = Web3Provider;
 
 export interface MulticallResponse {
   blockNumber: ethers.BigNumber;
@@ -23,3 +22,16 @@ export interface CnsQueryResponse {
     domains: CnsName[];
   };
 }
+
+// Relayer types
+export type ApiError = { error: string };
+export type TokenListResponse = TokenList | ApiError;
+export type FeeEstimateResponse = { fee: string; token: TokenInfo } | ApiError;
+export type WithdrawalInputs = {
+  stealthAddr: string;
+  acceptor: string;
+  signature: string;
+  sponsorFee: string;
+};
+export type RelayResponse = { itxId: string } | ApiError;
+export type ITXStatusResponse = { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt } | ApiError;
