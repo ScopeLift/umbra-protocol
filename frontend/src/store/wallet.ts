@@ -1,18 +1,11 @@
-import { computed, onMounted, ref } from '@vue/composition-api';
+import { computed, ref } from '@vue/composition-api';
 import { BigNumber, Contract, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
-import {
-  Signer,
-  Provider,
-  Network,
-  TokenInfo,
-  TokenList,
-  MulticallResponse,
-  SupportedChainIds,
-} from 'components/models';
+import { MulticallResponse, Network, Provider, Signer, SupportedChainIds } from 'components/models';
 import Multicall from 'src/contracts/Multicall.json';
 import ERC20 from 'src/contracts/ERC20.json';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
+import { ITXRelayer } from 'src/utils/relayer';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -22,13 +15,12 @@ import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
  * we defined state outside of the function definition.
  */
 
-const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const ETH_TOKEN = {
-  address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  address: ETH_ADDRESS,
   name: 'Ether',
-  symbol: 'ETH',
   decimals: 18,
+  symbol: 'ETH',
   logoURI: '/tokens/eth.svg',
 };
 
@@ -41,7 +33,6 @@ const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP
 const provider = ref<Provider>(); // ethers provider
 const signer = ref<Signer>(); // ethers signer
 const userAddress = ref<string>(); // user's wallet address
-const userDisplayName = ref<string>(); // user's ENS or CNS or wallet address to display
 const userEns = ref<string>(); // user's ENS name
 const userCns = ref<string>(); // user's CNS name
 const network = ref<Network>(); // connected network, derived from provider
@@ -49,44 +40,23 @@ const umbra = ref<Umbra>(); // instance of Umbra class
 const domainService = ref<DomainService>(); // instance DomainService class
 const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for spending receiving funds
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
-const tokens = ref<TokenInfo[]>([]); // list of supported tokens when scanning
 const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
+const relayer = ref<ITXRelayer>(); // used for managing relay transactions
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
-  onMounted(() => void getTokenList()); // dispatch in the background to get token details
-
   // ------------------------------------------- Actions -------------------------------------------
-  async function getTokenList() {
-    if (tokens.value.length > 0) return;
-    if (provider.value?.network.chainId === 1) {
-      // Mainnet
-      const url = 'https://tokens.coingecko.com/uniswap/all.json';
-      const response = (await jsonFetch(url)) as TokenList;
-      tokens.value = response.tokens;
-      tokens.value.push({ chainId: 1, ...ETH_TOKEN });
-    } else {
-      // Rinkeby
-      tokens.value = [
-        { chainId: 4, ...ETH_TOKEN },
-        // prettier-ignore
-        { chainId: 4, address: '0x2e055eEe18284513B993dB7568A592679aB13188', name: 'Dai', symbol: 'DAI', decimals: 18, logoURI: 'https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774', },
-        // prettier-ignore
-        { chainId: 4, address: '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926', name: 'USD Coin', symbol: 'USDC', decimals: 6, logoURI: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389', },
-      ];
-    }
-  }
 
   async function getTokenBalances() {
     // Setup
     if (!provider.value) throw new Error('Provider not connected');
-    await getTokenList(); // does nothing if we already have the list
+    if (!relayer.value) throw new Error('Relayer instance not found');
     const chainId = String(provider.value.network.chainId) as SupportedChainIds;
     const multicallAddress = Multicall.addresses[chainId];
     const multicall = new Contract(multicallAddress, Multicall.abi, provider.value);
 
     // Generate balance calls using Multicall contract
-    const calls = tokens.value.map((token) => {
+    const calls = relayer.value.tokens.map((token) => {
       const { address: tokenAddress } = token;
       if (tokenAddress === ETH_ADDRESS) {
         return {
@@ -107,7 +77,7 @@ export default function useWalletStore() {
     const multicallResponse = (response as MulticallResponse).returnData;
 
     // Set balances mapping
-    tokens.value.forEach((token, index) => {
+    relayer.value.tokens.forEach((token, index) => {
       balances.value[token.address] = BigNumber.from(multicallResponse[index]);
     });
   }
@@ -125,6 +95,9 @@ export default function useWalletStore() {
     const _userAddress = await signer.value.getAddress();
     const _network = await provider.value.getNetwork();
 
+    // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
+    const _relayer = await ITXRelayer.create(provider.value);
+
     // Get ENS and CNS names
     const _userEns = await lookupEnsName(_userAddress, provider.value);
     const _userCns = await lookupCnsName(_userAddress, provider.value);
@@ -136,11 +109,11 @@ export default function useWalletStore() {
 
     // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
     // parameters, and we want to ensure this method completed successfully before updating the UI
+    relayer.value = _relayer;
     userAddress.value = _userAddress;
     userEns.value = _userEns;
     userCns.value = _userCns;
     network.value = _network;
-    userDisplayName.value = _userEns || _userCns || formatAddress(_userAddress);
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
@@ -168,26 +141,37 @@ export default function useWalletStore() {
   }
 
   // ------------------------------------- Exposed parameters --------------------------------------
-  // Define parts of store that should be exposed
+  // Define computed properties and parts of store that should be exposed. Everything exposed is a
+  // computed property to facilitate reactivity and avoid accidental state mutations
   return {
-    provider: computed(() => provider.value),
-    signer: computed(() => signer.value),
-    userAddress: computed(() => userAddress.value),
-    userDisplayName: computed(() => userDisplayName.value),
-    userEns: computed(() => userEns.value),
-    userCns: computed(() => userCns.value),
-    network: computed(() => network.value),
-    tokens: computed(() => tokens.value),
-    balances: computed(() => balances.value),
-    umbra: computed(() => umbra.value),
-    domainService: computed(() => domainService.value),
-    spendingKeyPair: computed(() => spendingKeyPair.value),
-    viewingKeyPair: computed(() => viewingKeyPair.value),
-    hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
-    getTokenList,
-    getTokenBalances,
-    setProvider,
+    // Methods
     configureProvider,
     getPrivateKeys,
+    getTokenBalances,
+    setProvider,
+    // "Direct" properties, i.e. return them directly without modification
+    balances: computed(() => balances.value),
+    domainService: computed(() => domainService.value),
+    hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
+    network: computed(() => network.value),
+    provider: computed(() => provider.value),
+    signer: computed(() => signer.value),
+    spendingKeyPair: computed(() => spendingKeyPair.value),
+    umbra: computed(() => umbra.value),
+    userAddress: computed(() => userAddress.value),
+    userCns: computed(() => userCns.value),
+    userEns: computed(() => userEns.value),
+    viewingKeyPair: computed(() => viewingKeyPair.value),
+    // "True" computed properties, i.e. derived from this module's state
+    tokens: computed(() => {
+      // Add ETH as a supported token
+      const ETH_TOKEN_INFO = { ...ETH_TOKEN, chainId: network.value?.chainId as number };
+      const supportedTokens = relayer.value?.tokens || [];
+      return [ETH_TOKEN_INFO, ...supportedTokens];
+    }),
+    userDisplayName: computed(() => {
+      const address = userAddress.value ? formatAddress(userAddress.value) : undefined;
+      return userEns.value || userCns.value || address;
+    }),
   };
 }
