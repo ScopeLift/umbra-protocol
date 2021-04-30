@@ -331,9 +331,9 @@ export class Umbra {
         }
       } catch (err) {
         // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
-        // fail when uncompressing
-        console.log('The following event had the below problem while processing:', announcements[i]);
-        console.warn(err);
+        // fail when uncompressing. For now we just silence these
+        // console.log('The following event had the below problem while processing:', announcements[i]);
+        // console.warn(err);
       }
     }
 
