@@ -11,6 +11,7 @@ import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-web3';
 import '@nomiclabs/hardhat-truffle5';
 import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-etherscan';
 import 'hardhat-typechain';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
@@ -40,6 +41,13 @@ if (!process.env.INFURA_ID) {
   console.warn('Please set your INFURA_ID in a .env file');
 } else {
   infuraApiKey = process.env.INFURA_ID;
+}
+
+let etherscanApiKey = '';
+if (!process.env.ETHERSCAN_API_KEY) {
+  console.warn('Please set your ETHERSCAN_API_KEY in a .env file');
+} else {
+  etherscanApiKey = process.env.ETHERSCAN_API_KEY;
 }
 
 const shouldReportGas = process.env.REPORT_GAS === 'true';
@@ -128,6 +136,9 @@ const config: HardhatUserConfig = {
     currency: 'USD',
     gasPrice: 200,
     excludeContracts: ['TestToken.sol', 'MockHook.sol', 'ERC20.sol', 'open_gsn/'],
+  },
+  etherscan: {
+    apiKey: etherscanApiKey,
   },
 };
 
