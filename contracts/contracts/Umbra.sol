@@ -29,7 +29,7 @@ contract Umbra is Ownable {
   // ======================================= State variables =======================================
 
   /// @dev Placeholder address used to identify transfer of native ETH
-  address public constant ETH_TOKEN_PLACHOLDER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  address internal constant ETH_TOKEN_PLACHOLDER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   /// @notice An ETH amount that must be sent alongside each payment; used as an anti-spam measure
   uint256 public toll;
