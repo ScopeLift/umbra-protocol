@@ -132,7 +132,7 @@ export const setSubdomainKeys = async (
   const tx = (await stealthKeyFIFSRegistrar.register(
     keccak256(toUtf8Bytes(subdomain)), // label, e.g. keccak256('matt')
     userAddress, // user's wallet address, which will be the owner
-    getContractAddress('PublicStealthKeyResolver', provider), // PublicStealthKeyResolver address, 0xd96f1736333002EA76168f899DCa0a441846ea55
+    getContractAddress('PublicStealthKeyResolver', provider), // PublicStealthKeyResolver address
     spendingPubKeyPrefix, // prefix of compressed spending public key
     spendingPubKeyX, // compressed spending public key without prefix
     viewingPubKeyPrefix, // prefix of compressed viewing public key

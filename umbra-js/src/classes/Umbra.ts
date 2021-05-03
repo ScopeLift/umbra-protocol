@@ -33,9 +33,11 @@ import type { Announcement, UserAnnouncement, ChainConfig, EthersProvider, SendO
 const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
 
 // Mapping from chainId to contract information
+const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
 const chainConfigs: Record<number, ChainConfig> = {
-  4: { chainId: 4, umbraAddress: '0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e', startBlock: 8256468 }, // Rinkeby
-  1337: { chainId: 1337, umbraAddress: '0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e', startBlock: 8256468 }, // Local
+  1: { chainId: 1, umbraAddress, startBlock: 12343914 }, // Mainnet
+  4: { chainId: 4, umbraAddress, startBlock: 8505089 }, // Rinkeby
+  1337: { chainId: 1337, umbraAddress, startBlock: 8505089 }, // Local
 };
 
 /**

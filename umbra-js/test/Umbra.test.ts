@@ -104,23 +104,23 @@ describe('Umbra class', () => {
     it('initializes correctly when passing a default chainId', async () => {
       // Localhost with URL provider
       const umbra1 = new Umbra(jsonRpcProvider, 1337);
-      expect(umbra1.chainConfig.umbraAddress).to.equal('0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e');
-      expect(umbra1.chainConfig.startBlock).to.equal(8256468);
+      expect(umbra1.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra1.chainConfig.startBlock).to.equal(8505089);
 
       // Localhost with Web3 provider
       const umbra2 = new Umbra(ethersProvider, 1337);
-      expect(umbra2.chainConfig.umbraAddress).to.equal('0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e');
-      expect(umbra2.chainConfig.startBlock).to.equal(8256468);
+      expect(umbra2.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra2.chainConfig.startBlock).to.equal(8505089);
 
       // Ropsten with URL provider
       const umbra3 = new Umbra(jsonRpcProvider, 4);
-      expect(umbra3.chainConfig.umbraAddress).to.equal('0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e');
-      expect(umbra3.chainConfig.startBlock).to.equal(8256468);
+      expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra3.chainConfig.startBlock).to.equal(8505089);
 
       // Ropsten with Web3 provider
       const umbra4 = new Umbra(jsonRpcProvider, 4);
-      expect(umbra4.chainConfig.umbraAddress).to.equal('0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e');
-      expect(umbra4.chainConfig.startBlock).to.equal(8256468);
+      expect(umbra4.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra4.chainConfig.startBlock).to.equal(8505089);
     });
 
     it('does not allow invalid default chain IDs to be provided', async () => {
@@ -318,7 +318,7 @@ describe('Umbra class', () => {
       const errorMsg2 = "Invalid start block provided in chainConfig. Got '1'";
       const badChainId = '1.1';
       const errorMsg3 = `Invalid chainId provided in chainConfig. Got '${badChainId}'`;
-      const umbraAddress = '0xC48BE75dBd5bc9E4B39908881cfe63f9f3Cd2f6e'; // address does not matter here
+      const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // address does not matter here
 
       // @ts-expect-error
       expect(() => new Umbra(ethersProvider)).to.throw('chainConfig not provided');
