@@ -17,11 +17,13 @@ export class DomainService {
    * @param provider ethers provider instance
    */
   constructor(readonly provider: EthersProvider) {
+    // If network name is homestead, use 'mainnet' as the network name
+    const networkName = provider.network.name === 'homestead' ? 'mainnet' : provider.network.name;
     this.udResolution = new Resolution({
       sourceConfig: {
         cns: {
           provider: Eip1993Factories.fromEthersProvider(provider),
-          network: provider.network.name as 'mainnet' | 'rinkeby',
+          network: networkName as 'mainnet' | 'rinkeby',
         },
       },
     });

@@ -32,12 +32,12 @@ function useWallet(context: SetupContext, to: string) {
       { walletName: 'lattice', rpcUrl, appName: 'Umbra' },
       { walletName: 'opera' },
     ];
-    const walletChecks = [{ checkName: 'connect' }, { checkName: 'network' }];
+    const walletChecks = [{ checkName: 'connect' }];
 
     const onboard = Onboard({
       dappId: process.env.BLOCKNATIVE_API_KEY,
       darkMode: Dark.isActive,
-      networkId: 4, // always testnet for now
+      networkId: 1,
       walletSelect: { wallets },
       walletCheck: walletChecks,
       subscriptions: {
