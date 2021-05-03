@@ -119,34 +119,40 @@
             <q-td colspan="100%" class="bg-muted">
               <q-form class="form-wide q-py-md" style="white-space: normal">
                 <!-- Withdrawal form -->
-                <div>Enter address to withdraw funds to</div>
-                <base-input
-                  v-model="destinationAddress"
-                  @click="initializeWithdraw(props.row)"
-                  appendButtonLabel="Withdraw"
-                  :appendButtonDisable="isWithdrawInProgress || isFeeLoading"
-                  :appendButtonLoading="isWithdrawInProgress"
-                  :disable="isWithdrawInProgress"
-                  label="Address"
-                  lazy-rules
-                  :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
-                />
-                <!-- Fee estimate -->
-                <div class="q-mb-lg">
-                  <div v-if="!isEth(props.row.token) && isFeeLoading" class="text-caption text-italic">
-                    <q-spinner-puff class="q-my-none q-mr-sm" color="primary" size="2rem" />
-                    Fetching fee estimate...
+                <div v-if="!isWithdrawInProgress">
+                  <div>Enter address to withdraw funds to</div>
+                  <base-input
+                    v-model="destinationAddress"
+                    @click="initializeWithdraw(props.row)"
+                    appendButtonLabel="Withdraw"
+                    :appendButtonDisable="isWithdrawInProgress || isFeeLoading"
+                    :appendButtonLoading="isWithdrawInProgress"
+                    :disable="isWithdrawInProgress"
+                    label="Address"
+                    lazy-rules
+                    :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
+                  />
+                  <!-- Fee estimate -->
+                  <div class="q-mb-lg">
+                    <div v-if="!isEth(props.row.token) && isFeeLoading" class="text-caption text-italic">
+                      <q-spinner-puff class="q-my-none q-mr-sm" color="primary" size="2rem" />
+                      Fetching fee estimate...
+                    </div>
+                    <div v-else-if="isEth(props.row.token)" class="text-caption">
+                      Withdrawal fee: <span class="text-bold"> 0 ETH </span>
+                    </div>
+                    <div v-else-if="activeFee" class="text-caption">
+                      Estimated withdrawal fee:
+                      <span class="text-bold">
+                        {{ formatUnits(activeFee.fee, activeFee.token.decimals) }}
+                        {{ activeFee.token.symbol }}
+                      </span>
+                    </div>
                   </div>
-                  <div v-else-if="isEth(props.row.token)" class="text-caption">
-                    Withdrawal fee: <span class="text-bold"> 0 ETH </span>
-                  </div>
-                  <div v-else-if="activeFee" class="text-caption">
-                    Estimated withdrawal fee:
-                    <span class="text-bold">
-                      {{ formatUnits(activeFee.fee, activeFee.token.decimals) }}
-                      {{ activeFee.token.symbol }}
-                    </span>
-                  </div>
+                </div>
+                <div v-else class="text-center q-mb-lg">
+                  <q-spinner-puff class="q-mb-md q-mr-sm" color="primary" size="2rem" />
+                  <div class="text-center text-italic">Withdraw in progress...</div>
                 </div>
 
                 <!-- Privacy warning -->
@@ -243,14 +249,15 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const { domainService, ETH_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
-  const isLoading = ref(false);
-  const isFeeLoading = ref(false);
   const showPrivacyModal = ref(false);
   const privacyModalAddressDescription = ref('a wallet that may be publicly associated with you');
   const destinationAddress = ref('');
-  const isWithdrawInProgress = ref(false);
   const activeAnnouncement = ref<UserAnnouncement>();
   const activeFee = ref<FeeEstimateResponse>(); // null if ETH
+  // UI status variables
+  const isLoading = ref(false);
+  const isFeeLoading = ref(false);
+  const isWithdrawInProgress = ref(false);
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
@@ -390,7 +397,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         if (!chainId) throw new Error(`Invalid chainID: ${String(chainId)}`);
 
         // Get users signature
-        const sponsor = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD'; // TODO update this
+        const sponsor = '0xb4435399AB53D6136C9AEEBb77a0120620b117F9'; // TODO update this
         const fee = activeFee.value.fee;
         const umbraAddress = umbra.value.umbraContract.address;
         const signature = joinSignature(
@@ -399,11 +406,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
         // Relay transaction
         const withdrawalInputs = { stealthAddr: stealthKeyPair.address, acceptor, signature, sponsorFee: fee };
-        const { itxId } = (await relayer.value?.relayWithdraw(token.address, withdrawalInputs)) as { itxId: string };
-        console.log(`Relayed with ITX ID ${itxId}`);
+        const { relayTransactionHash } = (await relayer.value?.relayWithdraw(token.address, withdrawalInputs)) as {
+          relayTransactionHash: string;
+        };
+        console.log(`Relayed with ITX ID ${relayTransactionHash}`);
 
         // Wait for withdraw transaction to be mined
-        const { receipt } = (await relayer.value?.waitForId(itxId)) as ConfirmedITXStatusResponse;
+        const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedITXStatusResponse;
         console.log('Withdraw successful. Receipt:', receipt);
       }
 

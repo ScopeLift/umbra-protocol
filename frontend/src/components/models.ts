@@ -33,6 +33,6 @@ export type WithdrawalInputs = {
   signature: string;
   sponsorFee: string;
 };
-export type RelayResponse = { itxId: string } | ApiError;
+export type RelayResponse = { relayTransactionHash: string } | ApiError;
 export type ITXStatusResponse = { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt } | ApiError;
 export type ConfirmedITXStatusResponse = { receivedTime: string; broadcasts: any[]; receipt: TransactionReceipt };
