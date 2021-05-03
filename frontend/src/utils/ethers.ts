@@ -6,7 +6,7 @@
 
 export { getAddress } from '@ethersproject/address';
 export { BigNumber } from '@ethersproject/bignumber';
-export { hexZeroPad, hexlify, isHexString, arrayify } from '@ethersproject/bytes';
+export { hexZeroPad, arrayify, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
 export { AddressZero, MaxUint256 } from '@ethersproject/constants';
 export { Contract } from '@ethersproject/contracts';
 export { namehash } from '@ethersproject/hash';

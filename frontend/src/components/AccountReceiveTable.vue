@@ -164,24 +164,18 @@ import {
   arrayify,
   BigNumber,
   Block,
-  Contract,
-  ExternalProvider,
+  joinSignature,
   formatUnits,
   toUtf8String,
   TransactionResponse,
-  Web3Provider,
 } from 'src/utils/ethers';
 import { DomainService, Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
-import { RelayProvider } from '@opengsn/gsn/dist/src/relayclient/RelayProvider';
-import { Web3ProviderBaseInterface } from '@opengsn/gsn/dist/src/common/types/Aliases';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
-import UmbraRelayRecipient from 'src/contracts/UmbraRelayRecipient.json';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import { SupportedChainIds } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
-import BaseButton from './BaseButton.vue';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
@@ -348,55 +342,38 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       if (token.symbol === 'ETH') {
         // Withdrawing ETH
         tx = await umbra.value.withdraw(spendingPrivateKey, token.address, destinationAddr);
+        txNotify(tx.hash);
+        await tx.wait();
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value) throw new Error('Signer or provider not found');
-        // Get user's signature. GSN doesn't care about sponsor address and fee, so for now on Rinkeby
-        // we just use a value of 1 and the destinationAddress as a sanity check this functionality works
+
+        // TODO make sure token is supported
+
+        // TODO get fee estimate
+
+        // TODO get users signature
+
+        // TODO relay transaction
+
+        // TODO track status
+
+        // Original code below
         const sponsor = destinationAddr;
         const sponsorFee = '1'; // sponsor receives 1 unit of token being withdrawn, e.g. 1e-18 DAI or 1e-6 USDC
         const chainId = (await provider.value.getNetwork()).chainId;
-        const version = '1'; // this is the only version, so hardcoded for now
-        const { v, r, s } = await Umbra.signWithdraw(
-          spendingPrivateKey,
-          chainId,
-          version,
-          destinationAddr,
-          token.address,
-          sponsor,
-          sponsorFee
+        const signature = joinSignature(
+          await Umbra.signWithdraw(
+            spendingPrivateKey,
+            chainId,
+            umbra.value.umbraContract.address,
+            destinationAddr,
+            token.address,
+            sponsor,
+            sponsorFee
+          )
         );
-
-        // Configure GSN provider (hardcoded our Rinkeby paymaster address)
-        const gsnConfig = {
-          paymasterAddress: '0x11ca9Ed79B93131e23EA4Ba0B1eD1a90bf17472F',
-          methodSuffix: '_v4', // MetaMask only
-          jsonStringifyRequest: true, // MetaMask only
-        };
-        const gsnProvider = await RelayProvider.newProvider({
-          provider: provider.value.provider as Web3ProviderBaseInterface,
-          config: gsnConfig,
-        }).init();
-        gsnProvider.addAccount(spendingPrivateKey);
-        const gsnEthersProvider = new Web3Provider((gsnProvider as unknown) as ExternalProvider);
-
-        // Send transaction
-        const stealthSigner = gsnEthersProvider.getSigner(stealthKeyPair.address);
-        const relayRecipientAddress = UmbraRelayRecipient.addresses[String(chainId) as SupportedChainIds];
-        const umbraRelayRecipient = new Contract(relayRecipientAddress, UmbraRelayRecipient.abi, stealthSigner);
-        tx = (await umbraRelayRecipient.withdrawTokenOnBehalf(
-          stealthKeyPair.address,
-          destinationAddr,
-          sponsor,
-          sponsorFee,
-          v,
-          r,
-          s,
-          { gasLimit: '1000000' }
-        )) as TransactionResponse;
       }
-      txNotify(tx.hash);
-      await tx.wait();
 
       // Collapse expansion row and update table to show this was withdrawn
       destinationAddress.value = '';
@@ -438,7 +415,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
 export default defineComponent({
   name: 'AccountReceiveTable',
-  components: { AccountReceiveTableWarning, BaseButton },
+  components: { AccountReceiveTableWarning },
   props: {
     announcements: {
       type: (undefined as unknown) as PropType<UserAnnouncement[]>,
