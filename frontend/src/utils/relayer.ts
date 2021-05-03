@@ -39,7 +39,8 @@ export class ITXRelayer {
 
   async relayWithdraw(tokenAddress: string, withdrawalInputs: WithdrawalInputs) {
     const body = JSON.stringify(withdrawalInputs);
-    const response = await fetch(`${this.baseUrl}/tokens/${tokenAddress}/relay`, { method: 'POST', body });
+    const headers = { 'Content-Type': 'application/json' };
+    const response = await fetch(`${this.baseUrl}/tokens/${tokenAddress}/relay`, { method: 'POST', body, headers });
     const data = (await response.json()) as RelayResponse;
     if ('error' in data) throw new Error(`Could not relay withdraw: ${data.error}`);
     return data;
@@ -47,7 +48,7 @@ export class ITXRelayer {
 
   // Returns the status of the provided ITX transaction ID
   async getRelayStatus(itxId: string) {
-    const response = await fetch(`${this.baseUrl}/itxStatus/${itxId}`);
+    const response = await fetch(`${this.baseUrl}/status/${itxId}`);
     const data = (await response.json()) as ITXStatusResponse;
     if ('error' in data) throw new Error(`Could not get relay status: ${data.error}`);
     return data;
