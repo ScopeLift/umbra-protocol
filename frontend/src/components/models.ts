@@ -12,8 +12,8 @@ export interface MulticallResponse {
   returnData: string[];
 }
 
-// Set comprised of intersection of Chain IDs present for all contracts in src/contracts and supported by umbra-js
-export type SupportedChainIds = '4';
+// Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
+export type SupportedChainIds = '1' | '4';
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response
 type CnsName = { name: string };
@@ -35,3 +35,4 @@ export type WithdrawalInputs = {
 };
 export type RelayResponse = { itxId: string } | ApiError;
 export type ITXStatusResponse = { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt } | ApiError;
+export type ConfirmedITXStatusResponse = { receivedTime: string; broadcasts: any[]; receipt: TransactionReceipt };

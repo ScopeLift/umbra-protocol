@@ -88,7 +88,8 @@
              so we explain the two things it does here:
               1. First it calls hidePrivateKey(), which is an advancedMode only feature to show your private key.
                  We call this to make sure a private key is never shown when initially expanding a row
-              2. If the new row key is the same as the value of the value of expanded[0], we clicked the currently
+              2. For tokens (but not ETH), we get the fee estimate to withdraw the token
+              3. If the new row key is the same as the value of the value of expanded[0], we clicked the currently
                  expanded row and therefore set `expanded = []` to hide the row. Otherwise we update the `expanded`
                  array so it's only element is the key of the new row. This enables showing/hiding of rows and ensures
                  only one row is every expanded at a time
@@ -101,6 +102,7 @@
                 v-else
                 @click="
                   hidePrivateKey();
+                  getFeeEstimate(props.row.token); // kickoff process in background
                   expanded = expanded[0] === props.key ? [] : [props.key];
                 "
                 color="primary"
@@ -116,19 +118,41 @@
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%" class="bg-muted">
               <q-form class="form-wide q-py-md" style="white-space: normal">
+                <!-- Withdrawal form -->
                 <div>Enter address to withdraw funds to</div>
                 <base-input
                   v-model="destinationAddress"
                   @click="initializeWithdraw(props.row)"
                   appendButtonLabel="Withdraw"
-                  :appendButtonDisable="isWithdrawInProgress"
+                  :appendButtonDisable="isWithdrawInProgress || isFeeLoading"
                   :appendButtonLoading="isWithdrawInProgress"
                   :disable="isWithdrawInProgress"
                   label="Address"
                   lazy-rules
                   :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
                 />
+                <!-- Fee estimate -->
+                <div class="q-mb-lg">
+                  <div v-if="!isEth(props.row.token) && isFeeLoading" class="text-caption text-italic">
+                    <q-spinner-puff class="q-my-none q-mr-sm" color="primary" size="2rem" />
+                    Fetching fee estimate...
+                  </div>
+                  <div v-else-if="isEth(props.row.token)" class="text-caption">
+                    Withdrawal fee: <span class="text-bold"> 0 ETH </span>
+                  </div>
+                  <div v-else-if="activeFee" class="text-caption">
+                    Estimated withdrawal fee:
+                    <span class="text-bold">
+                      {{ formatUnits(activeFee.fee, activeFee.token.decimals) }}
+                      {{ activeFee.token.symbol }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Privacy warning -->
+                <div class="border q-mb-lg" />
                 <div class="text-caption">
+                  <q-icon name="fas fa-exclamation-triangle" color="warning" left />
                   <span class="text-bold">WARNING</span>: Be sure you understand the security implications before
                   entering a withdrawal address. If you withdraw to an address publicly associated with you, privacy for
                   this transaction will be lost.
@@ -174,7 +198,7 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
-import { SupportedChainIds } from 'components/models';
+import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
@@ -216,15 +240,17 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 }
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
-  const { tokens, userAddress, signer, provider, umbra, domainService } = useWalletStore();
+  const { domainService, ETH_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const isLoading = ref(false);
+  const isFeeLoading = ref(false);
   const showPrivacyModal = ref(false);
   const privacyModalAddressDescription = ref('a wallet that may be publicly associated with you');
   const destinationAddress = ref('');
   const isWithdrawInProgress = ref(false);
   const activeAnnouncement = ref<UserAnnouncement>();
+  const activeFee = ref<FeeEstimateResponse>(); // null if ETH
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
@@ -234,6 +260,18 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     { align: 'left', field: 'amount', label: 'Amount', name: 'amount', sortable: true, format: toString },
     { align: 'left', field: 'receipt', label: 'From', name: 'from', sortable: true },
   ];
+
+  // Relayer helper method
+  const getFeeEstimate = async (tokenAddress: string) => {
+    if (isEth(tokenAddress)) {
+      // no fee for ETHY
+      activeFee.value = { fee: '0', token: ETH_TOKEN.value };
+      return;
+    }
+    isFeeLoading.value = true;
+    activeFee.value = await relayer.value?.getFeeEstimate(tokenAddress);
+    isFeeLoading.value = false;
+  };
 
   // Table formatters and helpers
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
@@ -333,7 +371,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     const token = getTokenInfo(announcement.token);
     const stealthKeyPair = spendingKeyPair.mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
-    const destinationAddr = await toAddress(destinationAddress.value, domainService.value as DomainService);
+    const acceptor = await toAddress(destinationAddress.value, domainService.value as DomainService);
 
     // Send transaction
     try {
@@ -341,38 +379,32 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       let tx: TransactionResponse;
       if (token.symbol === 'ETH') {
         // Withdrawing ETH
-        tx = await umbra.value.withdraw(spendingPrivateKey, token.address, destinationAddr);
+        tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor);
         txNotify(tx.hash);
         await tx.wait();
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value) throw new Error('Signer or provider not found');
+        if (!activeFee.value || !('fee' in activeFee.value)) throw new Error('Fee is not set');
+        const chainId = network.value?.chainId;
+        if (!chainId) throw new Error(`Invalid chainID: ${String(chainId)}`);
 
-        // TODO make sure token is supported
-
-        // TODO get fee estimate
-
-        // TODO get users signature
-
-        // TODO relay transaction
-
-        // TODO track status
-
-        // Original code below
-        const sponsor = destinationAddr;
-        const sponsorFee = '1'; // sponsor receives 1 unit of token being withdrawn, e.g. 1e-18 DAI or 1e-6 USDC
-        const chainId = (await provider.value.getNetwork()).chainId;
+        // Get users signature
+        const sponsor = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD'; // TODO update this
+        const fee = activeFee.value.fee;
+        const umbraAddress = umbra.value.umbraContract.address;
         const signature = joinSignature(
-          await Umbra.signWithdraw(
-            spendingPrivateKey,
-            chainId,
-            umbra.value.umbraContract.address,
-            destinationAddr,
-            token.address,
-            sponsor,
-            sponsorFee
-          )
+          await Umbra.signWithdraw(spendingPrivateKey, chainId, umbraAddress, acceptor, token.address, sponsor, fee)
         );
+
+        // Relay transaction
+        const withdrawalInputs = { stealthAddr: stealthKeyPair.address, acceptor, signature, sponsorFee: fee };
+        const { itxId } = (await relayer.value?.relayWithdraw(token.address, withdrawalInputs)) as { itxId: string };
+        console.log(`Relayed with ITX ID ${itxId}`);
+
+        // Wait for withdraw transaction to be mined
+        const { receipt } = (await relayer.value?.waitForId(itxId)) as ConfirmedITXStatusResponse;
+        console.log('Withdraw successful. Receipt:', receipt);
       }
 
       // Collapse expansion row and update table to show this was withdrawn
@@ -390,6 +422,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   }
 
   return {
+    activeFee,
     copySenderAddress,
     destinationAddress,
     executeWithdraw,
@@ -399,10 +432,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     formatPayloadExtensionText,
     formattedAnnouncements,
     formatTime,
+    formatUnits,
+    getFeeEstimate,
     getTokenLogoUri,
     getTokenSymbol,
     hasPayloadExtension,
     initializeWithdraw,
+    isEth,
+    isFeeLoading,
     isLoading,
     isWithdrawInProgress,
     mainTableColumns,
@@ -444,6 +481,9 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
+.border
+  border-bottom: 1px solid rgba(0,0,0, 0.2)
+
 .copy-icon-parent:hover .copy-icon
   color: $primary
 
