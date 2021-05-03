@@ -3,8 +3,8 @@ const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const { RelayProvider } = require('@opengsn/gsn/dist/src/relayclient/RelayProvider');
 const { GsnTestEnvironment } = require('@opengsn/gsn/dist/GsnTestEnvironment');
-const { argumentBytes } = require('./sample-data');
-const { sumTokenAmounts, signMetaWithdrawal } = require('./utils');
+const { argumentBytes } = require('../sample-data');
+const { sumTokenAmounts, signMetaWithdrawal } = require('../utils');
 
 const Umbra = artifacts.require('Umbra');
 const UmbraPaymaster = artifacts.require('UmbraPaymaster');
