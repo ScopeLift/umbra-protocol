@@ -16,7 +16,7 @@ import { ITXRelayer } from 'src/utils/relayer';
  */
 
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-const ETH_TOKEN = {
+const ETH_TOKEN_INFO = {
   address: ETH_ADDRESS,
   name: 'Ether',
   decimals: 18,
@@ -143,11 +143,14 @@ export default function useWalletStore() {
   // ------------------------------------- Computed parameters -------------------------------------
   // "True" computed properties, i.e. derived from this module's state
 
+  const ETH_TOKEN = computed(() => {
+    return { ...ETH_TOKEN_INFO, chainId: network.value?.chainId as number };
+  });
+
   const tokens = computed(() => {
     // Add ETH as a supported token
-    const ETH_TOKEN_INFO = { ...ETH_TOKEN, chainId: network.value?.chainId as number };
     const supportedTokens = relayer.value?.tokens || [];
-    return [ETH_TOKEN_INFO, ...supportedTokens];
+    return [ETH_TOKEN.value, ...supportedTokens];
   });
 
   const userDisplayName = computed(() => {
@@ -179,6 +182,7 @@ export default function useWalletStore() {
     userEns: computed(() => userEns.value),
     viewingKeyPair: computed(() => viewingKeyPair.value),
     // "True" computed properties, i.e. derived from this module's state
+    ETH_TOKEN: computed(() => ETH_TOKEN.value),
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
   };
