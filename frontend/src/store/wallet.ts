@@ -56,7 +56,7 @@ export default function useWalletStore() {
     const multicall = new Contract(multicallAddress, Multicall.abi, provider.value);
 
     // Generate balance calls using Multicall contract
-    const calls = relayer.value.tokens.map((token) => {
+    const calls = tokens.value.map((token) => {
       const { address: tokenAddress } = token;
       if (tokenAddress === ETH_ADDRESS) {
         return {
@@ -77,7 +77,7 @@ export default function useWalletStore() {
     const multicallResponse = (response as MulticallResponse).returnData;
 
     // Set balances mapping
-    relayer.value.tokens.forEach((token, index) => {
+    tokens.value.forEach((token, index) => {
       balances.value[token.address] = BigNumber.from(multicallResponse[index]);
     });
   }
@@ -140,6 +140,21 @@ export default function useWalletStore() {
     }
   }
 
+  // ------------------------------------- Computed parameters -------------------------------------
+  // "True" computed properties, i.e. derived from this module's state
+
+  const tokens = computed(() => {
+    // Add ETH as a supported token
+    const ETH_TOKEN_INFO = { ...ETH_TOKEN, chainId: network.value?.chainId as number };
+    const supportedTokens = relayer.value?.tokens || [];
+    return [ETH_TOKEN_INFO, ...supportedTokens];
+  });
+
+  const userDisplayName = computed(() => {
+    const address = userAddress.value ? formatAddress(userAddress.value) : undefined;
+    return userEns.value || userCns.value || address;
+  });
+
   // ------------------------------------- Exposed parameters --------------------------------------
   // Define computed properties and parts of store that should be exposed. Everything exposed is a
   // computed property to facilitate reactivity and avoid accidental state mutations
@@ -155,6 +170,7 @@ export default function useWalletStore() {
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
     provider: computed(() => provider.value),
+    relayer: computed(() => relayer.value),
     signer: computed(() => signer.value),
     spendingKeyPair: computed(() => spendingKeyPair.value),
     umbra: computed(() => umbra.value),
@@ -163,15 +179,7 @@ export default function useWalletStore() {
     userEns: computed(() => userEns.value),
     viewingKeyPair: computed(() => viewingKeyPair.value),
     // "True" computed properties, i.e. derived from this module's state
-    tokens: computed(() => {
-      // Add ETH as a supported token
-      const ETH_TOKEN_INFO = { ...ETH_TOKEN, chainId: network.value?.chainId as number };
-      const supportedTokens = relayer.value?.tokens || [];
-      return [ETH_TOKEN_INFO, ...supportedTokens];
-    }),
-    userDisplayName: computed(() => {
-      const address = userAddress.value ? formatAddress(userAddress.value) : undefined;
-      return userEns.value || userCns.value || address;
-    }),
+    tokens: computed(() => tokens.value),
+    userDisplayName: computed(() => userDisplayName.value),
   };
 }
