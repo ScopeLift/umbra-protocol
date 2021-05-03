@@ -24,8 +24,7 @@ export default boot(({ Vue }) => {
     // event.promise contains the promise object
     // event.reason contains the reason for the rejection
 
-    // For some reason the current GSN configuration works, but throws with the error below. So we
-    // if that's the error we've gotten we just ignore it
+    // For some reason when using GSN, it works, but throws with the error below. So if that's the error we just ignore it
     //   MetaMask - RPC Error: already known {code: -32000, message: "already known"}
     //   Error params: Uncaught Error: [object Object] webpack-internal:///./src/boot/error-handler.ts 28 15
     if (event.reason.code === -32000 && event.reason.message === 'already known') {
