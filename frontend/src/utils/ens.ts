@@ -167,32 +167,31 @@ export const setRootNameKeys = async (
   //   2. ENS PublicStealthKeyResolver (typically used when registering an umbra.eth subdomain)
   //   3. ENS ForwardingStealthKeyResolver (typically used when configuring a root ENS name, e.g. msolomon.eth)
   //   4. CNS PublicResolver
-  // The first and third transactions below are only needed when migrating from the PublicResolver, and the
-  // second transaction below is needed in all three cases. We use isEnsPublicResolver.value, which was set
+  // The first and second transactions below are only needed when migrating from the PublicResolver, and the
+  // third transaction below is needed in all three cases. We use isEnsPublicResolver.value, which was set
   // in checkEnsStatus(), to handle this logic
 
-  // Step 1: Authorize the ForwardingStealthKeyResolver to set records on the PublicResolver. This is required
-  // so it can properly act as a fallback resolver with permission to set records on PublicResolver as needed
   if (isEnsPublicResolver) {
+    // Step 1: Authorize the ForwardingStealthKeyResolver to set records on the PublicResolver. This is required
+    // so it can properly act as a fallback resolver with permission to set records on PublicResolver as needed
     const publicResolver = getContract('ENSPublicResolver', provider).connect(signer);
     const tx = (await publicResolver.setAuthorisation(node, fskResolverAddress, true)) as TransactionResponse;
     txNotify(tx.hash);
     txs.push(tx);
+
+    // Step 2: Change the user's resolver to the ForwardingStealthKeyResolver
+    // Execute the setResolver transaction
+    const registry = getContract('ENSRegistry', provider).connect(signer);
+    const tx2 = (await registry.setResolver(node, fskResolverAddress)) as TransactionResponse;
+    txNotify(tx2.hash);
+    txs.push(tx2);
+    await tx2.wait(); // this needs to be mined before step 3, since step 3 reads your current resolver
   }
 
-  // Step 2: Set the stealth keys on the appropriate resolver
+  // Step 3: Set the stealth keys on the appropriate resolver
   const tx = await domainService.setPublicKeys(name, spendingPublicKey, viewingPublicKey);
   txNotify(tx.hash);
   txs.push(tx);
-
-  // Step 3: Change the user's resolver to the ForwardingStealthKeyResolver
-  if (isEnsPublicResolver) {
-    // Execute the setResolver transaction
-    const registry = getContract('ENSRegistry', provider).connect(signer);
-    const tx = (await registry.setResolver(node, fskResolverAddress)) as TransactionResponse;
-    txNotify(tx.hash);
-    txs.push(tx);
-  }
 
   return txs;
 };
