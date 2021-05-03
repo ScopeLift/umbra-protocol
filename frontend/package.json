@@ -10,10 +10,9 @@
     "prettier": "prettier --write .",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build",
+    "build": "quasar build && cp _redirects dist/spa/",
     "clean": "rimraf build",
-    "precommit": "lint-staged",
-    "deploy": "yarn build && firebase deploy"
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
