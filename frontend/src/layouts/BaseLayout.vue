@@ -79,7 +79,7 @@
       <div class="row justify-between items-center all-content-format">
         <!-- Column 1: User settings -->
         <div class="col text-left">
-          <p class="spaced-letters">Settings</p>
+          <p class="dark-toggle spaced-letters">Settings</p>
           <!-- Dark mode toggle -->
           <p class="dark-toggle">
             <q-icon v-if="!$q.dark.isActive" @click="toggleDarkMode" class="cursor-pointer icon" name="fas fa-moon" />
@@ -110,8 +110,8 @@
           <!-- Empty paragraph, as a lazy way to ensure all columns are the same height, or repeat account setup -->
           <p v-if="!isAccountSetup">&nbsp;</p>
           <p v-else>
-            <q-icon class="icon" name="fas fa-user q-mr-xs" />
-            <span class="text-caption q-ml-sm">
+            <q-icon class="dark-toggle icon" name="fas fa-user q-mr-xs" />
+            <span class="dark-toggle text-caption q-ml-sm">
               Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
             </span>
           </p>
@@ -119,8 +119,8 @@
 
         <!-- Column 2: Built by ScopeLift -->
         <div class="col text-left">
-          <p class="spaced-letters">About</p>
-          <p class="text-caption">
+          <p class="dark-toggle spaced-letters">About</p>
+          <p class="dark-toggle text-caption">
             Built by <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
           </p>
           <p>
@@ -133,7 +133,7 @@
 
         <!-- Column 3: Links -->
         <div class="col-auto text-left">
-          <p class="spaced-letters">Links</p>
+          <p class="dark-toggle spaced-letters">Links</p>
           <p>
             <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
               <q-icon class="dark-toggle" name="fab fa-twitter" size="xs" />

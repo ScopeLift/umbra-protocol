@@ -172,7 +172,7 @@
       </div>
 
       <!-- Account Setup -->
-      <div class="border q-mt-lg q-mb-xl"></div>
+      <div class="separator q-mt-lg q-mb-xl"></div>
       <div
         @click="copyUrl"
         id="account-setup"
@@ -300,7 +300,7 @@
       </div>
 
       <!-- Sending Funds -->
-      <div class="border q-mt-lg q-mb-xl"></div>
+      <div class="separator q-mt-lg q-mb-xl"></div>
       <div
         @click="copyUrl"
         id="sending-funds"
@@ -365,7 +365,7 @@
       </div>
 
       <!-- Receiving Funds -->
-      <div class="border q-mt-lg q-mb-xl"></div>
+      <div class="separator q-mt-lg q-mb-xl"></div>
       <div
         @click="copyUrl"
         id="receiving-funds"
@@ -499,7 +499,7 @@
       </div>
 
       <!-- Security -->
-      <div class="border q-mt-lg q-mb-xl"></div>
+      <div class="separator q-mt-lg q-mb-xl"></div>
       <div
         @click="copyUrl"
         id="security"
@@ -563,7 +563,7 @@
       </div>
 
       <!-- Technical Details -->
-      <div class="border q-mt-lg q-mb-xl"></div>
+      <div class="separator q-mt-lg q-mb-xl"></div>
       <div
         @click="copyUrl"
         id="technical-details"
@@ -734,7 +734,7 @@
       </div>
 
       <!-- Advanced Mode -->
-      <div class="border q-mt-lg q-mb-xl"></div>
+      <div class="separator q-mt-lg q-mb-xl"></div>
       <div
         @click="copyUrl"
         id="advanced-mode"
@@ -888,7 +888,7 @@
       </div>
 
       <!-- For Developers -->
-      <div class="border q-mt-lg q-mb-xl"></div>
+      <div class="separator q-mt-lg q-mb-xl"></div>
       <div
         @click="copyUrl"
         id="for-developers"
@@ -1174,7 +1174,4 @@ export default defineComponent({
 
 .link-icon
   color: transparent
-
-.border
-  border-bottom: 1px solid rgba(0,0,0, 0.2)
 </style>
