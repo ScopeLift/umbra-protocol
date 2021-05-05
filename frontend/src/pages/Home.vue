@@ -23,14 +23,14 @@
           <!-- To Receive Funds -->
           <h5 class="text-center q-mt-xl">Receiving Funds</h5>
           <ol>
-            <li>Use the <span class="text-bold">Setup</span> page to configure your ENS name</li>
-            <li>Ask someone to send funds to your ENS (and soon, CNS) name</li>
+            <li>Use the <span class="text-bold">Setup</span> page to configure your ENS or CNS name</li>
+            <li>Ask someone to send funds to your ENS or CNS name</li>
             <li>Check the <span class="text-bold">Receive</span> page to withdraw funds</li>
           </ol>
           <!-- To Send Funds -->
           <h5 class="text-center q-mt-xl">Sending Funds</h5>
           <ol>
-            <li>Get the ENS (and soon, CNS) name of the person you're sending funds to</li>
+            <li>Get the ENS or CNS name of the person you're sending funds to</li>
             <li>Complete the form on the <span class="text-bold">Send</span> page</li>
           </ol>
         </div>
