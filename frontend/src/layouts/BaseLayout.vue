@@ -65,7 +65,8 @@
         </div>
         <!-- Alpha warning -->
         <div class="dark-toggle text-center text-negative text-bold q-my-md">
-          WARNING: This is unaudited software and is only available on Rinkeby
+          WARNING: This is beta software and you may lose funds.
+          <router-link class="hyperlink" :to="{ path: '/faq#security' }">Learn more</router-link>
         </div>
       </div>
     </q-header>
