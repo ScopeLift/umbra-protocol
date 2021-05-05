@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent, SetupContext } from '@vue/composition-api';
-import { Dark } from 'quasar';
+import { Dark, Loading, QSpinnerPuff } from 'quasar';
 import useWalletStore from 'src/store/wallet';
 import Onboard from 'bnc-onboard';
 
@@ -46,12 +46,13 @@ function useWallet(context: SetupContext, to: string) {
     });
     await onboard.walletSelect();
     await onboard.walletCheck();
-    await configureProvider();
 
-    // Redirect to specified page
-    if (to) {
-      await context.root.$router.push({ name: to });
-    }
+    // Finish setup
+    // @ts-expect-error: Type 'VueConstructor<QSpinnerPuff>' is missing the following properties from type 'Vue': $el, $options, $parent, $root, and 27 more.
+    Loading.show({ spinnerColor: 'primary', spinner: QSpinnerPuff }); // show loading spinner as we fetch wallet info
+    await configureProvider(); // get ENS name, CNS names, etc.
+    if (to) await context.root.$router.push({ name: to }); // redirect to specified page
+    Loading.hide(); // hide loading spinner
   }
 
   return { connectWallet };

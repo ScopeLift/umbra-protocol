@@ -13,4 +13,7 @@ module.exports = {
     Capacitor: true,
     chrome: true,
   },
+  rules: {
+    '@typescript-eslint/ban-ts-comment': 'allow-with-description',
+  },
 };
