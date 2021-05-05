@@ -26,7 +26,9 @@ export default function useSettingsStore() {
     advancedMode.value = Boolean(LocalStorage.getItem(settings.advancedMode));
     startBlock.value = Number(LocalStorage.getItem(settings.startBlock)) || undefined;
     endBlock.value = Number(LocalStorage.getItem(settings.endBlock)) || undefined;
-    lastWallet.value = String(LocalStorage.getItem(settings.lastWallet));
+    lastWallet.value = LocalStorage.getItem(settings.lastWallet)
+      ? String(LocalStorage.getItem(settings.lastWallet))
+      : undefined;
   });
 
   function setDarkMode(status: boolean) {

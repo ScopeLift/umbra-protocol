@@ -53,9 +53,11 @@
             <!-- ADDRESS AND SETTINGS AND SETTINGS -->
             <div class="col-auto q-mr-md">
               <div>
-                <span v-if="userDisplayName" class="text-caption dark-toggle">
-                  {{ userDisplayName }}
-                </span>
+                <connect-wallet>
+                  <span v-if="userDisplayName" class="text-caption cursor-pointer dark-toggle">
+                    {{ userDisplayName }}
+                  </span>
+                </connect-wallet>
                 <span v-if="advancedMode" class="q-ml-md">
                   🧙 <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md"> Advanced mode is on </q-tooltip>
                 </span>
@@ -162,6 +164,7 @@
 import { defineComponent, ref, watchEffect } from '@vue/composition-api';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
+import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useWallet() {
   const { userDisplayName, network, isAccountSetup } = useWalletStore();
@@ -178,6 +181,7 @@ function useWallet() {
 
 export default defineComponent({
   name: 'BaseLayout',
+  components: { ConnectWallet },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
     return { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode, ...useWallet() };

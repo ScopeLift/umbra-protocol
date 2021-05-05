@@ -16,13 +16,14 @@ function useWallet(context: SetupContext, to: string) {
   const { setLastWallet } = useSettingsStore();
 
   async function connectWallet() {
-    // If user already connected wallet, continue
-    if (userAddress.value) {
+    // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
+    // from the home page)
+    if (userAddress.value && to) {
       await context.root.$router.push({ name: to });
       return;
     }
 
-    // Otherwise, prompt them for connection
+    // Otherwise, prompt them for connection / wallet change
     const rpcUrl = `https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`;
     const wallets = [
       { walletName: 'metamask', preferred: true },
@@ -49,6 +50,11 @@ function useWallet(context: SetupContext, to: string) {
         },
       },
     });
+
+    // Clear existing wallet selection
+    onboard.walletReset();
+
+    // Connect wallet
     await onboard.walletSelect();
     await onboard.walletCheck();
 
