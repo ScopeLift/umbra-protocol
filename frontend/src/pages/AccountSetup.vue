@@ -103,8 +103,12 @@
               </div>
               <div v-else>
                 <p>
-                  You are connected with <span class="text-bold">{{ userEns }}</span
-                  >. Please continue to the next step to use this domain, or complete the field below to continue with
+                  <span class="text-bold text-primary q-mr-md">Option 1&nbsp;</span> Click the arrow to continue with
+                  <span class="text-bold">{{ userEns }}</span>
+                </p>
+                <div class="separator q-mb-md"></div>
+                <p>
+                  <span class="text-bold text-primary q-mr-md">Option 2</span> Complete the field below to continue with
                   an <span class="text-bold">umbra.eth</span> subdomain.
                 </p>
                 <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
@@ -113,9 +117,13 @@
             <!-- User only has CNS, or use chose to use CNS -->
             <div v-else-if="(!userEns && userCns) || selectedNameType === 'cns'">
               <p>
-                You are connected with <span class="text-bold">{{ userCns }}</span
-                >. Please continue to the next step to use this domain, or complete the field below to continue with an
-                <span class="text-bold">umbra.eth</span> subdomain.
+                <span class="text-bold text-primary q-mr-md">Option 1&nbsp;</span> Click the arrow to continue with
+                <span class="text-bold">{{ userCns }}</span>
+              </p>
+              <div class="separator q-mb-md"></div>
+              <p>
+                <span class="text-bold text-primary q-mr-md">Option 2</span> Complete the field below to continue with
+                an <span class="text-bold">umbra.eth</span> subdomain.
               </p>
               <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
