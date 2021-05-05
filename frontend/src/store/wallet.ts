@@ -94,24 +94,30 @@ export default function useWalletStore() {
     if (!rawProvider.value) return;
     provider.value = new Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
-    const _userAddress = await signer.value.getAddress();
-    const _network = await provider.value.getNetwork();
 
-    // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
-    const _relayer = await ITXRelayer.create(provider.value);
-
-    // Get ENS and CNS names
-    const _userEns = await lookupEnsName(_userAddress, provider.value);
-    const _userCns = await lookupCnsName(_userAddress, provider.value);
+    // Get user and network information
+    const [_userAddress, _network, _relayer] = await Promise.all([
+      signer.value.getAddress(), // get user's address
+      provider.value.getNetwork(), // get information on the connected network
+      ITXRelayer.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
+    ]);
 
     // Set Umbra and DomainService classes
-    const chainId = provider.value.network.chainId;
+    const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
     umbra.value = new Umbra(provider.value, chainId);
     domainService.value = new DomainService(provider.value);
 
+    // Get ENS and CNS names
+    const [_userEns, _userCns] = await Promise.all([
+      lookupEnsName(_userAddress, provider.value),
+      lookupCnsName(_userAddress, provider.value),
+    ]);
+
     // Check if user has keys setup with their ENS or CNS names (if so, we hide Account Setup)
-    const _hasEnsKeys = Boolean(_userEns) && (await hasSetPublicKeys(_userEns as string, domainService.value));
-    const _hasCnsKeys = Boolean(_userCns) && (await hasSetPublicKeys(_userCns as string, domainService.value));
+    const [_hasEnsKeys, _hasCnsKeys] = await Promise.all([
+      Boolean(_userEns) && (await hasSetPublicKeys(_userEns as string, domainService.value)),
+      Boolean(_userCns) && (await hasSetPublicKeys(_userCns as string, domainService.value)),
+    ]);
 
     // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
     // parameters, and we want to ensure this method completed successfully before updating the UI
