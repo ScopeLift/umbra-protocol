@@ -42,6 +42,8 @@ const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, f
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
 const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
 const relayer = ref<ITXRelayer>(); // used for managing relay transactions
+const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name
+const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -107,6 +109,10 @@ export default function useWalletStore() {
     umbra.value = new Umbra(provider.value, chainId);
     domainService.value = new DomainService(provider.value);
 
+    // Check if user has keys setup with their ENS or CNS names (if so, we hide Account Setup)
+    const _hasEnsKeys = Boolean(_userEns) && (await hasSetPublicKeys(_userEns as string, domainService.value));
+    const _hasCnsKeys = Boolean(_userCns) && (await hasSetPublicKeys(_userCns as string, domainService.value));
+
     // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
     // parameters, and we want to ensure this method completed successfully before updating the UI
     relayer.value = _relayer;
@@ -114,6 +120,8 @@ export default function useWalletStore() {
     userEns.value = _userEns;
     userCns.value = _userCns;
     network.value = _network;
+    hasEnsKeys.value = _hasEnsKeys;
+    hasCnsKeys.value = _hasCnsKeys;
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
@@ -154,8 +162,9 @@ export default function useWalletStore() {
   });
 
   const userDisplayName = computed(() => {
-    const address = userAddress.value ? formatAddress(userAddress.value) : undefined;
-    return userEns.value || userCns.value || address;
+    if (userEns.value && hasEnsKeys.value) return userEns.value;
+    if (userCns.value && hasCnsKeys.value) return userCns.value;
+    return userAddress.value ? formatAddress(userAddress.value) : undefined;
   });
 
   // ------------------------------------- Exposed parameters --------------------------------------
@@ -167,11 +176,14 @@ export default function useWalletStore() {
     getPrivateKeys,
     getTokenBalances,
     setProvider,
+    setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status),
+    setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status),
     // "Direct" properties, i.e. return them directly without modification
     balances: computed(() => balances.value),
     domainService: computed(() => domainService.value),
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
+    isAccountSetup: computed(() => hasEnsKeys.value || hasCnsKeys.value),
     provider: computed(() => provider.value),
     relayer: computed(() => relayer.value),
     signer: computed(() => signer.value),
@@ -187,3 +199,14 @@ export default function useWalletStore() {
     userDisplayName: computed(() => userDisplayName.value),
   };
 }
+
+// Helper method to check if user has ENS or CNS keys
+const hasSetPublicKeys = async (name: string, domainService: DomainService) => {
+  try {
+    await domainService.getPublicKeys(name); // throws if no keys found
+    return true;
+  } catch (err) {
+    console.warn(err);
+    return false;
+  }
+};

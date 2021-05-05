@@ -1,5 +1,5 @@
 <template>
-  <connect-wallet :to="to">
+  <connect-wallet :to="to" style="max-width: 325px">
     <q-card class="card-border cursor-pointer q-py-md">
       <q-card-section class="text-center text-primary text-h6 header-black q-pb-none">
         {{ text }}

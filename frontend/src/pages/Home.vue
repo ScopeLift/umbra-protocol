@@ -13,7 +13,13 @@
         text="Receive"
         description="View and withdraw received funds"
       />
-      <home-action-card class="col q-mx-md" to="setup" text="Setup" description="Setup your account to receive funds" />
+      <home-action-card
+        v-if="!isAccountSetup"
+        class="col q-mx-md"
+        to="setup"
+        text="Setup"
+        description="Setup your account to receive funds"
+      />
     </div>
 
     <div class="q-mt-xl row justify-center">
@@ -42,12 +48,14 @@
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
 import HomeActionCard from 'components/HomeActionCard.vue';
+import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
   name: 'PageHome',
   components: { HomeActionCard },
   setup() {
-    return {};
+    const { isAccountSetup } = useWalletStore();
+    return { isAccountSetup };
   },
 });
 </script>

@@ -107,8 +107,14 @@
               </q-icon>
             </span>
           </p>
-          <!-- Empty paragraph, as a lazy way to ensure all columns are the same height -->
-          <p>&nbsp;</p>
+          <!-- Empty paragraph, as a lazy way to ensure all columns are the same height, or repeat account setup -->
+          <p v-if="!isAccountSetup">&nbsp;</p>
+          <p v-else>
+            <q-icon class="icon" name="fas fa-user q-mr-xs" />
+            <span class="text-caption q-ml-sm">
+              Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
+            </span>
+          </p>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
@@ -158,7 +164,7 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 
 function useWallet() {
-  const { userDisplayName, network } = useWalletStore();
+  const { userDisplayName, network, isAccountSetup } = useWalletStore();
   const networkName = ref('');
 
   watchEffect(() => {
@@ -167,7 +173,7 @@ function useWallet() {
     }
   });
 
-  return { userDisplayName, networkName };
+  return { userDisplayName, networkName, isAccountSetup };
 }
 
 export default defineComponent({

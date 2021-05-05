@@ -199,7 +199,7 @@ import * as ensHelpers from 'src/utils/ens';
 
 function useKeys() {
   // prettier-ignore
-  const { domainService, getPrivateKeys, userAddress, userEns, userCns, spendingKeyPair, viewingKeyPair, signer } = useWalletStore();
+  const { domainService, getPrivateKeys, userAddress, userEns, userCns, spendingKeyPair, viewingKeyPair, signer, setHasEnsKeys, setHasCnsKeys } = useWalletStore();
   const selectedName = ref<string>(); // ENS or CNS name to be configured
   const selectedNameType = ref<'ens' | 'cns'>(); // 'ens' if user chose ENS, 'cns' if user chose CNS
   const ensSubdomain = ref<string>();
@@ -319,6 +319,7 @@ function useKeys() {
       // Wait for all transactions to be mined then move on to next step
       await Promise.all(txs.map((tx) => tx.wait()));
       carouselStep.value = '4';
+      ens.isEnsDomain(selectedName.value) ? setHasEnsKeys(true) : setHasCnsKeys(true); // hide account setup on home page
       isWaiting.value = false;
     } catch (err) {
       isWaiting.value = false;
