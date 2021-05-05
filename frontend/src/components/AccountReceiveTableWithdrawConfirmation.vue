@@ -8,24 +8,30 @@
       <div class="text-caption text-grey">Withdrawing to</div>
       <div>{{ destinationAddress }}</div>
 
-      <div class="text-caption text-grey q-mt-md">Amount</div>
-      <div class="row justify-start items-center">
-        <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-        <div>{{ formattedAmount }} {{ symbol }}</div>
+      <div>
+        <div class="text-caption text-grey q-mt-md">Amount</div>
+        <div class="row justify-start items-center">
+          <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
+          <div>{{ formattedAmount }} {{ symbol }}</div>
+        </div>
       </div>
 
-      <div class="text-caption text-grey q-mt-md">Fee</div>
-      <div class="row justify-start items-center">
-        <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-        <div>{{ formattedFee }} {{ symbol }}</div>
+      <div v-if="!isEth">
+        <div class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
+        <div class="row justify-start items-center">
+          <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
+          <div>{{ formattedFee }} {{ symbol }}</div>
+        </div>
       </div>
 
-      <div class="separator q-my-lg"></div>
+      <div v-if="!isEth" class="separator q-my-lg"></div>
 
-      <div class="text-caption text-grey">You'll receive</div>
-      <div class="row justify-start items-center">
-        <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-        <div>{{ formattedAmountReceived }} {{ symbol }}</div>
+      <div v-if="!isEth">
+        <div class="text-caption text-grey">You'll receive</div>
+        <div class="row justify-start items-center">
+          <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
+          <div>{{ formattedAmountReceived }} {{ symbol }}</div>
+        </div>
       </div>
 
       <div v-if="!canWithdraw" class="border-warning q-mt-lg q-pa-md">
@@ -89,7 +95,8 @@ export default defineComponent({
     const formattedAmountReceived = formatUnits(amountReceived, decimals);
     const canWithdraw = BigNumber.from(amount).gt(fee);
     const tokenURL = props.activeFee.token.logoURI;
-    return { context, canWithdraw, formattedAmount, formattedFee, formattedAmountReceived, symbol, tokenURL };
+    const isEth = props.activeFee.token.symbol === 'ETH';
+    return { context, canWithdraw, formattedAmount, formattedFee, formattedAmountReceived, symbol, tokenURL, isEth };
   },
 });
 </script>
