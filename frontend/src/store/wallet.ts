@@ -1,4 +1,4 @@
-import { computed, ref } from '@vue/composition-api';
+import { computed, onMounted, ref } from '@vue/composition-api';
 import { BigNumber, Contract, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
 import { MulticallResponse, Network, Provider, Signer, SupportedChainIds } from 'components/models';
@@ -6,6 +6,8 @@ import Multicall from 'src/contracts/Multicall.json';
 import ERC20 from 'src/contracts/ERC20.json';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ITXRelayer } from 'src/utils/relayer';
+import useSettingsStore from 'src/store/settings';
+import Onboard from 'bnc-onboard';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -47,6 +49,22 @@ const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
+  // On load, try to connect to the last used wallet
+  onMounted(async () => {
+    const { lastWallet } = useSettingsStore();
+    if (lastWallet.value) {
+      const onboard = Onboard({
+        dappId: process.env.BLOCKNATIVE_API_KEY,
+        networkId: 1,
+        walletCheck: [{ checkName: 'connect' }],
+        subscriptions: { wallet: (wallet) => setProvider(wallet.provider) },
+      });
+      await onboard.walletSelect(lastWallet.value);
+      await onboard.walletCheck();
+      await configureProvider(); // get ENS name, CNS names, etc.
+    }
+  });
+
   // ------------------------------------------- Actions -------------------------------------------
 
   async function getTokenBalances() {

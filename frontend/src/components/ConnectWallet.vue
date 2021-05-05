@@ -7,11 +7,13 @@
 <script lang="ts">
 import { defineComponent, SetupContext } from '@vue/composition-api';
 import { Dark, Loading, QSpinnerPuff } from 'quasar';
+import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import Onboard from 'bnc-onboard';
 
 function useWallet(context: SetupContext, to: string) {
   const { setProvider, configureProvider, userAddress } = useWalletStore();
+  const { setLastWallet } = useSettingsStore();
 
   async function connectWallet() {
     // If user already connected wallet, continue
@@ -41,7 +43,10 @@ function useWallet(context: SetupContext, to: string) {
       walletSelect: { wallets },
       walletCheck: walletChecks,
       subscriptions: {
-        wallet: (wallet) => setProvider(wallet.provider),
+        wallet: (wallet) => {
+          setProvider(wallet.provider);
+          if (wallet.name) setLastWallet(wallet.name);
+        },
       },
     });
     await onboard.walletSelect();

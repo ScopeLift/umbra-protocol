@@ -7,6 +7,7 @@ const settings = {
   advancedMode: 'advanced-mode',
   startBlock: 'start-block',
   endBlock: 'end-block',
+  lastWallet: 'last-wallet',
 };
 
 // Shared state between instances
@@ -15,14 +16,17 @@ const advancedMode = ref(false); // true if user has advanced mode turned on
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
 const scanPrivateKey = ref<string>(); // private key entered when scanning
+const lastWallet = ref<string>(); // name of last wallet used
 
 // Composition function for managing state
 export default function useSettingsStore() {
   onMounted(() => {
+    // Load settings
     setDarkMode(Boolean(LocalStorage.getItem(settings.isDark)));
     advancedMode.value = Boolean(LocalStorage.getItem(settings.advancedMode));
     startBlock.value = Number(LocalStorage.getItem(settings.startBlock)) || undefined;
     endBlock.value = Number(LocalStorage.getItem(settings.endBlock)) || undefined;
+    lastWallet.value = String(LocalStorage.getItem(settings.lastWallet));
   });
 
   function setDarkMode(status: boolean) {
@@ -54,15 +58,22 @@ export default function useSettingsStore() {
     scanPrivateKey.value = key; // we save this in memory for access by components, but do not save it to LocalStorage
   }
 
+  function setLastWallet(walletName: string) {
+    lastWallet.value = walletName;
+    LocalStorage.set(settings.lastWallet, walletName);
+  }
+
   return {
     toggleDarkMode,
     toggleAdvancedMode,
     setScanBlocks,
     setScanPrivateKey,
+    setLastWallet,
     isDark: computed(() => isDark.value),
     advancedMode: computed(() => advancedMode.value),
     startBlock: computed(() => startBlock.value),
     endBlock: computed(() => endBlock.value),
     scanPrivateKey: computed(() => scanPrivateKey.value),
+    lastWallet: computed(() => lastWallet.value),
   };
 }
