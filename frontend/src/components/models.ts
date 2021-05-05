@@ -26,7 +26,8 @@ export interface CnsQueryResponse {
 // Relayer types
 export type ApiError = { error: string };
 export type TokenListResponse = TokenList | ApiError;
-export type FeeEstimateResponse = { fee: string; token: TokenInfo } | ApiError;
+export type FeeEstimate = { fee: string; token: TokenInfo };
+export type FeeEstimateResponse = FeeEstimate | ApiError;
 export type WithdrawalInputs = {
   stealthAddr: string;
   acceptor: string;

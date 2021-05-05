@@ -3,9 +3,22 @@
     <!-- Modal to show when warning user of bad privacy hygiene -->
     <q-dialog v-model="showPrivacyModal">
       <account-receive-table-warning
-        @acknowledged="executeWithdraw"
+        @acknowledged="confirmWithdraw"
         :addressDescription="privacyModalAddressDescription"
         class="q-pa-lg"
+      />
+    </q-dialog>
+
+    <!-- Modal to show confirmation of withdraw -->
+    <q-dialog v-model="showConfirmationModal">
+      <account-receive-table-withdraw-confirmation
+        class="q-pa-lg"
+        @cancel="showConfirmationModal = false"
+        @confirmed="executeWithdraw"
+        :activeAnnouncement="activeAnnouncement"
+        :activeFee="activeFee"
+        :destinationAddress="destinationAddress"
+        :isWithdrawInProgress="isWithdrawInProgress"
       />
     </q-dialog>
 
@@ -59,7 +72,7 @@
               <!-- Amount column -->
               <div v-else-if="col.name === 'amount'">
                 <div class="row justify-start items-center no-wrap">
-                  <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.5rem" />
+                  <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.2rem" />
                   <div class="col-auto">
                     {{ formatAmount(col.value, props.row.token) }}
                     {{ getTokenSymbol(props.row.token) }}
@@ -204,6 +217,7 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
+import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 
@@ -250,6 +264,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const showPrivacyModal = ref(false);
+  const showConfirmationModal = ref(false);
   const privacyModalAddressDescription = ref('a wallet that may be publicly associated with you');
   const destinationAddress = ref('');
   const activeAnnouncement = ref<UserAnnouncement>();
@@ -358,11 +373,20 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     );
 
     if (safe) {
-      await executeWithdraw();
+      showConfirmationModal.value = true;
     } else {
       showPrivacyModal.value = true;
       privacyModalAddressDescription.value = reason;
     }
+  }
+
+  /**
+   * @notice Show withdraw confirmation modal
+   * @param announcement Announcement to withdraw
+   */
+  function confirmWithdraw() {
+    showPrivacyModal.value = false;
+    showConfirmationModal.value = true;
   }
 
   /**
@@ -426,12 +450,15 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       });
     } finally {
       isWithdrawInProgress.value = false;
+      showConfirmationModal.value = false;
       activeAnnouncement.value = undefined;
     }
   }
 
   return {
+    activeAnnouncement,
     activeFee,
+    confirmWithdraw,
     copySenderAddress,
     destinationAddress,
     executeWithdraw,
@@ -455,13 +482,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     openInEtherscan,
     paginationConfig,
     privacyModalAddressDescription,
+    showConfirmationModal,
     showPrivacyModal,
   };
 }
 
 export default defineComponent({
   name: 'AccountReceiveTable',
-  components: { AccountReceiveTableWarning },
+  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation },
   props: {
     announcements: {
       type: (undefined as unknown) as PropType<UserAnnouncement[]>,
