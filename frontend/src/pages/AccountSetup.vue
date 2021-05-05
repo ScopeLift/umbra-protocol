@@ -4,7 +4,12 @@
 
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <connect-wallet-card text="Connect your wallet to setup your account" />
+      <p class="text-center">Connect your wallet to setup your account</p>
+      <div class="row justify-center">
+        <connect-wallet>
+          <base-button class="text-center" label="Connect Wallet" />
+        </connect-wallet>
+      </div>
     </div>
 
     <!-- Walk through of process -->
@@ -186,7 +191,7 @@ import { QBtn } from 'quasar';
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { ens, cns } from '@umbra/umbra-js';
 import AccountSetupSetEnsSubdomain from 'src/components/AccountSetupSetEnsSubdomain.vue';
-import ConnectWalletCard from 'components/ConnectWalletCard.vue';
+import ConnectWallet from 'components/ConnectWallet.vue';
 import { Provider, TransactionResponse } from 'components/models';
 import useWalletStore from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
@@ -343,7 +348,7 @@ function useKeys() {
 }
 
 export default defineComponent({
-  components: { AccountSetupSetEnsSubdomain, ConnectWalletCard },
+  components: { AccountSetupSetEnsSubdomain, ConnectWallet },
   name: 'PageSetup',
   setup() {
     const open = (url: string) => window.open(url, '_self');

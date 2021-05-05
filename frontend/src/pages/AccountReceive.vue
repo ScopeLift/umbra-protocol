@@ -4,7 +4,12 @@
 
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <connect-wallet-card text="Connect your wallet to scan for received funds" />
+      <p class="text-center">Connect your wallet to scan for received funds</p>
+      <div class="row justify-center">
+        <connect-wallet>
+          <base-button class="text-center" label="Connect Wallet" />
+        </connect-wallet>
+      </div>
     </div>
 
     <div v-else class="q-mx-auto" style="max-width: 800px">
@@ -76,7 +81,7 @@ import { isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
 import useWallet from 'src/store/wallet';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';
-import ConnectWalletCard from 'components/ConnectWalletCard.vue';
+import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useScan() {
   const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress } = useWallet();
@@ -172,7 +177,7 @@ function useScan() {
 
 export default defineComponent({
   name: 'PageReceive',
-  components: { AccountReceiveTable, ConnectWalletCard },
+  components: { AccountReceiveTable, ConnectWallet },
   setup() {
     return { ...useScan() };
   },

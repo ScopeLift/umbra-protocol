@@ -4,7 +4,12 @@
 
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <connect-wallet-card text="Connect your wallet to send funds" />
+      <p class="text-center">Connect your wallet to send funds</p>
+      <div class="row justify-center">
+        <connect-wallet>
+          <base-button class="text-center" label="Connect Wallet" />
+        </connect-wallet>
+      </div>
     </div>
 
     <!-- Send form -->
@@ -58,7 +63,7 @@ import useWalletStore from 'src/store/wallet';
 import { txNotify } from 'src/utils/alerts';
 import { TokenInfo } from 'components/models';
 import ERC20 from 'src/contracts/ERC20.json';
-import ConnectWalletCard from 'components/ConnectWalletCard.vue';
+import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -181,7 +186,7 @@ function useSendForm() {
 
 export default defineComponent({
   name: 'PageSend',
-  components: { ConnectWalletCard },
+  components: { ConnectWallet },
   setup() {
     return { ...useSendForm() };
   },

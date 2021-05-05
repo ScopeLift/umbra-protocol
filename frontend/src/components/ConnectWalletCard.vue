@@ -1,6 +1,6 @@
 <template>
   <connect-wallet>
-    <div class="text-center q-mb-md">{{ text }}</div>
+    <div v-if="text" class="text-center q-mb-md">{{ text }}</div>
     <base-button class="text-center" label="Connect Wallet" />
   </connect-wallet>
 </template>
