@@ -57,7 +57,7 @@
 import { computed, defineComponent, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
 import { hexlify, hexZeroPad, isHexString, MaxUint256, parseUnits, toUtf8Bytes, Contract } from 'src/utils/ethers';
-import { ens, cns } from '@umbra/umbra-js';
+import { ens, cns, utils as umbraUtils } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import { txNotify } from 'src/utils/alerts';
@@ -124,6 +124,10 @@ function useSendForm() {
       if (!signer.value) throw new Error('Wallet not connected');
       if (!umbra.value) throw new Error('Umbra instance not configured');
       if (!is16BytesOrLess(payloadExtension.value)) throw new Error('Memo too long. Cannot be longer than 16 bytes');
+
+      // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
+      // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval)
+      await umbraUtils.lookupRecipient(recipientId.value, signer.value.provider);
 
       // Ensure user has enough balance. We re-fetch user token balances in case amounts changed
       // after wallet was connected
