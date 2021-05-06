@@ -70,7 +70,7 @@
         </div>
         <!-- Alpha warning -->
         <div class="dark-toggle text-center text-negative text-bold q-my-md">
-          WARNING: This is beta software and you may lose funds.
+          This is beta software. Use at your own risk.
           <router-link class="hyperlink" :to="{ path: '/faq#security' }">Learn more</router-link>
         </div>
       </div>
