@@ -13,7 +13,7 @@
 
     <q-card-section>
       <div class="row justify-evenly">
-        <router-link class="no-text-decoration" target="_blank" :to="{ name: 'FAQ' }">
+        <router-link class="no-text-decoration" target="_blank" to="/faq#receiving-funds">
           <!-- Button does nothing on click, but we wrap with router-link to open the page in a new tab -->
           <base-button label="Learn More" :outline="true" />
         </router-link>
