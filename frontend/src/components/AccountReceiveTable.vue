@@ -55,7 +55,7 @@
         <template v-slot:body="props">
           <q-tr :props="props" :key="props.row.id">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
-              <!-- Asset column -->
+              <!-- Date column -->
               <div v-if="col.name === 'date'" class="d-inline-block">
                 <div
                   @click="openInEtherscan(props.row)"
@@ -297,7 +297,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
   // Table formatters and helpers
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
-  const formatTime = (timestamp: number) => date.formatDate(timestamp, 'H:mm A');
+  const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
   const zeroPrefix = '0x00000000000000000000000000000000'; // 16 bytes of zeros
   const hasPayloadExtension = (randomNumber: string) => randomNumber.slice(0, 34) !== zeroPrefix;
   const formatPayloadExtensionText = (randomNumber: string) => toUtf8String(arrayify(randomNumber.slice(0, 34)));
