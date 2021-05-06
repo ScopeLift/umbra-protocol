@@ -1,5 +1,6 @@
 import { computed, onMounted, ref } from '@vue/composition-api';
-import { BigNumber, Contract, Web3Provider } from 'src/utils/ethers';
+import { Loading, QSpinnerPuff } from 'quasar';
+import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
 import { MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds } from 'components/models';
 import Multicall from 'src/contracts/Multicall.json';
@@ -46,21 +47,39 @@ const balances = ref<Record<string, BigNumber>>({}); // mapping from token addre
 const relayer = ref<ITXRelayer>(); // used for managing relay transactions
 const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name
 const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name
+const onboard = ref(); // blocknative's onboard.js instance
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
-  // On load, try to connect to the last used wallet
   onMounted(async () => {
     const { lastWallet } = useSettingsStore();
-    if (lastWallet.value) {
-      const onboard = Onboard({
+
+    // Initialize onboard.js if not yet done
+    if (!onboard.value) {
+      onboard.value = Onboard({
         dappId: process.env.BLOCKNATIVE_API_KEY,
         networkId: 1,
         walletCheck: [{ checkName: 'connect' }],
-        subscriptions: { wallet: (wallet) => setProvider(wallet.provider) },
+        subscriptions: {
+          wallet: (wallet) => setProvider(wallet.provider),
+          address: async (address) => {
+            if (userAddress.value && userAddress.value !== getAddress(address)) {
+              await configureProvider();
+            }
+          },
+          network: async (chainId) => {
+            if (network.value?.chainId && network.value.chainId !== chainId) {
+              await configureProvider();
+            }
+          },
+        },
       });
-      await onboard.walletSelect(lastWallet.value);
-      await onboard.walletCheck();
+    }
+
+    // Try to connect to the last used wallet
+    if (lastWallet.value) {
+      await onboard.value.walletSelect(lastWallet.value);
+      await onboard.value.walletCheck();
       await configureProvider(); // get ENS name, CNS names, etc.
     }
   });
@@ -109,9 +128,14 @@ export default function useWalletStore() {
 
   async function configureProvider() {
     // Set network/wallet properties
+    resetState();
     if (!rawProvider.value) return;
     provider.value = new Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
+
+    // Show loading spinner since we have async calls
+    // @ts-expect-error: Type 'VueConstructor<QSpinnerPuff>' is missing the following properties from type 'Vue': $el, $options, $parent, $root, and 27 more.
+    Loading.show({ delay: 300, spinnerColor: 'primary', spinner: QSpinnerPuff }); // show loading spinner as we fetch wallet info
 
     // Get user and network information
     const [_userAddress, _network, _relayer] = await Promise.all([
@@ -124,6 +148,7 @@ export default function useWalletStore() {
     const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
     if (!supportedChainIds.includes(_network.chainId)) {
       network.value = _network;
+      Loading.hide(); // hide loading spinner
       return;
     }
 
@@ -154,6 +179,7 @@ export default function useWalletStore() {
     hasCnsKeys.value = _hasCnsKeys;
 
     // Get token balances in the background. User may not be sending funds so we don't await this
+    Loading.hide(); // hide loading spinner
     void getTokenBalances();
   }
 
@@ -176,6 +202,26 @@ export default function useWalletStore() {
       console.error(err);
       return 'denied'; // most likely user rejected the signature
     }
+  }
+
+  // ------------------------------------------ Mutations ------------------------------------------
+  // Helper method to clear state. Useful when user switches wallets
+  function resetState() {
+    // Do not clear rawProvider
+    provider.value = undefined;
+    signer.value = undefined;
+    userAddress.value = undefined;
+    userEns.value = undefined;
+    userCns.value = undefined;
+    network.value = undefined;
+    umbra.value = undefined;
+    domainService.value = undefined;
+    spendingKeyPair.value = undefined;
+    viewingKeyPair.value = undefined;
+    balances.value = {};
+    relayer.value = undefined;
+    hasEnsKeys.value = false;
+    hasCnsKeys.value = false;
   }
 
   // ------------------------------------- Computed parameters -------------------------------------
