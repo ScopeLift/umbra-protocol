@@ -36,6 +36,9 @@
           <q-btn
             @click="$refs.carousel.next()"
             class="q-my-auto"
+            :disable="
+              (selectedNameType === 'ens' && !['ready', 'no-public-keys'].includes(ensStatus)) || carouselStep === '2'
+            "
             flat
             icon="fas fa-arrow-right"
             ref="carouselBtnRight"
@@ -52,29 +55,21 @@
 
       <!-- Step 1: ENS Registration -->
       <q-carousel-slide name="1" class="q-px-xl">
-        <div class="q-mx-xl q-pb-xl">
+        <div class="q-mx-lg q-pb-xl">
           <h5 class="q-my-md q-pt-none">Step 1: ENS Registration</h5>
           <div class="q-mt-md">
             <!-- User has no ENS or CNS names -->
             <div v-if="!userEns && !userCns">
-              <p>
-                An ENS domain was not found for this address. If you do have an address, please set the reverse record.
-              </p>
-              <p>
-                To continue, register a subdomain below, or visit the
-                <a class="hyperlink" href="https://app.ens.domains" target="_blank">ENS site</a> to register and
-                configure your own name.
-              </p>
+              <p>An ENS domain was not found for this address. To continue, register a subdomain below.</p>
               <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
             <!-- User has ENS and CNS name, and has not yet chose one -->
             <div v-else-if="userEns && userCns && !selectedName">
-              <div>Please choose a name to continue, or register a new subdomain</div>
+              <div>Please choose a name to continue.</div>
               <div class="row justify-start q-mt-lg">
                 <base-button @click="setName(userEns)" :label="userEns" :outline="true" />
                 <base-button @click="setName(userCns)" :label="userCns" :outline="true" class="q-ml-lg" />
               </div>
-              <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
             <!-- User only has ENS, or user chose to use ENS -->
             <div v-else-if="(userEns && !userCns) || selectedNameType === 'ens'">
@@ -89,10 +84,8 @@
                   >, but are not the controller of that name.
                 </p>
                 <p>
-                  To continue, register a subdomain below, become the controller of this name, or switch to an ENS name
-                  you are the controller of.
+                  To continue, become the controller of this name, or switch to an ENS name you are the controller of.
                 </p>
-                <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
               </div>
               <!-- User is not using the Public Resolver -->
               <div v-else-if="ensStatus === 'not-public-resolver'">
@@ -101,37 +94,22 @@
                   >, but are not using the Public Resolver.
                 </p>
                 <p>
-                  To continue, register a subdomain below, or
+                  To continue,
                   <a class="hyperlink" :href="`https://app.ens.domains/name/${userEns}`" target="_blank">configure</a>
                   your name to use the Public Resolver.
                 </p>
-                <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
               </div>
               <div v-else>
                 <p>
-                  <span class="text-bold text-primary q-mr-md">Option 1&nbsp;</span> Click the arrow to continue with
-                  <span class="text-bold">{{ userEns }}</span>
+                  Click the arrow to continue with <span class="text-bold">{{ userEns }}</span>
                 </p>
-                <div class="separator q-mb-md"></div>
-                <p>
-                  <span class="text-bold text-primary q-mr-md">Option 2</span> Complete the field below to continue with
-                  an <span class="text-bold">umbra.eth</span> subdomain.
-                </p>
-                <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
               </div>
             </div>
             <!-- User only has CNS, or use chose to use CNS -->
             <div v-else-if="(!userEns && userCns) || selectedNameType === 'cns'">
               <p>
-                <span class="text-bold text-primary q-mr-md">Option 1&nbsp;</span> Click the arrow to continue with
-                <span class="text-bold">{{ userCns }}</span>
+                Click the arrow to continue with <span class="text-bold">{{ userCns }}</span>
               </p>
-              <div class="separator q-mb-md"></div>
-              <p>
-                <span class="text-bold text-primary q-mr-md">Option 2</span> Complete the field below to continue with
-                an <span class="text-bold">umbra.eth</span> subdomain.
-              </p>
-              <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
           </div>
         </div>
