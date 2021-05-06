@@ -20,7 +20,7 @@
         <div class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-          <div>{{ formattedFee }} {{ symbol }}</div>
+          <div class="text-danger">-{{ formattedFee }} {{ symbol }}</div>
         </div>
       </div>
 
@@ -30,7 +30,7 @@
         <div class="text-caption text-grey">You'll receive</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-          <div>{{ formattedAmountReceived }} {{ symbol }}</div>
+          <div class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
         </div>
       </div>
 
