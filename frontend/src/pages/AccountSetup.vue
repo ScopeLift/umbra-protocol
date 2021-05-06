@@ -27,7 +27,7 @@
       transition-next="slide-left"
       transition-prev="slide-right"
     >
-      <!-- Carousel Navigation Buttons, hidden on step 4 (the success step) -->
+      <!-- Carousel Arrow Navigation Buttons, hidden on step 4 (the success step) -->
       <template v-slot:control v-if="carouselStep !== '4'">
         <q-carousel-control v-if="carouselStep !== '1'" position="left" class="row">
           <q-btn @click="$refs.carousel.previous()" class="q-my-auto" flat icon="fas fa-arrow-left" text-color="grey" />
@@ -42,6 +42,12 @@
             text-color="grey"
           />
         </q-carousel-control>
+      </template>
+
+      <!-- Carousel Circular Step Indicator Icons -->
+      <template v-slot:navigation-icon="{ active }">
+        <q-btn v-if="active" :color="isDark ? 'grey-6' : 'grey-5'" icon="fas fa-circle" flat size="xs" class="no-ptr" />
+        <q-btn v-else :color="isDark ? 'grey-8' : 'grey-3'" icon="fas fa-circle" flat size="xs" class="no-ptr" />
       </template>
 
       <!-- Step 1: ENS Registration -->
@@ -195,7 +201,7 @@
 </template>
 
 <script lang="ts">
-import { QBtn } from 'quasar';
+import { QBtn, Dark } from 'quasar';
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { ens, cns } from '@umbra/umbra-js';
 import AccountSetupSetEnsSubdomain from 'src/components/AccountSetupSetEnsSubdomain.vue';
@@ -341,6 +347,7 @@ function useKeys() {
     ensStatus,
     ensSubdomain,
     getPrivateKeysHandler,
+    isDark: Dark.isActive,
     isEnsPublicResolver,
     isSubdomain,
     isWaiting,
@@ -365,3 +372,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.no-ptr
+  cursor: auto // disable cursor pointer the icons have by default
+  pointer-events: none // disable hover effect the icons have by default
+</style>
