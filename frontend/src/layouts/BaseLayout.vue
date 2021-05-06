@@ -57,6 +57,9 @@
                   <span v-if="userDisplayName" class="text-caption cursor-pointer dark-toggle">
                     {{ userDisplayName }}
                   </span>
+                  <span v-else-if="!isSupportedNetwork" class="text-caption text-grey cursor-pointer dark-toggle">
+                    <q-icon name="fas fa-exclamation-triangle" color="warning" left /> Unsupported network
+                  </span>
                 </connect-wallet>
                 <span v-if="advancedMode" class="q-ml-md">
                   🧙 <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md"> Advanced mode is on </q-tooltip>
@@ -167,7 +170,7 @@ import useWalletStore from 'src/store/wallet';
 import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useWallet() {
-  const { userDisplayName, network, isAccountSetup } = useWalletStore();
+  const { userDisplayName, network, isAccountSetup, isSupportedNetwork } = useWalletStore();
   const networkName = ref('');
 
   watchEffect(() => {
@@ -176,7 +179,7 @@ function useWallet() {
     }
   });
 
-  return { userDisplayName, networkName, isAccountSetup };
+  return { userDisplayName, networkName, isAccountSetup, isSupportedNetwork };
 }
 
 export default defineComponent({

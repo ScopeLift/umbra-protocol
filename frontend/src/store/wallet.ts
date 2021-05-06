@@ -1,7 +1,7 @@
 import { computed, onMounted, ref } from '@vue/composition-api';
 import { BigNumber, Contract, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
-import { MulticallResponse, Network, Provider, Signer, SupportedChainIds } from 'components/models';
+import { MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds } from 'components/models';
 import Multicall from 'src/contracts/Multicall.json';
 import ERC20 from 'src/contracts/ERC20.json';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
@@ -120,8 +120,14 @@ export default function useWalletStore() {
       ITXRelayer.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
     ]);
 
-    // Set Umbra and DomainService classes
+    // Exit if not a valid network
     const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
+    if (!supportedChainIds.includes(_network.chainId)) {
+      network.value = _network;
+      return;
+    }
+
+    // Set Umbra and DomainService classes
     umbra.value = new Umbra(provider.value, chainId);
     domainService.value = new DomainService(provider.value);
 
@@ -175,6 +181,11 @@ export default function useWalletStore() {
   // ------------------------------------- Computed parameters -------------------------------------
   // "True" computed properties, i.e. derived from this module's state
 
+  const isSupportedNetwork = computed(() => {
+    if (!network.value) return true; // assume valid if we have no network information
+    return supportedChainIds.includes(network.value.chainId);
+  });
+
   const ETH_TOKEN = computed(() => {
     return { ...ETH_TOKEN_INFO, chainId: network.value?.chainId as number };
   });
@@ -223,6 +234,7 @@ export default function useWalletStore() {
     userEns: computed(() => userEns.value),
     viewingKeyPair: computed(() => viewingKeyPair.value),
     // "True" computed properties, i.e. derived from this module's state
+    isSupportedNetwork: computed(() => isSupportedNetwork.value),
     ETH_TOKEN: computed(() => ETH_TOKEN.value),
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),

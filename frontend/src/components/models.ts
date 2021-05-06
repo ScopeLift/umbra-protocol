@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 import { TransactionReceipt, JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
-import { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
+import type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 
-export { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
+export type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 export { BigNumber, Network, TransactionResponse } from 'src/utils/ethers';
 export type Signer = JsonRpcSigner;
 export type Provider = Web3Provider;
@@ -13,7 +13,8 @@ export interface MulticallResponse {
 }
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
-export type SupportedChainIds = '1' | '4';
+export type SupportedChainIds = '1' | '4'; // strings for indexing into JSON files
+export const supportedChainIds = [1, 4]; // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response
 type CnsName = { name: string };
