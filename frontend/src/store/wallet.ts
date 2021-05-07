@@ -1,5 +1,4 @@
 import { computed, onMounted, ref } from '@vue/composition-api';
-import { Loading, QSpinnerPuff } from 'quasar';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
 import { MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds } from 'components/models';
@@ -128,14 +127,9 @@ export default function useWalletStore() {
 
   async function configureProvider() {
     // Set network/wallet properties
-    resetState();
     if (!rawProvider.value) return;
     provider.value = new Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
-
-    // Show loading spinner since we have async calls
-    // @ts-expect-error: Type 'VueConstructor<QSpinnerPuff>' is missing the following properties from type 'Vue': $el, $options, $parent, $root, and 27 more.
-    Loading.show({ delay: 300, spinnerColor: 'primary', spinner: QSpinnerPuff }); // show loading spinner as we fetch wallet info
 
     // Get user and network information
     const [_userAddress, _network, _relayer] = await Promise.all([
@@ -144,11 +138,18 @@ export default function useWalletStore() {
       ITXRelayer.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
     ]);
 
+    // If nothing has changed, no need to continue configuring
+    if (_userAddress === userAddress.value && _network.chainId === network.value?.chainId) {
+      return;
+    }
+
+    // Clear state
+    resetState();
+
     // Exit if not a valid network
     const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
     if (!supportedChainIds.includes(_network.chainId)) {
       network.value = _network;
-      Loading.hide(); // hide loading spinner
       return;
     }
 
@@ -179,7 +180,6 @@ export default function useWalletStore() {
     hasCnsKeys.value = _hasCnsKeys;
 
     // Get token balances in the background. User may not be sending funds so we don't await this
-    Loading.hide(); // hide loading spinner
     void getTokenBalances();
   }
 
@@ -205,11 +205,8 @@ export default function useWalletStore() {
   }
 
   // ------------------------------------------ Mutations ------------------------------------------
-  // Helper method to clear state. Useful when user switches wallets
+  // Helper method to clear state. Useful when user switches wallets.
   function resetState() {
-    // Do not clear rawProvider
-    provider.value = undefined;
-    signer.value = undefined;
     userAddress.value = undefined;
     userEns.value = undefined;
     userCns.value = undefined;
