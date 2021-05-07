@@ -64,11 +64,17 @@
               <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
             <!-- User has ENS and CNS name, and has not yet chose one -->
-            <div v-else-if="userEns && userCns && !selectedName">
+            <div v-else-if="(userEns || userCns) && !selectedName">
               <div>Please choose a name to continue.</div>
               <div class="row justify-start q-mt-lg">
-                <base-button @click="setName(userEns)" :label="userEns" :outline="true" />
-                <base-button @click="setName(userCns)" :label="userCns" :outline="true" class="q-ml-lg" />
+                <base-button v-if="userEns" @click="setName(userEns)" :label="userEns" :outline="true" />
+                <base-button
+                  v-if="userCns"
+                  @click="setName(userCns)"
+                  :label="userCns"
+                  :outline="true"
+                  class="q-ml-lg"
+                />
               </div>
             </div>
             <!-- User only has ENS, or user chose to use ENS -->
@@ -180,7 +186,7 @@
 
 <script lang="ts">
 import { QBtn, Dark } from 'quasar';
-import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, defineComponent, ref, watch } from '@vue/composition-api';
 import { ens, cns } from '@umbra/umbra-js';
 import AccountSetupSetEnsSubdomain from 'src/components/AccountSetupSetEnsSubdomain.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
@@ -204,10 +210,10 @@ function useKeys() {
 
   const isSubdomain = computed(() => userEns.value?.endsWith('.umbra.eth'));
   const setName = (name: string) => (selectedName.value = name);
-  onMounted(() => checkAndSetName());
 
-  // Required for UI to update if user connects wallet when already on this page
-  watch(userAddress, () => checkAndSetName());
+  // Uncomment the helpers below if you want to auto-select a name when there is only one name to choose from
+  // watch(userAddress, () => checkAndSetName()); // uncomment for UI to automatically select name if user connects wallet when on this page
+  // onMounted(() => checkAndSetName()); // uncomment to automatically select name on load
 
   // Fetch latest status for the selected ENS name
   watch(selectedName, async (newName) => {
@@ -219,6 +225,7 @@ function useKeys() {
 
     // If ENS, check if they are ready to continue
     if (selectedNameType.value === 'ens') {
+      // The checkEnsStatus will automatically advance the user to the next step when applicable
       ensStatus.value = await checkEnsStatus(newName as string);
     }
   });
@@ -251,7 +258,10 @@ function useKeys() {
     if (!isEnsPublicResolver.value && !isUmbraResolver) return 'not-public-resolver';
 
     const didSetPublicKeys = await ensHelpers.hasPublicKeys(name, provider);
-    if (!didSetPublicKeys) return 'no-public-keys';
+    if (!didSetPublicKeys) {
+      carouselBtnRight.value?.click();
+      return 'no-public-keys';
+    }
 
     carouselBtnRight.value?.click();
     return 'ready';
