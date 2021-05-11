@@ -60,11 +60,11 @@ export class DomainService {
    * @param viewingPublicKey The public key to use for encryption as hex string
    * @returns Transaction hash
    */
-  async setPublicKeys(name: string, spendingPrivateKey: string, viewingPrivateKey: string) {
+  async setPublicKeys(name: string, spendingPublicKey: string, viewingPublicKey: string) {
     if (ens.isEnsDomain(name)) {
-      return ens.setPublicKeys(name, spendingPrivateKey, viewingPrivateKey, this.provider);
+      return ens.setPublicKeys(name, spendingPublicKey, viewingPublicKey, this.provider);
     } else {
-      return cns.setPublicKeys(name, spendingPrivateKey, viewingPrivateKey, this.provider, this.udResolution);
+      return cns.setPublicKeys(name, spendingPublicKey, viewingPublicKey, this.provider, this.udResolution);
     }
   }
 }
