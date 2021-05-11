@@ -5,7 +5,7 @@
 import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from 'noble-secp256k1';
 import { computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
 import { RandomNumber } from './RandomNumber';
-import { lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
+import { assertValidPoint, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
 
 // List of private or public keys that we disallow initializing a KeyPair instance with, since they will lead to
@@ -22,6 +22,7 @@ const blockedKeys = [
  * @returns 32-byte shared secret as 66 character hex string
  */
 function getSharedSecret(privateKey: string, publicKey: string) {
+  assertValidPoint(publicKey);
   if (privateKey.length !== lengths.privateKey || !isHexString(privateKey)) throw new Error('Invalid private key');
   if (publicKey.length !== lengths.publicKey || !isHexString(publicKey)) throw new Error('Invalid public key');
 
@@ -57,6 +58,7 @@ export class KeyPair {
       this.publicKeyHex = `0x${publicKey}`; // Save off version with 0x prefix, other forms computed as getters
     } else if (key.length === lengths.publicKey) {
       // Public key provided
+      assertValidPoint(key); // throw if point is not on curve
       this.publicKeyHex = key; // Save off public key, other forms computed as getters
     } else {
       throw new Error('Key must be a 66 character hex private key or a 132 character hex public key');
@@ -121,6 +123,7 @@ export class KeyPair {
     if (!this.privateKeyHex) {
       throw new Error('KeyPair has no associated private key to decrypt with');
     }
+    assertValidPoint(ephemeralPublicKey); // throw if point is not on curve
 
     // Get shared secret to use as decryption key, then decrypt with XOR
     const sharedSecret = getSharedSecret(this.privateKeyHex, ephemeralPublicKey);
@@ -198,9 +201,7 @@ export class KeyPair {
    * @returns Object containing the prefix as an integer and compressed public key as hex, as separate parameters
    */
   static compressPublicKey(publicKey: string): CompressedPublicKey {
-    if (typeof publicKey !== 'string' || !isHexString(publicKey) || publicKey.length !== lengths.publicKey) {
-      throw new Error('Must provide uncompressed public key as hex string');
-    }
+    assertValidPoint(publicKey);
     const compressedPublicKey = Point.fromHex(publicKey.slice(2)).toHex(true);
     return {
       prefix: Number(compressedPublicKey[1]), // prefix bit is the 2th character in the string (no 0x prefix)
