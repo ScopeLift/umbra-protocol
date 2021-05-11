@@ -151,7 +151,7 @@ export class Umbra {
     const viewingKeyPair = new KeyPair(viewingPublicKey);
 
     // Generate random number
-    const randomNumber = overrides.payloadExtension ? new RandomNumber(overrides.payloadExtension) : new RandomNumber();
+    const randomNumber = new RandomNumber();
 
     // Encrypt random number with recipient's public key
     const encrypted = viewingKeyPair.encrypt(randomNumber);
@@ -165,19 +165,15 @@ export class Umbra {
     // Ensure that the stealthKeyPair's address is not on the block list
     if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
 
-    // Get overrides object that removes the payload extension, for use with ethers
-    const filteredOverrides = { ...overrides };
-    delete filteredOverrides.payloadExtension;
-
     // Send transaction
     let tx: ContractTransaction;
     if (isEth(token)) {
-      const txOverrides = { ...filteredOverrides, value: toll.add(amount) };
+      const txOverrides = { ...overrides, value: toll.add(amount) };
       tx = await this.umbraContract
         .connect(txSigner)
         .sendEth(stealthKeyPair.address, toll, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
     } else {
-      const txOverrides = { ...filteredOverrides, value: toll };
+      const txOverrides = { ...overrides, value: toll };
       tx = await this.umbraContract
         .connect(txSigner)
         .sendToken(stealthKeyPair.address, token, amount, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);

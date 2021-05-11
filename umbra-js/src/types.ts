@@ -38,7 +38,8 @@ export interface CompressedPublicKey {
 
 // Overrides when sending funds
 export interface SendOverrides extends Overrides {
-  payloadExtension?: string;
+  // SendOverrides is the same as the standard Overrides, but defined as its own type for clarity and
+  // potential future extensibility
 }
 
 // Overrides for the start and end block numbers to use when scanning for events

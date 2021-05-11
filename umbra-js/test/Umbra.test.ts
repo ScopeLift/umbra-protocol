@@ -21,7 +21,6 @@ const ethersProvider = ethers.provider;
 const jsonRpcProvider = new JsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
 
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-const payloadExtension = '0x0123456789abcdef0123456789abcdef';
 const quantity = parseEther('5');
 
 // We don't use the 0 or 1 index just to reduce the chance of conflicting with a signer for another use case
@@ -212,9 +211,7 @@ describe('Umbra class', () => {
       await mintAndApproveDai(sender, sender.address, quantity);
 
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, {
-        payloadExtension,
-      });
+      const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey);
       await tx.wait();
 
       // RECEIVER
@@ -287,9 +284,7 @@ describe('Umbra class', () => {
     it('With payload extension: send ETH, scan for it, withdraw it', async () => {
       // SENDER
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver.publicKey, {
-        payloadExtension,
-      });
+      const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver.publicKey);
       await tx.wait();
 
       // RECEIVER
