@@ -13,6 +13,11 @@ const publicKey =
   '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee';
 const publicKeys = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 
+// Define public key that is not on the curve. This point was generated from a valid public key ending in
+// `83b3` and we took this off the curve by changing the final digits to `83b4`
+const badPublicKey =
+  '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98709dc9e18b3bddafce903ea49a44b78d57626448c83f8649d3ec4e7c72d8777823f49583b4';
+
 describe('Utilities', () => {
   describe('Helpers', () => {
     it('recovers public keys from transactions', async () => {
@@ -68,6 +73,10 @@ describe('Utilities', () => {
       expect(keys.viewingPublicKey).to.equal(
         '0x041190b7e2b61b8872c9ea5fff14770e7d3e78900282371b09ee9f2b8c4016b9967b5e9ee9e1e0bef30052e806321f0685a3ad69e2233be6813b81a5d293feea76'
       );
+    });
+
+    it('throws when given a public key not on the curve', async () => {
+      await expectRejection(utils.lookupRecipient(badPublicKey, ethersProvider), 'Point is not on elliptic curve');
     });
   });
 

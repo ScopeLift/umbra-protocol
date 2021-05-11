@@ -14,7 +14,7 @@ import {
   serialize as serializeTransaction,
   splitSignature,
 } from '../ethers';
-import { Signature, recoverPublicKey } from 'noble-secp256k1';
+import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
 import { ens, cns } from '..';
 import { DomainService } from '../classes/DomainService';
 import { EthersProvider } from '../types';
@@ -107,6 +107,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   // Check if identifier is a public key. If so we just return that directly
   const isPublicKey = id.length === 132 && isHexString(id);
   if (isPublicKey) {
+    assertValidPoint(id);
     return { spendingPublicKey: id, viewingPublicKey: id };
   }
 
@@ -114,6 +115,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   const isTxHash = id.length === 66 && isHexString(id);
   if (isTxHash) {
     const publicKey = await recoverPublicKeyFromTransaction(id, provider);
+    assertValidPoint(publicKey);
     return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
   }
 
@@ -128,6 +130,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
 
     // Get public key from that transaction
     const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
+    assertValidPoint(publicKey);
     return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
   }
 
@@ -135,7 +138,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
   const isDomainService = ens.isEnsDomain(id) || cns.isCnsDomain(id);
   if (isDomainService) {
     const domainService = new DomainService(provider);
-    return domainService.getPublicKeys(id);
+    return domainService.getPublicKeys(id); // validation of public key points is done within this method
   }
 
   // Invalid identifier provided
@@ -152,4 +155,16 @@ export function createContract(address: string, abi: ContractInterface, provider
   // Use signer if available, otherwise use provider
   const signer = provider.getSigner();
   return new Contract(address, abi, signer || provider);
+}
+
+/**
+ * @notice Throws if provided public key is not on the secp256k1 curve
+ * @param point Uncompressed public key as hex string
+ */
+export function assertValidPoint(point: string) {
+  if (typeof point !== 'string' || (point.length !== 130 && point.length !== 132)) {
+    throw new Error('Must provide uncompressed public key as hex string');
+  }
+  if (point.length === 130) Point.fromHex(point);
+  if (point.length === 132) Point.fromHex(point.slice(2)); // trim 0x prefix
 }

@@ -11,6 +11,11 @@ const { expect } = chai;
 const ethersProvider = ethers.provider;
 const numberOfRuns = 100; // number of runs for tests that execute in a loop
 
+// Define public key that is not on the curve. This point was generated from a valid public key ending in
+// `83b3` and we took this off the curve by changing the final digits to `83b4`
+const badPublicKey =
+  '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98709dc9e18b3bddafce903ea49a44b78d57626448c83f8649d3ec4e7c72d8777823f49583b4';
+
 // Address, public key (not used), and private key from first deterministic ganache account
 const address = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1';
 // const publicKey = '0x04e68acfc0253a10620dff706b0a1b1f1f5833ea3beb3bde2250d5f271f3563606672ebc45e0b7ea2e816ecb70ca03137b1c9476eec63d4632e990020b7b6fba39';
@@ -277,6 +282,10 @@ describe('KeyPair class', () => {
       expect(() => new KeyPair(zeroPublicKey)).to.throw(errorMsg3);
     });
 
+    it('throws when initializing with a public key not on the curve', () => {
+      expect(() => new KeyPair(badPublicKey)).to.throw('Point is not on elliptic curve');
+    });
+
     it('throws when trying to encrypt with a bad input', async () => {
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
       const errorMsg = 'Must provide instance of RandomNumber';
@@ -309,6 +318,15 @@ describe('KeyPair class', () => {
       expect(() => keyPairFromPublic.decrypt(dummyEncryptedData)).to.throw(errorMsg);
     });
 
+    it('throws when trying to decrypt with a public key not on the curve', () => {
+      const keyPairFromPrivate = new KeyPair(wallet.privateKey);
+      const dummyWallet = Wallet.createRandom();
+      const dummyEncryptedData = { ephemeralPublicKey: badPublicKey, ciphertext: dummyWallet.privateKey };
+      const dummyEncryptedData2 = { ephemeralPublicKey: badPublicKey.slice(2), ciphertext: dummyWallet.privateKey };
+      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData)).to.throw('Point is not on elliptic curve');
+      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData2)).to.throw('Point is not on elliptic curve');
+    });
+
     it('throws when mulPublicKey is provided a bad input', async () => {
       const wallet = Wallet.createRandom();
       const keyPairFromPublic = new KeyPair(wallet.publicKey);
@@ -339,6 +357,11 @@ describe('KeyPair class', () => {
       expect(() => KeyPair.compressPublicKey(1)).to.throw(errorMsg);
       expect(() => KeyPair.compressPublicKey('1')).to.throw(errorMsg);
       expect(() => KeyPair.compressPublicKey('0x1')).to.throw(errorMsg);
+    });
+
+    it('throws when compressPublicKey is provided a public key not on the curve', () => {
+      expect(() => KeyPair.compressPublicKey(badPublicKey)).to.throw('Point is not on elliptic curve');
+      expect(() => KeyPair.compressPublicKey(badPublicKey.slice(2))).to.throw('Point is not on elliptic curve');
     });
 
     it('throws when getUncompressedFromX is provided bad inputs', async () => {
