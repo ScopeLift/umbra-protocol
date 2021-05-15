@@ -1,7 +1,8 @@
+import '@nomiclabs/hardhat-ethers';
 import * as chai from 'chai';
 import { ethers } from 'hardhat';
 import * as ens from '../src/utils/ens';
-import { expectRejection } from './utils';
+import { expectRejection, registerEnsName } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -73,8 +74,23 @@ describe('ENS functions', () => {
     await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
   });
 
-  it.skip('sets the public keys', async () => {
-    // TODO currently would fail since provider account is not the msolomon.eth account, so
-    // to implement this test we need to have the ganache account register an ENS domain
+  it('sets the public keys when resolver supports stealth keys', async () => {
+    // First we get public keys, which should fail
+    const user = (await ethers.getSigners())[0];
+    const ensLabel = 'umbrajs-test-name1';
+    const ensName = `${ensLabel}.eth`;
+    const errorMsg = `Name ${ensName} is not registered or user has not set their resolver`;
+    await expectRejection(ens.getPublicKeys(ensName, ethersProvider), errorMsg);
+
+    // Register name
+    await registerEnsName(ensLabel, user);
+
+    // Set the public keys
+    await ens.setPublicKeys(ensName, nameSpendingPublicKey, nameViewingPublicKey, ethersProvider);
+
+    // Retrieve them and verify they match expected values
+    const publicKeys = await ens.getPublicKeys(ensName, ethersProvider);
+    expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
+    expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 });

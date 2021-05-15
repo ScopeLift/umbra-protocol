@@ -1,6 +1,8 @@
+import '@nomiclabs/hardhat-ethers';
 import * as chai from 'chai';
 import { ethers } from 'hardhat';
 import { DomainService } from '../src/classes/DomainService';
+import { expectRejection, registerCnsName, registerEnsName } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -37,8 +39,24 @@ describe('DomainService class', () => {
       expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');
     });
 
-    it.skip('sets the public keys for an ENS address', async () => {
-      // TODO
+    it('sets the public keys for an ENS address', async () => {
+      // First we get public keys, which should fail
+      const user = (await ethers.getSigners())[0];
+      const ensLabel = 'umbrajs-test-name2';
+      const ensName = `${ensLabel}.eth`;
+      const errorMsg = `Name ${ensName} is not registered or user has not set their resolver`;
+      await expectRejection(domainService.getPublicKeys(ensName), errorMsg);
+
+      // Register name
+      await registerEnsName(ensLabel, user);
+
+      // Set the public keys
+      await domainService.setPublicKeys(ensName, params.ens.nameSpendingPublicKey, params.ens.nameViewingPublicKey);
+
+      // Retrieve them and verify they match expected values
+      const publicKeys = await domainService.getPublicKeys(ensName);
+      expect(publicKeys.spendingPublicKey).to.equal(params.ens.nameSpendingPublicKey);
+      expect(publicKeys.viewingPublicKey).to.equal(params.ens.nameViewingPublicKey);
     });
 
     it('gets the public keys associated with an ENS address', async () => {
@@ -54,8 +72,24 @@ describe('DomainService class', () => {
       expect(hash).to.equal('0xb523f834041c2aa484ca5f422d13e91a72ac459f925e26de7d63381bc26795f6');
     });
 
-    it.skip('sets the public keys for a CNS address', async () => {
-      // TODO
+    it('sets the public keys for a CNS address', async () => {
+      // First we get public keys, which should fail
+      const user = (await ethers.getSigners())[0];
+      const cnsLabel = 'umbrajs-test-name2';
+      const cnsName = `udtestdev-${cnsLabel}.crypto`;
+      const errorMsg = `Domain ${cnsName} is not registered`;
+      await expectRejection(domainService.getPublicKeys(cnsName), errorMsg);
+
+      // Register name
+      await registerCnsName(cnsLabel, user);
+
+      // Set the public keys
+      await domainService.setPublicKeys(cnsName, params.cns.nameSpendingPublicKey, params.cns.nameViewingPublicKey);
+
+      // Retrieve them and verify they match expected values
+      const publicKeys = await domainService.getPublicKeys(cnsName);
+      expect(publicKeys.spendingPublicKey).to.equal(params.cns.nameSpendingPublicKey);
+      expect(publicKeys.viewingPublicKey).to.equal(params.cns.nameViewingPublicKey);
     });
 
     it('gets the public keys associated with a CNS address', async () => {

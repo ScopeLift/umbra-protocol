@@ -1,8 +1,9 @@
+import '@nomiclabs/hardhat-ethers';
 import * as chai from 'chai';
 import { ethers } from 'hardhat';
 import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import * as cns from '../src/utils/cns';
-import { expectRejection } from './utils';
+import { expectRejection, registerCnsName } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -65,8 +66,23 @@ describe('СNS functions', () => {
     await expectRejection(cns.getPublicKeys(unsetCnsName, ethersProvider, resolution), errorMsg);
   });
 
-  it.skip('sets the public keys', () => {
-    // TODO currently would fail since provider account is not the udtestdev-msolomon.crypto account, so
-    // to implement this test we need to have the ganache account register a CNS domain
+  it('sets the public keys', async () => {
+    // First we get public keys, which should fail
+    const user = (await ethers.getSigners())[0];
+    const cnsLabel = 'umbrajs-test-name1';
+    const cnsName = `udtestdev-${cnsLabel}.crypto`;
+    const errorMsg = `Domain ${cnsName} is not registered`;
+    await expectRejection(cns.getPublicKeys(cnsName, ethersProvider, resolution), errorMsg);
+
+    // Register name
+    await registerCnsName(cnsLabel, user);
+
+    // Set the public keys
+    await cns.setPublicKeys(cnsName, nameSpendingPublicKey, nameViewingPublicKey, ethersProvider, resolution);
+
+    // Retrieve them and verify they match expected values
+    const publicKeys = await cns.getPublicKeys(cnsName, ethersProvider, resolution);
+    expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
+    expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 });
