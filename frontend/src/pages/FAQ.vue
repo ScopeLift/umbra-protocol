@@ -562,6 +562,30 @@
         </f-a-q-item>
       </div>
 
+      <div @click="copyUrl" id="is-cryptography-in-javascript-secure">
+        <f-a-q-item
+          :expanded="selectedId === 'is-cryptography-in-javascript-secure'"
+          question="Is cryptography in JavaScript secure?"
+        >
+          <p>
+            In general, a JavaScript execution environment is not ideal for meeting security requirements. It presents
+            challenges in hiding secret data in memory (e.g. your app-specific private keys) and preventing that data
+            from being written to disk. Using JavaScript also means the underlying cryptography library may be
+            susceptible to things like
+            <a class="hyperlink" href="https://en.wikipedia.org/wiki/Timing_attack" target="_blank">timing attacks</a>.
+            Umbra uses
+            <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank">noble-secp256k1</a>
+            for all cryptography, and you can read more about its limitations and mitigation to such vulnerabilities
+            <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1/#security" target="_blank">here</a>.
+          </p>
+          <p>
+            However, the Ethereum ecosystem consists of many wallets and applications that rely on JavaScript
+            cryptography and so far there have been no major issues as a result of this, so this approach is
+            likely a suitable trade-off for most users.
+          </p>
+        </f-a-q-item>
+      </div>
+
       <!-- Technical Details -->
       <div class="separator q-mt-lg q-mb-xl"></div>
       <div
