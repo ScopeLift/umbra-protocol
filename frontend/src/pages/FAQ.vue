@@ -580,8 +580,8 @@
           </p>
           <p>
             However, the Ethereum ecosystem consists of many wallets and applications that rely on JavaScript
-            cryptography and so far there have been no major issues as a result of this, so this approach is
-            likely a suitable trade-off for most users.
+            cryptography and so far there have been no major issues as a result of this, so this approach is likely a
+            suitable trade-off for most users.
           </p>
         </f-a-q-item>
       </div>
