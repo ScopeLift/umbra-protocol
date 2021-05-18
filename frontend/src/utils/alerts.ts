@@ -2,11 +2,12 @@ import { Dark, Notify } from 'quasar';
 import BNotify from 'bnc-notify';
 
 // Instantiate Blocknative's notify.js
+console.log('process.env.BLOCKNATIVE_API_KEY: ', process.env.BLOCKNATIVE_API_KEY);
 const bNotify = BNotify({
   dappId: process.env.BLOCKNATIVE_API_KEY,
   darkMode: Dark.isActive,
   desktopPosition: 'topRight',
-  networkId: 4,
+  networkId: 1, // TODO update when user changes
 });
 
 // Some error messages we don't want to show to the user, so return in these cases

@@ -307,6 +307,7 @@ function useKeys() {
         txs.push(tx);
       } else {
         // If setting a regular name
+        console.log('About to set keys');
         const allTxs = await ensHelpers.setRootNameKeys(
           name,
           domainService.value,
@@ -315,6 +316,7 @@ function useKeys() {
           viewingPubKey,
           signer.value
         );
+        console.log('setRootNameKeys complete');
         txs.push(...allTxs);
       }
 
