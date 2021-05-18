@@ -31,7 +31,7 @@
       <template v-slot:option="scope">
         <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
           <q-item-section avatar v-if="scope.opt.logoURI">
-            <img :src="scope.opt.logoURI" height="25rem" />
+            <img class="horizontal-center" :src="scope.opt.logoURI" height="25rem" />
           </q-item-section>
           <q-item-section>
             <q-item-label v-html="scope.opt[optionLabel]" />
