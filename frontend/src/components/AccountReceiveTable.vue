@@ -380,6 +380,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function executeWithdraw() {
     if (!umbra.value) throw new Error('Umbra instance not found');
+    if (!provider.value) throw new Error('Provider not found');
     if (!activeAnnouncement.value) throw new Error('No announcement is selected for withdraw');
     showPrivacyModal.value = false;
 
@@ -396,7 +397,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       let tx: TransactionResponse;
       if (token.symbol === 'ETH') {
         // Withdrawing ETH
-        tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor);
+        const lowGasPrice = await provider.value.getGasPrice(); // returns roughly a median
+        const gasPrice = lowGasPrice.mul('110').div('100'); // bump gas price by 10%
+        tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor, { gasPrice });
         txNotify(tx.hash);
         await tx.wait();
       } else {
