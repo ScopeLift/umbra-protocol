@@ -48,16 +48,20 @@
       <div v-else class="text-center">
         <q-spinner-puff class="q-mb-md" color="primary" size="2rem" />
         <div class="text-center text-italic">Withdraw in progress...</div>
+        <a v-if="txHash.length === 66" class="text-caption hyperlink" :href="etherscanUrl" target="_blank">
+          View transaction <q-icon name="fas fa-external-link-alt" right />
+        </a>
       </div>
     </q-card-section>
   </q-card>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { computed, defineComponent, PropType } from '@vue/composition-api';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
+import { getEtherscanUrl } from 'src/utils/utils';
 
 export default defineComponent({
   name: 'AccountReceiveTableWithdrawConfirmation',
@@ -73,6 +77,11 @@ export default defineComponent({
       required: true,
     },
 
+    chainId: {
+      type: Number,
+      required: true,
+    },
+
     destinationAddress: {
       type: String,
       required: true,
@@ -80,6 +89,11 @@ export default defineComponent({
 
     isWithdrawInProgress: {
       type: Boolean,
+      required: true,
+    },
+
+    txHash: {
+      type: String,
       required: true,
     },
   },
@@ -96,7 +110,18 @@ export default defineComponent({
     const canWithdraw = BigNumber.from(amount).gt(fee);
     const tokenURL = props.activeFee.token.logoURI;
     const isEth = props.activeFee.token.symbol === 'ETH';
-    return { context, canWithdraw, formattedAmount, formattedFee, formattedAmountReceived, symbol, tokenURL, isEth };
+    const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId));
+    return {
+      canWithdraw,
+      context,
+      etherscanUrl,
+      formattedAmount,
+      formattedAmountReceived,
+      formattedFee,
+      isEth,
+      symbol,
+      tokenURL,
+    };
   },
 });
 </script>

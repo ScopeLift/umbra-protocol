@@ -17,8 +17,10 @@
         @confirmed="executeWithdraw"
         :activeAnnouncement="activeAnnouncement"
         :activeFee="activeFee"
+        :chainId="chainId"
         :destinationAddress="destinationAddress"
         :isWithdrawInProgress="isWithdrawInProgress"
+        :txHash="txHashIfEth"
       />
     </q-dialog>
 
@@ -209,6 +211,7 @@ import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vu
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
+import { getEtherscanUrl } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
@@ -262,6 +265,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const isLoading = ref(false);
   const isFeeLoading = ref(false);
   const isWithdrawInProgress = ref(false);
+  const txHashIfEth = ref(''); // if withdrawing ETH, show the transaction hash (if token, we have an ITX ID)
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
@@ -341,8 +345,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
     // Assume mainnet unless we have Rinkeby chainId
     const chainId = provider.value.network.chainId || 1;
-    const baseUrl = chainId === 4 ? 'https://rinkeby.etherscan.io' : 'https://rinkeby.etherscan.io';
-    window.open(`${baseUrl}/tx/${row.tx.hash}`);
+    window.open(getEtherscanUrl(row.tx.hash, chainId));
   }
 
   /**
@@ -400,6 +403,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         const lowGasPrice = await provider.value.getGasPrice(); // returns roughly a median
         const gasPrice = lowGasPrice.mul('110').div('100'); // bump gas price by 10%
         tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor, { gasPrice });
+        txHashIfEth.value = tx.hash;
         txNotify(tx.hash);
         await tx.wait();
       } else {
@@ -429,12 +433,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         console.log('Withdraw successful. Receipt:', receipt);
       }
 
-      // Collapse expansion row and update table to show this was withdrawn
-      destinationAddress.value = '';
+      // Send complete, cleanup state
+      txHashIfEth.value = ''; // no transaction hash to show anymore
+      destinationAddress.value = ''; // clear destination address
       expanded.value = []; // hides expanded row
       formattedAnnouncements.value.forEach((x) => {
         if (announcement.receiver === x.receiver) {
-          x.isWithdrawn = true;
+          x.isWithdrawn = true; // update receive table to indicate this was withdrawn
         }
       });
     } finally {
@@ -447,6 +452,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   return {
     activeAnnouncement,
     activeFee,
+    chainId: network.value?.chainId,
     confirmWithdraw,
     copySenderAddress,
     destinationAddress,
@@ -471,6 +477,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     privacyModalAddressDescription,
     showConfirmationModal,
     showPrivacyModal,
+    txHashIfEth,
   };
 }
 
