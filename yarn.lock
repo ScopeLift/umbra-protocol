@@ -14356,10 +14356,10 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
-noble-secp256k1@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/noble-secp256k1/-/noble-secp256k1-1.2.0.tgz#823f83d50a299faa82ff5361abd3d8216c322411"
-  integrity sha512-ozvg+lbj9MeGCxqEXHHkPg0k1rPHlbMcRXQTvufeE9ZLm7oxdygbXO6bELH79BzqtdGK6uZpnXq8HSLk8qGpWQ==
+noble-secp256k1@^1.2.5:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/noble-secp256k1/-/noble-secp256k1-1.2.5.tgz#3b270c2023e9e410d987b47ee3963b5d484eec3c"
+  integrity sha512-gSzg+Cmwb8tDS3r3WH/aYUX0nA1nisHdmMNJpp0Tof8JIf0PUlb1mDkujnrHs4K+ath4lJ03tu1WpmfUo5+fAw==
 
 node-addon-api@^2.0.0:
   version "2.0.2"

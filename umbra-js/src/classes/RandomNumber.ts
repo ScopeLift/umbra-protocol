@@ -15,7 +15,7 @@ export class RandomNumber {
    */
   constructor() {
     // Randomly generate 32 bytes and save them as a BigNumber
-    const randomNumberAsBytes = utils.randomPrivateKey(this.sizeInBytes);
+    const randomNumberAsBytes = utils.randomPrivateKey();
     this.value = BigNumber.from(randomNumberAsBytes);
   }
 

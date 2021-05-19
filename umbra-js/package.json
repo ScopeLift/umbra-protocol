@@ -25,7 +25,7 @@
   "dependencies": {
     "@unstoppabledomains/resolution": "3.0.0",
     "ethers": "^5.1.0",
-    "noble-secp256k1": "^1.2.0"
+    "noble-secp256k1": "^1.2.5"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
