@@ -99,18 +99,19 @@ export default defineComponent({
   },
 
   setup(props, context) {
-    const amount = props.activeAnnouncement.amount;
-    const fee = props.activeFee.fee;
-    const amountReceived = BigNumber.from(amount).sub(fee).toString();
-    const decimals = props.activeFee.token.decimals;
-    const symbol = props.activeFee.token.symbol;
-    const formattedAmount = round(formatUnits(amount, decimals));
-    const formattedFee = round(formatUnits(fee, decimals));
-    const formattedAmountReceived = round(formatUnits(amountReceived, decimals));
-    const canWithdraw = BigNumber.from(amount).gt(fee);
-    const tokenURL = props.activeFee.token.logoURI;
     const isEth = props.activeFee.token.symbol === 'ETH';
-    const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId));
+    const amount = props.activeAnnouncement.amount; // amount being sent
+    const fee = props.activeFee.fee; // relayer fee
+    const amountReceived = BigNumber.from(amount).sub(fee).toString(); // amount user will receive
+    const decimals = props.activeFee.token.decimals; // number of decimals token has
+    const symbol = props.activeFee.token.symbol; // token symbol
+    const numDecimals = isEth ? 4 : 2; // maximum number of decimals to show
+    const formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being sent, rounded
+    const formattedFee = round(formatUnits(fee, decimals), numDecimals); // relayer fee, rounded
+    const formattedAmountReceived = round(formatUnits(amountReceived, decimals), numDecimals); // amount user will receive, rounded
+    const canWithdraw = BigNumber.from(amount).gt(fee); // prevent withdraw attemps if fee is larger than amount
+    const tokenURL = props.activeFee.token.logoURI; // URL pointing to token logo
+    const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdraw tx hash URL
     return {
       canWithdraw,
       context,

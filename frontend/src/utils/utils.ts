@@ -8,4 +8,9 @@ export const getEtherscanUrl = (txHash: string, chainId: number) => {
   return `https://${networkPrefix}etherscan.io/tx/${txHash}`;
 };
 
-export const round = (value: number | string, decimals = 2) => Number(value).toFixed(decimals);
+export const round = (value: number | string, decimals = 2) => {
+  return Number(value).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  });
+};
