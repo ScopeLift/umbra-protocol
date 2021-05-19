@@ -56,16 +56,16 @@
       <!-- Step 1: ENS Registration -->
       <q-carousel-slide name="1" class="q-px-xl">
         <div class="q-mx-lg q-pb-xl">
-          <h5 class="q-my-md q-pt-none">Step 1: ENS Registration</h5>
+          <h5 class="q-my-md q-pt-none">Step 1: Username Selection</h5>
           <div class="q-mt-md">
             <!-- User has no ENS or CNS names -->
             <div v-if="!userEns && !userCns">
-              <p>An ENS domain was not found for this address. To continue, register a subdomain below.</p>
+              <p>An ENS name was not found for this address. To continue, register a subdomain below.</p>
               <account-setup-set-ens-subdomain @subdomain-selected="setSubdomain" />
             </div>
             <!-- User has ENS and CNS name, and has not yet chose one -->
             <div v-else-if="(userEns || userCns) && !selectedName">
-              <div>Please choose a name to continue.</div>
+              <div>Please choose an ENS or CNS name to continue.</div>
               <div class="row justify-start q-mt-lg">
                 <base-button v-if="userEns" @click="setName(userEns)" :label="userEns" :outline="true" />
                 <base-button
@@ -223,11 +223,9 @@ function useKeys() {
     else if (cns.isCnsDomain(newName)) selectedNameType.value = 'cns';
     else selectedNameType.value = undefined; // if here, it's some type of unsupported or invalid domain
 
-    // If ENS, check if they are ready to continue
-    if (selectedNameType.value === 'ens') {
-      // The checkEnsStatus will automatically advance the user to the next step when applicable
-      ensStatus.value = await checkEnsStatus(newName as string);
-    }
+    // Check if user is ready to continue, and automatically advance to the next step when safe
+    if (selectedNameType.value === 'ens') ensStatus.value = await checkEnsStatus(newName as string);
+    else if (selectedNameType.value === 'cns') carouselBtnRight.value?.click(); // always safe to advance for CNS
   });
 
   function checkAndSetName() {
