@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "@umbra/umbra-js": "^0.0.1-alpha.0",
+    "@umbra/umbra-js": "^0.1.0",
     "@uniswap/token-lists": "^1.0.0-beta.19",
     "@vue/composition-api": "^0.6.4",
     "bnc-notify": "^1.5.1",
