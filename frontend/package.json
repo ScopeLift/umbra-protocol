@@ -1,6 +1,6 @@
 {
   "name": "@umbra/frontend",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Send and receive stealth payments with the Umbra protocol",
   "productName": "Umbra",
   "author": "Matt Solomon <matt@mattsolomon.dev>",

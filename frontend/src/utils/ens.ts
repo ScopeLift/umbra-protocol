@@ -108,6 +108,9 @@ export const setSubdomainKeys = async (
   viewingPublicKey: string,
   signer: Signer
 ) => {
+  window.logger.debug('name: ', name);
+  window.logger.debug('userAddress: ', userAddress);
+
   // Verify subdomain has no periods
   const splitName = name.split('.');
   if (splitName.length > 3) throw new Error('Cannot not register a name with periods');
@@ -115,11 +118,11 @@ export const setSubdomainKeys = async (
   // Verify subdomain availability
   const provider = signer.provider as Provider;
   const owner = await getContract('ENSRegistry', provider).owner(namehash(name));
+  window.logger.debug('owner: ', owner);
   if (getAddress(owner) !== AddressZero) throw new Error(`${name} already registered`);
 
   // Get instance of registrar contract we use to register the subdomain
-  const registrar = 'StealthKeyFIFSRegistrar';
-  const stealthKeyFIFSRegistrar = getContract(registrar, provider).connect(signer);
+  const stealthKeyFIFSRegistrar = getContract('StealthKeyFIFSRegistrar', provider).connect(signer);
 
   // Break public keys into the required components to store compressed public keys.
   // See @umbra/umbra-js/src/utils/ens.ts for the source of this logic
@@ -129,6 +132,13 @@ export const setSubdomainKeys = async (
 
   // Send transaction
   const subdomain = splitName[0];
+  window.logger.debug('splitName: ', splitName);
+  window.logger.debug('subdomain: ', subdomain);
+  window.logger.debug(
+    "getContractAddress('PublicStealthKeyResolver', provider): ",
+    getContractAddress('PublicStealthKeyResolver', provider)
+  );
+
   const tx = (await stealthKeyFIFSRegistrar.register(
     keccak256(toUtf8Bytes(subdomain)), // label, e.g. keccak256('matt')
     userAddress, // user's wallet address, which will be the owner
@@ -138,7 +148,7 @@ export const setSubdomainKeys = async (
     viewingPubKeyPrefix, // prefix of compressed viewing public key
     viewingPubKeyX // compressed viewing public key without prefix
   )) as TransactionResponse;
-
+  window.logger.debug('tx.hash: ', tx.hash);
   txNotify(tx.hash);
   return tx;
 };
@@ -152,6 +162,9 @@ export const setRootNameKeys = async (
   viewingPublicKey: string,
   signer: Signer
 ) => {
+  window.logger.debug('name: ', name);
+  window.logger.debug('isEnsPublicResolver: ', isEnsPublicResolver);
+
   // Setup
   const txs: TransactionResponse[] = []; // this will hold tx details from each transaction sent
   const node = namehash(name);
@@ -159,7 +172,9 @@ export const setRootNameKeys = async (
   // Get address of the ForwardingStealthKeyResolver. This is only used with ENS, not for CNS.
   const provider = signer.provider as Provider;
   const chainId = String((await provider.getNetwork()).chainId) as keyof typeof ForwardingStealthKeyResolver.addresses;
+  window.logger.debug('chainId: ', chainId);
   const fskResolverAddress = ForwardingStealthKeyResolver.addresses[chainId];
+  window.logger.debug('fskResolverAddress: ', fskResolverAddress);
 
   // Now we execute the transactions needed to set the keys and optionally migrate resolver. If we're executing
   // here, there's four potential resolvers the user may have
@@ -175,14 +190,18 @@ export const setRootNameKeys = async (
     // Step 1: Authorize the ForwardingStealthKeyResolver to set records on the PublicResolver. This is required
     // so it can properly act as a fallback resolver with permission to set records on PublicResolver as needed
     const publicResolver = getContract('ENSPublicResolver', provider).connect(signer);
+    window.logger.debug('publicResolver: ', publicResolver.address);
     const tx = (await publicResolver.setAuthorisation(node, fskResolverAddress, true)) as TransactionResponse;
+    window.logger.debug('step 1 tx.hash: ', tx.hash);
     txNotify(tx.hash);
     txs.push(tx);
 
     // Step 2: Change the user's resolver to the ForwardingStealthKeyResolver
     // Execute the setResolver transaction
     const registry = getContract('ENSRegistry', provider).connect(signer);
+    window.logger.debug('registry: ', registry.address);
     const tx2 = (await registry.setResolver(node, fskResolverAddress)) as TransactionResponse;
+    window.logger.debug('step 2 tx2.hash: ', tx2.hash);
     txNotify(tx2.hash);
     txs.push(tx2);
     await tx2.wait(); // this needs to be mined before step 3, since step 3 reads your current resolver
@@ -190,8 +209,10 @@ export const setRootNameKeys = async (
 
   // Step 3: Set the stealth keys on the appropriate resolver
   const tx = await domainService.setPublicKeys(name, spendingPublicKey, viewingPublicKey);
+  window.logger.debug('step 3 tx.hash: ', tx.hash);
   txNotify(tx.hash);
   txs.push(tx);
+  window.logger.debug('txs: ', txs);
 
   return txs;
 };

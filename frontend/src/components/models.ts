@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { TransactionReceipt, JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
 import type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
+import { UmbraLogger } from 'components/logger';
 
 export type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 export { BigNumber, Network, TransactionResponse } from 'src/utils/ethers';
@@ -38,3 +39,10 @@ export type WithdrawalInputs = {
 export type RelayResponse = { relayTransactionHash: string } | ApiError;
 export type ITXStatusResponse = { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt } | ApiError;
 export type ConfirmedITXStatusResponse = { receivedTime: string; broadcasts: any[]; receipt: TransactionReceipt };
+
+// Logger type added to window
+declare global {
+  interface Window {
+    logger: UmbraLogger;
+  }
+}

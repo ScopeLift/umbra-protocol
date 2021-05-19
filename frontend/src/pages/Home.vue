@@ -54,6 +54,9 @@ export default defineComponent({
   name: 'PageHome',
   components: { HomeActionCard },
   setup() {
+    window.logger.debug('test log level debug');
+    window.logger.warn('test log level warn');
+    window.logger.info('test log level info');
     const { isAccountSetup } = useWalletStore();
     return { isAccountSetup };
   },

@@ -226,6 +226,8 @@ function useKeys() {
     // Check if user is ready to continue, and automatically advance to the next step when safe
     if (selectedNameType.value === 'ens') ensStatus.value = await checkEnsStatus(newName as string);
     else if (selectedNameType.value === 'cns') carouselBtnRight.value?.click(); // always safe to advance for CNS
+    window.logger.debug('selectedName:', selectedName.value);
+    window.logger.debug('selectedNameType:', selectedNameType.value);
   });
 
   function checkAndSetName() {
@@ -246,16 +248,23 @@ function useKeys() {
   async function checkEnsStatus(name: string) {
     const address = userAddress.value as string;
     const provider = signer.value?.provider as Provider;
+    window.logger.debug('address: ', address);
+    window.logger.debug('name: ', name);
 
     const ownsName = await ensHelpers.isNameOwner(address, name, provider);
+    window.logger.debug('ownsName: ', ownsName);
     if (!ownsName) return 'not-owner';
 
     const currentResolver = await ensHelpers.getResolverAddress(name, provider);
+    window.logger.debug('currentResolver: ', currentResolver);
     isEnsPublicResolver.value = ensHelpers.isUsingPublicResolver(currentResolver, provider);
+    window.logger.debug('isEnsPublicResolver.value: ', isEnsPublicResolver.value);
     const isUmbraResolver = ensHelpers.isUsingUmbraResolver(currentResolver, provider);
+    window.logger.debug('isUmbraResolver: ', isUmbraResolver);
     if (!isEnsPublicResolver.value && !isUmbraResolver) return 'not-public-resolver';
 
     const didSetPublicKeys = await ensHelpers.hasPublicKeys(name, provider);
+    window.logger.debug('didSetPublicKeys: ', didSetPublicKeys);
     if (!didSetPublicKeys) {
       carouselBtnRight.value?.click();
       return 'no-public-keys';
@@ -292,6 +301,7 @@ function useKeys() {
     try {
       isWaiting.value = true;
       const name = selectedName.value;
+      window.logger.debug('name: ', name);
       const spendingPubKey = String(spendingKeyPair.value?.publicKeyHex);
       const viewingPubKey = String(viewingKeyPair.value?.publicKeyHex);
       const txs: TransactionResponse[] = []; // this will hold tx details from each transaction sent
@@ -300,6 +310,7 @@ function useKeys() {
       if (name.endsWith(ensHelpers.rootName)) {
         // If setting a subdomain
         const userAddr = userAddress.value;
+        window.logger.debug('userAddress.value: ', userAddress.value);
         if (!userAddr) throw new Error('User address not found. Please connect a wallet');
         const tx = await ensHelpers.setSubdomainKeys(name, userAddr, spendingPubKey, viewingPubKey, signer.value);
         txs.push(tx);
@@ -317,6 +328,7 @@ function useKeys() {
       }
 
       // Wait for all transactions to be mined then move on to next step
+      window.logger.debug('txs: ', txs);
       await Promise.all(txs.map((tx) => tx.wait()));
       carouselStep.value = '4';
       ens.isEnsDomain(selectedName.value) ? setHasEnsKeys(true) : setHasCnsKeys(true); // hide account setup on home page
