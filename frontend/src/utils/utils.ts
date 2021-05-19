@@ -7,3 +7,5 @@ export const getEtherscanUrl = (txHash: string, chainId: number) => {
   if (chainId === 42) networkPrefix = 'kovan.';
   return `https://${networkPrefix}etherscan.io/tx/${txHash}`;
 };
+
+export const round = (value: number | string, decimals = 2) => Number(value).toFixed(decimals);

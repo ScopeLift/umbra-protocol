@@ -156,7 +156,7 @@
                     <div v-else-if="activeFee" class="text-caption">
                       Estimated withdrawal fee:
                       <span class="text-bold">
-                        {{ formatUnits(activeFee.fee, activeFee.token.decimals) }}
+                        {{ round(formatUnits(activeFee.fee, activeFee.token.decimals)) }}
                         {{ activeFee.token.symbol }}
                       </span>
                     </div>
@@ -211,7 +211,7 @@ import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vu
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
-import { getEtherscanUrl } from 'src/utils/utils';
+import { getEtherscanUrl, round } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
@@ -475,6 +475,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     openInEtherscan,
     paginationConfig,
     privacyModalAddressDescription,
+    round,
     showConfirmationModal,
     showPrivacyModal,
     txHashIfEth,

@@ -61,7 +61,7 @@ import { computed, defineComponent, PropType } from '@vue/composition-api';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import { getEtherscanUrl } from 'src/utils/utils';
+import { getEtherscanUrl, round } from 'src/utils/utils';
 
 export default defineComponent({
   name: 'AccountReceiveTableWithdrawConfirmation',
@@ -104,9 +104,9 @@ export default defineComponent({
     const amountReceived = BigNumber.from(amount).sub(fee).toString();
     const decimals = props.activeFee.token.decimals;
     const symbol = props.activeFee.token.symbol;
-    const formattedAmount = formatUnits(amount, decimals);
-    const formattedFee = formatUnits(fee, decimals);
-    const formattedAmountReceived = formatUnits(amountReceived, decimals);
+    const formattedAmount = round(formatUnits(amount, decimals));
+    const formattedFee = round(formatUnits(fee, decimals));
+    const formattedAmountReceived = round(formatUnits(amountReceived, decimals));
     const canWithdraw = BigNumber.from(amount).gt(fee);
     const tokenURL = props.activeFee.token.logoURI;
     const isEth = props.activeFee.token.symbol === 'ETH';
