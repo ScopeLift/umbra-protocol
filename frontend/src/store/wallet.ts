@@ -89,7 +89,8 @@ export default function useWalletStore() {
     // Setup
     if (!provider.value) throw new Error('Provider not connected');
     if (!relayer.value) throw new Error('Relayer instance not found');
-    const chainId = String(provider.value.network.chainId) as SupportedChainIds;
+    const network = await provider.value.getNetwork();
+    const chainId = String(network.chainId) as SupportedChainIds;
     const multicallAddress = Multicall.addresses[chainId];
     const multicall = new Contract(multicallAddress, Multicall.abi, provider.value);
 
