@@ -10,6 +10,7 @@ import { txNotify } from 'src/utils/alerts';
 // Contract imports
 import ENSRegistry from 'src/contracts/ENSRegistry.json';
 import ENSPublicResolver from 'src/contracts/ENSPublicResolver.json';
+import ENSReverseRegistrar from 'src/contracts/ENSReverseRegistrar.json';
 import ForwardingStealthKeyResolver from 'src/contracts/ForwardingStealthKeyResolver.json';
 import PublicStealthKeyResolver from 'src/contracts/PublicStealthKeyResolver.json';
 import StealthKeyFIFSRegistrar from 'src/contracts/StealthKeyFIFSRegistrar.json';
@@ -21,6 +22,7 @@ export const rootName = 'umbra.eth';
 const address = {
   ENSRegistry: ENSRegistry.addresses,
   ENSPublicResolver: ENSPublicResolver.addresses,
+  ENSReverseRegistrar: ENSReverseRegistrar.addresses,
   ForwardingStealthKeyResolver: ForwardingStealthKeyResolver.addresses,
   PublicStealthKeyResolver: PublicStealthKeyResolver.addresses,
   StealthKeyFIFSRegistrar: StealthKeyFIFSRegistrar.addresses,
@@ -29,6 +31,7 @@ const address = {
 const abi = {
   ENSRegistry: ENSRegistry.abi,
   ENSPublicResolver: ENSPublicResolver.abi,
+  ENSReverseRegistrar: ENSReverseRegistrar.abi,
   ForwardingStealthKeyResolver: ForwardingStealthKeyResolver.abi,
   PublicStealthKeyResolver: PublicStealthKeyResolver.abi,
   StealthKeyFIFSRegistrar: StealthKeyFIFSRegistrar.abi,
@@ -130,7 +133,7 @@ export const setSubdomainKeys = async (
   const { prefix: spendingPubKeyPrefix, pubKeyXCoordinate: spendingPubKeyX } = compressPublicKey(spendingPublicKey);
   const { prefix: viewingPubKeyPrefix, pubKeyXCoordinate: viewingPubKeyX } = compressPublicKey(viewingPublicKey);
 
-  // Send transaction
+  // Send first transaction tor register subdomain
   const subdomain = splitName[0];
   window.logger.debug('splitName: ', splitName);
   window.logger.debug('subdomain: ', subdomain);
@@ -139,7 +142,7 @@ export const setSubdomainKeys = async (
     getContractAddress('PublicStealthKeyResolver', provider)
   );
 
-  const tx = (await stealthKeyFIFSRegistrar.register(
+  const tx1 = (await stealthKeyFIFSRegistrar.register(
     keccak256(toUtf8Bytes(subdomain)), // label, e.g. keccak256('matt')
     userAddress, // user's wallet address, which will be the owner
     getContractAddress('PublicStealthKeyResolver', provider), // PublicStealthKeyResolver address
@@ -148,9 +151,16 @@ export const setSubdomainKeys = async (
     viewingPubKeyPrefix, // prefix of compressed viewing public key
     viewingPubKeyX // compressed viewing public key without prefix
   )) as TransactionResponse;
-  window.logger.debug('tx.hash: ', tx.hash);
-  txNotify(tx.hash);
-  return tx;
+  window.logger.debug('tx1.hash: ', tx1.hash);
+  txNotify(tx1.hash);
+
+  // Send second transaction to configure the reverse resolver
+  const reverseRegistrar = getContract('ENSReverseRegistrar', provider).connect(signer);
+  const tx2 = (await reverseRegistrar.setName(name)) as TransactionResponse;
+  window.logger.debug('tx2.hash: ', tx2.hash);
+  txNotify(tx2.hash);
+
+  return [tx1, tx2];
 };
 
 // Publish keys for a root ENS (or CNS) name, such as msolomon.eth, and migrate to a new resolver if required
