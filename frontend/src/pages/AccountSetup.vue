@@ -312,8 +312,8 @@ function useKeys() {
         const userAddr = userAddress.value;
         window.logger.debug('userAddress.value: ', userAddress.value);
         if (!userAddr) throw new Error('User address not found. Please connect a wallet');
-        const tx = await ensHelpers.setSubdomainKeys(name, userAddr, spendingPubKey, viewingPubKey, signer.value);
-        txs.push(tx);
+        const allTxs = await ensHelpers.setSubdomainKeys(name, userAddr, spendingPubKey, viewingPubKey, signer.value);
+        txs.push(...allTxs);
       } else {
         // If setting a regular name
         const allTxs = await ensHelpers.setRootNameKeys(
