@@ -129,7 +129,7 @@
           <!-- Expansion row -->
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%" class="bg-muted">
-              <q-form class="form-wide q-py-md" style="white-space: normal">
+              <q-form @submit="initializeWithdraw(props.row)" class="form-wide q-py-md" style="white-space: normal">
                 <!-- Withdrawal form -->
                 <div v-if="!isWithdrawInProgress">
                   <div>Enter address to withdraw funds to</div>
