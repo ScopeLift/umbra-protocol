@@ -513,7 +513,14 @@
       <div @click="copyUrl" id="has-umbra-been-audited">
         <f-a-q-item :expanded="selectedId === 'has-umbra-been-audited'" question="Has Umbra been audited?">
           <p>
-            The contracts have been audited by ConsenSys Diligence, and the audit report can be found
+            The
+            <a
+              class="hyperlink"
+              href="https://github.com/ScopeLift/umbra-protocol/tree/master/contracts"
+              target="_blank"
+              >contracts</a
+            >
+            have been audited by ConsenSys Diligence, and the audit report can be found
             <a
               class="hyperlink"
               href="https://consensys.net/diligence/audits/2021/03/umbra-smart-contracts/"
@@ -522,11 +529,20 @@
             >.
           </p>
           <p>
-            The <span class="code">umbra-js</span> library that manages the bulk of the required off-chain logic has not
-            yet been audited, but an audited is scheduled for mid-May with Least Authority.
+            The <span class="code">umbra-js</span>&#32;
+            <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/tree/master/umbra-js" target="_blank"
+              >library</a
+            >&mdash;responsible for handling the required off-chain logic and elliptic curve operations&mdash;has been
+            audited by Least Authority, and the audit report can be found
+            <a
+              class="hyperlink"
+              href="https://leastauthority.com/static/publications/LeastAuthority_ScopeLift_Umbra-js_Final_Audit_Report.pdf"
+              target="_blank"
+              >here</a
+            >.
           </p>
           <p>
-            Off-chain elliptic curve cryptography is a core part of Umbra’s business logic, so we rely on
+            Off-chain elliptic curve operations are a core part of Umbra’s business logic, so we rely on
             <a class="hyperlink" href="https://paulmillr.com/" target="_blank">Paul Miller</a>’s simple, zero-dependency
             <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank">noble-secp256k1</a>
             library to handle this. Thanks to the
@@ -536,7 +552,8 @@
               target="_blank"
               >community</a
             >, we were able to raise enough funds to pay for an audit of this library with Cure53. You can read the
-            report <a class="hyperlink" href="https://cure53.de/pentest-report_noble-lib.pdf" target="_blank">here</a>.
+            audit report
+            <a class="hyperlink" href="https://cure53.de/pentest-report_noble-lib.pdf" target="_blank">here</a>.
           </p>
         </f-a-q-item>
       </div>
