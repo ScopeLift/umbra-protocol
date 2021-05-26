@@ -1,5 +1,9 @@
 <template>
   <q-card class="border-top-thick">
+    <q-card-section class="row justify-end q-my-none q-py-none">
+      <q-btn class="text-caption text-muted" icon="fas fa-times" flat round dense v-close-popup />
+    </q-card-section>
+
     <q-card-section>
       <h5 class="text-bold text-center q-mt-none">
         <q-icon name="fas fa-exclamation-triangle" color="warning" left />Warning!
