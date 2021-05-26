@@ -251,6 +251,11 @@ export default function useWalletStore() {
     return userAddress.value ? formatAddress(userAddress.value) : undefined;
   });
 
+  const userDisplayAddress = computed(() => {
+    // Format the regular address
+    return userAddress.value ? formatAddress(userAddress.value) : undefined;
+  });
+
   // ------------------------------------- Exposed parameters --------------------------------------
   // Define computed properties and parts of store that should be exposed. Everything exposed is a
   // computed property to facilitate reactivity and avoid accidental state mutations
@@ -282,6 +287,7 @@ export default function useWalletStore() {
     ETH_TOKEN: computed(() => ETH_TOKEN.value),
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
+    userDisplayAddress: computed(() => userDisplayAddress.value),
   };
 }
 

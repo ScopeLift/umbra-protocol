@@ -54,8 +54,8 @@
             <div class="col-auto q-mr-md">
               <div>
                 <connect-wallet>
-                  <span v-if="userDisplayName" class="text-caption cursor-pointer dark-toggle">
-                    {{ userDisplayName }}
+                  <span v-if="userDisplayAddress" class="text-caption cursor-pointer dark-toggle">
+                    {{ userDisplayAddress }}
                   </span>
                   <span v-else-if="!isSupportedNetwork" class="text-caption text-grey cursor-pointer dark-toggle">
                     <q-icon name="fas fa-exclamation-triangle" color="warning" left /> Unsupported network
@@ -170,7 +170,7 @@ import useWalletStore from 'src/store/wallet';
 import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useWallet() {
-  const { userDisplayName, network, isAccountSetup, isSupportedNetwork } = useWalletStore();
+  const { userDisplayAddress, network, isAccountSetup, isSupportedNetwork } = useWalletStore();
   const networkName = ref('');
 
   watchEffect(() => {
@@ -179,7 +179,7 @@ function useWallet() {
     }
   });
 
-  return { userDisplayName, networkName, isAccountSetup, isSupportedNetwork };
+  return { userDisplayAddress, networkName, isAccountSetup, isSupportedNetwork };
 }
 
 export default defineComponent({
