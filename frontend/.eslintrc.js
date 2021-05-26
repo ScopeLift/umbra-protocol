@@ -14,6 +14,6 @@ module.exports = {
     chrome: true,
   },
   rules: {
-    '@typescript-eslint/ban-ts-comment': 'allow-with-description',
+    '@typescript-eslint/ban-ts-comment': 1,
   },
 };
