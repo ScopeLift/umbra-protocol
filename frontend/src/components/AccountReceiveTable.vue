@@ -174,6 +174,7 @@
                   <span class="text-bold">WARNING</span>: Be sure you understand the security implications before
                   entering a withdrawal address. If you withdraw to an address publicly associated with you, privacy for
                   this transaction will be lost.
+                  <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank"> Learn more </router-link>.
                 </div>
 
                 <!-- Advanced feature: show private key -->
