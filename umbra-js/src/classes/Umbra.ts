@@ -353,7 +353,7 @@ export class Umbra {
   async generatePrivateKeys(signer: JsonRpcSigner | Wallet) {
     // Base message that will be signed
     const baseMessage =
-      'Sign this message to access your Umbra account.\n\nThis signature gives the app access to your funds, so only sign this message for a trusted client!';
+      'Sign this message to access your Umbra account.\n\nOnly sign this message for a trusted client!';
 
     // Append chain ID if not mainnet to mitigate replay attacks
     const { chainId } = await this.provider.getNetwork();
