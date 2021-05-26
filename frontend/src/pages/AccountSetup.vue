@@ -37,7 +37,9 @@
             @click="$refs.carousel.next()"
             class="q-my-auto"
             :disable="
-              (selectedNameType === 'ens' && !['ready', 'no-public-keys'].includes(ensStatus)) || carouselStep === '2'
+              (selectedNameType === 'ens' && !['ready', 'no-public-keys'].includes(ensStatus)) ||
+              (carouselStep === '1' && !selectedNameType) ||
+              (carouselStep === '2' && keyStatus !== 'success')
             "
             flat
             icon="fas fa-arrow-right"
