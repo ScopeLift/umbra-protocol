@@ -86,12 +86,12 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
   try {
     keys = (await resolver.stealthKeys(namehash(name))) as StealthKeys;
   } catch (err) {
-    throw new Error(`The configured resolver for ${name} does not support stealth keys`);
+    throw new Error(`The configured resolver for ${name} does not support stealth keys. Please ask them to setup their Umbra account`); // prettier-ignore
   }
 
   // Make sure the found keys are not zero
   if (keys.spendingPubKey.eq(Zero) || keys.viewingPubKey.eq(Zero)) {
-    throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
+    throw new Error(`Public keys not found for ${name}. Please ask them to setup their Umbra account`);
   }
 
   // Uncompress keys and return them
