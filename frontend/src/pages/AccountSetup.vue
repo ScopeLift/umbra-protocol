@@ -159,9 +159,11 @@
           <!-- User does not need to migrate from public resolver-->
           <div v-else>
             <p class="q-mt-md">
-              You'll now be asked to send a transaction which associates the two public keys generated with
-              {{ userAddress.value }}. This means people can now securely send you funds through Umbra by visiting this
-              site and sending funds to {{ userAddress.value }}.
+              You'll now be asked to send a transaction which associates the two public keys generated from your wallet
+              with <span class="text-bold">{{ selectedName }}</span
+              >. This means people can now securely send you funds through Umbra by visiting this site and sending funds
+              to <span class="text-bold">{{ selectedName }}</span
+              >.
             </p>
             <base-button @click="setKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
           </div>
