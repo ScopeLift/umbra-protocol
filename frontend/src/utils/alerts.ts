@@ -6,7 +6,7 @@ const bNotify = BNotify({
   dappId: process.env.BLOCKNATIVE_API_KEY,
   darkMode: Dark.isActive,
   desktopPosition: 'topRight',
-  networkId: 4,
+  networkId: 1,
 });
 
 // Some error messages we don't want to show to the user, so return in these cases
