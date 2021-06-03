@@ -120,6 +120,8 @@
               Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
             </span>
           </p>
+          <!-- Empty paragraph, as a lazy way to ensure all columns are the same height -->
+          <p>&nbsp;</p>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
@@ -134,6 +136,8 @@
           <p>
             <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">Privacy Policy</router-link>
           </p>
+          <!-- Empty paragraph, as a lazy way to ensure all columns are the same height -->
+          <p>&nbsp;</p>
         </div>
 
         <!-- Column 3: Links -->
@@ -155,6 +159,12 @@
             <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="no-text-decoration">
               <q-icon class="dark-toggle" name="fab fa-github" size="xs" />
               <span class="hyperlink text-caption q-ml-md">GitHub</span>
+            </a>
+          </p>
+          <p>
+            <a href="mailto:support@umbra.cash" target="_blank" class="no-text-decoration">
+              <q-icon class="dark-toggle" name="fas fa-envelope" size="xs" />
+              <span class="hyperlink text-caption q-ml-md">support@umbra.cash</span>
             </a>
           </p>
         </div>
