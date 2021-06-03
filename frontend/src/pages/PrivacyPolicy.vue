@@ -4,23 +4,15 @@
 
     <p class="text-bold">What information do we collect?</p>
     <p>
-      When using our site, we may record the IP address that the post originated from. We also may retain server logs
-      which include the IP address of every request to our server.
+      When using our site, our cloud hosting providers may record the IP address that your request originated from. They
+      also may retain server logs which include the IP address of every request to their servers.
     </p>
 
     <p class="text-bold">What do we use your information for?</p>
-    <p>Any of the information we collect from you may be used in one of the following ways:</p>
-    <ul>
-      <li>To personalize your experience — your information helps us to better respond to your individual needs.</li>
-      <li>
-        To improve our site — we continually strive to improve our site offerings based on the information and feedback
-        we receive from you.
-      </li>
-      <li>
-        To improve customer service — your information helps us to more effectively respond to your customer service
-        requests and support needs.
-      </li>
-    </ul>
+    <p>
+      We do not use your information for any purpose beyond the default logging functionality provided by our cloud
+      hosting providers.
+    </p>
 
     <p class="text-bold">How do we protect your information?</p>
     <p>
@@ -33,6 +25,9 @@
     <ul>
       <li>Retain server logs containing the IP address of all requests to this server no more than 90 days.</li>
       <li>Retain the IP addresses associated with registered users and their posts no more than 5 years.</li>
+      <li>
+        Remove the IP address logging requirement altogether, and destroy any existing logs, sometime in the future.
+      </li>
     </ul>
 
     <p class="text-bold">Do we use cookies?</p>
