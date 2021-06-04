@@ -135,7 +135,7 @@
               name
             </li>
             <li>
-              Poor hygeine when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy
+              Poor hygiene when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy
               properties provided by Umbra. See the "What address are safe for withdrawing funds to?" for more details.
               Always use caution when withdrawing!
             </li>
@@ -157,7 +157,7 @@
           <p>
             Aztec is a privacy-focused Layer 2 solution, that also uses zero knowledge proofs. You deposit funds from
             Layer 1 (mainnet) into Aztec, and your funds effectively become "wrapped" in a private version. Regular
-            transfers become private by befault, meaning no one knows who you sent funds to, or how much you paid them.
+            transfers become private by default, meaning no one knows who you sent funds to, or how much you paid them.
             Balances are often private, so no one can see how much money you’re holding.
           </p>
           <p>
@@ -165,7 +165,7 @@
             ordinary elliptic curve cryptography. It’s meant for payments between two entities, and comes with a
             different set of privacy tradeoffs. Rather than breaking the link between sending and receiving address,
             like Tornado does, Umbra makes that link meaningless. Everyone can see who sent the funds, and everyone can
-            see the address funds were sent to, but that receiving addresss has never been seen on-chain so it’s
+            see the address funds were sent to, but that receiving address has never been seen on-chain so it’s
             impossible for any outside observers to know who controls it.
           </p>
         </f-a-q-item>
@@ -329,7 +329,7 @@
           <ol>
             <li>The stealth address directly calls the <span class="code">withdrawToken()</span> method</li>
             <li>
-              Anyone calls <span class="code">withdrawTokenOnBehalf()</span> and passses in a signature from the stealth
+              Anyone calls <span class="code">withdrawTokenOnBehalf()</span> and passes in a signature from the stealth
               address. This enables meta-transactions to be used with the relayer of your choice.
             </li>
           </ol>
@@ -344,7 +344,7 @@
       <div @click="copyUrl" id="when-will-the-recipient-receive-their-funds">
         <f-a-q-item :expanded="selectedId === false" question="When will the recipient receive their funds?">
           <p>
-            Immediately! The recipient recieives and can withdraw funds immediately after the send transaction is mined.
+            Immediately! The recipient receives and can withdraw funds immediately after the send transaction is mined.
           </p>
         </f-a-q-item>
       </div>
@@ -639,7 +639,7 @@
           </p>
           <p>
             T The first problem to solve is how does the sender get the value <span class="code">r</span> to the
-            receiver? If <span class="code">r</span> was publicly known, oberservers could determine who funds were sent
+            receiver? If <span class="code">r</span> was publicly known, observers could determine who funds were sent
             to by computing <span class="code">P * r</span> for various published <span class="code">P</span> values
             until the find the stealth address. So <span class="code">r</span> needs to be encrypted.
           </p>
@@ -654,9 +654,9 @@
             (ECDH), meaning the sender uses the recipient’s public key to encrypt the random number. The encrypted
             random number gives us the cipertext <span class="code">c</span>. The encrypted random number
             <span class="code">c</span> and stealth address <span class="code">a_stealth</span> are emitted as an
-            <span class="code">Annoucement</span> event from the Umbra contract. ECDH requires the sender to generate an
-            ephemeral private key for encryption, so the ephemeral public key <span class="code">P_ephemeral</span> that
-            the receiver will need to decrypt is also emitted in this event.
+            <span class="code">Announcement</span> event from the Umbra contract. ECDH requires the sender to generate
+            an ephemeral private key for encryption, so the ephemeral public key
+            <span class="code">P_ephemeral</span> that the receiver will need to decrypt is also emitted in this event.
           </p>
           <p>
             Now the receiver can scan through all <span class="code">Announcement</span> events and find their funds as
@@ -1073,7 +1073,7 @@
             can be used to call a method on a contract after transferring tokens to that contract.
           </p>
           <p>
-            Umbra works simiarly—when withdrawing funds from the contract, users might want to deposit them straight
+            Umbra works similarly— when withdrawing funds from the contract— users might want to deposit them straight
             into Tornado, or swap their DAI for ETH. Hooks let you do this.
           </p>
           <p>You’ll notice the Umbra contract exposes multiple withdraw methods. First we have:</p>
@@ -1088,12 +1088,12 @@
           <p>Then we have the two hook methods:</p>
           <ol>
             <li>
-              <span class="code">withdrawTokenAndCall()</span> is analagous to
+              <span class="code">withdrawTokenAndCall()</span> is analogous to
               <span class="code">withdrawToken()</span>, but lets you pass in the address of a contract and the data to
               call on that contract.
             </li>
             <li>
-              <span class="code">withdrawTokenAndCallOnBehalf()</span> is analagous to
+              <span class="code">withdrawTokenAndCallOnBehalf()</span> is analogous to
               <span class="code">withdrawTokenOnBehalf()</span>, but also lets you pass in the address of a contract and
               the data to call on that contract.
             </li>
