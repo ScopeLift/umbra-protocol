@@ -30,7 +30,7 @@
           <h5 class="text-center q-mt-xl">Receiving Funds</h5>
           <ol>
             <li>Use the <span class="text-bold">Setup</span> page to configure your ENS or CNS name</li>
-            <li>Ask someone to send funds to your ENS or CNS name</li>
+            <li>Ask someone to send funds to your ENS or CNS name through the Umbra app</li>
             <li>Check the <span class="text-bold">Receive</span> page to withdraw funds</li>
           </ol>
           <!-- To Send Funds -->
