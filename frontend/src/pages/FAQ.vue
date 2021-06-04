@@ -1002,7 +1002,7 @@
             </li>
             <li>
               <span class="code">src/classes/RandomNumber.ts</span>: This simple class is used to generate our 32 byte
-              random number, and will properly format the number when provided an optional 16 byte payload extension
+              random number.
             </li>
             <li>
               <span class="code">src/classes/DomainService.ts</span>: Since Umbra supports both ENS and CNS, this class
@@ -1117,38 +1117,6 @@
           <p>
             And that’s all there is to it. With the address of the hook contract and the encoded calldata, you are ready
             to call one of the two hook-based methods.
-          </p>
-        </f-a-q-item>
-      </div>
-
-      <div @click="copyUrl" id="what-is-the-payload-extension-and-how-do-i-use-it">
-        <f-a-q-item
-          :expanded="selectedId === 'what-is-the-payload-extension-and-how-do-i-use-it'"
-          question="What is the payload extension and how do I use it?"
-        >
-          <p>
-            The Umbra contract expects a 32 byte random number to be used, but due to how elliptic curve cryptography
-            works, a random number over 16 bytes provides no added security*.
-          </p>
-          <p>
-            Therefore, we decided to use 16 byte random numbers to maximize security, and provide the other 16 bytes to
-            developers to do anything they want with. These free 16 bytes of arbitrary data are what we call the payload
-            extension.
-          </p>
-          <p>
-            In the case of the Umbra app, we use this to let senders write short messages to receivers. Other use cases
-            for this payload extension are only limited by your imagination!
-          </p>
-          <p class="text-caption text-italic">
-            * The strength of elliptic curve cryptography is roughly equal to
-            <a
-              class="hyperlink"
-              href="https://en.wikipedia.org/wiki/Elliptic-curve_cryptography#Key_sizes"
-              target="_blank"
-              >half the size</a
-            >
-            of the prime field, i.e. half the size of the private keys. Since Ethereum is based on the secp256k1 curve
-            with 256 bit (32 byte) keys, it really only offers 128 bits (16 bytes) of security.
           </p>
         </f-a-q-item>
       </div>
