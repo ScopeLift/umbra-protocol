@@ -45,7 +45,7 @@
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { isHexString, MaxUint256, parseUnits, Contract } from 'src/utils/ethers';
+import { getAddress, isHexString, MaxUint256, parseUnits, Contract } from 'src/utils/ethers';
 import { ens, cns, utils as umbraUtils } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
@@ -80,12 +80,19 @@ function useSendForm() {
     return 'Please enter an ENS or CNS name';
   }
 
+  const isEth = (address: string) => getAddress(address) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
   function isValidTokenAmount(val: string) {
     if (!val || !(Number(val) > 0)) return 'Please enter an amount';
     if (!token.value) return 'Please select a token';
+
     const { address: tokenAddress, decimals } = token.value;
+    if (Number(val) < 0.01 && isEth(tokenAddress)) return 'Please send at least 0.01 ETH';
+    if (Number(val) < 25 && !isEth(tokenAddress)) return `Please send at least 25 ${token.value.symbol}`;
+
     const amount = parseUnits(val, decimals);
-    return amount.gt(balances.value[tokenAddress]) ? 'Amount exceeds wallet balance' : true;
+    if (amount.gt(balances.value[tokenAddress])) return 'Amount exceeds wallet balance';
+    return true;
   }
 
   async function onFormSubmit() {

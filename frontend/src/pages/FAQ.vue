@@ -349,17 +349,17 @@
         </f-a-q-item>
       </div>
 
-      <div @click="copyUrl" id="why-is-the-maximum-memo-length-so-short">
+      <div @click="copyUrl" id="why-is-there-a-minimum-send-amount">
         <f-a-q-item
-          :expanded="selectedId === 'why-is-the-maximum-memo-length-so-short'"
-          question="Why is the maximum memo length so short?"
+          :expanded="selectedId === 'why-is-there-a-minimum-send-amount'"
+          question="Why is there a minimum send amount?"
         >
           <p>
-            Recall that the sender generates a random number, and uses it compute the receiver’s stealth address. This
-            random number is 32 bytes. However, 16 bytes of randomness is sufficient for security, meaning you have 16
-            free bytes to do whatever you want with. These 16 free bytes are what we call the
-            <span class="text-italic">payload extension</span>. The app uses the payload extension to allow you to send
-            short memos with your payment.
+            When you send funds with Umbra, the recipient address is an address that has never been used before. This
+            means it has no ETH and no tokens, so it must pay for withdrawals using the funds that were sent to it. When
+            sending ETH, this is done with a regular transfer. When sending tokens, this is done with a relayer so fees
+            can be paid with the received tokens. Therefore, there is a minimum send amount to ensure the recipient can
+            always withdraw their funds easily.
           </p>
         </f-a-q-item>
       </div>
