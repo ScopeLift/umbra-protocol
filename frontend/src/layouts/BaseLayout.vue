@@ -52,7 +52,7 @@
 
             <!-- ADDRESS AND SETTINGS AND SETTINGS -->
             <div class="col-auto q-mr-md">
-              <div>
+              <div class="row">
                 <connect-wallet>
                   <span v-if="userDisplayAddress" class="text-caption cursor-pointer dark-toggle">
                     {{ userDisplayAddress }}
