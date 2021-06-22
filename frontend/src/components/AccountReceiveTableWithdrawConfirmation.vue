@@ -16,17 +16,18 @@
         </div>
       </div>
 
-      <div v-if="!isEth">
-        <div class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
+      <div>
+        <div v-if="isEth" class="text-caption text-grey q-mt-md">Transaction Fee</div>
+        <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <div class="text-danger">-{{ formattedFee }} {{ symbol }}</div>
         </div>
       </div>
 
-      <div v-if="!isEth" class="separator q-my-lg"></div>
+      <div class="separator q-my-lg"></div>
 
-      <div v-if="!isEth">
+      <div>
         <div class="text-caption text-grey">You'll receive</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
@@ -57,11 +58,11 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import { getEtherscanUrl, round } from 'src/utils/utils';
+import { getEtherscanUrl, getGasPrice, round } from 'src/utils/utils';
 
 export default defineComponent({
   name: 'AccountReceiveTableWithdrawConfirmation',
@@ -72,6 +73,7 @@ export default defineComponent({
       required: true,
     },
 
+    // This refers to the relayer fee returned from the server. For ETH withdrawals, this is ignored
     activeFee: {
       type: Object as PropType<FeeEstimate>,
       required: true,
@@ -99,19 +101,29 @@ export default defineComponent({
   },
 
   setup(props, context) {
+    // Parse the provided props
     const isEth = props.activeFee.token.symbol === 'ETH';
-    const amount = props.activeAnnouncement.amount; // amount being sent
-    const fee = props.activeFee.fee; // relayer fee
-    const amountReceived = BigNumber.from(amount).sub(fee).toString(); // amount user will receive
+    const amount = props.activeAnnouncement.amount; // amount being withdrawn
     const decimals = props.activeFee.token.decimals; // number of decimals token has
     const symbol = props.activeFee.token.symbol; // token symbol
-    const numDecimals = isEth ? 4 : 2; // maximum number of decimals to show
-    const formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being sent, rounded
-    const formattedFee = round(formatUnits(fee, decimals), numDecimals); // relayer fee, rounded
-    const formattedAmountReceived = round(formatUnits(amountReceived, decimals), numDecimals); // amount user will receive, rounded
-    const canWithdraw = BigNumber.from(amount).gt(fee); // prevent withdraw attemps if fee is larger than amount
-    const tokenURL = props.activeFee.token.logoURI; // URL pointing to token logo
-    const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdraw tx hash URL
+    const tokenURL = props.activeFee.token.logoURI; // URL pointing to image of token logo
+
+    // Get properties dependent on those props
+    const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdrawal tx hash URL
+    const numDecimals = isEth ? 6 : 2; // maximum number of decimals to show for numbers the UI (ETH fee will be small, hence the larger value)
+    const formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being withdrawn, rounded
+
+    // Get initial fee on component mount. If ETH, calculate gas cost of a transfer, otherwise use the provided relayer fee
+    const fee = ref<BigNumber | string>('0'); // default to a fee of zero
+    onMounted(async () => (fee.value = isEth ? BigNumber.from('21000').mul(await getGasPrice()) : props.activeFee.fee));
+
+    // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
+    // Variables prefixed with `formatted*` are inteded for display in the U)
+    const amountReceived = computed(() => amount.sub(fee.value)); // amount user will receive
+    const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
+    const formattedAmountReceived = computed(() => round(formatUnits(amountReceived.value, decimals), numDecimals)); // amount user will receive, rounded
+    const canWithdraw = computed(() => BigNumber.from(amount).gt(fee.value)); // prevent withdraw attemps if fee is larger than amount
+
     return {
       canWithdraw,
       context,
