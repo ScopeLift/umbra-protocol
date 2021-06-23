@@ -2,6 +2,7 @@
  * @notice Class for managing relayed withdrawal transactions
  */
 
+import { JsonRpcProvider } from 'src/utils/ethers';
 import {
   ConfirmedITXStatusResponse,
   FeeEstimateResponse,
@@ -16,7 +17,7 @@ import {
 export class ITXRelayer {
   constructor(readonly baseUrl: string, readonly tokens: TokenInfo[]) {}
 
-  static async create(provider: Provider) {
+  static async create(provider: Provider | JsonRpcProvider) {
     // Get API URL based on chain ID
     const chainId = (await provider.getNetwork()).chainId;
     const baseUrl = chainId === 1 ? 'https://mainnet.api.umbra.cash' : 'https://rinkeby.api.umbra.cash';

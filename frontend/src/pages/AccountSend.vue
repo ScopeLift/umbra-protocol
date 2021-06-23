@@ -37,19 +37,27 @@
       <!-- Send button -->
       <div>
         <base-button :disable="isSending" :full-width="true" label="Send" :loading="isSending" type="submit" />
+        <base-button
+          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount })"
+          :disable="isSending"
+          :flat="true"
+          :full-width="true"
+          label="Generate payment link"
+        />
       </div>
     </q-form>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
 import { getAddress, isHexString, MaxUint256, parseUnits, Contract } from 'src/utils/ethers';
 import { ens, cns, utils as umbraUtils } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import { txNotify } from 'src/utils/alerts';
+import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { TokenInfo } from 'components/models';
 import ERC20 from 'src/contracts/ERC20.json';
 import ConnectWallet from 'components/ConnectWallet.vue';
@@ -66,6 +74,14 @@ function useSendForm() {
   const recipientId = ref<string>();
   const token = ref<TokenInfo>();
   const humanAmount = ref<string>();
+
+  // Check for query parameters on load
+  onMounted(async () => {
+    const { to, token: paymentToken, amount } = await parsePaymentLink();
+    if (to) recipientId.value = to;
+    if (paymentToken?.symbol) token.value = paymentToken;
+    if (amount) humanAmount.value = amount;
+  });
 
   function isValidId(val: string) {
     if (val && (ens.isEnsDomain(val) || cns.isCnsDomain(val))) return true;
@@ -164,7 +180,7 @@ export default defineComponent({
   name: 'PageSend',
   components: { ConnectWallet },
   setup() {
-    return { ...useSendForm() };
+    return { generatePaymentLink, ...useSendForm() };
   },
 });
 </script>

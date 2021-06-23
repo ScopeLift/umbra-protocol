@@ -5,13 +5,13 @@
  */
 
 export { getAddress } from '@ethersproject/address';
-export { BigNumber } from '@ethersproject/bignumber';
+export { BigNumberish, BigNumber } from '@ethersproject/bignumber';
 export { isHexString, joinSignature } from '@ethersproject/bytes';
 export { AddressZero, MaxUint256 } from '@ethersproject/constants';
 export { Contract } from '@ethersproject/contracts';
 export { namehash } from '@ethersproject/hash';
 export { keccak256 } from '@ethersproject/keccak256';
 export { Logger, LogLevel } from '@ethersproject/logger';
-export { Block, JsonRpcSigner, Network, TransactionReceipt, TransactionResponse, Web3Provider, } from '@ethersproject/providers'; // prettier-ignore
+export { Block, JsonRpcProvider, JsonRpcSigner, Network, TransactionReceipt, TransactionResponse, Web3Provider, } from '@ethersproject/providers'; // prettier-ignore
 export { toUtf8Bytes } from '@ethersproject/strings';
 export { parseUnits, formatUnits } from '@ethersproject/units';
