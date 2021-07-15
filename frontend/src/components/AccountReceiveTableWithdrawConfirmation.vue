@@ -17,11 +17,26 @@
       </div>
 
       <div>
-        <div v-if="isEth" class="text-caption text-grey q-mt-md">Transaction Fee</div>
+        <div v-if="isEth" class="text-caption text-grey q-mt-md">
+          {{ useCustomFee ? 'Custom' : '' }} Transaction Fee
+        </div>
         <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
-        <div class="row justify-start items-center">
+        <div v-if="useCustomFee" class="row justify-start items-center">
+          <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
+          <div>
+            - <input v-model.number="customFee" v-on:change="customFeeEdited" :placeholder="formattedFee">
+            {{ symbol }}
+          </div>
+          <div @click="toggleEditFee" class="text-caption hyperlink">
+            Don't use a custom fee
+          </div>
+        </div>
+        <div v-else class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <div class="text-danger">-{{ formattedFee }} {{ symbol }}</div>
+          <div @click="toggleEditFee" class="text-caption hyperlink">
+            <q-icon name="fas fa-edit" right />
+          </div>
         </div>
       </div>
 
@@ -31,7 +46,8 @@
         <div class="text-caption text-grey">You'll receive</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-          <div class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
+          <div v-if="useCustomFee" class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
+          <div v-else class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
         </div>
       </div>
 
@@ -114,19 +130,41 @@ export default defineComponent({
     const formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being withdrawn, rounded
 
     // Get initial fee on component mount. If ETH, calculate gas cost of a transfer, otherwise use the provided relayer fee
+    const useCustomFee = ref<boolean>(false);
+    const toggleEditFee = () => useCustomFee.value = !useCustomFee.value;
     const fee = ref<BigNumber | string>('0'); // default to a fee of zero
-    onMounted(async () => (fee.value = isEth ? BigNumber.from('21000').mul(await getGasPrice()) : props.activeFee.fee));
+    const customFee = ref<BigNumber | string>('0');
+    onMounted(
+      async () => {
+        if (isEth) {
+          const gasPrice = await getGasPrice();
+          const ethFee = BigNumber.from('21000').mul(gasPrice);
+          fee.value = ethFee;
+          // should this always happen? i.e. not only when useCustomFee == true?
+          if (useCustomFee) customFee.value = formattedFee.value;
+        } else {
+          fee.value = props.activeFee.fee;
+        }
+      }
+    );
 
     // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
     // Variables prefixed with `formatted*` are inteded for display in the U)
-    const amountReceived = computed(() => amount.sub(fee.value)); // amount user will receive
+    const amountReceived = computed(
+      () => amount.sub(useCustomFee ? customFee.value : fee.value)
+    ); // amount user will receive
     const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
-    const formattedAmountReceived = computed(() => round(formatUnits(amountReceived.value, decimals), numDecimals)); // amount user will receive, rounded
+    const formattedAmountReceived = computed(
+      () => round(formatUnits(amountReceived.value, decimals), numDecimals)
+    ); // amount user will receive, rounded
+const customFeeEdited = (e) => {console.log(customFee.value)};
     const canWithdraw = computed(() => BigNumber.from(amount).gt(fee.value)); // prevent withdraw attemps if fee is larger than amount
 
     return {
       canWithdraw,
       context,
+      customFee,
+      customFeeEdited,
       etherscanUrl,
       formattedAmount,
       formattedAmountReceived,
@@ -134,6 +172,8 @@ export default defineComponent({
       isEth,
       symbol,
       tokenURL,
+      toggleEditFee,
+      useCustomFee,
     };
   },
 });
