@@ -22,19 +22,24 @@
         </div>
         <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
         <div v-if="useCustomFee" class="row justify-start items-center">
-          <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-          <div>
-            - <input v-model.number="customFee" v-on:change="customFeeEdited" :placeholder="formattedFee">
-            {{ symbol }}
+          <div :style="{maxWidth: '125px'}">
+            <base-input
+              v-model="formattedCustomFee"
+              type="number"
+              suffix="Gwei"
+              :dense="true"
+              :rules="isValidFeeAmount"
+              >
+            </base-input>
           </div>
-          <div @click="toggleEditFee" class="text-caption hyperlink">
+          <div @click="toggleCustomFee" class="text-caption hyperlink">
             Don't use a custom fee
           </div>
         </div>
         <div v-else class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <div class="text-danger">-{{ formattedFee }} {{ symbol }}</div>
-          <div @click="toggleEditFee" class="text-caption hyperlink">
+          <div @click="toggleCustomFee" class="text-caption hyperlink">
             <q-icon name="fas fa-edit" right />
           </div>
         </div>
@@ -130,10 +135,19 @@ export default defineComponent({
     const formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being withdrawn, rounded
 
     // Get initial fee on component mount. If ETH, calculate gas cost of a transfer, otherwise use the provided relayer fee
-    const useCustomFee = ref<boolean>(false);
-    const toggleEditFee = () => useCustomFee.value = !useCustomFee.value;
     const fee = ref<BigNumber | string>('0'); // default to a fee of zero
-    const customFee = ref<BigNumber | string>('0');
+
+    const toggleCustomFee = () => useCustomFee.value = !useCustomFee.value;
+    const useCustomFee = ref<boolean>(false);
+    // gas price in Gwei
+    const formattedCustomFee = ref<BigNumber | string>('0');
+    // the custom fee, as used to determine what's actually sent
+    const customFee = computed(() => {
+      const customGasInGwei = formattedCustomFee.value ? formattedCustomFee.value : 0;
+      const customGasInWei = BigNumber.from(customGasInGwei).mul(10**9);
+      return BigNumber.from('21000').mul(customGasInWei);
+    });
+
     onMounted(
       async () => {
         if (isEth) {
@@ -141,7 +155,12 @@ export default defineComponent({
           const ethFee = BigNumber.from('21000').mul(gasPrice);
           fee.value = ethFee;
           // should this always happen? i.e. not only when useCustomFee == true?
-          if (useCustomFee) customFee.value = formattedFee.value;
+          if (useCustomFee) {
+            // flooring this b/c the string we get back from formatUnits is a
+            // decimal
+            const priceInGwei = Math.floor(formatUnits(gasPrice, 'gwei'));
+            formattedCustomFee.value = priceInGwei;
+          }
         } else {
           fee.value = props.activeFee.fee;
         }
@@ -151,28 +170,33 @@ export default defineComponent({
     // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
     // Variables prefixed with `formatted*` are inteded for display in the U)
     const amountReceived = computed(
-      () => amount.sub(useCustomFee ? customFee.value : fee.value)
+      () => amount.sub(useCustomFee.value ? customFee.value : fee.value)
     ); // amount user will receive
     const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
     const formattedAmountReceived = computed(
       () => round(formatUnits(amountReceived.value, decimals), numDecimals)
     ); // amount user will receive, rounded
-const customFeeEdited = (e) => {console.log(customFee.value)};
     const canWithdraw = computed(() => BigNumber.from(amount).gt(fee.value)); // prevent withdraw attemps if fee is larger than amount
+
+    function isValidFeeAmount(val: string) {
+      if (!val || !(Number(val) > 0)) return 'Please enter an amount';
+      return true;
+    }
+
 
     return {
       canWithdraw,
       context,
-      customFee,
-      customFeeEdited,
       etherscanUrl,
       formattedAmount,
       formattedAmountReceived,
       formattedFee,
+      formattedCustomFee,
       isEth,
+      isValidFeeAmount,
       symbol,
       tokenURL,
-      toggleEditFee,
+      toggleCustomFee,
       useCustomFee,
     };
   },

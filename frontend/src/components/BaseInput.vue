@@ -17,6 +17,7 @@
     :rules="[(val) => rules(val)]"
     :suffix="suffix"
     :type="type"
+    :min="type === 'number' ? 0 : undefined"
     :outlined="outlined"
     :placeholder="placeholder"
     standout
@@ -138,7 +139,7 @@ export default Vue.extend({
     },
 
     placeholder: {
-      type: String,
+      type: String|Number,
       required: false,
       default: undefined,
     },
