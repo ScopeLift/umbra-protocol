@@ -380,8 +380,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   }
 
   type ExecuteWithdrawalOptions = {
-    gasPrice?: BigNumber // fee in wei
-  }
+    gasPrice?: BigNumber; // fee in wei
+  };
 
   /**
    * @notice Executes the withdraw process
@@ -404,7 +404,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       isWithdrawInProgress.value = true;
       let tx: TransactionResponse;
       if (token.symbol === 'ETH') {
-        const {gasPrice} = options;
+        const { gasPrice } = options;
         tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor, { gasPrice });
         txHashIfEth.value = tx.hash;
         txNotify(tx.hash);

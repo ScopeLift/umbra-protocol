@@ -24,7 +24,8 @@
             @click="toggleCustomFee"
             color="primary"
             class="cursor-pointer q-ml-xs"
-            name="fas fa-times" />
+            name="fas fa-times"
+          />
         </div>
         <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
         <div v-if="useCustomFee" class="row justify-start items-center">
@@ -32,7 +33,7 @@
             <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
             <span class="text-danger">-{{ formattedCustomFeeEth }} {{ symbol }}</span>
           </div>
-          <div class="col-12" :style="{maxWidth: '200px'}">
+          <div class="col-12" :style="{ maxWidth: '200px' }">
             <base-input
               v-model="formattedCustomFee"
               type="number"
@@ -40,7 +41,7 @@
               :dense="true"
               :lazyRules="false"
               :rules="isValidFeeAmount"
-              >
+            >
             </base-input>
           </div>
         </div>
@@ -77,7 +78,8 @@
           @click="context.emit('confirmed', confirmationOptions)"
           class="q-ml-lg"
           :disable="!canWithdraw"
-          label="Confirm" />
+          label="Confirm"
+        />
       </div>
       <div v-else class="text-center">
         <q-spinner-puff class="q-mb-md" color="primary" size="2rem" />
@@ -158,12 +160,12 @@ export default defineComponent({
     const fee = ref<BigNumber | string>('0'); // default to a fee of zero
 
     const useCustomFee = ref<boolean>(false);
-    const toggleCustomFee = () => useCustomFee.value = !useCustomFee.value;
+    const toggleCustomFee = () => (useCustomFee.value = !useCustomFee.value);
     const formattedCustomFee = ref<BigNumber | string>('0'); // gas price in Gwei
     // the custom gas price; determines what gas price is actually used when withdrawing
     const customGasInWei = computed(() => {
       const customGasInGwei = formattedCustomFee.value ? formattedCustomFee.value : 0;
-      return BigNumber.from(customGasInGwei).mul(10**9);
+      return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
     const customFeeInWei = computed(() => {
       const transactionGasUsed = '21000';
@@ -173,41 +175,34 @@ export default defineComponent({
       round(formatUnits(customFeeInWei.value, decimals), ethDisplayDecimals)
     );
 
-    onMounted(
-      async () => {
-        if (isEth) {
-          const gasPrice = await getGasPrice();
-          const ethFee = BigNumber.from('21000').mul(gasPrice);
-          fee.value = ethFee;
-          // flooring this b/c the string we get back from formatUnits is a decimal
-          formattedCustomFee.value = Math.floor(formatUnits(gasPrice, 'gwei'));
-        } else {
-          fee.value = props.activeFee.fee;
-        }
-      }
-    );
-
-    // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
-    // Variables prefixed with `formatted*` are inteded for display in the U)
-    const amountReceived = computed(
-      () => amount.sub(useCustomFee.value ? customFeeInWei.value : fee.value)
-    ); // amount user will receive
-    const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
-    const formattedAmountReceived = computed(
-      () => round(formatUnits(amountReceived.value, decimals), numDecimals)
-    ); // amount user will receive, rounded
-    // prevent withdraw attemps if fee is larger than amount
-    const canWithdraw = computed(() => (
-      BigNumber.from(amount).gt(useCustomFee.value ? customFeeInWei.value : fee.value)
-    ));
-    const confirmationOptions = computed(() => {
-      if (!isEth) return {}
-      return {
-        // fee is the total cost in wei for the gas, so we divide by the tx cost
-        gasPrice: useCustomFee.value ? customGasInWei.value : fee.value.div('21000')
+    onMounted(async () => {
+      if (isEth) {
+        const gasPrice = await getGasPrice();
+        const ethFee = BigNumber.from('21000').mul(gasPrice);
+        fee.value = ethFee;
+        // flooring this b/c the string we get back from formatUnits is a decimal
+        formattedCustomFee.value = Math.floor(formatUnits(gasPrice, 'gwei'));
+      } else {
+        fee.value = props.activeFee.fee;
       }
     });
 
+    // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
+    // Variables prefixed with `formatted*` are inteded for display in the U)
+    const amountReceived = computed(() => amount.sub(useCustomFee.value ? customFeeInWei.value : fee.value)); // amount user will receive
+    const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
+    const formattedAmountReceived = computed(() => round(formatUnits(amountReceived.value, decimals), numDecimals)); // amount user will receive, rounded
+    // prevent withdraw attemps if fee is larger than amount
+    const canWithdraw = computed(() =>
+      BigNumber.from(amount).gt(useCustomFee.value ? customFeeInWei.value : fee.value)
+    );
+    const confirmationOptions = computed(() => {
+      if (!isEth) return {};
+      return {
+        // fee is the total cost in wei for the gas, so we divide by the tx cost
+        gasPrice: useCustomFee.value ? customGasInWei.value : fee.value.div('21000'),
+      };
+    });
 
     return {
       canWithdraw,
