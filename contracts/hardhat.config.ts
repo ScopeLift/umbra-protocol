@@ -22,6 +22,7 @@ const chainIds = {
   hardhat: 1337,
   kovan: 42,
   mainnet: 1,
+  polygon: 137,
   rinkeby: 4,
   ropsten: 3,
 };
@@ -95,6 +96,16 @@ const config: HardhatUserConfig = {
       chainId: chainIds['mainnet'],
       url: `https://mainnet.infura.io/v3/${infuraApiKey}`,
       gasPrice: 60000000000, // 60 gwei
+    },
+    polygon: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['polygon'],
+      url: `https://polygon-mainnet.infura.io/v3/${infuraApiKey}`,
     },
   },
   paths: {
