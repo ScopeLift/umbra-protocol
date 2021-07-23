@@ -28,6 +28,7 @@
               type="number"
               suffix="Gwei"
               :dense="true"
+              :lazyRules="false"
               :rules="isValidFeeAmount"
               >
             </base-input>
