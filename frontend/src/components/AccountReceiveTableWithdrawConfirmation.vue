@@ -31,7 +31,7 @@
         <div v-if="useCustomFee" class="row justify-start items-center">
           <div class="col-12 row items-center">
             <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-            <span class="text-danger">-{{ formattedCustomFeeEth }} {{ symbol }}</span>
+            <span>-{{ formattedCustomFeeEth }} {{ symbol }}</span>
           </div>
           <div class="col-12" :style="{ maxWidth: '200px' }">
             <base-input
@@ -47,7 +47,7 @@
         </div>
         <div v-else class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-          <div class="text-danger">-{{ formattedFee }} {{ symbol }}</div>
+          <div>-{{ formattedFee }} {{ symbol }}</div>
           <div @click="toggleCustomFee" class="text-caption hyperlink">
             <q-icon name="fas fa-edit" color="primary" right />
           </div>
