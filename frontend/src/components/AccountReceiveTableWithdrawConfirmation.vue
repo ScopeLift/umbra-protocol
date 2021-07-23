@@ -19,10 +19,20 @@
       <div>
         <div v-if="isEth" class="text-caption text-grey q-mt-md">
           {{ useCustomFee ? 'Custom' : '' }} Transaction Fee
+          <q-icon
+            v-if="useCustomFee"
+            @click="toggleCustomFee"
+            color="primary"
+            class="cursor-pointer q-ml-xs"
+            name="fas fa-times" />
         </div>
         <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
         <div v-if="useCustomFee" class="row justify-start items-center">
-          <div :style="{maxWidth: '125px'}">
+          <div class="col-12 row items-center">
+            <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
+            <span class="text-danger">-{{ formattedCustomFeeEth }} {{ symbol }}</span>
+          </div>
+          <div class="col-12" :style="{maxWidth: '200px'}">
             <base-input
               v-model="formattedCustomFee"
               type="number"
@@ -33,15 +43,12 @@
               >
             </base-input>
           </div>
-          <div @click="toggleCustomFee" class="text-caption hyperlink">
-            Don't use a custom fee
-          </div>
         </div>
         <div v-else class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <div class="text-danger">-{{ formattedFee }} {{ symbol }}</div>
           <div @click="toggleCustomFee" class="text-caption hyperlink">
-            <q-icon name="fas fa-edit" right />
+            <q-icon name="fas fa-edit" color="primary" right />
           </div>
         </div>
       </div>
@@ -136,22 +143,35 @@ export default defineComponent({
 
     // Get properties dependent on those props
     const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdrawal tx hash URL
-    const numDecimals = isEth ? 6 : 2; // maximum number of decimals to show for numbers the UI (ETH fee will be small, hence the larger value)
+    const ethDisplayDecimals = 6;
+    const numDecimals = isEth ? ethDisplayDecimals : 2; // maximum number of decimals to show for numbers the UI (ETH fee will be small, hence the larger value)
     const formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being withdrawn, rounded
+    function isValidFeeAmount(val: string) {
+      if (!val || !(Number(val) > 0)) return 'Please enter an amount';
+      if (BigNumber.from(amount).lte(customFeeInWei.value)) {
+        return 'Gas price is too high';
+      }
+      return true;
+    }
 
     // Get initial fee on component mount. If ETH, calculate gas cost of a transfer, otherwise use the provided relayer fee
     const fee = ref<BigNumber | string>('0'); // default to a fee of zero
 
-    const toggleCustomFee = () => useCustomFee.value = !useCustomFee.value;
     const useCustomFee = ref<boolean>(false);
-    // gas price in Gwei
-    const formattedCustomFee = ref<BigNumber | string>('0');
-    // the custom fee, as used to determine what's actually sent
-    const customFee = computed(() => {
+    const toggleCustomFee = () => useCustomFee.value = !useCustomFee.value;
+    const formattedCustomFee = ref<BigNumber | string>('0'); // gas price in Gwei
+    // the custom gas price; determines what gas price is actually used when withdrawing
+    const customGasInWei = computed(() => {
       const customGasInGwei = formattedCustomFee.value ? formattedCustomFee.value : 0;
-      const customGasInWei = BigNumber.from(customGasInGwei).mul(10**9);
-      return BigNumber.from('21000').mul(customGasInWei);
+      return BigNumber.from(customGasInGwei).mul(10**9);
     });
+    const customFeeInWei = computed(() => {
+      const transactionGasUsed = '21000';
+      return BigNumber.from(transactionGasUsed).mul(customGasInWei.value);
+    });
+    const formattedCustomFeeEth = computed(() =>
+      round(formatUnits(customFeeInWei.value, decimals), ethDisplayDecimals)
+    );
 
     onMounted(
       async () => {
@@ -159,13 +179,8 @@ export default defineComponent({
           const gasPrice = await getGasPrice();
           const ethFee = BigNumber.from('21000').mul(gasPrice);
           fee.value = ethFee;
-          // should this always happen? i.e. not only when useCustomFee == true?
-          if (useCustomFee) {
-            // flooring this b/c the string we get back from formatUnits is a
-            // decimal
-            const priceInGwei = Math.floor(formatUnits(gasPrice, 'gwei'));
-            formattedCustomFee.value = priceInGwei;
-          }
+          // flooring this b/c the string we get back from formatUnits is a decimal
+          formattedCustomFee.value = Math.floor(formatUnits(gasPrice, 'gwei'));
         } else {
           fee.value = props.activeFee.fee;
         }
@@ -175,7 +190,7 @@ export default defineComponent({
     // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
     // Variables prefixed with `formatted*` are inteded for display in the U)
     const amountReceived = computed(
-      () => amount.sub(useCustomFee.value ? customFee.value : fee.value)
+      () => amount.sub(useCustomFee.value ? customFeeInWei.value : fee.value)
     ); // amount user will receive
     const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
     const formattedAmountReceived = computed(
@@ -203,6 +218,7 @@ export default defineComponent({
       formattedAmountReceived,
       formattedFee,
       formattedCustomFee,
+      formattedCustomFeeEth,
       isEth,
       isValidFeeAmount,
       symbol,
