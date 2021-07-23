@@ -181,7 +181,7 @@ export default defineComponent({
         const ethFee = BigNumber.from('21000').mul(gasPrice);
         fee.value = ethFee;
         // flooring this b/c the string we get back from formatUnits is a decimal
-        formattedCustomFee.value = Math.floor(formatUnits(gasPrice, 'gwei'));
+        formattedCustomFee.value = String(Math.floor(Number(formatUnits(gasPrice, 'gwei'))));
       } else {
         fee.value = props.activeFee.fee;
       }
@@ -200,7 +200,7 @@ export default defineComponent({
       if (!isEth) return {};
       return {
         // fee is the total cost in wei for the gas, so we divide by the tx cost
-        gasPrice: useCustomFee.value ? customGasInWei.value : fee.value.div('21000'),
+        gasPrice: useCustomFee.value ? customGasInWei.value : BigNumber.from(fee.value).div('21000'),
       };
     });
 

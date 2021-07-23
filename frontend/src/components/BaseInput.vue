@@ -139,7 +139,7 @@ export default Vue.extend({
     },
 
     placeholder: {
-      type: String | Number,
+      type: undefined,
       required: false,
       default: undefined,
     },
