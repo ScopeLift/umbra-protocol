@@ -379,10 +379,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     showConfirmationModal.value = true;
   }
 
+  type ExecuteWithdrawalOptions = {
+    gasPrice?: BigNumber // fee in wei
+  }
+
   /**
    * @notice Executes the withdraw process
    */
-  async function executeWithdraw() {
+  async function executeWithdraw(options: ExecuteWithdrawalOptions) {
     if (!umbra.value) throw new Error('Umbra instance not found');
     if (!provider.value) throw new Error('Provider not found');
     if (!activeAnnouncement.value) throw new Error('No announcement is selected for withdraw');
@@ -400,9 +404,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       isWithdrawInProgress.value = true;
       let tx: TransactionResponse;
       if (token.symbol === 'ETH') {
-        // Withdrawing ETH
-        const lowGasPrice = await provider.value.getGasPrice(); // returns roughly a median
-        const gasPrice = lowGasPrice.mul('110').div('100'); // bump gas price by 10%
+        const {gasPrice} = options;
         tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor, { gasPrice });
         txHashIfEth.value = tx.hash;
         txNotify(tx.hash);

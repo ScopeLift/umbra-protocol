@@ -65,7 +65,11 @@
     <q-card-section>
       <div v-if="!isWithdrawInProgress" class="row justify-end">
         <base-button @click="context.emit('cancel')" label="Cancel" :flat="true" />
-        <base-button @click="context.emit('confirmed')" class="q-ml-lg" :disable="!canWithdraw" label="Confirm" />
+        <base-button
+          @click="context.emit('confirmed', confirmationOptions)"
+          class="q-ml-lg"
+          :disable="!canWithdraw"
+          label="Confirm" />
       </div>
       <div v-else class="text-center">
         <q-spinner-puff class="q-mb-md" color="primary" size="2rem" />
@@ -176,17 +180,23 @@ export default defineComponent({
     const formattedAmountReceived = computed(
       () => round(formatUnits(amountReceived.value, decimals), numDecimals)
     ); // amount user will receive, rounded
-    const canWithdraw = computed(() => BigNumber.from(amount).gt(fee.value)); // prevent withdraw attemps if fee is larger than amount
-
-    function isValidFeeAmount(val: string) {
-      if (!val || !(Number(val) > 0)) return 'Please enter an amount';
-      return true;
-    }
+    // prevent withdraw attemps if fee is larger than amount
+    const canWithdraw = computed(() => (
+      BigNumber.from(amount).gt(useCustomFee.value ? customFeeInWei.value : fee.value)
+    ));
+    const confirmationOptions = computed(() => {
+      if (!isEth) return {}
+      return {
+        // fee is the total cost in wei for the gas, so we divide by the tx cost
+        gasPrice: useCustomFee.value ? customGasInWei.value : fee.value.div('21000')
+      }
+    });
 
 
     return {
       canWithdraw,
       context,
+      confirmationOptions,
       etherscanUrl,
       formattedAmount,
       formattedAmountReceived,
