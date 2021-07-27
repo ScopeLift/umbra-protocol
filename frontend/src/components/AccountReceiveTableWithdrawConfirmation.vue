@@ -67,7 +67,7 @@
 
       <div v-if="!canWithdraw" class="border-warning q-mt-lg q-pa-md">
         <q-icon name="fas fa-exclamation-triangle" color="warning" left />
-        Cannot withdraw because fee is larger than amount
+        Cannot withdraw, please correct fee error
       </div>
     </q-card-section>
 
@@ -193,9 +193,10 @@ export default defineComponent({
     const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
     const formattedAmountReceived = computed(() => round(formatUnits(amountReceived.value, decimals), numDecimals)); // amount user will receive, rounded
     // prevent withdraw attemps if fee is larger than amount
-    const canWithdraw = computed(() =>
-      BigNumber.from(amount).gt(useCustomFee.value ? customFeeInWei.value : fee.value)
-    );
+    const canWithdraw = computed(() => {
+      const feeInWei = useCustomFee.value ? customFeeInWei.value : fee.value
+      return BigNumber.from(amount).gt(feeInWei) && BigNumber.from('0').lt(feeInWei)
+    });
     const confirmationOptions = computed(() => {
       if (!isEth) return {};
       return {
