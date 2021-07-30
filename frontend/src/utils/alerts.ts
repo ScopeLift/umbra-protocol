@@ -15,6 +15,7 @@ const messagesToIgnore = [
   'Navigating to current location', // e.g. user clicks "Home" in nav bar when already on home page
   "Cannot read property 'validate' of null", // user navigates off Send page too quickly after sending, so "resetValidation()" fails
   'Document is not focused', // happens when user unfocuses DOM while app was trying to copy something to clipboard
+  'unknown account #0', // happens when we try to connect to a locked wallet
 ];
 
 /**
