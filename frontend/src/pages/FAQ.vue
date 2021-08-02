@@ -364,6 +364,21 @@
         </f-a-q-item>
       </div>
 
+      <div @click="copyUrl" id="what-are-payment-links">
+        <f-a-q-item :expanded="selectedId === 'what-are-payment-links'" question="What are the payment links?">
+          <p>
+            When on the Send page, fill out some or all of the Send form and click the
+            <span class="text-italic">Copy payment link</span> button. This will copy a URL to your clipboard that, when
+            visited, pre-populates the send form with the values in the URL.
+          </p>
+          <p>
+            Be careful when specifying an amount as part of your payment link, as it can reduce privacy. For example, if
+            you share a payment link so people can donate 100 DAI to you, and suddenly lots of 100 DAI sends start going
+            through Umbra, observers will know that it's very likely those transfers are to you.
+          </p>
+        </f-a-q-item>
+      </div>
+
       <!-- Receiving Funds -->
       <div class="separator q-mt-lg q-mb-xl"></div>
       <div
