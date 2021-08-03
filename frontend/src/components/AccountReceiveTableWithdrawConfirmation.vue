@@ -39,6 +39,7 @@
               type="number"
               suffix="Gwei"
               :dense="true"
+              :disable="isWithdrawInProgress"
               :lazyRules="false"
               :rules="isValidFeeAmount"
             >
@@ -47,10 +48,16 @@
         </div>
         <div v-else class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-          <div>-{{ formattedFee }} {{ symbol }}</div>
-          <div @click="toggleCustomFee" class="text-caption hyperlink">
-            <q-icon name="fas fa-edit" color="primary" right />
-          </div>
+          <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
+          <div v-if="loaded">-{{ formattedFee }} {{ symbol }}</div>
+          <q-icon
+            v-if="loaded"
+            @click="toggleCustomFee"
+            class="cursor-pointer"
+            color="primary"
+            name="fas fa-edit"
+            right
+          />
         </div>
       </div>
 
@@ -60,7 +67,8 @@
         <div class="text-caption text-grey">You'll receive</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-          <div v-if="useCustomFee" class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
+          <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
+          <div v-else-if="useCustomFee" class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
           <div v-else class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
         </div>
       </div>
@@ -158,6 +166,7 @@ export default defineComponent({
 
     // Get initial fee on component mount. If ETH, calculate gas cost of a transfer, otherwise use the provided relayer fee
     const fee = ref<BigNumber | string>('0'); // default to a fee of zero
+    const loaded = ref(false); // true once we've fetched the initial gas price, to prevent resize issue shown here: https://github.com/ScopeLift/umbra-protocol/pull/206#pullrequestreview-718683599
 
     const useCustomFee = ref<boolean>(false);
     const toggleCustomFee = () => (useCustomFee.value = !useCustomFee.value);
@@ -185,6 +194,7 @@ export default defineComponent({
       } else {
         fee.value = props.activeFee.fee;
       }
+      loaded.value = true;
     });
 
     // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
@@ -192,10 +202,11 @@ export default defineComponent({
     const amountReceived = computed(() => amount.sub(useCustomFee.value ? customFeeInWei.value : fee.value)); // amount user will receive
     const formattedFee = computed(() => round(formatUnits(fee.value, decimals), numDecimals)); // relayer fee, rounded
     const formattedAmountReceived = computed(() => round(formatUnits(amountReceived.value, decimals), numDecimals)); // amount user will receive, rounded
-    // prevent withdraw attemps if fee is larger than amount
+    // prevent withdraw attempts if fee is larger than amount
     const canWithdraw = computed(() => {
-      const feeInWei = useCustomFee.value ? customFeeInWei.value : fee.value
-      return BigNumber.from(amount).gt(feeInWei) && BigNumber.from('0').lt(feeInWei)
+      if (!loaded.value) return true; // assume true until finished loading, to prevent resize issue shown here: https://github.com/ScopeLift/umbra-protocol/pull/206#pullrequestreview-718683599
+      const feeInWei = useCustomFee.value ? customFeeInWei.value : fee.value;
+      return BigNumber.from(amount).gt(feeInWei) && BigNumber.from('0').lt(feeInWei);
     });
     const confirmationOptions = computed(() => {
       if (!isEth) return {};
@@ -217,6 +228,7 @@ export default defineComponent({
       formattedCustomFeeEth,
       isEth,
       isValidFeeAmount,
+      loaded,
       symbol,
       tokenURL,
       toggleCustomFee,

@@ -42,7 +42,8 @@
           :disable="isSending"
           :flat="true"
           :full-width="true"
-          label="Generate payment link"
+          icon="far fa-copy"
+          label="Copy payment link"
         />
       </div>
     </q-form>
