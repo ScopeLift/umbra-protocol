@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hhh Lpr fff" style="z-index: 0;">
+  <q-layout view="hhh Lpr fff" style="z-index: 0">
     <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="column all-content-format">
         <!-- Main header -->
