@@ -17,14 +17,16 @@
       </div>
 
       <div>
-        <div v-if="isEth" class="text-caption text-grey q-mt-md">
-          {{ useCustomFee ? 'Custom' : '' }} Transaction Fee
-          <q-icon
+        <div v-if="isEth" class="text-caption text-grey q-mt-md row items-center">
+          <div>{{ useCustomFee ? 'Custom' : '' }} Transaction Fee</div>
+          <base-button
             v-if="useCustomFee"
             @click="toggleCustomFee"
-            color="primary"
-            class="cursor-pointer q-ml-xs"
-            name="fas fa-times"
+            class="q-ml-xs"
+            :dense="true"
+            :flat="true"
+            label="Cancel"
+            size="1em"
           />
         </div>
         <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>

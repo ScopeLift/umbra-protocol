@@ -13,6 +13,7 @@
       no-caps
       :outline="outline"
       :padding="padding"
+      :size="size"
       :text-color="textColor"
       :type="type"
       @click="handleClick"
@@ -82,6 +83,12 @@ export default defineComponent({
     },
 
     padding: {
+      type: String,
+      required: false,
+      default: undefined,
+    },
+
+    size: {
       type: String,
       required: false,
       default: undefined,
