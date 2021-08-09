@@ -53,7 +53,10 @@
           <p>
             Bob uses Umbra to withdraw his 1,000 Dai each week. He only needs to provide an address to send it to. It’s
             best for him to use an address that’s not tied to his identity. He usually chooses to send it straight to an
-            exchange, where he sells it for fiat as needed.
+            exchange, where he sells it for fiat as needed. Importantly, this means
+            <strong>Bob's exchange now knows this payment went to him</strong>. To the casual chain observer— one
+            without access to proprietary centralized exchange data— the fact that Alice's payment went to Bob is
+            obscured.
           </p>
           <p>
             Consider another example: Liza runs a website that asks for donations. If everyone donated by directly

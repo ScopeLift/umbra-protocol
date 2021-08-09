@@ -5,13 +5,13 @@
 </div>
 
 <p align="center">
-	<b>Privacy Preserving Stealth Payments On The Ethereum Blockchain.</b>
+	<b>Privacy Preserving Stealth Payments for EVM Blockchain Networks.</b>
 </p>
 
 <p align="center">
-	🚀 <a href="https://rinkeby.umbra.cash">umbra.cash</a>
-	👷 <a href="https://twitter.com/msolomon44">@msolomon44</a>
-	👷 <a href="https://twitter.com/BenDiFrancesco">@BenDiFrancesco</a>
+	🚀 <a href="https://app.umbra.cash">app.umbra.cash</a>
+	🐦 <a href="https://twitter.com/umbracash">@UmbraCash</a>
+	🏗️ <a href="https://twitter.com/scopelift">@ScopeLift</a>
 </p>
 
 <div align="center">
@@ -21,7 +21,7 @@
 
 ## About
 
-Umbra is a protocol for enabling stealth payments on the Ethereum blockchain. It enables privacy preserving transactions where **the receiver's identity is only known to the sender and receiver**.
+Umbra is a protocol for stealth payments on the Ethereum blockchain. It enables privacy preserving transactions where **the receiver's identity is only known to the sender and receiver**.
 
 <div align="center">
 	<img width="400" src="readme/stealth-addrs.png" alt="Umbra Logo">
@@ -31,65 +31,78 @@ Umbra is a protocol for enabling stealth payments on the Ethereum blockchain. It
 	</sub></sup>
 </div>
 
-### Components
-
-This repository has three components:
-
-* [Umbra JS](umbra-js/) — A JavaScript library for building Umbra-enabled web3 apps in node.js or in the browser.
-* [Umbra Contracts](contracts/) — Solidity contracts used in the Umbra Protocol.
-* [Umbra Pay](app/) — Frontend web3 app for setting up and using Umbra, deployed at [https://rinkeby.umbra.cash](https://rinkeby.umbra.cash)
-
 ### FAQ
 
-**What does Umbra do?**
+#### What is Umbra?
 
-Umbra allows a payer to send funds to a fresh address. That address is controlled by the intended receiver, but only the payer and the receiver know that.
+Umbra is a stealth address protocol for Ethereum. That means it allows a payer to send funds to a fresh address. That address is controlled by the intended receiver, but only the payer and the receiver know that.
 
-**How is Umbra different from Tornado Cash**
+One way to think of Umbra is this: Imagine if, before anyone sent you funds, you sent them a brand new, never before used address. Only the sender would know you control that address, which adds a layer of privacy to your payment. Payments via Umbra work similarly, but are non-interactive—you don’t need to give someone a fresh address, they can just generate one they know only you will be able to access.
 
-[Tornado Cash](https://tornado.cash/) is awesome and you should use it! It's an on chain mixer that uses zero knowledge proofs. You put funds in, wait a while for other people to do the same, then use your proof to withdrawal them somewhere else. Since everyone's funds are pooled in the mixer, the link between the origin address and withdrawal address is broken.
+#### Can you walk me through an example?
 
-Umbra is meant for payments between two entities, and comes with a different set of privacy tradeoffs. Rather than *breaking* the link between sending and receiving address, Umbra makes that link *meaningless*. Everyone knows the address funds were sent to, but they don't know who controls that address.
+Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work. Bob owns the ENS address bob.eth. If Alice sent the funds each week to bob.eth, anyone looking at the chain could trivially know that Alice is paying Bob 1,000 Dai each week.
 
-**What advantages does Umbra have?**
+Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets up his account with ENS, enabling anyone to privately pay him using the name bob.eth. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs to know his ENS name.
 
-* Umbra allows arbitrary amounts to be sent, since there is no need for inputs and outputs to be uniform.
-* Umbra does not require the receiver to wait to withdraw funds— as soon as they're sent, they can be withdrawn to any address the receiver chooses.
-* Umbra ensures only the receiver can withdraw the funds once they're sent. The sender does not hold the private key of the receiving address.
-* Umbra uses significantly less gas, as it does not require the verification of any advanced cryptography on chains. All transactions are simple transfers.
-* Umbra enables ETH and arbitrary ERC20 tokens to be transferred privately. You're not dependent on a large anonymity set developing for each token.
+On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the keys to each of these addresses via Umbra, but nobody except Alice and Bob knows this.
 
-**Can you give an example of a practical use of Umbra?**
+Bob uses Umbra to withdraw his 1,000 Dai each week. He only needs to provide an address to send it to. It’s best for him to use an address that’s not tied to his identity. He usually chooses to send it straight to an exchange, where he sells it for fiat as needed. Importantly, this means **Bob's exchange now knows this payment went to him**. To the casual chain observer— one without access to proprietary centralized exchange data— the fact that Alice's payment went to Bob is obscured.
 
-Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work.
+Consider another example: Liza runs a website that asks for donations. If everyone donated by directly sending her funds, everyone would know how much Liza received in donations. If donations were sent with Umbra instead, each donation would be sent to a different address, and only Liza would know the total amount of donations she received.
 
-The first time Bob visits the Umbra app, he sets up his account, enabling hime to be paid privately. Alice uses Umbra to send 1,000 Dai to Bob each week— she only needs to know his ENS address
+#### How does it work?
 
-On chain, we see Alice pays 1,000 Dai to a different and otherwise empty address each week. Behind the scenes, Bob controls the keys to each of these addresses via Umbra, but nobody else knows as much.
+1. When setting up your Umbra account, users sign a message. The hash of this message is used to generate two private keys—a "spending key" and a "viewing key".
+2. The corresponding public keys are both published on-chain as records associated with your ENS or CNS name.
+3. A payer uses your ENS or CNS name to look up your two public keys. Separately, the payer generates a random number.
+4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The same random number is used with the viewing public key to encrypt the random number.
+5. Using the Umbra contract, the payer sends funds to the stealth address and the encrypted data is emitted as an Announcement event.
+6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the address funds were sent to, this payment was for the receiver
+7. The receiver can now use the private key to either directly send the transaction required to withdraw funds to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
 
-Bob uses Umbra to withdraw his 1,000 Dai each week. He only need provide an address to send it to. Obviously, it's best for him to use an address that's not tied to his identity. He usually chooses to send it straight to an exchange, where he sells it for fiat as needed.
+See the [Technical Details: How does it work?](https://app.umbra.cash/faq#how-does-it-work-technical) for more details.
 
-Because Umbra uses Gas Station Network and Uniswap, Bob doesn't have to fund the stealth address with Ether to withdraw his Dai. He can pay for gas with the Dai itself. He can also swap directly to any token of his choice, as long as there's a trading pair available on Uniswap.
+#### How private is Umbra?
 
-**How does Umbra actually work?**
+Umbra offers a limited set of privacy guarantees and it’s important to understand them before using the protocol. Umbra does not offer "full" privacy like Aztec or Zcash. It simply makes it impossible for any outside observers (i.e. anyone who is not the sender or the receiver) to know who the sender paid by looking at the receiving address.
 
-Here's a high level description of the mechanics of the Umbra protocol:
+It’s important to understand that poor hygiene by the receiver— for example, sending the funds directly to a publicly known address— eliminates the privacy benefits for both the sender and receiver.
 
-1. Users publish signed messages to ENS text records to reveal their Umbra public key. This public key is derived from a random private key specifically generated for use with Umbra.
-2. A payer uses this public key, plus some randomly generated data, to create a new 'stealth' address.
-3. The payer encrypts the random data with the receiver's public key.
-4. The payer sends the funds to the shielded address and sends the encrypted message to Umbra's smart contract. The contract broadcasts the encrypted message as an Event.
-5. The receiver scans the encrypted messages broadcast by the Umbra contract until they find one they can decrypt with their private key.
-6. The receiver uses the contents of the encrypted message, plus their private key, to generate the private key of the stealth address.
-7. The receiver uses the private key of the stealth address to sign a withdrawal transaction, sending the ETH or tokens to the address of their choice.
-8. Optionally, the withdrawal transaction is broadcast via [Gas Station Network](https://www.opengsn.org/) transaction relayers, obviating the need to fund the stealth address to access tokens. The Umbra contracts swap some of the tokens via Uniswap to pay the GSN relayer for gas.
+The privacy properties of Umbra can also be diminished if an observer can narrow down the set of potential recipients for a given a transaction. Any valid public key can be used as a recipient, and anyone who has sent a transaction on Ethereum has a publicly available public key. Therefore, by default, the "anonymity set"—the set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
 
+In practice this isn’t necessarily the case, and an observer may be able to narrow down the list of recipients in a few ways:
+
+1. Most users will use ENS names to send funds, so the recipient most likely has published keys under an ENS name
+2. Poor hygiene when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy properties provided by Umbra. See [Which addresses are safe for withdrawing funds?](https://app.umbra.cash/faq#what-addresses-are-safe-for-withdrawing-funds-to) for more details. Always use caution when withdrawing!
+
+#### How does Umbra compare to Tornado Cash and Aztec?
+
+Tornado Cash is an on chain mixer that uses zero knowledge proofs. You deposit funds and receive a secret note, wait a while for other people to do the same, then use your note to prove you own some of the deposited funds and withdraw them to another address. Since everyone’s funds are pooled in the mixer, the link between the deposit address and withdrawal address is broken.
+
+Aztec is a privacy-focused Layer 2 solution, that also uses zero knowledge proofs. You deposit funds from Layer 1 (mainnet) into Aztec, and your funds effectively become "wrapped" in a private version. Regular transfers become private by default, meaning no one knows who you sent funds to, or how much you paid them. Balances are often private, so no one can see how much money you’re holding.
+
+Umbra is different than both of these and does not use zero knowledge proofs. Instead, Umbra is based on ordinary elliptic curve cryptography. It’s meant for payments between two entities, and comes with a different set of privacy tradeoffs. Rather than breaking the link between sending and receiving address, like Tornado does, Umbra makes that link meaningless. Everyone can see who sent the funds, and everyone can see the address funds were sent to, but that receiving address has never been seen on-chain so it’s impossible for any outside observers to know who controls it.
+
+#### Where can I learn more?
+
+Check out the [full FAQ](https://app.umbra.cash/faq) to get more details about Umbra.
 
 ## Development
 
+### Components
+
+Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts, and @umbra/umbra-js.
+
+* [frontend](app/) — Frontend web3 app for setting up and using Umbra, deployed at [app.umbra.cash](https://app.umbra.cash)
+* [contracts](contracts/) — Solidity contracts used in the Umbra Protocol.
+* [umbra-js](umbra-js/) — A JavaScript library for building Umbra-enabled web3 apps in node.js or in the browser.
+
+The monorepo structure simplifies the development workflow.
+
 ### Instructions
 
-Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts, and @umbra/umbra-js. The monorepo structure simplifies the development workflow. To get started, clone this repo, then follow these instructions:
+To get started, clone this repo, then follow these instructions:
 
 ```sh
 # run these commands from workspace root!
@@ -97,6 +110,9 @@ cp contracts/.env.example contracts/.env # please edit the .env with your own en
 cp frontend/.env.example frontend/.env # please edit the .env with your own environment variable values
 cp umbra-js/.env.example umbra-js/.env # please edit the .env with your own environment variable values
 yarn install # installs dependencies for each of the 3 packages. Also builds umbra-js.
+yarn test # runs the test suite for each package
+
+# Additional commands also available from the workspace root:
 yarn build # builds each of the 3 packages
 yarn clean # removes build artifacts for each of the 3 packages
 yarn lint # lints each of the 3 packages
@@ -104,13 +120,13 @@ yarn prettier # runs formatting on each of the 3 packages
 yarn test # runs tests for each of the 3 packages
 ```
 
-Note: If you want to be more precise with your command (e.g. just building, cleaning, or testing 1 package), simply run any above command from the package directory. For example,
+Note: If you want to be more precise with your command (e.g. just building, cleaning, or testing 1 package), simply run any above command from the package directory. For example, if you were just working on the contract code, you might:
 
 ```sh
-cd contracts
-yarn build
-yarn clean
-yarn test
+cd contracts # move into the contracts sub directory
+yarn build # build only the contracts
+yarn clean # remove only the contract build artifacts
+yarn test # run only the contract tests
 ```
 
 ### Contributions
@@ -121,4 +137,4 @@ Contributions to Umbra are welcome! Fork the project, create a new branch from m
 
 Umbra is available under the [MIT](LICENSE.txt) license.
 
-Copyright (c) 2020 Matthew Solomon and Ben DiFrancesco
+Copyright (c) 2021 ScopeLift
