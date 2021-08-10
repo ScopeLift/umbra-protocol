@@ -94,7 +94,7 @@ Check out the [full FAQ](https://app.umbra.cash/faq) to get more details about U
 
 Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts, and @umbra/umbra-js.
 
-* [frontend](app/) — Frontend web3 app for setting up and using Umbra, deployed at [app.umbra.cash](https://app.umbra.cash)
+* [frontend](frontend/) — Frontend web3 app for setting up and using Umbra, deployed at [app.umbra.cash](https://app.umbra.cash)
 * [contracts](contracts/) — Solidity contracts used in the Umbra Protocol.
 * [umbra-js](umbra-js/) — A JavaScript library for building Umbra-enabled web3 apps in node.js or in the browser.
 
