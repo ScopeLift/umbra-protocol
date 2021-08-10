@@ -56,10 +56,10 @@ Consider another example: Liza runs a website that asks for donations. If everyo
 1. When setting up your Umbra account, users sign a message. The hash of this message is used to generate two private keys—a "spending key" and a "viewing key".
 2. The corresponding public keys are both published on-chain as records associated with your ENS or CNS name.
 3. A payer uses your ENS or CNS name to look up your two public keys. Separately, the payer generates a random number.
-4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The same random number is used with the viewing public key to encrypt the random number.
-5. Using the Umbra contract, the payer sends funds to the stealth address and the encrypted data is emitted as an Announcement event.
-6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the address funds were sent to, this payment was for the receiver
-7. The receiver can now use the private key to either directly send the transaction required to withdraw funds to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
+4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The viewing public key is used to encrypt the random number.
+5. Using the Umbra contract, the payer sends funds to the stealth address and the stealth address and encrypted random number are emitted as an Announcement event.
+6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Annoucement, this payment was for the receiver
+7. The receiver can now use the spending private key to either directly send the transaction required to withdraw funds to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
 
 See the [Technical Details: How does it work?](https://app.umbra.cash/faq#how-does-it-work-technical) for more details.
 
@@ -67,7 +67,7 @@ See the [Technical Details: How does it work?](https://app.umbra.cash/faq#how-do
 
 Umbra offers a limited set of privacy guarantees and it’s important to understand them before using the protocol. Umbra does not offer "full" privacy like Aztec or Zcash. It simply makes it impossible for any outside observers (i.e. anyone who is not the sender or the receiver) to know who the sender paid by looking at the receiving address.
 
-It’s important to understand that poor hygiene by the receiver— for example, sending the funds directly to a publicly known address— eliminates the privacy benefits for both the sender and receiver.
+It’s important to understand that poor hygiene by the receiver— for example, sending the funds directly to a publicly known address— reduces the privacy benefits for both the sender and receiver.
 
 The privacy properties of Umbra can also be diminished if an observer can narrow down the set of potential recipients for a given a transaction. Any valid public key can be used as a recipient, and anyone who has sent a transaction on Ethereum has a publicly available public key. Therefore, by default, the "anonymity set"—the set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
 
@@ -98,7 +98,7 @@ Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts,
 
 * [frontend](frontend/) — Frontend web3 app for setting up and using Umbra, deployed at [app.umbra.cash](https://app.umbra.cash)
 * [contracts](contracts/) — Solidity contracts used in the Umbra Protocol.
-* [umbra-js](umbra-js/) — A JavaScript library for building Umbra-enabled web3 apps in node.js or in the browser.
+* [umbra-js](umbra-js/) — A TypeScript library for building Umbra-enabled web3 apps in node.js or in the browser.
 
 The monorepo structure simplifies the development workflow.
 
