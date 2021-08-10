@@ -90,6 +90,8 @@ Check out the [full FAQ](https://app.umbra.cash/faq) to get more details about U
 
 ## Development
 
+This repository uses [yarn](https://yarnpkg.com/) for package management and [volta](https://volta.sh/) for dev tool version management. Both are prerequisites for setting up your development environment.
+
 ### Components
 
 Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts, and @umbra/umbra-js.
