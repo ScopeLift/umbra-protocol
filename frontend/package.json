@@ -11,7 +11,7 @@
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
     "build": "quasar build && cp _redirects dist/spa/",
-    "clean": "rimraf build",
+    "clean": "rimraf dist",
     "precommit": "lint-staged"
   },
   "dependencies": {
