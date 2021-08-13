@@ -245,7 +245,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   // For advanced mode: copyies the provided stealth private key to the clipboard
   const copyPrivateKey = async (privateKey: string) => {
     await copyToClipboard(privateKey);
-    notifyUser('positive', 'Private key copied to clipboard');
+    notifyUser('success', 'Private key copied to clipboard');
     hidePrivateKey();
   };
 
@@ -336,7 +336,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   async function copySenderAddress(row: UserAnnouncement) {
     // row.receipt.from has the truncated from address shown in the UI, so here we use the row.tx.from address
     await copyToClipboard(row.tx.from);
-    notifyUser('positive', 'Sender address copied to clipboard');
+    notifyUser('success', 'Sender address copied to clipboard');
   }
 
   /**

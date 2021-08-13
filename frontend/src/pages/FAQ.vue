@@ -1176,7 +1176,7 @@ function useScrollToElement(context: SetupContext) {
     const slug = context.root.$router.currentRoute.path; // includes the leading forward slash
     const page = `${slug}#${elementId}`;
     await copyToClipboard(`${window.location.origin}${page}`);
-    if (el.getAttribute('isHeader')) notifyUser('positive', 'URL successfully copied to clipboard');
+    if (el.getAttribute('isHeader')) notifyUser('success', 'URL successfully copied to clipboard');
     window.history.pushState('', '', page); // updates URL in navigation bar
   };
 

@@ -60,7 +60,7 @@ export async function generatePaymentLink({
   if (amount) url.searchParams.set('amount', amount);
 
   await copyToClipboard(url.toString());
-  notifyUser('positive', 'Payment link copied to clipboard');
+  notifyUser('success', 'Payment link copied to clipboard');
 }
 
 /**

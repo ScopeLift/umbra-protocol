@@ -280,7 +280,7 @@ function useKeys() {
 
   async function getPrivateKeysHandler() {
     if (keyStatus.value === 'success') {
-      notifyUser('info', 'You have already signed. Please continue to the next step');
+      notifyUser('hint', 'You have already signed. Please continue to the next step');
       return;
     }
     try {

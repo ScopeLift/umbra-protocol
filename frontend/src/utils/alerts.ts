@@ -1,11 +1,12 @@
-import { Dark, Notify } from 'quasar';
-import BNotify from 'bnc-notify';
+import { Dark } from 'quasar';
+import BNotify, { NotificationType } from 'bnc-notify';
 import { Provider } from 'components/models';
 import { getEtherscanUrl } from './utils';
 
-// Instantiate Blocknative's notify.js. We don't pass a dappId so we can have more control over the toast, i.e.
-// we can use it for any network -- not just the ones Blocknative supports
+// Instantiate Blocknative's notify.js. We don't pass a dappId so we can use in UI only mode for any
+// notifications we need, i.e. not just Blocknative transaction notifications
 const bNotify = BNotify({ darkMode: Dark.isActive, desktopPosition: 'topRight', networkId: 1 });
+const defaultTimeout = 5000; // 4 seconds
 
 // Some error messages we don't want to show to the user, so return in these cases
 const messagesToIgnore = [
@@ -21,16 +22,15 @@ const messagesToIgnore = [
  * @param color Alert color, choose positive, negative, warning, info, or others
  * @param message Message to display on notification
  */
-export function notifyUser(color: string, message: string) {
+export function notifyUser(alertType: NotificationType, message: string) {
   // If message matches any of the substrings in messagesToIgnore, we return and don't show the alert
   if (new RegExp(messagesToIgnore.join('|')).test(message)) return;
 
-  Notify.create({
-    color,
+  bNotify.notification({
+    autoDismiss: alertType === 'error' ? 10000 : defaultTimeout,
+    eventCode: 'userNotify',
     message,
-    timeout: color.toLowerCase() === 'negative' ? 10000 : 5000,
-    position: 'top',
-    actions: [{ label: 'Dismiss', color: 'white' }],
+    type: alertType,
   });
 }
 
@@ -41,10 +41,10 @@ export function notifyUser(color: string, message: string) {
  */
 export function handleError(err: Error, msg = 'An unknown error occurred') {
   console.error(err);
-  if (!err) notifyUser('negative', msg);
-  else if ('message' in err) notifyUser('negative', err.message);
-  else if (typeof err === 'string') notifyUser('negative', err);
-  else notifyUser('negative', msg);
+  if (!err) notifyUser('error', msg);
+  else if ('message' in err) notifyUser('error', err.message);
+  else if (typeof err === 'string') notifyUser('error', err);
+  else notifyUser('error', msg);
 }
 
 /**
@@ -66,7 +66,7 @@ export async function txNotify(txHash: string, provider: Provider) {
   // Update notification based on transaction status
   const { status } = await provider.waitForTransaction(txHash);
   update({
-    autoDismiss: 4000,
+    autoDismiss: defaultTimeout,
     eventCode: status ? 'txSuccess' : 'txFail',
     message: status ? 'Your transaction has succeeded' : 'Your transaction has failed',
     onclick,
