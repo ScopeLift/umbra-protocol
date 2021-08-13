@@ -4,7 +4,7 @@ import { BigNumber } from './ethers';
  * @notice Generates the Etherscan URL based on the given `txHash` and `chainId`
  */
 export const getEtherscanUrl = (txHash: string, chainId: number) => {
-  let networkPrefix = ''; // assume mainnet by default
+  let networkPrefix = '';
   if (chainId === 1) networkPrefix = 'etherscan.io';
   if (chainId === 3) networkPrefix = 'ropsten.etherscan.io';
   if (chainId === 4) networkPrefix = 'rinkeby.etherscan.io';
