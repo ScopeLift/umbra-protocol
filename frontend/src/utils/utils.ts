@@ -5,12 +5,14 @@ import { BigNumber } from './ethers';
  */
 export const getEtherscanUrl = (txHash: string, chainId: number) => {
   let networkPrefix = ''; // assume mainnet by default
-  if (chainId === 1) networkPrefix = '';
-  if (chainId === 3) networkPrefix = 'ropsten.';
-  if (chainId === 4) networkPrefix = 'rinkeby.';
-  if (chainId === 5) networkPrefix = 'goerli.';
-  if (chainId === 42) networkPrefix = 'kovan.';
-  return `https://${networkPrefix}etherscan.io/tx/${txHash}`;
+  if (chainId === 1) networkPrefix = 'etherscan.io';
+  if (chainId === 3) networkPrefix = 'ropsten.etherscan.io';
+  if (chainId === 4) networkPrefix = 'rinkeby.etherscan.io';
+  if (chainId === 5) networkPrefix = 'goerli.etherscan.io';
+  if (chainId === 42) networkPrefix = 'kovan.etherscan.io';
+  if (chainId === 137) networkPrefix = 'polygonscan.com';
+  if (chainId === 80001) networkPrefix = 'mumbai.polygonscan.com';
+  return `https://${networkPrefix}/tx/${txHash}`;
 };
 
 /**

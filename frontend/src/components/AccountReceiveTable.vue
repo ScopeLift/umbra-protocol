@@ -407,7 +407,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         const { gasPrice } = options;
         tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor, { gasPrice });
         txHashIfEth.value = tx.hash;
-        txNotify(tx.hash);
+        txNotify(tx.hash, provider.value);
         await tx.wait();
       } else {
         // Withdrawing token

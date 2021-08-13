@@ -59,13 +59,13 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import { txNotify } from 'src/utils/alerts';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
-import { TokenInfo } from 'components/models';
+import { Provider, TokenInfo } from 'components/models';
 import ERC20 from 'src/contracts/ERC20.json';
 import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
-  const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, userAddress } = useWalletStore();
+  const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, provider, userAddress } = useWalletStore();
 
   // Helpers
   const sendFormRef = ref<QForm>();
@@ -140,14 +140,14 @@ function useSendForm() {
         // If insufficient allowance, get approval
         if (amount.gt(allowance)) {
           const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
-          txNotify(approveTx.hash);
+          void txNotify(approveTx.hash, provider.value as Provider);
           await approveTx.wait();
         }
       }
 
       // Send with Umbra
       const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value);
-      txNotify(tx.hash);
+      void txNotify(tx.hash, provider.value as Provider);
       await tx.wait();
       resetForm();
     } finally {

@@ -152,13 +152,13 @@ export const setSubdomainKeys = async (
     viewingPubKeyX // compressed viewing public key without prefix
   )) as TransactionResponse;
   window.logger.debug('tx1.hash: ', tx1.hash);
-  txNotify(tx1.hash);
+  txNotify(tx1.hash, signer.provider as Provider);
 
   // Send second transaction to configure the reverse resolver
   const reverseRegistrar = getContract('ENSReverseRegistrar', provider).connect(signer);
   const tx2 = (await reverseRegistrar.setName(name)) as TransactionResponse;
   window.logger.debug('tx2.hash: ', tx2.hash);
-  txNotify(tx2.hash);
+  txNotify(tx2.hash, signer.provider as Provider);
 
   return [tx1, tx2];
 };
@@ -203,7 +203,7 @@ export const setRootNameKeys = async (
     window.logger.debug('publicResolver: ', publicResolver.address);
     const tx = (await publicResolver.setAuthorisation(node, fskResolverAddress, true)) as TransactionResponse;
     window.logger.debug('step 1 tx.hash: ', tx.hash);
-    txNotify(tx.hash);
+    txNotify(tx.hash, signer.provider as Provider);
     txs.push(tx);
 
     // Step 2: Change the user's resolver to the ForwardingStealthKeyResolver
@@ -212,7 +212,7 @@ export const setRootNameKeys = async (
     window.logger.debug('registry: ', registry.address);
     const tx2 = (await registry.setResolver(node, fskResolverAddress)) as TransactionResponse;
     window.logger.debug('step 2 tx2.hash: ', tx2.hash);
-    txNotify(tx2.hash);
+    txNotify(tx2.hash, signer.provider as Provider);
     txs.push(tx2);
     await tx2.wait(); // this needs to be mined before step 3, since step 3 reads your current resolver
   }
@@ -220,7 +220,7 @@ export const setRootNameKeys = async (
   // Step 3: Set the stealth keys on the appropriate resolver
   const tx = await domainService.setPublicKeys(name, spendingPublicKey, viewingPublicKey);
   window.logger.debug('step 3 tx.hash: ', tx.hash);
-  txNotify(tx.hash);
+  txNotify(tx.hash, signer.provider as Provider);
   txs.push(tx);
   window.logger.debug('txs: ', txs);
 

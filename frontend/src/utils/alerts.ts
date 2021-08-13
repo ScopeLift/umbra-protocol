@@ -1,13 +1,11 @@
 import { Dark, Notify } from 'quasar';
 import BNotify from 'bnc-notify';
+import { Provider } from 'components/models';
+import { getEtherscanUrl } from './utils';
 
-// Instantiate Blocknative's notify.js
-const bNotify = BNotify({
-  dappId: process.env.BLOCKNATIVE_API_KEY,
-  darkMode: Dark.isActive,
-  desktopPosition: 'topRight',
-  networkId: 1,
-});
+// Instantiate Blocknative's notify.js. We don't pass a dappId so we can have more control over the toast, i.e.
+// we can use it for any network -- not just the ones Blocknative supports
+const bNotify = BNotify({ darkMode: Dark.isActive, desktopPosition: 'topRight', networkId: 1 });
 
 // Some error messages we don't want to show to the user, so return in these cases
 const messagesToIgnore = [
@@ -50,9 +48,28 @@ export function handleError(err: Error, msg = 'An unknown error occurred') {
 }
 
 /**
- * @notice Transaction monitoring
+ * @notice Transaction notification status
  * @param txHash Transaction hash to monitor
  */
-export function txNotify(txHash: string) {
-  bNotify.hash(txHash);
+export async function txNotify(txHash: string, provider: Provider) {
+  // Instantiate pending transaction notification
+  const { chainId } = await provider.getNetwork();
+  const onclick = () => window.open(getEtherscanUrl(txHash, chainId), '_blank');
+  const { update } = bNotify.notification({
+    autoDismiss: 0,
+    eventCode: 'txPending',
+    message: 'Your transaction is pending',
+    onclick,
+    type: 'pending',
+  });
+
+  // Update notification based on transaction status
+  const { status } = await provider.waitForTransaction(txHash);
+  update({
+    autoDismiss: 4000,
+    eventCode: status ? 'txSuccess' : 'txFail',
+    message: status ? 'Your transaction has succeeded' : 'Your transaction has failed',
+    onclick,
+    type: status ? 'success' : 'error',
+  });
 }
