@@ -1,5 +1,5 @@
 // app global css in Sass form
-  
+
 // Headers
 @font-face
   font-family: headerBlack
@@ -89,6 +89,9 @@ p, div
   margin-bottom: 4rem
   text-align: center
 
+  @media (max-width: $breakpoint-sm-max)
+    font-size: 3rem
+
 .form
   max-width: 475px
   margin: 0 auto
@@ -107,7 +110,7 @@ p, div
   margin: 0 auto
 
 // Dark mode config
-.body--light 
+.body--light
   .dark-toggle
     color: $dark
 
@@ -134,7 +137,6 @@ p, div
     color: #669900
   .code-pink
     color: #dd4a68
-
 
 .body--dark
   .dark-toggle

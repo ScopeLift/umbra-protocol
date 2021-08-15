@@ -37,6 +37,8 @@
         <span @click="context.emit('reset')" class="cursor-pointer hyperlink">Change scan settings</span>.
       </div>
       <q-table
+        :grid="$q.screen.xs"
+        card-container-class="col q-col-gutter-md"
         :columns="mainTableColumns"
         :data="formattedAnnouncements"
         :expanded.sync="expanded"
@@ -45,6 +47,59 @@
         row-key="randomNumber"
         title="Received Funds"
       >
+        <!-- Card Layout for grid option -->
+        <template v-slot:item="props">
+          <div :key="props.row.id" class="col-12">
+            <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center">
+              <q-card-section class="row justify-center items-center">
+                <img class="q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.2rem" />
+                <div class="text-primary text-h6 header-black q-pb-none">
+                  {{ formatAmount(props.row.amount, props.row.token) }} {{ getTokenSymbol(props.row.token) }}
+                </div>
+              </q-card-section>
+              <q-card-section class="column justify-center items-center">
+                <div>From: {{ props.row.tx.from }}</div>
+                <div class="text-caption text-grey">Received: {{ formatDate(props.row.tx.timestamp * 1000) }}</div>
+              </q-card-section>
+              <q-separator />
+              <q-card-actions class="row justify-center items-center">
+                <div v-if="props.row.isWithdrawn" class="text-positive">
+                  Withdrawn<q-icon name="fas fa-check" class="q-ml-sm" />
+                </div>
+                <base-button
+                  v-else
+                  @click="
+                    hidePrivateKey();
+                    getFeeEstimate(props.row.token); // kickoff process in background
+                    expanded = expanded[0] === props.key ? [] : [props.key];
+                  "
+                  color="primary"
+                  :dense="true"
+                  :disable="isWithdrawInProgress"
+                  :flat="true"
+                  :label="props.expand ? 'Hide' : 'Withdraw'"
+                />
+              </q-card-actions>
+              <q-slide-transition>
+                <div v-show="props.expand">
+                  <withdraw-form
+                    @initializeWithdraw="initializeWithdraw(props.row)"
+                    @togglePrivateKey="togglePrivateKey(props.row)"
+                    @copyPrivateKey="copyPrivateKey(spendingPrivateKey)"
+                    :destinationAddress="destinationAddress"
+                    :isWithdrawInProgress="isWithdrawInProgress"
+                    :isFeeLoading="isFeeLoading"
+                    :isEth="isEth(props.row.token)"
+                    :spendingPrivateKey="spendingPrivateKey"
+                    :activeFee="activeFee"
+                    :advancedMode="advancedMode"
+                  />
+                </div>
+              </q-slide-transition>
+            </q-card>
+          </div>
+        </template>
+
         <!-- Header labels -->
         <template v-slot:header="props">
           <q-tr :props="props">
@@ -129,69 +184,18 @@
           <!-- Expansion row -->
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%" class="bg-muted">
-              <q-form @submit="initializeWithdraw(props.row)" class="form-wide q-py-md" style="white-space: normal">
-                <!-- Withdrawal form -->
-                <div v-if="!isWithdrawInProgress">
-                  <div>Enter address to withdraw funds to</div>
-                  <base-input
-                    v-model="destinationAddress"
-                    @click="initializeWithdraw(props.row)"
-                    appendButtonLabel="Withdraw"
-                    :appendButtonDisable="isWithdrawInProgress || isFeeLoading"
-                    :appendButtonLoading="isWithdrawInProgress"
-                    :disable="isWithdrawInProgress"
-                    label="Address"
-                    lazy-rules
-                    :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
-                  />
-                  <!-- Fee estimate -->
-                  <div class="q-mb-lg">
-                    <div v-if="!isEth(props.row.token) && isFeeLoading" class="text-caption text-italic">
-                      <q-spinner-puff class="q-my-none q-mr-sm" color="primary" size="2rem" />
-                      Fetching fee estimate...
-                    </div>
-                    <div v-else-if="isEth(props.row.token)" class="text-caption">
-                      Withdrawal fee: <span class="text-bold"> 0 ETH </span>
-                    </div>
-                    <div v-else-if="activeFee" class="text-caption">
-                      Estimated withdrawal fee:
-                      <span class="text-bold">
-                        {{ round(formatUnits(activeFee.fee, activeFee.token.decimals)) }}
-                        {{ activeFee.token.symbol }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div v-else class="text-center q-mb-lg">
-                  <q-spinner-puff class="q-mb-md q-mr-sm" color="primary" size="2rem" />
-                  <div class="text-center text-italic">Withdraw in progress...</div>
-                </div>
-
-                <!-- Privacy warning -->
-                <div class="border q-mb-lg" />
-                <div class="text-caption">
-                  <q-icon name="fas fa-exclamation-triangle" color="warning" left />
-                  <span class="text-bold">WARNING</span>: Be sure you understand the security implications before
-                  entering a withdrawal address. If you withdraw to an address publicly associated with you, privacy for
-                  this transaction will be lost.
-                  <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank"> Learn more </router-link>.
-                </div>
-
-                <!-- Advanced feature: show private key -->
-                <div v-if="advancedMode">
-                  <div @click="togglePrivateKey(props.row)" class="text-caption hyperlink q-mt-lg">
-                    {{ spendingPrivateKey ? 'Hide' : 'Show' }} withdrawal private key
-                  </div>
-                  <div
-                    v-if="spendingPrivateKey"
-                    @click="copyPrivateKey(spendingPrivateKey)"
-                    class="cursor-pointer copy-icon-parent q-mt-sm"
-                  >
-                    <span class="text-caption">{{ spendingPrivateKey }}</span>
-                    <q-icon class="copy-icon" name="far fa-copy" right />
-                  </div>
-                </div>
-              </q-form>
+              <withdraw-form
+                @initializeWithdraw="initializeWithdraw(props.row)"
+                @togglePrivateKey="togglePrivateKey(props.row)"
+                @copyPrivateKey="copyPrivateKey(spendingPrivateKey)"
+                :destinationAddress="destinationAddress"
+                :isWithdrawInProgress="isWithdrawInProgress"
+                :isFeeLoading="isFeeLoading"
+                :isEth="isEth(props.row.token)"
+                :spendingPrivateKey="spendingPrivateKey"
+                :activeFee="activeFee"
+                :advancedMode="advancedMode"
+              />
             </q-td>
           </q-tr>
         </template>
@@ -210,6 +214,7 @@ import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
+import WithdrawForm from 'components/WithdrawForm.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { getEtherscanUrl, round } from 'src/utils/utils';
@@ -487,7 +492,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
 export default defineComponent({
   name: 'AccountReceiveTable',
-  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation },
+  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation, WithdrawForm },
   props: {
     announcements: {
       type: (undefined as unknown) as PropType<UserAnnouncement[]>,

@@ -1,6 +1,6 @@
 <template>
   <q-page padding class="text-left form-extra-wide">
-    <h2 class="text-center page-title">Terms of Service</h2>
+    <h2 class="page-title">Terms of Service</h2>
 
     <p>Last Updated: April 16, 2021</p>
 
