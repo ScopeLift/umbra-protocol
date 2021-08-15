@@ -1,6 +1,6 @@
 <template>
   <q-page padding class="text-left form-extra-wide">
-    <h2 class="text-center page-title">Privacy Policy</h2>
+    <h2 class="page-title">Privacy Policy</h2>
 
     <p class="text-bold">What information do we collect?</p>
     <p>

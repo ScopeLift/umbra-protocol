@@ -32,18 +32,18 @@
                 Enter the start or end blocks to use when scanning for events. A blank start block will scan from block
                 zero, and a blank end block will scan through the current block.
               </div>
-              <div class="row justify-start">
+              <div class="row justify-start q-col-gutter-md">
                 <base-input
                   v-model.number="startBlockLocal"
                   @blur="setScanBlocks(startBlockLocal, endBlockLocal)"
-                  class="col-5"
+                  class="col-xs-12 col-6"
                   label="Start block"
                   :rules="isValidStartBlock"
                 />
                 <base-input
                   v-model.number="endBlockLocal"
                   @blur="setScanBlocks(startBlockLocal, endBlockLocal)"
-                  class="col-5 q-ml-md"
+                  class="col-xs-12 col-6"
                   label="End block"
                   :rules="isValidEndBlock"
                 />

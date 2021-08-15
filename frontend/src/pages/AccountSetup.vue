@@ -16,10 +16,11 @@
     <q-carousel
       v-else
       v-model="carouselStep"
+      :swipeable="$q.screen.xs"
       animated
       class="shadow-2 rounded-borders q-mx-auto"
       :control-color="carouselStep !== '4' ? 'grey' : undefined"
-      height="325px"
+      :height="$q.screen.xs ? '90vh' : '325px'"
       navigation
       navigation-icon="fas fa-circle"
       ref="carousel"
@@ -28,7 +29,7 @@
       transition-prev="slide-right"
     >
       <!-- Carousel Arrow Navigation Buttons, hidden on step 4 (the success step) -->
-      <template v-slot:control v-if="carouselStep !== '4'">
+      <template v-slot:control v-if="!$q.screen.xs && carouselStep !== '4'">
         <q-carousel-control v-if="carouselStep !== '1'" position="left" class="row">
           <q-btn @click="$refs.carousel.previous()" class="q-my-auto" flat icon="fas fa-arrow-left" text-color="grey" />
         </q-carousel-control>
@@ -56,8 +57,8 @@
       </template>
 
       <!-- Step 1: ENS Registration -->
-      <q-carousel-slide name="1" class="q-px-xl">
-        <div class="q-mx-lg q-pb-xl">
+      <q-carousel-slide name="1" :class="{ 'q-px-xl': !$q.screen.xs }">
+        <div :class="{ 'q-mx-xl': !$q.screen.xs, 'q-pb-xl': true }">
           <h5 class="q-my-md q-pt-none">Step 1: Username Selection</h5>
           <div class="q-mt-md">
             <!-- User has no ENS or CNS names -->
@@ -124,8 +125,8 @@
       </q-carousel-slide>
 
       <!-- Step 2: Get Signature -->
-      <q-carousel-slide name="2" class="q-px-xl">
-        <div class="q-mx-xl q-pb-xl">
+      <q-carousel-slide name="2" :class="{ 'q-px-xl': !$q.screen.xs }">
+        <div :class="{ 'q-mx-xl': !$q.screen.xs, 'q-pb-xl': true }">
           <h5 class="q-my-md q-pt-none">Step 2: Generate Keys</h5>
           <div class="q-mt-md">
             <p>
@@ -135,13 +136,19 @@
             </p>
             <p>You do not need to save these keys anywhere!</p>
           </div>
-          <base-button @click="getPrivateKeysHandler" :disable="isWaiting" :loading="isWaiting" label="Sign" />
+          <base-button
+            @click="getPrivateKeysHandler"
+            :disable="isWaiting"
+            :loading="isWaiting"
+            :fullWidth="$q.screen.xs"
+            label="Sign"
+          />
         </div>
       </q-carousel-slide>
 
       <!-- Step 3: Save private keys to ENS -->
-      <q-carousel-slide name="3" class="q-px-xl">
-        <div class="q-mx-xl q-pb-xl">
+      <q-carousel-slide name="3" :class="{ 'q-px-xl': !$q.screen.xs }">
+        <div :class="{ 'q-mx-xl': !$q.screen.xs, 'q-pb-xl': true }">
           <h5 class="q-my-md q-pt-none">Step 3: Publish Keys</h5>
           <!-- User is migrating their own ENS name from public resolver -->
           <div v-if="!isSubdomain && isEnsPublicResolver && ensStatus === 'no-public-keys'">
@@ -156,7 +163,13 @@
                 here</a
               >.
             </p>
-            <base-button @click="setKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
+            <base-button
+              @click="setKeys"
+              :disable="isWaiting"
+              :loading="isWaiting"
+              :fullWidth="$q.screen.xs"
+              label="Publish keys"
+            />
           </div>
           <!-- User does not need to migrate from public resolver-->
           <div v-else>
@@ -167,14 +180,20 @@
               to <span class="text-bold">{{ selectedName }}</span
               >.
             </p>
-            <base-button @click="setKeys" :disable="isWaiting" :loading="isWaiting" label="Publish keys" />
+            <base-button
+              @click="setKeys"
+              :disable="isWaiting"
+              :loading="isWaiting"
+              :fullWidth="$q.screen.xs"
+              label="Publish keys"
+            />
           </div>
         </div>
       </q-carousel-slide>
 
       <!-- Step 4: Success -->
-      <q-carousel-slide name="4" class="q-px-xl">
-        <div class="q-mx-xl q-pb-xl">
+      <q-carousel-slide name="4" :class="{ 'q-px-xl': !$q.screen.xs }">
+        <div :class="{ 'q-mx-xl': !$q.screen.xs, 'q-pb-xl': true }">
           <h5 class="q-my-md q-pt-none">
             <q-icon color="positive" class="q-mr-sm" name="fas fa-check" />Setup Complete!
           </h5>

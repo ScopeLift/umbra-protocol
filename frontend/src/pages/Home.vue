@@ -1,21 +1,22 @@
 <template>
   <q-page padding class="all-content-format">
     <div class="text-center q-mb-xl">
-      <h2 class="header-black">Send Stealth Payments</h2>
+      <h2 v-if="!$q.screen.xs" class="header-black">Send Stealth Payments</h2>
+      <h3 v-else class="header-black">Send Stealth Payments</h3>
       <h4 class="darkgrey q-mt-md">Only the sender and recipient know who received funds</h4>
     </div>
 
-    <div class="row justify-center q-pt-xl">
-      <home-action-card class="col q-mx-md" to="send" text="Send" description="Send funds to another user" />
+    <div class="row justify-center q-col-gutter-sm q-pt-xl">
+      <home-action-card class="col-xs-12 col-4" to="send" text="Send" description="Send funds to another user" />
       <home-action-card
-        class="col q-mx-md"
+        class="col-xs-12 col-4"
         to="receive"
         text="Receive"
         description="View and withdraw received funds"
       />
       <home-action-card
         v-if="!isAccountSetup"
-        class="col q-mx-md"
+        class="col-xs-12 col-4"
         to="setup"
         text="Setup"
         description="Setup your account to receive funds"
