@@ -3,6 +3,8 @@
 pragma solidity ^0.8.7;
 
 contract StealthKeyRegistry {
+  // =========================================== Events ============================================
+
   /// @dev Event emitted when a user updates their resolver stealth keys
   event StealthKeyChanged(
     address indexed registrant,
@@ -11,6 +13,8 @@ contract StealthKeyRegistry {
     uint256 viewingPubKeyPrefix,
     uint256 viewingPubKey
   );
+
+  // ======================================= State variables =======================================
 
   /**
    * @dev Mapping used to store two secp256k1 curve public keys useful for
@@ -30,6 +34,8 @@ contract StealthKeyRegistry {
    */
   mapping(address => mapping(uint256 => uint256)) keys;
 
+  // ======================================= Set Keys ===============================================
+
   /**
    * Sets the stealth keys associated with an address, for anonymous sends.
    * May only be called by the associated address.
@@ -44,25 +50,39 @@ contract StealthKeyRegistry {
     uint256 viewingPubKeyPrefix,
     uint256 viewingPubKey
   ) external {
+    _setStealthKeys(msg.sender, spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
+  }
+
+  /// @dev internal method for setting stealth key that must be called after safety check on registrant;
+  ///      see calling method for parameter details
+  function _setStealthKeys(
+    address registrant,
+    uint256 spendingPubKeyPrefix,
+    uint256 spendingPubKey,
+    uint256 viewingPubKeyPrefix,
+    uint256 viewingPubKey
+  ) internal {
     require(
       (spendingPubKeyPrefix == 2 || spendingPubKeyPrefix == 3) &&
         (viewingPubKeyPrefix == 2 || viewingPubKeyPrefix == 3),
       "StealthKeyResolver: Invalid Prefix"
     );
 
-    emit StealthKeyChanged(msg.sender, spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
+    emit StealthKeyChanged(registrant, spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
 
     // Shift the spending key prefix down by 2, making it the appropriate index of 0 or 1
     spendingPubKeyPrefix -= 2;
 
     // Ensure the opposite prefix indices are empty
-    delete keys[msg.sender][1 - spendingPubKeyPrefix];
-    delete keys[msg.sender][5 - viewingPubKeyPrefix];
+    delete keys[registrant][1 - spendingPubKeyPrefix];
+    delete keys[registrant][5 - viewingPubKeyPrefix];
 
     // Set the appropriate indices to the new key values
-    keys[msg.sender][spendingPubKeyPrefix] = spendingPubKey;
-    keys[msg.sender][viewingPubKeyPrefix] = viewingPubKey;
+    keys[registrant][spendingPubKeyPrefix] = spendingPubKey;
+    keys[registrant][viewingPubKeyPrefix] = viewingPubKey;
   }
+
+  // ======================================= Get Keys ===============================================
 
   /**
    * Returns the stealth key associated with an address.
