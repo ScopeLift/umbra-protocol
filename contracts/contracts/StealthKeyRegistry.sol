@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
+pragma solidity ^0.8.7;
 
 contract StealthKeyRegistry {
-  struct StealthKeys {
-    uint256 viewingKey;
-    uint256 spendingKey;
-  }
 
-  mapping(address => StealthKeys) public keys;
+  mapping(address => mapping(uint256 => uint256)) public keys;
 }

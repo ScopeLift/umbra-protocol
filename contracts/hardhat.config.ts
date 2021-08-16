@@ -106,7 +106,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: '0.7.6',
+        version: '0.8.7',
         settings: {
           // https://hardhat.org/hardhat-network/#solidity-optimizer-support
           optimizer: {
@@ -116,9 +116,17 @@ const config: HardhatUserConfig = {
         },
       },
       {
+        version: '0.7.6',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+          },
+        },
+      },
+      {
         version: '0.6.12',
         settings: {
-          // https://hardhat.org/hardhat-network/#solidity-optimizer-support
           optimizer: {
             enabled: true,
             runs: 999999,
