@@ -5,9 +5,10 @@ import { Artifact } from 'hardhat/types';
 import { StealthKeyRegistry } from '../typechain';
 
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 
-const { deployContract } = hre.waffle;
+const { deployContract, solidity } = hre.waffle;
+chai.use(solidity);
 
 const SPENDING_KEY = 10;
 const VIEWING_KEY = 20;
@@ -15,10 +16,11 @@ const VIEWING_KEY = 20;
 describe('StealthKeyRegistry', () => {
   let user: SignerWithAddress;
   let anotherUser: SignerWithAddress;
+  let relayer: SignerWithAddress;
   let registry: StealthKeyRegistry;
 
   before(async () => {
-    [user, anotherUser] = await hre.ethers.getSigners();
+    [user, anotherUser, relayer] = await hre.ethers.getSigners();
   });
 
   beforeEach(async () => {
@@ -26,90 +28,158 @@ describe('StealthKeyRegistry', () => {
     registry = (await deployContract(user, stealthKeyRegistryArtifact)) as StealthKeyRegistry;
   });
 
-  it('should deploy the registry contract', () => {
-    expect(isAddress(registry.address), 'Failed to deploy StealthKeyRegistry').to.be.true;
+  describe('initialization', () => {
+    it('should deploy the registry contract', async () => {
+      expect(isAddress(registry.address), 'Failed to deploy StealthKeyRegistry').to.be.true;
+    });
+
+    it('should initialize with empty stealth keys', async () => {
+      const { spendingPubKey, viewingPubKey } = await registry.stealthKeys(user.address);
+      expect(spendingPubKey.toNumber()).to.equal(0);
+      expect(viewingPubKey.toNumber()).to.equal(0);
+    });
   });
 
-  it('should initialize with empty stealth keys', async () => {
-    const { spendingPubKey, viewingPubKey } = await registry.stealthKeys(user.address);
+  describe('setting stealth keys directly', () => {
+    it('should let the user set their stealth keys', async () => {
+      await registry.setStealthKeys(2, SPENDING_KEY, 2, VIEWING_KEY);
+      const { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
+        user.address
+      );
 
-    expect(spendingPubKey.toNumber()).to.equal(0);
-    expect(viewingPubKey.toNumber()).to.equal(0);
+      expect(spendingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
+      expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+    });
+
+    it('should let the user overwrite existing stealth keys', async () => {
+      // First setup
+      await registry.setStealthKeys(3, SPENDING_KEY, 2, VIEWING_KEY);
+      let { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
+        user.address
+      );
+
+      expect(spendingPubKeyPrefix.toNumber()).to.equal(3);
+      expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
+      expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+
+      // Overwrite existing
+      await registry.setStealthKeys(2, SPENDING_KEY + 1, 3, VIEWING_KEY + 1);
+      ({ spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
+        user.address
+      ));
+
+      expect(spendingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY + 1);
+      expect(viewingPubKeyPrefix.toNumber()).to.equal(3);
+      expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY + 1);
+    });
+
+    it('should allow different users to set stealth keys independently', async () => {
+      // first user sets keys
+      await registry.connect(user).setStealthKeys(3, SPENDING_KEY, 2, VIEWING_KEY);
+      let { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
+        user.address
+      );
+
+      expect(spendingPubKeyPrefix.toNumber()).to.equal(3);
+      expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
+      expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+
+      // second user keys are still empty
+      ({ spendingPubKey, viewingPubKey } = await registry.stealthKeys(anotherUser.address));
+
+      expect(spendingPubKey.toNumber()).to.equal(0);
+      expect(viewingPubKey.toNumber()).to.equal(0);
+
+      // second user sets keys
+      await registry.connect(anotherUser).setStealthKeys(2, SPENDING_KEY + 1, 3, VIEWING_KEY + 1);
+      ({ spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
+        anotherUser.address
+      ));
+
+      expect(spendingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY + 1);
+      expect(viewingPubKeyPrefix.toNumber()).to.equal(3);
+      expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY + 1);
+
+      // first user keys are unchanged
+      ({ spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
+        user.address
+      ));
+
+      expect(spendingPubKeyPrefix.toNumber()).to.equal(3);
+      expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
+      expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+    });
   });
 
-  it('should let the user set their stealth keys', async () => {
-    await registry.setStealthKeys(2, SPENDING_KEY, 2, VIEWING_KEY);
-    const { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
-      user.address
-    );
+  describe('set stealth keys via meta tx', () => {
+    const signRegistration = async (
+      spendingPubKeyPrefix: number,
+      spendingPubKey: number,
+      viewingPubKeyPrefix: number,
+      viewingPubKey: number
+    ) => {
+      const { chainId } = await ethers.provider.getNetwork();
 
-    expect(spendingPubKeyPrefix.toNumber()).to.equal(2);
-    expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
-    expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
-    expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
-  });
+      const domain = {
+        name: 'Umbra Stealth Key Registry',
+        version: '1',
+        chainId,
+        verifyingContract: registry.address,
+      };
 
-  it('should let the user overwrite existing stealth keys', async () => {
-    // First setup
-    await registry.setStealthKeys(3, SPENDING_KEY, 2, VIEWING_KEY);
-    let { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
-      user.address
-    );
+      const types = {
+        StealthKeys: [
+          { name: 'spendingPubKeyPrefix', type: 'uint256' },
+          { name: 'spendingPubKey', type: 'uint256' },
+          { name: 'viewingPubKeyPrefix', type: 'uint256' },
+          { name: 'viewingPubKey', type: 'uint256' },
+        ],
+      };
 
-    expect(spendingPubKeyPrefix.toNumber()).to.equal(3);
-    expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
-    expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
-    expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+      const value = {
+        spendingPubKeyPrefix,
+        spendingPubKey,
+        viewingPubKeyPrefix,
+        viewingPubKey,
+      };
 
-    // Overwrite existing
-    await registry.setStealthKeys(2, SPENDING_KEY + 1, 3, VIEWING_KEY + 1);
-    ({ spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
-      user.address
-    ));
+      let signature = await user._signTypedData(domain, types, value);
+      return ethers.utils.splitSignature(signature);
+    };
 
-    expect(spendingPubKeyPrefix.toNumber()).to.equal(2);
-    expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY + 1);
-    expect(viewingPubKeyPrefix.toNumber()).to.equal(3);
-    expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY + 1);
-  });
+    it('should allow the user to update their stealth keys via EIP-712 signature', async () => {
+      const { v, r, s } = await signRegistration(3, SPENDING_KEY, 2, VIEWING_KEY);
+      await registry.connect(relayer).setStealthKeysOnBehalf(user.address, 3, SPENDING_KEY, 2, VIEWING_KEY, v, r, s);
 
-  it('should allow different users to set stealth keys independently', async () => {
-    // first user sets keys
-    await registry.connect(user).setStealthKeys(3, SPENDING_KEY, 2, VIEWING_KEY);
-    let { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
-      user.address
-    );
+      const { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
+        user.address
+      );
 
-    expect(spendingPubKeyPrefix.toNumber()).to.equal(3);
-    expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
-    expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
-    expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+      expect(spendingPubKeyPrefix.toNumber()).to.equal(3);
+      expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
+      expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
+      expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+    });
 
-    // second user keys are still empty
-    ({ spendingPubKey, viewingPubKey } = await registry.stealthKeys(anotherUser.address));
+    it('should not allow the wrong user to update stealth keys of another registrant', async () => {
+      const { v, r, s } = await signRegistration(3, SPENDING_KEY, 2, VIEWING_KEY);
+      await expect(
+        registry.connect(relayer).setStealthKeysOnBehalf(anotherUser.address, 3, SPENDING_KEY, 2, VIEWING_KEY, v, r, s)
+      ).to.be.revertedWith('StealthKeyRegistry: Invalid Signature');
+    });
 
-    expect(spendingPubKey.toNumber()).to.equal(0);
-    expect(viewingPubKey.toNumber()).to.equal(0);
-
-    // second user sets keys
-    await registry.connect(anotherUser).setStealthKeys(2, SPENDING_KEY + 1, 3, VIEWING_KEY + 1);
-    ({ spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
-      anotherUser.address
-    ));
-
-    expect(spendingPubKeyPrefix.toNumber()).to.equal(2);
-    expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY + 1);
-    expect(viewingPubKeyPrefix.toNumber()).to.equal(3);
-    expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY + 1);
-
-    // first user keys are unchanged
-    ({ spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
-      user.address
-    ));
-
-    expect(spendingPubKeyPrefix.toNumber()).to.equal(3);
-    expect(spendingPubKey.toNumber()).to.equal(SPENDING_KEY);
-    expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
-    expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
+    it('should not allow the user to update their stealth keys after signing over the wrong data', async () => {
+      const { v, r, s } = await signRegistration(3, SPENDING_KEY + 1, 2, VIEWING_KEY);
+      await expect(
+        registry.connect(relayer).setStealthKeysOnBehalf(user.address, 3, SPENDING_KEY, 2, VIEWING_KEY, v, r, s)
+      ).to.be.revertedWith('StealthKeyRegistry: Invalid Signature');
+    });
   });
 });
