@@ -17,9 +17,16 @@
                       style="max-width: 50px"
                       class="q-ml-md"
                     />
-                    <div @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
+                    <div v-if="!$q.screen.xs" @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
                       <span class="primary header-black q-ml-md">Umbra</span>
                     </div>
+                    <address-settings
+                      v-else
+                      :userDisplayAddress="userDisplayAddress"
+                      :isSupportedNetwork="isSupportedNetwork"
+                      :advancedMode="advancedMode"
+                      class="q-ml-md row"
+                    />
                   </div>
 
                   <!-- NAVIGATION LINKS -->
@@ -63,13 +70,7 @@
         />
       </div>
       <div class="col q-col-gutter-y-sm q-px-md">
-        <header-links class="column q-col-gutter-y-sm" />
-        <address-settings
-          :userDisplayAddress="userDisplayAddress"
-          :isSupportedNetwork="isSupportedNetwork"
-          :advancedMode="advancedMode"
-          class="row"
-        />
+        <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
       </div>
     </q-drawer>
 
@@ -80,92 +81,86 @@
     <q-footer class="q-mx-md q-mb-md q-pt-xl" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="row self-start justify-between all-content-format">
         <!-- Column 1: User settings -->
-        <div class="col-xs-12 col-sm-4 column items-center">
-          <div class="col footer-link-column">
-            <p class="dark-toggle spaced-letters">Settings</p>
-            <!-- Dark mode toggle -->
-            <p class="dark-toggle">
-              <q-icon v-if="!$q.dark.isActive" @click="toggleDarkMode" class="cursor-pointer icon" name="fas fa-moon" />
-              <q-icon v-else @click="toggleDarkMode" class="dark-toggle cursor-pointer icon" name="fas fa-sun" />
-              <span class="text-caption q-ml-md">Dark mode {{ $q.dark.isActive ? 'on' : 'off' }}</span>
-            </p>
+        <div class="col-xs-12 col-sm-4">
+          <p class="dark-toggle spaced-letters">Settings</p>
+          <!-- Dark mode toggle -->
+          <p class="dark-toggle">
+            <q-icon v-if="!$q.dark.isActive" @click="toggleDarkMode" class="cursor-pointer icon" name="fas fa-moon" />
+            <q-icon v-else @click="toggleDarkMode" class="dark-toggle cursor-pointer icon" name="fas fa-sun" />
+            <span class="text-caption q-ml-md">Dark mode {{ $q.dark.isActive ? 'on' : 'off' }}</span>
+          </p>
 
-            <!-- Advanced mode toggle -->
-            <p>
-              <q-toggle
-                @input="toggleAdvancedMode"
-                :value="advancedMode"
-                class="icon"
-                color="primary"
-                dense
-                icon="fas fa-cog"
-              />
-              <span class="dark-toggle text-caption q-ml-md">Advanced mode {{ advancedMode ? 'on' : 'off' }}</span>
-              <span>
-                <q-icon class="dark-toggle" right name="fas fa-question-circle">
-                  <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md" max-width="14rem">
-                    Enables advanced features such as private key export, additional recipient ID options, and event
-                    scanning settings. <span class="text-bold">Use with caution!</span>
-                  </q-tooltip>
-                </q-icon>
-              </span>
-            </p>
+          <!-- Advanced mode toggle -->
+          <p>
+            <q-toggle
+              @input="toggleAdvancedMode"
+              :value="advancedMode"
+              class="icon"
+              color="primary"
+              dense
+              icon="fas fa-cog"
+            />
+            <span class="dark-toggle text-caption q-ml-md">Advanced mode {{ advancedMode ? 'on' : 'off' }}</span>
+            <span>
+              <q-icon class="dark-toggle" right name="fas fa-question-circle">
+                <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md" max-width="14rem">
+                  Enables advanced features such as private key export, additional recipient ID options, and event
+                  scanning settings. <span class="text-bold">Use with caution!</span>
+                </q-tooltip>
+              </q-icon>
+            </span>
+          </p>
 
-            <p v-if="isAccountSetup">
-              <q-icon class="dark-toggle icon" name="fas fa-user q-mr-xs" />
-              <span class="dark-toggle text-caption q-ml-sm">
-                Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
-              </span>
-            </p>
-          </div>
+          <p v-if="isAccountSetup">
+            <q-icon class="dark-toggle icon" name="fas fa-user q-mr-xs" />
+            <span class="dark-toggle text-caption q-ml-sm">
+              Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
+            </span>
+          </p>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
-        <div class="col-xs-12 col-sm-4 column items-center">
-          <div class="col footer-link-column">
-            <p class="dark-toggle spaced-letters">About</p>
-            <p class="dark-toggle text-caption footer-link-no-icon">
-              Built by
-              <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
-            </p>
-            <p class="footer-link-no-icon">
-              <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
-            </p>
-            <p class="footer-link-no-icon">
-              <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">Privacy Policy</router-link>
-            </p>
-          </div>
+        <div class="col-xs-12 col-sm-4">
+          <p class="dark-toggle spaced-letters">About</p>
+          <p class="dark-toggle text-caption">
+            Built by
+            <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
+          </p>
+          <p class="">
+            <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
+          </p>
+          <p class="">
+            <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">Privacy Policy</router-link>
+          </p>
         </div>
 
         <!-- Column 3: Links -->
-        <div class="col-xs-12 col-sm-4 column items-center">
-          <div class="col footer-link-column">
-            <p class="dark-toggle spaced-letters">Links</p>
-            <p>
-              <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
-                <q-icon class="dark-toggle q-mr-md" name="fab fa-twitter" size="xs" />
-                <span class="hyperlink text-caption">Twitter</span>
-              </a>
-            </p>
-            <p>
-              <a href="https://t.me/UmbraCash" target="_blank" class="no-text-decoration">
-                <q-icon class="dark-toggle q-mr-md" name="fab fa-telegram" size="xs" />
-                <span class="hyperlink text-caption">Telegram</span>
-              </a>
-            </p>
-            <p>
-              <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="no-text-decoration">
-                <q-icon class="dark-toggle q-mr-md" name="fab fa-github" size="xs" />
-                <span class="hyperlink text-caption">GitHub</span>
-              </a>
-            </p>
-            <p>
-              <a href="mailto:support@umbra.cash" target="_blank" class="no-text-decoration">
-                <q-icon class="dark-toggle q-mr-md" name="fas fa-envelope" size="xs" />
-                <span class="hyperlink text-caption">support@umbra.cash</span>
-              </a>
-            </p>
-          </div>
+        <div class="col-xs-12 col-sm-4">
+          <p class="dark-toggle spaced-letters">Links</p>
+          <p>
+            <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
+              <q-icon class="dark-toggle q-mr-md" name="fab fa-twitter" size="xs" />
+              <span class="hyperlink text-caption">Twitter</span>
+            </a>
+          </p>
+          <p>
+            <a href="https://t.me/UmbraCash" target="_blank" class="no-text-decoration">
+              <q-icon class="dark-toggle q-mr-md" name="fab fa-telegram" size="xs" />
+              <span class="hyperlink text-caption">Telegram</span>
+            </a>
+          </p>
+          <p>
+            <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="no-text-decoration">
+              <q-icon class="dark-toggle q-mr-md" name="fab fa-github" size="xs" />
+              <span class="hyperlink text-caption">GitHub</span>
+            </a>
+          </p>
+          <p>
+            <a href="mailto:support@umbra.cash" target="_blank" class="no-text-decoration">
+              <q-icon class="dark-toggle q-mr-md" name="fas fa-envelope" size="xs" />
+              <span class="hyperlink text-caption">support@umbra.cash</span>
+            </a>
+          </p>
         </div>
       </div>
     </q-footer>
@@ -209,13 +204,4 @@ export default defineComponent({
 .spaced-letters
   text-transform: uppercase
   letter-spacing: 0.4em
-  text-align: center
-
-.footer-link-column
-  @media (max-width: $breakpoint-sm-max)
-    /* width of the longest link row */
-    width: 196.672px
-
-.footer-link-no-icon
-  padding-left: 34px
 </style>

@@ -29,11 +29,15 @@
       transition-prev="slide-right"
     >
       <!-- Carousel Arrow Navigation Buttons, hidden on step 4 (the success step) -->
-      <template v-slot:control v-if="!$q.screen.xs && carouselStep !== '4'">
-        <q-carousel-control v-if="carouselStep !== '1'" position="left" class="row">
+      <template v-slot:control v-if="carouselStep !== '4'">
+        <q-carousel-control v-if="carouselStep !== '1'" position="left" :class="{ row: true, invisible: $q.screen.xs }">
           <q-btn @click="$refs.carousel.previous()" class="q-my-auto" flat icon="fas fa-arrow-left" text-color="grey" />
         </q-carousel-control>
-        <q-carousel-control v-if="carouselStep !== '3'" position="right" class="row">
+        <q-carousel-control
+          v-if="carouselStep !== '3'"
+          position="right"
+          :class="{ row: true, invisible: $q.screen.xs }"
+        >
           <q-btn
             @click="$refs.carousel.next()"
             class="q-my-auto"
