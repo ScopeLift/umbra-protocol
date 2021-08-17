@@ -73,60 +73,60 @@ contract StealthKeyRegistry {
   /**
    * Sets the stealth keys associated with an address, for anonymous sends.
    * May only be called by the associated address.
-   * @param spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
-   * @param spendingPubKey The public key for generating a stealth address
-   * @param viewingPubKeyPrefix Prefix of the viewing public key (2 or 3)
-   * @param viewingPubKey The public key to use for encryption
+   * @param _spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
+   * @param _spendingPubKey The public key for generating a stealth address
+   * @param _viewingPubKeyPrefix Prefix of the viewing public key (2 or 3)
+   * @param _viewingPubKey The public key to use for encryption
    */
   function setStealthKeys(
-    uint256 spendingPubKeyPrefix,
-    uint256 spendingPubKey,
-    uint256 viewingPubKeyPrefix,
-    uint256 viewingPubKey
+    uint256 _spendingPubKeyPrefix,
+    uint256 _spendingPubKey ,
+    uint256 _viewingPubKeyPrefix,
+    uint256 _viewingPubKey
   ) external {
-    _setStealthKeys(msg.sender, spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
+    _setStealthKeys(msg.sender, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey);
   }
 
   /**
    * Sets the stealth keys associated with an address, for anonymous sends.
    * May only be called by the associated address.
-   * @param registrant The address for which stealth keys are being registered, must also sign
-   * @param spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
-   * @param spendingPubKey The public key for generating a stealth address
-   * @param viewingPubKeyPrefix Prefix of the viewing public key (2 or 3)
-   * @param viewingPubKey The public key to use for encryption
+   * @param _registrant The address for which stealth keys are being registered, must also sign
+   * @param _spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
+   * @param _spendingPubKey The public key for generating a stealth address
+   * @param _viewingPubKeyPrefix Prefix of the viewing public key (2 or 3)
+   * @param _viewingPubKey The public key to use for encryption
    * @param _v ECDSA signature component: Parity of the `y` coordinate of point `R`
    * @param _r ECDSA signature component: x-coordinate of `R`
    * @param _s ECDSA signature component: `s` value of the signature
    */
   function setStealthKeysOnBehalf(
-    address registrant,
-    uint256 spendingPubKeyPrefix,
-    uint256 spendingPubKey,
-    uint256 viewingPubKeyPrefix,
-    uint256 viewingPubKey,
+    address _registrant,
+    uint256 _spendingPubKeyPrefix,
+    uint256 _spendingPubKey ,
+    uint256 _viewingPubKeyPrefix,
+    uint256 _viewingPubKey,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
   ) external {
     // create EIP-712 Digest
-    bytes32 digest =
+    bytes32 _digest =
       keccak256(
         abi.encodePacked(
           "\x19\x01",
           DOMAIN_SEPARATOR,
           keccak256(
-            abi.encode(STEALTHKEYS_TYPEHASH, spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey)
+            abi.encode(STEALTHKEYS_TYPEHASH, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey)
           )
         )
       );
 
     // recover the signing address and ensure it matches the registrant
-    address _recovered = ecrecover(digest, _v, _r, _s);
-    require(_recovered == registrant, "StealthKeyRegistry: Invalid Signature");
+    address _recovered = ecrecover(_digest, _v, _r, _s);
+    require(_recovered == _registrant, "StealthKeyRegistry: Invalid Signature");
 
     // now that we know the registrant has authorized it, update the stealth keys
-    _setStealthKeys(registrant, spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
+    _setStealthKeys(_registrant, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey);
   }
 
   /**
@@ -134,68 +134,68 @@ contract StealthKeyRegistry {
    * check on registrant; see calling method for parameter details
    */
   function _setStealthKeys(
-    address registrant,
-    uint256 spendingPubKeyPrefix,
-    uint256 spendingPubKey,
-    uint256 viewingPubKeyPrefix,
-    uint256 viewingPubKey
+    address _registrant,
+    uint256 _spendingPubKeyPrefix,
+    uint256 _spendingPubKey ,
+    uint256 _viewingPubKeyPrefix,
+    uint256 _viewingPubKey
   ) internal {
     require(
-      (spendingPubKeyPrefix == 2 || spendingPubKeyPrefix == 3) &&
-        (viewingPubKeyPrefix == 2 || viewingPubKeyPrefix == 3),
+      (_spendingPubKeyPrefix == 2 || _spendingPubKeyPrefix == 3) &&
+        (_viewingPubKeyPrefix == 2 || _viewingPubKeyPrefix == 3),
       "StealthKeyResolver: Invalid Prefix"
     );
 
-    emit StealthKeyChanged(registrant, spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
+    emit StealthKeyChanged(_registrant, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey);
 
     // Shift the spending key prefix down by 2, making it the appropriate index of 0 or 1
-    spendingPubKeyPrefix -= 2;
+    _spendingPubKeyPrefix -= 2;
 
     // Ensure the opposite prefix indices are empty
-    delete keys[registrant][1 - spendingPubKeyPrefix];
-    delete keys[registrant][5 - viewingPubKeyPrefix];
+    delete keys[_registrant][1 - _spendingPubKeyPrefix];
+    delete keys[_registrant][5 - _viewingPubKeyPrefix];
 
     // Set the appropriate indices to the new key values
-    keys[registrant][spendingPubKeyPrefix] = spendingPubKey;
-    keys[registrant][viewingPubKeyPrefix] = viewingPubKey;
+    keys[_registrant][_spendingPubKeyPrefix] = _spendingPubKey ;
+    keys[_registrant][_viewingPubKeyPrefix] = _viewingPubKey;
   }
 
   // ======================================= Get Keys ===============================================
 
   /**
    * Returns the stealth key associated with an address.
-   * @param registrant The address whose keys to lookup.
+   * @param _registrant The address whose keys to lookup.
    * @return spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
    * @return spendingPubKey The public key for generating a stealth address
    * @return viewingPubKeyPrefix Prefix of the viewing public key (2 or 3)
    * @return viewingPubKey The public key to use for encryption
    */
-  function stealthKeys(address registrant)
+  function stealthKeys(address _registrant)
     external
     view
     returns (
       uint256 spendingPubKeyPrefix,
-      uint256 spendingPubKey,
+      uint256 spendingPubKey ,
       uint256 viewingPubKeyPrefix,
       uint256 viewingPubKey
     )
   {
-    if (keys[registrant][0] != 0) {
+    if (keys[_registrant][0] != 0) {
       spendingPubKeyPrefix = 2;
-      spendingPubKey = keys[registrant][0];
+      spendingPubKey = keys[_registrant][0];
     } else {
       spendingPubKeyPrefix = 3;
-      spendingPubKey = keys[registrant][1];
+      spendingPubKey = keys[_registrant][1];
     }
 
-    if (keys[registrant][2] != 0) {
+    if (keys[_registrant][2] != 0) {
       viewingPubKeyPrefix = 2;
-      viewingPubKey = keys[registrant][2];
+      viewingPubKey = keys[_registrant][2];
     } else {
       viewingPubKeyPrefix = 3;
-      viewingPubKey = keys[registrant][3];
+      viewingPubKey = keys[_registrant][3];
     }
 
-    return (spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
+    return (spendingPubKeyPrefix, spendingPubKey , viewingPubKeyPrefix, viewingPubKey);
   }
 }
