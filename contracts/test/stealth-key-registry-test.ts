@@ -40,7 +40,7 @@ describe('StealthKeyRegistry', () => {
     });
   });
 
-  describe('setting stealth keys directly', () => {
+  describe('set stealth keys directly', () => {
     it('should let the user set their stealth keys', async () => {
       await registry.setStealthKeys(2, SPENDING_KEY, 2, VIEWING_KEY);
       const { spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey } = await registry.stealthKeys(
