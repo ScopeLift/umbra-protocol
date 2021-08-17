@@ -6,7 +6,7 @@
 
     <q-card-section>
       <div class="text-caption text-grey">Withdrawing to</div>
-      <div>{{ destinationAddress }}</div>
+      <div>{{ $q.screen.xs ? formatAddress(destinationAddress) : destinationAddress }}</div>
 
       <div>
         <div class="text-caption text-grey q-mt-md">Amount</div>
@@ -106,6 +106,7 @@
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
+import { formatAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
 import { getEtherscanUrl, getGasPrice, round } from 'src/utils/utils';
 
@@ -223,6 +224,7 @@ export default defineComponent({
       context,
       confirmationOptions,
       etherscanUrl,
+      formatAddress,
       formattedAmount,
       formattedAmountReceived,
       formattedFee,

@@ -1,11 +1,12 @@
 <template>
-  <q-form @submit="this.$emit('initializeWithdraw')" class="form-wide q-pa-md" style="white-space: normal">
+  <q-form @submit="emit('initializeWithdraw')" class="form-wide q-pa-md" style="white-space: normal">
     <!-- Withdrawal form -->
     <div v-if="!isWithdrawInProgress">
       <div>Enter address to withdraw funds to</div>
       <base-input
-        v-model="destinationAddress"
-        @click="this.$emit('initializeWithdraw')"
+        v-model="content"
+        @input="emit('updateDestinationAddress', content)"
+        @click="emit('initializeWithdraw')"
         appendButtonLabel="Withdraw"
         :appendButtonDisable="isWithdrawInProgress || isFeeLoading"
         :appendButtonLoading="isWithdrawInProgress"
@@ -46,14 +47,10 @@
 
     <!-- Advanced feature: show private key -->
     <div v-if="advancedMode">
-      <div @click="this.$emit('togglePrivateKey')" class="text-caption hyperlink q-mt-lg">
+      <div @click="emit('togglePrivateKey')" class="text-caption hyperlink q-mt-lg">
         {{ spendingPrivateKey ? 'Hide' : 'Show' }} withdrawal private key
       </div>
-      <div
-        v-if="spendingPrivateKey"
-        @click="this.$emit('copyPrivateKey')"
-        class="cursor-pointer copy-icon-parent q-mt-sm"
-      >
+      <div v-if="spendingPrivateKey" @click="emit('copyPrivateKey')" class="cursor-pointer copy-icon-parent q-mt-sm">
         <span class="text-caption">{{ spendingPrivateKey }}</span>
         <q-icon class="copy-icon" name="far fa-copy" right />
       </div>
@@ -62,18 +59,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { formatUnits } from 'src/utils/ethers';
 import { round } from 'src/utils/utils';
 import { FeeEstimateResponse } from './models';
 
 export default defineComponent({
   name: 'WithdrawForm',
-
   props: {
     destinationAddress: {
       type: String,
-      required: true,
+      required: false,
     },
     isWithdrawInProgress: {
       type: Boolean,
@@ -89,19 +85,21 @@ export default defineComponent({
     },
     spendingPrivateKey: {
       type: String,
-      required: true,
+      required: false,
     },
     activeFee: {
       type: Object as PropType<FeeEstimateResponse>,
-      required: true,
+      required: false,
     },
     advancedMode: {
       type: Boolean,
       required: true,
     },
   },
-  setup() {
-    return { formatUnits, round };
+  setup({ destinationAddress }, { emit }) {
+    const content = ref<string>(destinationAddress || '');
+
+    return { formatUnits, round, emit, content };
   },
 });
 </script>

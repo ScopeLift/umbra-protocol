@@ -1,12 +1,27 @@
 <template>
   <div>
-    <router-link active-class="text-bold" class="no-text-decoration dark-toggle" exact :to="{ name: 'home' }">
+    <router-link
+      active-class="text-bold"
+      :class="{ 'no-text-decoration': true, 'dark-toggle': true, 'text-subtitle1': isDrawer, 'q-pa-sm': isDrawer }"
+      exact
+      :to="{ name: 'home' }"
+    >
       Home
     </router-link>
-    <router-link active-class="text-bold" class="no-text-decoration dark-toggle" exact :to="{ name: 'FAQ' }">
+    <router-link
+      active-class="text-bold"
+      :class="{ 'no-text-decoration': true, 'dark-toggle': true, 'text-subtitle1': isDrawer, 'q-pa-sm': isDrawer }"
+      exact
+      :to="{ name: 'FAQ' }"
+    >
       FAQ
     </router-link>
-    <router-link active-class="text-bold" class="no-text-decoration dark-toggle" exact :to="{ name: 'contact' }">
+    <router-link
+      active-class="text-bold"
+      :class="{ 'no-text-decoration': true, 'dark-toggle': true, 'text-subtitle1': isDrawer, 'q-pa-sm': isDrawer }"
+      exact
+      :to="{ name: 'contact' }"
+    >
       Contact
     </router-link>
   </div>
@@ -17,7 +32,14 @@ import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'HeaderLinks',
-
-  props: {},
+  props: {
+    isDrawer: {
+      type: Boolean,
+      required: false,
+    },
+  },
+  setup() {
+    return {};
+  },
 });
 </script>
