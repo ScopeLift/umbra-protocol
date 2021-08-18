@@ -50,8 +50,12 @@
       <div @click="emit('togglePrivateKey')" class="text-caption hyperlink q-mt-lg">
         {{ spendingPrivateKey ? 'Hide' : 'Show' }} withdrawal private key
       </div>
-      <div v-if="spendingPrivateKey" @click="emit('copyPrivateKey')" class="cursor-pointer copy-icon-parent q-mt-sm">
-        <span class="text-caption">{{ spendingPrivateKey }}</span>
+      <div
+        v-if="spendingPrivateKey"
+        @click="emit('copyPrivateKey')"
+        class="text-caption text-break-word cursor-pointer copy-icon-parent q-mt-sm"
+      >
+        <span>{{ spendingPrivateKey }}</span>
         <q-icon class="copy-icon" name="far fa-copy" right />
       </div>
     </div>
