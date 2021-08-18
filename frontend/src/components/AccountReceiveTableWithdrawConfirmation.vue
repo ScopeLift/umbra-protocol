@@ -53,7 +53,7 @@
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
           <div v-if="loaded">-{{ formattedFee }} {{ symbol }}</div>
           <q-icon
-            v-if="loaded"
+            v-if="isEth && loaded"
             @click="toggleCustomFee"
             class="cursor-pointer"
             color="primary"
