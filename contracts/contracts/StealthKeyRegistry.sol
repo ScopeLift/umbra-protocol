@@ -5,7 +5,7 @@ pragma solidity ^0.8.7;
 contract StealthKeyRegistry {
   // =========================================== Events ============================================
 
-  /// @dev Event emitted when a user updates their resolver stealth keys
+  /// @dev Event emitted when a user updates their registered stealth keys
   event StealthKeyChanged(
     address indexed registrant,
     uint256 spendingPubKeyPrefix,
@@ -133,7 +133,7 @@ contract StealthKeyRegistry {
     require(
       (_spendingPubKeyPrefix == 2 || _spendingPubKeyPrefix == 3) &&
         (_viewingPubKeyPrefix == 2 || _viewingPubKeyPrefix == 3),
-      "StealthKeyResolver: Invalid Prefix"
+      "StealthKeyRegistry: Invalid Prefix"
     );
 
     emit StealthKeyChanged(_registrant, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey);

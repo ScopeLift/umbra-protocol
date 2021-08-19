@@ -115,6 +115,12 @@ describe('StealthKeyRegistry', () => {
       expect(viewingPubKeyPrefix.toNumber()).to.equal(2);
       expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
     });
+
+    it('should not allow a user to set stealth keys with invalid prefixes', async () => {
+      await expect(registry.setStealthKeys(1, SPENDING_KEY, 3, VIEWING_KEY)).to.be.revertedWith('StealthKeyRegistry: Invalid Prefix');
+      await expect(registry.setStealthKeys(2, SPENDING_KEY, 0, VIEWING_KEY)).to.be.revertedWith('StealthKeyRegistry: Invalid Prefix');
+      await expect(registry.setStealthKeys(2, SPENDING_KEY, 4, VIEWING_KEY)).to.be.revertedWith('StealthKeyRegistry: Invalid Prefix');
+    });
   });
 
   describe('set stealth keys via meta tx', () => {
