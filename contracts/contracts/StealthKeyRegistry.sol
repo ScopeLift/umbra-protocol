@@ -16,10 +16,6 @@ contract StealthKeyRegistry {
 
   // ======================================= State variables =======================================
 
-  /// @dev The domain typehash used for EIP-712 signatures in setStealthKeysOnBehalf
-  bytes32 public constant EIP712DOMAIN_TYPEHASH =
-    keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
-
   /// @dev The payload typehash used for EIP-712 signatures in setStealthKeysOnBehalf
   bytes32 public constant STEALTHKEYS_TYPEHASH =
     keccak256(
@@ -52,17 +48,12 @@ contract StealthKeyRegistry {
    * chainId and the contract address
    */
   constructor() {
-    uint256 _chainId;
-    assembly {
-      _chainId := chainid()
-    }
-
     DOMAIN_SEPARATOR = keccak256(
       abi.encode(
-        EIP712DOMAIN_TYPEHASH,
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
         keccak256(bytes("Umbra Stealth Key Registry")),
         keccak256(bytes("1")),
-        _chainId,
+        block.chainid,
         address(this)
       )
     );
