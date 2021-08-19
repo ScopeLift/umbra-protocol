@@ -5,10 +5,9 @@ import { Artifact } from 'hardhat/types';
 import { StealthKeyRegistry } from '../typechain';
 
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import chai, { expect } from 'chai';
+import { expect } from 'chai';
 
-const { deployContract, solidity } = hre.waffle;
-chai.use(solidity);
+const { deployContract } = hre.waffle;
 
 const SPENDING_KEY = 10;
 const VIEWING_KEY = 20;
