@@ -69,11 +69,11 @@ contract StealthKeyRegistry {
    */
   function setStealthKeys(
     uint256 _spendingPubKeyPrefix,
-    uint256 _spendingPubKey ,
+    uint256 _spendingPubKey,
     uint256 _viewingPubKeyPrefix,
     uint256 _viewingPubKey
   ) external {
-    _setStealthKeys(msg.sender, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey);
+    _setStealthKeys(msg.sender, _spendingPubKeyPrefix, _spendingPubKey, _viewingPubKeyPrefix, _viewingPubKey);
   }
 
   /**
@@ -92,7 +92,7 @@ contract StealthKeyRegistry {
   function setStealthKeysOnBehalf(
     address _registrant,
     uint256 _spendingPubKeyPrefix,
-    uint256 _spendingPubKey ,
+    uint256 _spendingPubKey,
     uint256 _viewingPubKeyPrefix,
     uint256 _viewingPubKey,
     uint8 _v,
@@ -106,7 +106,13 @@ contract StealthKeyRegistry {
           "\x19\x01",
           DOMAIN_SEPARATOR,
           keccak256(
-            abi.encode(STEALTHKEYS_TYPEHASH, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey)
+            abi.encode(
+              STEALTHKEYS_TYPEHASH,
+              _spendingPubKeyPrefix,
+              _spendingPubKey,
+              _viewingPubKeyPrefix,
+              _viewingPubKey
+            )
           )
         )
       );
@@ -116,7 +122,7 @@ contract StealthKeyRegistry {
     require(_recovered == _registrant, "StealthKeyRegistry: Invalid Signature");
 
     // now that we know the registrant has authorized it, update the stealth keys
-    _setStealthKeys(_registrant, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey);
+    _setStealthKeys(_registrant, _spendingPubKeyPrefix, _spendingPubKey, _viewingPubKeyPrefix, _viewingPubKey);
   }
 
   /**
@@ -126,7 +132,7 @@ contract StealthKeyRegistry {
   function _setStealthKeys(
     address _registrant,
     uint256 _spendingPubKeyPrefix,
-    uint256 _spendingPubKey ,
+    uint256 _spendingPubKey,
     uint256 _viewingPubKeyPrefix,
     uint256 _viewingPubKey
   ) internal {
@@ -136,7 +142,7 @@ contract StealthKeyRegistry {
       "StealthKeyRegistry: Invalid Prefix"
     );
 
-    emit StealthKeyChanged(_registrant, _spendingPubKeyPrefix, _spendingPubKey , _viewingPubKeyPrefix, _viewingPubKey);
+    emit StealthKeyChanged(_registrant, _spendingPubKeyPrefix, _spendingPubKey, _viewingPubKeyPrefix, _viewingPubKey);
 
     // Shift the spending key prefix down by 2, making it the appropriate index of 0 or 1
     _spendingPubKeyPrefix -= 2;
@@ -146,7 +152,7 @@ contract StealthKeyRegistry {
     delete keys[_registrant][5 - _viewingPubKeyPrefix];
 
     // Set the appropriate indices to the new key values
-    keys[_registrant][_spendingPubKeyPrefix] = _spendingPubKey ;
+    keys[_registrant][_spendingPubKeyPrefix] = _spendingPubKey;
     keys[_registrant][_viewingPubKeyPrefix] = _viewingPubKey;
   }
 
@@ -165,7 +171,7 @@ contract StealthKeyRegistry {
     view
     returns (
       uint256 spendingPubKeyPrefix,
-      uint256 spendingPubKey ,
+      uint256 spendingPubKey,
       uint256 viewingPubKeyPrefix,
       uint256 viewingPubKey
     )
@@ -186,6 +192,6 @@ contract StealthKeyRegistry {
       viewingPubKey = keys[_registrant][3];
     }
 
-    return (spendingPubKeyPrefix, spendingPubKey , viewingPubKeyPrefix, viewingPubKey);
+    return (spendingPubKeyPrefix, spendingPubKey, viewingPubKeyPrefix, viewingPubKey);
   }
 }
