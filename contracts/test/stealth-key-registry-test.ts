@@ -116,6 +116,12 @@ describe('StealthKeyRegistry', () => {
       expect(viewingPubKey.toNumber()).to.equal(VIEWING_KEY);
     });
 
+    it('should emit an event when keys are updated', async () => {
+      await expect(registry.setStealthKeys(2, SPENDING_KEY, 3, VIEWING_KEY))
+        .to.emit(registry, 'StealthKeyChanged')
+        .withArgs(user.address, 2, SPENDING_KEY, 3, VIEWING_KEY);
+    });
+
     it('should not allow a user to set stealth keys with invalid prefixes', async () => {
       await expect(registry.setStealthKeys(1, SPENDING_KEY, 3, VIEWING_KEY)).to.be.revertedWith('StealthKeyRegistry: Invalid Prefix');
       await expect(registry.setStealthKeys(2, SPENDING_KEY, 0, VIEWING_KEY)).to.be.revertedWith('StealthKeyRegistry: Invalid Prefix');
