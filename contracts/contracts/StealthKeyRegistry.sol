@@ -26,9 +26,9 @@ contract StealthKeyRegistry {
   bytes32 public immutable DOMAIN_SEPARATOR;
 
   /**
-   * @dev Mapping used to store two secp256k1 curve public keys useful for
+   * @dev Mapping used to store two secp256k1 curve public keys used for
    * receiving stealth payments. The mapping records two keys: a viewing
-   * key and a spending key, which can be set and read via the `setsStealthKeys`
+   * key and a spending key, which can be set and read via the `setStealthKeys`
    * and `stealthKey` methods respectively.
    *
    * The mapping associates the user's address to another mapping, which itself maps
@@ -39,7 +39,6 @@ contract StealthKeyRegistry {
    *
    * For more on secp256k1 public keys and prefixes generally, see:
    * https://github.com/ethereumbook/ethereumbook/blob/develop/04keys-addresses.asciidoc#generating-a-public-key
-   *
    */
   mapping(address => mapping(uint256 => uint256)) keys;
 
@@ -62,8 +61,7 @@ contract StealthKeyRegistry {
   // ======================================= Set Keys ===============================================
 
   /**
-   * Sets the stealth keys associated with an address, for anonymous sends.
-   * May only be called by the associated address.
+   * @notice Sets stealth keys for the caller
    * @param _spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
    * @param _spendingPubKey The public key for generating a stealth address
    * @param _viewingPubKeyPrefix Prefix of the viewing public key (2 or 3)
@@ -79,9 +77,10 @@ contract StealthKeyRegistry {
   }
 
   /**
-   * Sets the stealth keys associated with an address, for anonymous sends.
-   * May only be called by the associated address.
-   * @param _registrant The address for which stealth keys are being registered, must also sign
+   * @notice Sets stealth keys for the registrant using an EIP-712 signature to
+   * authenticate the update on their behalf.
+   * @param _registrant The address for which stealth keys are being registered,
+   * i.e. the address expected to be recovered from the provided signature
    * @param _spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
    * @param _spendingPubKey The public key for generating a stealth address
    * @param _viewingPubKeyPrefix Prefix of the viewing public key (2 or 3)
@@ -154,7 +153,7 @@ contract StealthKeyRegistry {
   // ======================================= Get Keys ===============================================
 
   /**
-   * Returns the stealth key associated with an address.
+   * @notice Returns the stealth key associated with an address.
    * @param _registrant The address whose keys to lookup.
    * @return spendingPubKeyPrefix Prefix of the spending public key (2 or 3)
    * @return spendingPubKey The public key for generating a stealth address
