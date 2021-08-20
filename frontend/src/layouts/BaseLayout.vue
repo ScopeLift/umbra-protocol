@@ -40,12 +40,20 @@
             <!-- HAMBURGER MENU -->
             <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
             <!-- ADDRESS AND SETTINGS AND SETTINGS -->
-            <div v-else class="col-auto q-mr-md">
-              <address-settings
-                :userDisplayAddress="userDisplayAddress"
-                :isSupportedNetwork="isSupportedNetwork"
-                :advancedMode="advancedMode"
-                class="row"
+            <div v-else class="row items-center">
+              <div class="q-mr-md">
+                <address-settings
+                  :userDisplayAddress="userDisplayAddress"
+                  :isSupportedNetwork="isSupportedNetwork"
+                  :advancedMode="advancedMode"
+                  class="row"
+                />
+              </div>
+              <network-dropdown
+                v-if="userDisplayAddress"
+                :isLoading="userDisplayAddress && !network"
+                :network="network"
+                @setNetwork="setNetwork"
               />
             </div>
           </div>
@@ -71,6 +79,14 @@
       </div>
       <div class="col q-col-gutter-y-sm q-px-md">
         <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
+      </div>
+      <div class="row q-pt-sm q-pl-md">
+        <network-dropdown
+          v-if="userDisplayAddress"
+          :isLoading="userDisplayAddress && !network"
+          :network="network"
+          @setNetwork="setNetwork"
+        />
       </div>
     </q-drawer>
 
@@ -173,9 +189,10 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import AddressSettings from './AddressSettings.vue';
 import HeaderLinks from './HeaderLinks.vue';
+import NetworkDropdown from './NetworkDropdown.vue';
 
 function useWallet() {
-  const { userDisplayAddress, network, isAccountSetup, isSupportedNetwork } = useWalletStore();
+  const { userDisplayAddress, network, setNetwork, isAccountSetup, isSupportedNetwork } = useWalletStore();
   const networkName = ref('');
 
   watchEffect(() => {
@@ -184,12 +201,12 @@ function useWallet() {
     }
   });
 
-  return { userDisplayAddress, networkName, isAccountSetup, isSupportedNetwork };
+  return { userDisplayAddress, network, networkName, setNetwork, isAccountSetup, isSupportedNetwork };
 }
 
 export default defineComponent({
   name: 'BaseLayout',
-  components: { AddressSettings, HeaderLinks },
+  components: { AddressSettings, HeaderLinks, NetworkDropdown },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
     return { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode, ...useWallet(), drawerRight: ref(false) };

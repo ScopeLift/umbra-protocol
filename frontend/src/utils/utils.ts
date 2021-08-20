@@ -16,6 +16,20 @@ export const getEtherscanUrl = (txHash: string, chainId: number) => {
 };
 
 /**
+ * @notice Generates short names based on the given `chainId`
+ */
+export const getChainShortName = (chainId?: number) => {
+  switch (chainId) {
+    case 1:
+      return 'Ethereum';
+    case 4:
+      return 'Rinkeby';
+    default:
+      return '';
+  }
+};
+
+/**
  * @notice Rounds `value` to the specified number of `decimals` and returns a string
  */
 export const round = (value: number | string, decimals = 2) => {

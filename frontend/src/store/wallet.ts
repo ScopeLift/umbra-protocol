@@ -1,7 +1,15 @@
 import { computed, onMounted, ref } from '@vue/composition-api';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
-import { MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds } from 'components/models';
+import {
+  Chain,
+  MulticallResponse,
+  Network,
+  Provider,
+  Signer,
+  supportedChainIds,
+  SupportedChainIds,
+} from 'components/models';
 import Multicall from 'src/contracts/Multicall.json';
 import ERC20 from 'src/contracts/ERC20.json';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
@@ -205,6 +213,26 @@ export default function useWalletStore() {
     }
   }
 
+  /**
+   * @notice Prompts user for a signature to change network
+   */
+  async function setNetwork(chain: Chain) {
+    try {
+      await provider.value?.send('wallet_switchEthereumChain', [{ chainId: chain.chainId }]);
+    } catch (error) {
+      // This error code indicates that the chain has not been added to MetaMask.
+      if (error.code === 4902) {
+        try {
+          await provider.value?.send('wallet_addEthereumChain', [chain]);
+        } catch (addError) {
+          console.log(addError);
+        }
+      } else {
+        console.log(error);
+      }
+    }
+  }
+
   // ------------------------------------------ Mutations ------------------------------------------
   // Helper method to clear state. Useful when user switches wallets.
   function resetState() {
@@ -265,6 +293,7 @@ export default function useWalletStore() {
     getPrivateKeys,
     getTokenBalances,
     setProvider,
+    setNetwork,
     setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status),
     setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status),
     // "Direct" properties, i.e. return them directly without modification
