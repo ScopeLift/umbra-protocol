@@ -78,7 +78,7 @@ const config: HardhatUserConfig = {
         count: 10,
         initialIndex: 0,
         mnemonic,
-        path: "m/44'/60'/1'/0",
+        path: "m/44'/60'/0'/0",
       },
     },
     goerli: createTestnetConfig('goerli'),
