@@ -10,7 +10,7 @@
       :emit-value="emitValue"
       :filled="filled"
       :hide-bottom-space="hideBottomSpace"
-      :hint="hintString"
+      :hint="!hideBottomSpace ? hintString : undefined"
       :label="label"
       :lazy-rules="lazyRules"
       :options="options"

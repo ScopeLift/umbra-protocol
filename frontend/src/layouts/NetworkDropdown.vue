@@ -1,13 +1,14 @@
 <template>
   <base-select
     v-model="currentNetwork"
-    filled="false"
+    @input="emit('setNetwork', currentNetwork)"
+    dense
+    :filled="false"
+    :hideBottomSpace="true"
     outlined
-    rounded
-    label="Network"
     :options="supportedChains"
     option-label="chainName"
-    @input="emit('setNetwork', currentNetwork)"
+    rounded
   />
 </template>
 
