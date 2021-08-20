@@ -13,6 +13,7 @@ export interface MulticallResponse {
   returnData: string[];
 }
 
+// Spec: https://eips.ethereum.org/EIPS/eip-3085#specification
 export type Chain = {
   chainId: string;
   chainName: string;
@@ -28,28 +29,92 @@ export type Chain = {
 export const supportedChains: Array<Chain> = [
   {
     chainId: '0x1',
-    chainName: 'Ethereum Mainnet',
+    chainName: 'Mainnet',
     nativeCurrency: {
       name: 'Ethereum',
       symbol: 'ETH',
       decimals: 18,
     },
-    rpcUrls: ['https://mainnet.infura.io/v3/INFURA_API_KEY'],
-    blockExplorerUrls: [],
+    rpcUrls: [`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['etherscan.io'],
+    iconUrls: [],
+  },
+  /*
+  {
+    chainId: '0x3',
+    chainName: 'Ropsten',
+    nativeCurrency: {
+      name: 'Ethereum',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: [`https://ropsten.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['ropsten.etherscan.io'],
+    iconUrls: [],
+  },
+*/
+  {
+    chainId: '0x4',
+    chainName: 'Rinkeby',
+    nativeCurrency: {
+      name: 'Ethereum',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: [`https://rinkeby.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['rinkeby.etherscan.io'],
+    iconUrls: [],
+  },
+  /*
+  {
+    chainId: '0x5',
+    chainName: 'Goerli',
+    nativeCurrency: {
+      name: 'Ethereum',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: [`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['goerli.etherscan.io'],
     iconUrls: [],
   },
   {
-    chainId: '0x4',
-    chainName: 'Ethereum Testnet',
+    chainId: '0x42',
+    chainName: 'Kovan',
     nativeCurrency: {
       name: 'Ethereum',
       symbol: 'ETH',
       decimals: 18,
     },
-    rpcUrls: ['https://rinkeby.infura.io/v3/INFURA_API_KEY'],
-    blockExplorerUrls: [],
+    rpcUrls: [`https://kovan.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['kovan.etherscan.io'],
     iconUrls: [],
   },
+  {
+    chainId: '0x137',
+    chainName: 'Polygon Mainnet',
+    nativeCurrency: {
+      name: 'MATIC',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+    rpcUrls: [`https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['polygonscan.com'],
+    iconUrls: [],
+  },
+  {
+    chainId: '0x80001',
+    chainName: 'Polygon Testnet',
+    nativeCurrency: {
+      name: 'tMATIC',
+      symbol: 'tMATIC',
+      decimals: 18,
+    },
+    rpcUrls: [`https://polygon-mumbai.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['mumbai.polygonscan.com'],
+    iconUrls: [],
+  },
+*/
 ];
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
 export type SupportedChainIds = '1' | '4'; // strings for indexing into JSON files

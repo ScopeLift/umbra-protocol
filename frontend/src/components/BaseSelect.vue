@@ -17,6 +17,7 @@
       :option-label="optionLabel"
       :outlined="outlined"
       :readonly="readonly"
+      :rounded="rounded"
       :rules="[(val) => rules(val)]"
       @blur="hideHint"
       @focus="showHint"
@@ -115,6 +116,12 @@ export default Vue.extend({
     },
 
     readonly: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+
+    rounded: {
       type: Boolean,
       required: false,
       default: false,

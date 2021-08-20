@@ -40,8 +40,8 @@
             <!-- HAMBURGER MENU -->
             <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
             <!-- ADDRESS AND SETTINGS AND SETTINGS -->
-            <div v-else class="row items-center">
-              <div class="q-mr-md">
+            <div v-else class="row no-wrap items-center">
+              <div class="col-auto q-mr-md">
                 <address-settings
                   :userDisplayAddress="userDisplayAddress"
                   :isSupportedNetwork="isSupportedNetwork"
@@ -49,12 +49,14 @@
                   class="row"
                 />
               </div>
-              <network-dropdown
-                v-if="userDisplayAddress"
-                :isLoading="userDisplayAddress && !network"
-                :network="network"
-                @setNetwork="setNetwork"
-              />
+              <div class="col-auto full-width">
+                <network-dropdown
+                  v-if="userDisplayAddress"
+                  :isLoading="userDisplayAddress && !network"
+                  :network="network"
+                  @setNetwork="setNetwork"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -80,7 +82,7 @@
       <div class="col q-col-gutter-y-sm q-px-md">
         <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
       </div>
-      <div class="row q-pt-sm q-pl-md">
+      <div class="row q-pt-sm q-px-md full-width">
         <network-dropdown
           v-if="userDisplayAddress"
           :isLoading="userDisplayAddress && !network"

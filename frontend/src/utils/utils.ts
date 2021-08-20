@@ -1,33 +1,20 @@
+import { supportedChains } from 'src/components/models';
 import { BigNumber } from './ethers';
 
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` and `chainId`
  */
 export const getEtherscanUrl = (txHash: string, chainId: number) => {
-  let networkPrefix = '';
-  if (chainId === 1) networkPrefix = 'etherscan.io';
-  if (chainId === 3) networkPrefix = 'ropsten.etherscan.io';
-  if (chainId === 4) networkPrefix = 'rinkeby.etherscan.io';
-  if (chainId === 5) networkPrefix = 'goerli.etherscan.io';
-  if (chainId === 42) networkPrefix = 'kovan.etherscan.io';
-  if (chainId === 137) networkPrefix = 'polygonscan.com';
-  if (chainId === 80001) networkPrefix = 'mumbai.polygonscan.com';
+  const chain = getChainById(`0x${chainId}`);
+  const networkPrefix = chain?.blockExplorerUrls?.length ? chain?.blockExplorerUrls[0] : '';
+
   return `https://${networkPrefix}/tx/${txHash}`;
 };
 
 /**
- * @notice Generates short names based on the given `chainId`
+ * @notice Gets `Chain` based on the given `chainId`
  */
-export const getChainShortName = (chainId?: number) => {
-  switch (chainId) {
-    case 1:
-      return 'Ethereum';
-    case 4:
-      return 'Rinkeby';
-    default:
-      return '';
-  }
-};
+export const getChainById = (chainId?: string) => supportedChains.find((chain) => chain.chainId === chainId);
 
 /**
  * @notice Rounds `value` to the specified number of `decimals` and returns a string
