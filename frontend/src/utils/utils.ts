@@ -1,20 +1,21 @@
 import { supportedChains } from 'src/components/models';
-import { BigNumber } from './ethers';
+import { BigNumber, BigNumberish, hexValue } from './ethers';
 
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` and `chainId`
  */
 export const getEtherscanUrl = (txHash: string, chainId: number) => {
-  const chain = getChainById(`0x${chainId}`);
+  const chain = getChainById(chainId);
   const networkPrefix = chain?.blockExplorerUrls?.length ? chain?.blockExplorerUrls[0] : '';
-
   return `https://${networkPrefix}/tx/${txHash}`;
 };
 
 /**
  * @notice Gets `Chain` based on the given `chainId`
  */
-export const getChainById = (chainId?: string) => supportedChains.find((chain) => chain.chainId === chainId);
+export const getChainById = (chainId: BigNumberish) => {
+  return supportedChains.find((chain) => chain.chainId === hexValue(chainId));
+};
 
 /**
  * @notice Rounds `value` to the specified number of `decimals` and returns a string
