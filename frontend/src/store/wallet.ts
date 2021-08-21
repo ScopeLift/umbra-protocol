@@ -125,7 +125,7 @@ export default function useWalletStore() {
 
     // Set balances mapping
     tokens.value.forEach((token, index) => {
-      balances.value[token.address] = BigNumber.from(multicallResponse[index]);
+      balances.value[token.address] = BigNumber.from(multicallResponse[index] === '0x' ? 0 : multicallResponse[index]);
     });
   }
 

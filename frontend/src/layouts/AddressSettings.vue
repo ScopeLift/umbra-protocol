@@ -1,11 +1,8 @@
 <template>
-  <div>
+  <div class="row no-wrap">
     <connect-wallet>
       <span v-if="userDisplayAddress" class="text-caption cursor-pointer dark-toggle">
         {{ userDisplayAddress }}
-      </span>
-      <span v-else-if="!isSupportedNetwork" class="text-caption text-grey cursor-pointer dark-toggle">
-        <q-icon name="fas fa-exclamation-triangle" color="warning" left /> Unsupported network
       </span>
     </connect-wallet>
     <span v-if="advancedMode" class="q-ml-md">
@@ -25,10 +22,6 @@ export default defineComponent({
     userDisplayAddress: {
       type: String,
       required: false,
-    },
-    isSupportedNetwork: {
-      type: Boolean,
-      required: true,
     },
     advancedMode: {
       type: Boolean,

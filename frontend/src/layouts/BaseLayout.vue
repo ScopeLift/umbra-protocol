@@ -3,60 +3,55 @@
     <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="column all-content-format">
         <!-- Main header -->
-        <div>
-          <div class="row justify-between items-center no-wrap all-content-format">
-            <div class="col-auto">
-              <div class="row justify-start items-center">
-                <!-- LOGO AND TITLE -->
-                <div class="row items-center cursor-pointer">
-                  <div class="row items-center">
-                    <img
-                      @click="$router.push({ name: 'home' })"
-                      alt="Umbra logo"
-                      src="~assets/app-logo-128x128.png"
-                      style="max-width: 50px"
-                      class="q-ml-md"
-                    />
-                    <div v-if="!$q.screen.xs" @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
-                      <span class="primary header-black q-ml-md">Umbra</span>
-                    </div>
-                    <address-settings
-                      v-else
-                      :userDisplayAddress="userDisplayAddress"
-                      :isSupportedNetwork="isSupportedNetwork"
-                      :advancedMode="advancedMode"
-                      class="q-ml-md row"
-                    />
+        <div class="row justify-between items-center no-wrap">
+          <div class="col-sm-8">
+            <div class="row justify-start items-center">
+              <!-- LOGO AND TITLE -->
+              <div class="row items-center cursor-pointer">
+                <div class="row items-center">
+                  <img
+                    @click="$router.push({ name: 'home' })"
+                    alt="Umbra logo"
+                    src="~assets/app-logo-128x128.png"
+                    style="max-width: 50px"
+                    class="q-ml-md"
+                  />
+                  <div v-if="$q.screen.gt.sm" @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
+                    <span class="primary header-black q-ml-md">Umbra</span>
                   </div>
+                  <address-settings
+                    v-else-if="$q.screen.xs"
+                    :userDisplayAddress="userDisplayAddress"
+                    :advancedMode="advancedMode"
+                    class="q-ml-md row"
+                  />
+                </div>
 
-                  <!-- NAVIGATION LINKS -->
-                  <div v-if="!$q.screen.xs">
-                    <header-links class="col justify-center q-col-gutter-x-xl q-ml-xs" />
-                  </div>
+                <!-- NAVIGATION LINKS -->
+                <div v-if="!$q.screen.xs">
+                  <header-links
+                    :class="{
+                      col: true,
+                      'justify-center': true,
+                      'q-ml-xs': true,
+                      'q-col-gutter-x-xl': $q.screen.gt.sm,
+                      'q-col-gutter-x-md': $q.screen.lt.md,
+                    }"
+                  />
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- HAMBURGER MENU -->
-            <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
-            <!-- ADDRESS AND SETTINGS AND SETTINGS -->
-            <div v-else class="row no-wrap items-center">
-              <div class="col-auto q-mr-md">
-                <address-settings
-                  :userDisplayAddress="userDisplayAddress"
-                  :isSupportedNetwork="isSupportedNetwork"
-                  :advancedMode="advancedMode"
-                  class="row"
-                />
+          <!-- HAMBURGER MENU -->
+          <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
+          <!-- ADDRESS AND SETTINGS AND NETWORK SELECTOR -->
+          <div v-else class="col-sm-4">
+            <div class="row justify-end items-center no-wrap">
+              <div class="q-mr-md">
+                <address-settings :userDisplayAddress="userDisplayAddress" :advancedMode="advancedMode" class="row" />
               </div>
-              <div class="col-auto full-width">
-                <network-dropdown
-                  v-if="userDisplayAddress"
-                  :isLoading="userDisplayAddress && !network"
-                  :network="network"
-                  @setNetwork="setNetwork"
-                />
-              </div>
+              <network-dropdown />
             </div>
           </div>
         </div>
@@ -83,12 +78,7 @@
         <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
       </div>
       <div class="row q-pt-sm q-px-md full-width">
-        <network-dropdown
-          v-if="userDisplayAddress"
-          :isLoading="userDisplayAddress && !network"
-          :network="network"
-          @setNetwork="setNetwork"
-        />
+        <network-dropdown />
       </div>
     </q-drawer>
 
@@ -186,32 +176,28 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import AddressSettings from './AddressSettings.vue';
 import HeaderLinks from './HeaderLinks.vue';
 import NetworkDropdown from './NetworkDropdown.vue';
 
-function useWallet() {
-  const { userDisplayAddress, network, setNetwork, isAccountSetup, isSupportedNetwork } = useWalletStore();
-  const networkName = ref('');
-
-  watchEffect(() => {
-    if (network.value) {
-      networkName.value = network.value.name;
-    }
-  });
-
-  return { userDisplayAddress, network, networkName, setNetwork, isAccountSetup, isSupportedNetwork };
-}
-
 export default defineComponent({
   name: 'BaseLayout',
   components: { AddressSettings, HeaderLinks, NetworkDropdown },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    return { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode, ...useWallet(), drawerRight: ref(false) };
+    const { userDisplayAddress, isAccountSetup } = useWalletStore();
+    return {
+      userDisplayAddress,
+      isAccountSetup,
+      advancedMode,
+      toggleAdvancedMode,
+      isDark,
+      toggleDarkMode,
+      drawerRight: ref(false),
+    };
   },
 });
 </script>

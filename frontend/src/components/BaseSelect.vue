@@ -23,9 +23,12 @@
       @focus="showHint"
       @input="handleInput"
     >
-      <!-- Show icons when selected -->
+      <!-- Show icons when selected or when the slot is provided-->
       <template v-slot:prepend v-if="content && content.logoURI">
         <img :src="content.logoURI" height="25rem" />
+      </template>
+      <template v-slot:prepend v-else>
+        <slot name="prepend"></slot>
       </template>
 
       <!-- Show icons in dropdown list -->

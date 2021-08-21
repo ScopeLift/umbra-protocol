@@ -1,7 +1,7 @@
 <template>
   <base-select
     v-model="currentNetwork"
-    @input="emit('setNetwork', currentNetwork)"
+    @input="setNetwork(currentNetwork)"
     dense
     :filled="false"
     :hideBottomSpace="true"
@@ -9,36 +9,35 @@
     :options="supportedChains"
     option-label="chainName"
     rounded
-  />
+  >
+    <template v-if="!isSupportedNetwork" v-slot:prepend>
+      <q-icon name="fas fa-exclamation-triangle" color="warning" size="1rem" />
+    </template>
+  </base-select>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, watchEffect } from '@vue/composition-api';
-import { Chain, Network, supportedChains } from 'src/components/models';
+import { defineComponent, ref, watchEffect } from '@vue/composition-api';
+import { Chain, supportedChains } from 'src/components/models';
+import useWalletStore from 'src/store/wallet';
 import { getChainById } from 'src/utils/utils';
 
-const currentNetwork = ref<Chain>();
+const unsupportedNetwork = { chainName: 'Unsupported network' } as Chain;
+const currentNetwork = ref<Chain>(unsupportedNetwork);
 
 export default defineComponent({
   name: 'NetworkDropdown',
-  props: {
-    isLoading: {
-      type: Boolean,
-      required: true,
-    },
-    network: {
-      type: Object as PropType<Network>,
-      required: false,
-    },
-  },
-  setup({ network }, { emit }) {
+
+  setup() {
+    const { network, setNetwork, isSupportedNetwork } = useWalletStore();
+
     watchEffect(() => {
-      if (network) {
-        currentNetwork.value = getChainById(`0x${network.chainId}`);
+      if (network.value) {
+        currentNetwork.value = getChainById(network.value.chainId) || unsupportedNetwork;
       }
     });
 
-    return { supportedChains, currentNetwork, emit, print };
+    return { supportedChains, currentNetwork, setNetwork, isSupportedNetwork };
   },
 });
 </script>
