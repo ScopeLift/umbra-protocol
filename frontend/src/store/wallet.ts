@@ -39,6 +39,7 @@ const ETH_TOKEN_INFO = {
 // can only be changed through actions and mutations, and it can only be accessed with getters.
 // As a result, only actions, mutations, and getters are returned from this function.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isLoading = ref<boolean>(true);
 const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP-1193 provider
 const provider = ref<Provider>(); // ethers provider
 const signer = ref<Signer>(); // ethers signer
@@ -88,6 +89,7 @@ export default function useWalletStore() {
       await onboard.value.walletSelect(lastWallet.value);
       await onboard.value.walletCheck();
       await configureProvider(); // get ENS name, CNS names, etc.
+      isLoading.value = false;
     }
   });
 
@@ -297,6 +299,7 @@ export default function useWalletStore() {
     setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status),
     setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status),
     // "Direct" properties, i.e. return them directly without modification
+    isLoading: computed(() => isLoading.value),
     balances: computed(() => balances.value),
     domainService: computed(() => domainService.value),
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),

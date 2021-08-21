@@ -19,12 +19,17 @@
                   <div v-if="$q.screen.gt.sm" @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
                     <span class="primary header-black q-ml-md">Umbra</span>
                   </div>
-                  <address-settings
-                    v-else-if="$q.screen.xs"
-                    :userDisplayAddress="userDisplayAddress"
-                    :advancedMode="advancedMode"
-                    class="q-ml-md row"
-                  />
+                  <div v-else-if="$q.screen.xs">
+                    <address-settings
+                      v-if="!isLoading"
+                      :userDisplayAddress="userDisplayAddress"
+                      :advancedMode="advancedMode"
+                      class="q-ml-md row"
+                    />
+                    <div v-else class="q-ml-md row">
+                      <q-spinner color="primary" size="1em" />
+                    </div>
+                  </div>
                 </div>
 
                 <!-- NAVIGATION LINKS -->
@@ -47,11 +52,14 @@
           <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
           <!-- ADDRESS AND SETTINGS AND NETWORK SELECTOR -->
           <div v-else class="col-sm-4">
-            <div class="row justify-end items-center no-wrap">
+            <div v-if="!isLoading" class="row justify-end items-center no-wrap">
               <div class="q-mr-md">
                 <address-settings :userDisplayAddress="userDisplayAddress" :advancedMode="advancedMode" class="row" />
               </div>
               <network-dropdown />
+            </div>
+            <div v-else class="row justify-end items-center">
+              <q-spinner color="primary" size="1em" />
             </div>
           </div>
         </div>
@@ -188,8 +196,9 @@ export default defineComponent({
   components: { AddressSettings, HeaderLinks, NetworkDropdown },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    const { userDisplayAddress, isAccountSetup } = useWalletStore();
+    const { isLoading, userDisplayAddress, isAccountSetup } = useWalletStore();
     return {
+      isLoading,
       userDisplayAddress,
       isAccountSetup,
       advancedMode,
