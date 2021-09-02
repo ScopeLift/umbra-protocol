@@ -20,15 +20,24 @@
                     <span class="primary header-black q-ml-md">Umbra</span>
                   </div>
                   <div v-else-if="$q.screen.xs">
+                    <div v-if="isLoading" class="q-ml-md row">
+                      <q-spinner color="primary" size="1em" />
+                    </div>
                     <address-settings
-                      v-if="!isLoading"
+                      v-else-if="!isLoading && userDisplayAddress"
                       :userDisplayAddress="userDisplayAddress"
                       :advancedMode="advancedMode"
                       class="q-ml-md row"
                     />
-                    <div v-else class="q-ml-md row">
-                      <q-spinner color="primary" size="1em" />
-                    </div>
+                    <connect-wallet v-else-if="!isLoading">
+                      <base-button
+                        class="q-ml-md cursor-pointer"
+                        color="primary"
+                        :dense="true"
+                        label="Connect a wallet"
+                        :outline="true"
+                      />
+                    </connect-wallet>
                   </div>
                 </div>
 
@@ -52,15 +61,28 @@
           <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
           <!-- ADDRESS AND SETTINGS AND NETWORK SELECTOR -->
           <div v-else class="col-sm-4">
-            <div v-if="!isLoading" class="row justify-end items-center no-wrap">
+            <div v-if="isLoading" class="row justify-end items-center">
+              <q-spinner color="primary" size="1em" />
+            </div>
+            <div v-else-if="!isLoading && userDisplayAddress" class="row justify-end items-center no-wrap">
               <div class="q-mr-md">
                 <address-settings :userDisplayAddress="userDisplayAddress" :advancedMode="advancedMode" class="row" />
               </div>
               <network-dropdown />
             </div>
-            <div v-else class="row justify-end items-center">
-              <q-spinner color="primary" size="1em" />
-            </div>
+            <connect-wallet v-else-if="!isLoading">
+              <div class="row justify-end items-center">
+                <connect-wallet>
+                  <base-button
+                    class="cursor-pointer"
+                    color="primary"
+                    :dense="true"
+                    label="Connect a wallet"
+                    :outline="true"
+                  />
+                </connect-wallet>
+              </div>
+            </connect-wallet>
           </div>
         </div>
         <!-- Alpha warning -->
@@ -185,6 +207,8 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import BaseButton from 'src/components/BaseButton.vue';
+import ConnectWallet from 'src/components/ConnectWallet.vue';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import AddressSettings from './AddressSettings.vue';
@@ -193,7 +217,7 @@ import NetworkDropdown from './NetworkDropdown.vue';
 
 export default defineComponent({
   name: 'BaseLayout',
-  components: { AddressSettings, HeaderLinks, NetworkDropdown },
+  components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
     const { isLoading, userDisplayAddress, isAccountSetup } = useWalletStore();

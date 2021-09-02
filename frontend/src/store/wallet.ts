@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from '@vue/composition-api';
+import { computed, onMounted, ref, watch } from '@vue/composition-api';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
 import {
@@ -16,6 +16,7 @@ import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ITXRelayer } from 'src/utils/relayer';
 import useSettingsStore from 'src/store/settings';
 import Onboard from 'bnc-onboard';
+import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -38,8 +39,8 @@ const ETH_TOKEN_INFO = {
 // We do not publicly expose the state to provide control over when and how it's changed. It
 // can only be changed through actions and mutations, and it can only be accessed with getters.
 // As a result, only actions, mutations, and getters are returned from this function.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isLoading = ref<boolean>(true);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP-1193 provider
 const provider = ref<Provider>(); // ethers provider
 const signer = ref<Signer>(); // ethers signer
@@ -55,11 +56,11 @@ const balances = ref<Record<string, BigNumber>>({}); // mapping from token addre
 const relayer = ref<ITXRelayer>(); // used for managing relay transactions
 const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name
 const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name
-const onboard = ref(); // blocknative's onboard.js instance
+const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
-  onMounted(async () => {
+  onMounted(() => {
     const { lastWallet } = useSettingsStore();
 
     // Initialize onboard.js if not yet done
@@ -84,13 +85,21 @@ export default function useWalletStore() {
       });
     }
 
-    // Try to connect to the last used wallet
-    if (lastWallet.value) {
-      await onboard.value.walletSelect(lastWallet.value);
-      await onboard.value.walletCheck();
-      await configureProvider(); // get ENS name, CNS names, etc.
-      isLoading.value = false;
-    }
+    watch(
+      () => lastWallet.value,
+      async () => {
+        // if the value is undefined, wallet wasn't yet retrieved from localStorage
+        // if the value is null, there wasn't a wallet saved in localStorage
+
+        if (lastWallet.value) {
+          await onboard.value?.walletSelect(lastWallet.value);
+          await onboard.value?.walletCheck();
+          await configureProvider(); // get ENS name, CNS names, etc.
+        } else if (lastWallet.value === null) {
+          setLoading(false);
+        }
+      }
+    );
   });
 
   // ------------------------------------------- Actions -------------------------------------------
@@ -136,9 +145,19 @@ export default function useWalletStore() {
     rawProvider.value = p;
   }
 
+  function setLoading(l: boolean) {
+    isLoading.value = l;
+  }
+
   async function configureProvider() {
+    setLoading(true);
+
     // Set network/wallet properties
-    if (!rawProvider.value) return;
+    if (!rawProvider.value) {
+      setLoading(false);
+      return;
+    }
+
     provider.value = new Web3Provider(rawProvider.value);
     signer.value = provider.value.getSigner();
 
@@ -151,6 +170,7 @@ export default function useWalletStore() {
 
     // If nothing has changed, no need to continue configuring
     if (_userAddress === userAddress.value && _network.chainId === network.value?.chainId) {
+      setLoading(false);
       return;
     }
 
@@ -192,6 +212,8 @@ export default function useWalletStore() {
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
+
+    setLoading(false);
   }
 
   /**
@@ -219,6 +241,8 @@ export default function useWalletStore() {
    * @notice Prompts user for a signature to change network
    */
   async function setNetwork(chain: Chain) {
+    setLoading(true);
+
     try {
       await provider.value?.send('wallet_switchEthereumChain', [{ chainId: chain.chainId }]);
     } catch (error) {
@@ -233,6 +257,8 @@ export default function useWalletStore() {
         console.log(error);
       }
     }
+
+    setLoading(false);
   }
 
   // ------------------------------------------ Mutations ------------------------------------------
@@ -299,12 +325,12 @@ export default function useWalletStore() {
     setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status),
     setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status),
     // "Direct" properties, i.e. return them directly without modification
-    isLoading: computed(() => isLoading.value),
     balances: computed(() => balances.value),
     domainService: computed(() => domainService.value),
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
     isAccountSetup: computed(() => hasEnsKeys.value || hasCnsKeys.value),
+    isLoading: computed(() => isLoading.value),
     provider: computed(() => provider.value),
     relayer: computed(() => relayer.value),
     signer: computed(() => signer.value),

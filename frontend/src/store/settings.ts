@@ -16,7 +16,7 @@ const advancedMode = ref(false); // true if user has advanced mode turned on
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
 const scanPrivateKey = ref<string>(); // private key entered when scanning
-const lastWallet = ref<string>(); // name of last wallet used
+const lastWallet = ref<string | null>(); // name of last wallet used
 
 // Composition function for managing state
 export default function useSettingsStore() {
@@ -28,7 +28,7 @@ export default function useSettingsStore() {
     endBlock.value = Number(LocalStorage.getItem(settings.endBlock)) || undefined;
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
-      : undefined;
+      : null;
   });
 
   function setDarkMode(status: boolean) {
