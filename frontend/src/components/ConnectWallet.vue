@@ -1,5 +1,5 @@
 <template>
-  <div @click="connectWallet">
+  <div @click="connectWalletWithRedirect">
     <slot></slot>
   </div>
 </template>
@@ -9,9 +9,9 @@ import { defineComponent, SetupContext } from '@vue/composition-api';
 import useWalletStore from 'src/store/wallet';
 
 function useWallet(context: SetupContext, to: string) {
-  const { onboard, configureProvider, userAddress } = useWalletStore();
+  const { connectWallet, userAddress } = useWalletStore();
 
-  async function connectWallet() {
+  async function connectWalletWithRedirect() {
     // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
     // from the home page)
     if (userAddress.value && to) {
@@ -19,19 +19,12 @@ function useWallet(context: SetupContext, to: string) {
       return;
     }
 
-    // Clear existing wallet selection
-    onboard.value?.walletReset();
+    await connectWallet();
 
-    // Connect wallet
-    await onboard.value?.walletSelect();
-    await onboard.value?.walletCheck();
-
-    // Finish setup
-    await configureProvider(); // get ENS name, CNS names, etc.
     if (to) await context.root.$router.push({ name: to }); // redirect to specified page
   }
 
-  return { connectWallet };
+  return { connectWalletWithRedirect };
 }
 
 export default defineComponent({

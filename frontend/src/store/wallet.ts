@@ -110,19 +110,7 @@ export default function useWalletStore() {
       // if the value is null, there wasn't a wallet saved in localStorage
 
       if (lastWallet.value) {
-        const hasSelected = await onboard.value?.walletSelect(lastWallet.value);
-        if (!hasSelected) {
-          setLoading(false);
-          return;
-        }
-
-        const hasChecked = await onboard.value?.walletCheck();
-        if (!hasChecked) {
-          setLoading(false);
-          return;
-        }
-
-        await configureProvider(); // get ENS name, CNS names, etc.
+        await connectWallet();
       } else if (lastWallet.value === null) {
         setLoading(false);
       }
@@ -174,6 +162,24 @@ export default function useWalletStore() {
 
   function setLoading(l: boolean) {
     isLoading.value = l;
+  }
+
+  async function connectWallet() {
+    onboard.value?.walletReset(); // Clear existing wallet selection
+
+    const hasSelected = await onboard.value?.walletSelect(lastWallet.value as string | undefined);
+    if (!hasSelected) {
+      setLoading(false);
+      return;
+    }
+
+    const hasChecked = await onboard.value?.walletCheck();
+    if (!hasChecked) {
+      setLoading(false);
+      return;
+    }
+
+    await configureProvider(); // get ENS name, CNS names, etc.
   }
 
   async function configureProvider() {
@@ -345,7 +351,7 @@ export default function useWalletStore() {
   // computed property to facilitate reactivity and avoid accidental state mutations
   return {
     // Methods
-    configureProvider,
+    connectWallet,
     getPrivateKeys,
     getTokenBalances,
     setProvider,
@@ -359,7 +365,6 @@ export default function useWalletStore() {
     network: computed(() => network.value),
     isAccountSetup: computed(() => hasEnsKeys.value || hasCnsKeys.value),
     isLoading: computed(() => isLoading.value),
-    onboard: computed(() => onboard.value),
     provider: computed(() => provider.value),
     relayer: computed(() => relayer.value),
     signer: computed(() => signer.value),
