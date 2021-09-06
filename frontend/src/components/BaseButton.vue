@@ -13,6 +13,7 @@
       no-caps
       :outline="outline"
       :padding="padding"
+      :rounded="rounded"
       :size="size"
       :text-color="textColor"
       :type="type"
@@ -86,6 +87,12 @@ export default defineComponent({
       type: String,
       required: false,
       default: undefined,
+    },
+
+    rounded: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
 
     size: {

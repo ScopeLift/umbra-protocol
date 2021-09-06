@@ -29,15 +29,6 @@
                       :advancedMode="advancedMode"
                       class="q-ml-md row"
                     />
-                    <connect-wallet v-else-if="!isLoading">
-                      <base-button
-                        class="q-ml-md cursor-pointer"
-                        color="primary"
-                        :dense="true"
-                        label="Connect a wallet"
-                        :outline="true"
-                      />
-                    </connect-wallet>
                   </div>
                 </div>
 
@@ -76,9 +67,9 @@
                   <base-button
                     class="cursor-pointer"
                     color="primary"
-                    :dense="true"
                     label="Connect a wallet"
                     :outline="true"
+                    :rounded="true"
                   />
                 </connect-wallet>
               </div>
@@ -93,6 +84,7 @@
       </div>
     </q-header>
 
+    <!-- Mobile drawer -->
     <q-drawer side="right" v-model="drawerRight" behavior="mobile" elevated :width="200" class="bg-grey-3">
       <div class="row justify-end">
         <q-btn
@@ -107,9 +99,18 @@
       <div class="col q-col-gutter-y-sm q-px-md">
         <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
       </div>
-      <div class="row q-pt-sm q-px-md full-width">
+      <div v-if="!isLoading && userDisplayAddress" class="row q-pt-sm q-px-md full-width">
         <network-dropdown />
       </div>
+      <connect-wallet v-else-if="!isLoading">
+        <base-button
+          class="q-ml-md cursor-pointer"
+          color="primary"
+          label="Connect a wallet"
+          :outline="true"
+          :rounded="true"
+        />
+      </connect-wallet>
     </q-drawer>
 
     <q-page-container>

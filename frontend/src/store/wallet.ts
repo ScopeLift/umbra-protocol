@@ -60,17 +60,34 @@ const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
-  onMounted(() => {
-    const { lastWallet } = useSettingsStore();
+  const { lastWallet, setLastWallet } = useSettingsStore();
 
+  onMounted(() => {
     // Initialize onboard.js if not yet done
     if (!onboard.value) {
+      const rpcUrl = `https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`;
+
       onboard.value = Onboard({
         dappId: process.env.BLOCKNATIVE_API_KEY,
         networkId: 1,
         walletCheck: [{ checkName: 'connect' }],
+        walletSelect: {
+          wallets: [
+            { walletName: 'metamask', preferred: true },
+            { walletName: 'walletConnect', infuraKey: process.env.INFURA_ID, preferred: true },
+            { walletName: 'fortmatic', apiKey: process.env.FORTMATIC_API_KEY, preferred: true },
+            { walletName: 'portis', apiKey: process.env.PORTIS_API_KEY },
+            { walletName: 'ledger', rpcUrl },
+            { walletName: 'torus', preferred: true },
+            { walletName: 'lattice', rpcUrl, appName: 'Umbra' },
+            { walletName: 'opera' },
+          ],
+        },
         subscriptions: {
-          wallet: (wallet) => setProvider(wallet.provider),
+          wallet: (wallet) => {
+            setProvider(wallet.provider);
+            if (wallet.name) setLastWallet(wallet.name);
+          },
           address: async (address) => {
             if (userAddress.value && userAddress.value !== getAddress(address)) {
               await configureProvider();
@@ -84,23 +101,33 @@ export default function useWalletStore() {
         },
       });
     }
-
-    watch(
-      () => lastWallet.value,
-      async () => {
-        // if the value is undefined, wallet wasn't yet retrieved from localStorage
-        // if the value is null, there wasn't a wallet saved in localStorage
-
-        if (lastWallet.value) {
-          await onboard.value?.walletSelect(lastWallet.value);
-          await onboard.value?.walletCheck();
-          await configureProvider(); // get ENS name, CNS names, etc.
-        } else if (lastWallet.value === null) {
-          setLoading(false);
-        }
-      }
-    );
   });
+
+  watch(
+    () => lastWallet.value,
+    async () => {
+      // if the value is undefined, wallet wasn't yet retrieved from localStorage
+      // if the value is null, there wasn't a wallet saved in localStorage
+
+      if (lastWallet.value) {
+        const hasSelected = await onboard.value?.walletSelect(lastWallet.value);
+        if (!hasSelected) {
+          setLoading(false);
+          return;
+        }
+
+        const hasChecked = await onboard.value?.walletCheck();
+        if (!hasChecked) {
+          setLoading(false);
+          return;
+        }
+
+        await configureProvider(); // get ENS name, CNS names, etc.
+      } else if (lastWallet.value === null) {
+        setLoading(false);
+      }
+    }
+  );
 
   // ------------------------------------------- Actions -------------------------------------------
 
@@ -247,7 +274,8 @@ export default function useWalletStore() {
       await provider.value?.send('wallet_switchEthereumChain', [{ chainId: chain.chainId }]);
     } catch (error) {
       // This error code indicates that the chain has not been added to MetaMask.
-      if (error.code === 4902) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (((error as never) as any).code === 4902) {
         try {
           await provider.value?.send('wallet_addEthereumChain', [chain]);
         } catch (addError) {
@@ -331,6 +359,7 @@ export default function useWalletStore() {
     network: computed(() => network.value),
     isAccountSetup: computed(() => hasEnsKeys.value || hasCnsKeys.value),
     isLoading: computed(() => isLoading.value),
+    onboard: computed(() => onboard.value),
     provider: computed(() => provider.value),
     relayer: computed(() => relayer.value),
     signer: computed(() => signer.value),
