@@ -86,10 +86,9 @@ export default function useWalletStore() {
         subscriptions: {
           wallet: (wallet) => {
             setProvider(wallet.provider);
-            if (wallet.name) setLastWallet(wallet.name);
           },
           address: async (address) => {
-            if (userAddress.value && userAddress.value !== getAddress(address)) {
+            if (address && userAddress.value && userAddress.value !== getAddress(address)) {
               await configureProvider();
             }
           },
@@ -109,7 +108,7 @@ export default function useWalletStore() {
       // if the value is undefined, wallet wasn't yet retrieved from localStorage
       // if the value is null, there wasn't a wallet saved in localStorage
 
-      if (lastWallet.value) {
+      if (lastWallet.value && !userAddress.value) {
         await connectWallet();
       } else if (lastWallet.value === null) {
         setLoading(false);
@@ -165,13 +164,13 @@ export default function useWalletStore() {
   }
 
   async function connectWallet() {
-    onboard.value?.walletReset(); // Clear existing wallet selection
+    // Clear existing wallet selection
+    onboard.value?.walletReset();
 
-    const hasSelected = await onboard.value?.walletSelect(lastWallet.value as string | undefined);
-    if (!hasSelected) {
-      setLoading(false);
-      return;
-    }
+    // Use stored wallet on initialization if there is one
+    userAddress.value || !lastWallet.value
+      ? await onboard.value?.walletSelect()
+      : await onboard.value?.walletSelect(String(lastWallet.value));
 
     const hasChecked = await onboard.value?.walletCheck();
     if (!hasChecked) {
@@ -179,7 +178,12 @@ export default function useWalletStore() {
       return;
     }
 
-    await configureProvider(); // get ENS name, CNS names, etc.
+    // Get ENS name, CNS names, etc.
+    await configureProvider();
+
+    // Add wallet name to localStorage
+    const walletName = onboard.value?.getState().wallet.name;
+    if (walletName) setLastWallet(walletName);
   }
 
   async function configureProvider() {
@@ -290,9 +294,9 @@ export default function useWalletStore() {
       } else {
         console.log(error);
       }
-    }
 
-    setLoading(false);
+      setLoading(false);
+    }
   }
 
   // ------------------------------------------ Mutations ------------------------------------------
