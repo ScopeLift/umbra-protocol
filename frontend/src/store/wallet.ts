@@ -290,12 +290,12 @@ export default function useWalletStore() {
           await provider.value?.send('wallet_addEthereumChain', [chain]);
         } catch (addError) {
           console.log(addError);
+          setLoading(false);
         }
       } else {
         console.log(error);
+        setLoading(false);
       }
-
-      setLoading(false);
     }
   }
 
