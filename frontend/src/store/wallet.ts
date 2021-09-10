@@ -39,7 +39,7 @@ const ETH_TOKEN_INFO = {
 // We do not publicly expose the state to provide control over when and how it's changed. It
 // can only be changed through actions and mutations, and it can only be accessed with getters.
 // As a result, only actions, mutations, and getters are returned from this function.
-const isLoading = ref<boolean>(true);
+const isLoading = ref<boolean>(false);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP-1193 provider
 const provider = ref<Provider>(); // ethers provider
@@ -105,13 +105,8 @@ export default function useWalletStore() {
   watch(
     () => lastWallet.value,
     async () => {
-      // if the value is undefined, wallet wasn't yet retrieved from localStorage
-      // if the value is null, there wasn't a wallet saved in localStorage
-
       if (lastWallet.value && !userAddress.value) {
         await connectWallet();
-      } else if (lastWallet.value === null) {
-        setLoading(false);
       }
     }
   );
@@ -159,11 +154,15 @@ export default function useWalletStore() {
     rawProvider.value = p;
   }
 
-  function setLoading(l: boolean) {
-    isLoading.value = l;
+  function setLoading(status: boolean) {
+    isLoading.value = status;
   }
 
   async function connectWallet() {
+    if (isLoading.value) return;
+
+    setLoading(true);
+
     // Clear existing wallet selection
     onboard.value?.walletReset();
 
@@ -282,10 +281,11 @@ export default function useWalletStore() {
 
     try {
       await provider.value?.send('wallet_switchEthereumChain', [{ chainId: chain.chainId }]);
-    } catch (error) {
+    } catch (switchError) {
+      const { code } = switchError as { code: number };
+
       // This error code indicates that the chain has not been added to MetaMask.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (((error as never) as any).code === 4902) {
+      if (code === 4902) {
         try {
           await provider.value?.send('wallet_addEthereumChain', [chain]);
         } catch (addError) {
@@ -293,7 +293,7 @@ export default function useWalletStore() {
           setLoading(false);
         }
       } else {
-        console.log(error);
+        console.log(switchError);
         setLoading(false);
       }
     }
