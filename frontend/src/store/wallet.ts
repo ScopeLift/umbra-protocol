@@ -167,9 +167,14 @@ export default function useWalletStore() {
     onboard.value?.walletReset();
 
     // Use stored wallet on initialization if there is one
-    userAddress.value || !lastWallet.value
-      ? await onboard.value?.walletSelect()
-      : await onboard.value?.walletSelect(String(lastWallet.value));
+    const hasSelected =
+      userAddress.value || !lastWallet.value
+        ? await onboard.value?.walletSelect()
+        : await onboard.value?.walletSelect(String(lastWallet.value));
+    if (!hasSelected) {
+      setLoading(false);
+      return;
+    }
 
     const hasChecked = await onboard.value?.walletCheck();
     if (!hasChecked) {
