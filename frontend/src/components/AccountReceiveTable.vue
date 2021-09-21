@@ -58,7 +58,7 @@
                 </div>
               </q-card-section>
               <q-card-section class="column justify-center items-center">
-                <div>From: {{ formatAddress(props.row.tx.from) }}</div>
+                <div>From: {{ props.row.receipt.from }}</div>
                 <div class="text-caption text-grey">
                   Received: {{ formatDate(props.row.block.timestamp * 1000) }}
                   {{ formatTime(props.row.block.timestamp * 1000) }}
@@ -221,7 +221,7 @@ import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vu
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
-import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
+import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { getEtherscanUrl, round } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
@@ -520,7 +520,6 @@ export default defineComponent({
       context,
       ...useAdvancedFeatures(spendingKeyPair.value),
       ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
-      formatAddress,
     };
   },
 });
