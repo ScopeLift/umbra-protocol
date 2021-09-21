@@ -60,8 +60,8 @@
               <q-card-section>
                 <div class="row justify-between items-center">
                   <div>Sender</div>
-                  <div @click="copyAddress(props.row.tx.from, 'Sender')" class="cursor-pointer copy-icon-parent">
-                    <span>{{ formatAddress(props.row.tx.from) }}</span>
+                  <div @click="copyAddress(props.row.receipt.from , 'Sender')" class="cursor-pointer copy-icon-parent">
+                    <span>{{ formatAddress(props.row.receipt.from ) }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
@@ -93,8 +93,6 @@
                     {{ formatDate(props.row.block.timestamp * 1000) }}
                     {{ formatTime(props.row.block.timestamp * 1000) }}
                   </div>
-                </div>
-              </q-card-section>
               <q-separator />
               <q-card-actions class="row justify-center items-center">
                 <div v-if="props.row.isWithdrawn" class="text-positive">
@@ -559,7 +557,7 @@ export default defineComponent({
   components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation, ClickableTooltip, WithdrawForm },
   props: {
     announcements: {
-      type: (undefined as unknown) as PropType<UserAnnouncement[]>,
+      type: undefined as unknown as PropType<UserAnnouncement[]>,
       required: true,
     },
   },
