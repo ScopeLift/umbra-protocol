@@ -24,7 +24,7 @@
                       <q-spinner color="primary" size="1em" />
                     </div>
                     <address-settings
-                      v-else-if="!isLoading && userDisplayAddress"
+                      v-else-if="!isLoading && (userDisplayAddress || network)"
                       :userDisplayAddress="userDisplayAddress"
                       :advancedMode="advancedMode"
                       class="q-ml-md row"
@@ -55,7 +55,7 @@
             <div v-if="isLoading" class="row justify-end items-center">
               <q-spinner color="primary" size="1em" />
             </div>
-            <div v-else-if="!isLoading && userDisplayAddress" class="row justify-end items-center no-wrap">
+            <div v-else-if="!isLoading && (userDisplayAddress || network)" class="row justify-end items-center no-wrap">
               <div class="q-mr-md">
                 <address-settings :userDisplayAddress="userDisplayAddress" :advancedMode="advancedMode" class="row" />
               </div>
@@ -221,9 +221,10 @@ export default defineComponent({
   components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    const { isLoading, userDisplayAddress, isAccountSetup } = useWalletStore();
+    const { isLoading, network, userDisplayAddress, isAccountSetup } = useWalletStore();
     return {
       isLoading,
+      network,
       userDisplayAddress,
       isAccountSetup,
       advancedMode,

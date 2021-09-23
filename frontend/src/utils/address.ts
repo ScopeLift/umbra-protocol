@@ -20,7 +20,7 @@ export const lookupAddress = async (address: string, provider: Provider) => {
 // Returns an ENS or CNS name if found, otherwise returns a formatted version of the address
 export const lookupOrFormatAddress = async (address: string, provider: Provider) => {
   const domainName = await lookupAddress(address, provider);
-  return domainName ? domainName : formatAddress(address);
+  return domainName !== address ? domainName : formatAddress(address);
 };
 
 // Returns ENS name that address resolves to, or null if not found
