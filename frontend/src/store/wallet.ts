@@ -102,14 +102,11 @@ export default function useWalletStore() {
     }
   });
 
-  watch(
-    () => lastWallet.value,
-    async () => {
-      if (lastWallet.value && !userAddress.value) {
-        await connectWallet();
-      }
+  watch(lastWallet, async () => {
+    if (lastWallet.value && !userAddress.value) {
+      await connectWallet();
     }
-  );
+  });
 
   // ------------------------------------------- Actions -------------------------------------------
 
@@ -222,6 +219,7 @@ export default function useWalletStore() {
     const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
     if (!supportedChainIds.includes(_network.chainId)) {
       network.value = _network;
+      setLoading(false);
       return;
     }
 
