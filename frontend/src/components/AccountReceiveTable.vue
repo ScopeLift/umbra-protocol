@@ -57,11 +57,42 @@
                   {{ formatAmount(props.row.amount, props.row.token) }} {{ getTokenSymbol(props.row.token) }}
                 </div>
               </q-card-section>
-              <q-card-section class="column justify-center items-center">
-                <div>From: {{ props.row.receipt.from }}</div>
-                <div class="text-caption text-grey">
-                  Received: {{ formatDate(props.row.block.timestamp * 1000) }}
-                  {{ formatTime(props.row.block.timestamp * 1000) }}
+              <q-card-section>
+                <div class="row justify-between items-center">
+                  <div>Sender</div>
+                  <div @click="copyAddress(props.row.tx.from, 'Sender')" class="cursor-pointer copy-icon-parent">
+                    <span>{{ formatAddress(props.row.tx.from) }}</span>
+                    <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
+                  </div>
+                </div>
+                <div class="row justify-between items-center">
+                  <div>
+                    <span>Stealth Receiver</span>
+                    <clickable-tooltip icon="fas fa-question-circle">
+                      <span>
+                        The stealth address which received these funds. It looks like an empty address, and it can't be
+                        tied to your account, but only you have the ability to generate its private key.
+                      </span>
+                      <router-link
+                        active-class="text-bold"
+                        class="hyperlink dark-toggle"
+                        :to="{ path: 'faq', hash: '#receiving-funds' }"
+                      >
+                        Learn more
+                      </router-link>
+                    </clickable-tooltip>
+                  </div>
+                  <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
+                    <span>{{ formatAddress(props.row.receiver) }}</span>
+                    <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
+                  </div>
+                </div>
+                <div class="row justify-between items-center text-caption text-grey">
+                  <div>Received</div>
+                  <div>
+                    {{ formatDate(props.row.block.timestamp * 1000) }}
+                    {{ formatTime(props.row.block.timestamp * 1000) }}
+                  </div>
                 </div>
               </q-card-section>
               <q-separator />
@@ -107,7 +138,24 @@
         <!-- Header labels -->
         <template v-slot:header="props">
           <q-tr :props="props">
-            <q-th v-for="col in props.cols" :key="col.name" :props="props"> {{ col.label }} </q-th>
+            <q-th v-for="col in props.cols" :key="col.name" :props="props">
+              {{ col.label }}
+
+              <!-- Question mark with tooltip for receriver column --->
+              <clickable-tooltip v-if="col.name === 'receiver'" icon="fas fa-question-circle">
+                <span>
+                  The stealth address which received these funds. It looks like an empty address, and it can't be tied
+                  to your account, but only you have the ability to generate its private key.
+                </span>
+                <router-link
+                  active-class="text-bold"
+                  class="hyperlink dark-toggle"
+                  :to="{ path: 'faq', hash: '#receiving-funds' }"
+                >
+                  Learn more
+                </router-link>
+              </clickable-tooltip>
+            </q-th>
             <q-th auto-width />
           </q-tr>
         </template>
@@ -141,10 +189,18 @@
                 </div>
               </div>
 
-              <!-- From column -->
+              <!-- Sender column -->
               <div v-else-if="col.name === 'from'" class="d-inline-block">
-                <div @click="copySenderAddress(props.row)" class="cursor-pointer copy-icon-parent">
+                <div @click="copyAddress(props.row.tx.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                   <span>{{ col.value.from }}</span>
+                  <q-icon class="copy-icon" name="far fa-copy" right />
+                </div>
+              </div>
+
+              <!-- Receiver column -->
+              <div v-else-if="col.name === 'receiver'" class="d-inline-block">
+                <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
+                  <span>{{ formatAddress(col.value) }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -219,6 +275,7 @@ import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
+import ClickableTooltip from 'components/ClickableTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
@@ -284,7 +341,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const mainTableColumns = [
     { align: 'left', field: 'block', label: 'Date Received', name: 'date', sortable: true, sort: sortByTime },
     { align: 'left', field: 'amount', label: 'Amount', name: 'amount', sortable: true, format: toString },
-    { align: 'left', field: 'receipt', label: 'From', name: 'from', sortable: true },
+    { align: 'left', field: 'receipt', label: 'Sender', name: 'from', sortable: true },
+    { align: 'left', field: 'receiver', label: 'Stealth Receiver', name: 'receiver', sortable: true },
   ];
 
   // Relayer helper method
@@ -341,12 +399,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   });
 
   /**
-   * @notice Copies the sender's address to the clipboard
+   * @notice Copies the address of type to the clipboard
    */
-  async function copySenderAddress(row: UserAnnouncement) {
+  async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
     // row.receipt.from has the truncated from address shown in the UI, so here we use the row.tx.from address
-    await copyToClipboard(row.tx.from);
-    notifyUser('success', 'Sender address copied to clipboard');
+    await copyToClipboard(address);
+    notifyUser('success', `${type} address copied to clipboard`);
   }
 
   /**
@@ -467,10 +525,11 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     activeFee,
     chainId: network.value?.chainId,
     confirmWithdraw,
-    copySenderAddress,
+    copyAddress,
     destinationAddress,
     executeWithdraw,
     expanded,
+    formatAddress,
     formatAmount,
     formatDate,
     formattedAnnouncements,
@@ -497,7 +556,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
 export default defineComponent({
   name: 'AccountReceiveTable',
-  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation, WithdrawForm },
+  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation, ClickableTooltip, WithdrawForm },
   props: {
     announcements: {
       type: (undefined as unknown) as PropType<UserAnnouncement[]>,

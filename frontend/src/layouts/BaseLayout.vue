@@ -142,7 +142,11 @@
             <span class="dark-toggle text-caption q-ml-md">Advanced mode {{ advancedMode ? 'on' : 'off' }}</span>
             <span>
               <q-icon class="dark-toggle" right name="fas fa-question-circle">
-                <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md" max-width="14rem">
+                <q-tooltip
+                  content-class="bg-muted dark-toggle shadow-2 q-pa-md"
+                  :hide-delay="$q.screen.lt.lg ? 1000 : 0"
+                  max-width="14rem"
+                >
                   Enables advanced features such as private key export, additional recipient ID options, and event
                   scanning settings. <span class="text-bold">Use with caution!</span>
                 </q-tooltip>

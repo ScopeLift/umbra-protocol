@@ -6,7 +6,10 @@
       </span>
     </connect-wallet>
     <span v-if="advancedMode" class="q-ml-md">
-      🧙 <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md"> Advanced mode is on </q-tooltip>
+      🧙
+      <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md" :hide-delay="$q.screen.lt.lg ? 1000 : 0">
+        Advanced mode is on
+      </q-tooltip>
     </span>
   </div>
 </template>
