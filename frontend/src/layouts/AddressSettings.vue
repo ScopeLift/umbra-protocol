@@ -6,21 +6,19 @@
       </span>
     </connect-wallet>
     <span v-if="advancedMode" class="q-ml-md">
-      🧙
-      <q-tooltip content-class="bg-muted dark-toggle shadow-2 q-pa-md" :hide-delay="$q.screen.lt.lg ? 1000 : 0">
-        Advanced mode is on
-      </q-tooltip>
+      <base-tooltip label="🧙">Advanced mode is on</base-tooltip>
     </span>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
+import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 
 export default defineComponent({
   name: 'AddressSettings',
-  components: { ConnectWallet },
+  components: { BaseTooltip, ConnectWallet },
   props: {
     userDisplayAddress: {
       type: String,

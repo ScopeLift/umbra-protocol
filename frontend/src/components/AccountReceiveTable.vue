@@ -60,18 +60,17 @@
               <q-card-section>
                 <div class="row justify-between items-center">
                   <div>Sender</div>
-                  <div @click="copyAddress(props.row.receipt.from , 'Sender')" class="cursor-pointer copy-icon-parent">
-                    <span>{{ formatAddress(props.row.receipt.from ) }}</span>
+                  <div @click="copyAddress(props.row.receipt.from, 'Sender')" class="cursor-pointer copy-icon-parent">
+                    <span>{{ props.row.receipt.from }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
                 <div class="row justify-between items-center">
                   <div>
-                    <span>Stealth Receiver</span>
-                    <clickable-tooltip icon="fas fa-question-circle">
+                    <span class="q-mr-xs">Stealth Receiver</span>
+                    <base-tooltip icon="fas fa-question-circle" :keepOpen="true">
                       <span>
-                        The stealth address which received these funds. It looks like an empty address, and it can't be
-                        tied to your account, but only you have the ability to generate its private key.
+                        {{ receiverTooltipText }}
                       </span>
                       <router-link
                         active-class="text-bold"
@@ -80,7 +79,7 @@
                       >
                         Learn more
                       </router-link>
-                    </clickable-tooltip>
+                    </base-tooltip>
                   </div>
                   <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
                     <span>{{ formatAddress(props.row.receiver) }}</span>
@@ -93,6 +92,8 @@
                     {{ formatDate(props.row.block.timestamp * 1000) }}
                     {{ formatTime(props.row.block.timestamp * 1000) }}
                   </div>
+                </div>
+              </q-card-section>
               <q-separator />
               <q-card-actions class="row justify-center items-center">
                 <div v-if="props.row.isWithdrawn" class="text-positive">
@@ -139,11 +140,10 @@
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
               {{ col.label }}
 
-              <!-- Question mark with tooltip for receriver column --->
-              <clickable-tooltip v-if="col.name === 'receiver'" icon="fas fa-question-circle">
+              <!-- Question mark with tooltip for receiver column -->
+              <base-tooltip v-if="col.name === 'receiver'" icon="fas fa-question-circle" :keepOpen="true">
                 <span>
-                  The stealth address which received these funds. It looks like an empty address, and it can't be tied
-                  to your account, but only you have the ability to generate its private key.
+                  {{ receiverTooltipText }}
                 </span>
                 <router-link
                   active-class="text-bold"
@@ -152,7 +152,7 @@
                 >
                   Learn more
                 </router-link>
-              </clickable-tooltip>
+              </base-tooltip>
             </q-th>
             <q-th auto-width />
           </q-tr>
@@ -273,10 +273,10 @@ import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
-import ClickableTooltip from 'components/ClickableTooltip.vue';
+import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
-import { lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
+import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { getEtherscanUrl, round } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
@@ -340,7 +340,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     { align: 'left', field: 'block', label: 'Date Received', name: 'date', sortable: true, sort: sortByTime },
     { align: 'left', field: 'amount', label: 'Amount', name: 'amount', sortable: true, format: toString },
     { align: 'left', field: 'receipt', label: 'Sender', name: 'from', sortable: true },
-    { align: 'left', field: 'receiver', label: 'Stealth Receiver', name: 'receiver', sortable: true },
+    { align: 'left', field: 'receiver', label: 'Stealth Receiver', name: 'receiver', sortable: false },
   ];
 
   // Relayer helper method
@@ -554,10 +554,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
 export default defineComponent({
   name: 'AccountReceiveTable',
-  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation, ClickableTooltip, WithdrawForm },
+  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation, BaseTooltip, WithdrawForm },
   props: {
     announcements: {
-      type: undefined as unknown as PropType<UserAnnouncement[]>,
+      type: (undefined as unknown) as PropType<UserAnnouncement[]>,
       required: true,
     },
   },
@@ -572,9 +572,13 @@ export default defineComponent({
       return spendingKeyPairFromSig.value as KeyPair;
     });
 
+    const receiverTooltipText =
+      "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key.";
+
     return {
       advancedMode,
       context,
+      receiverTooltipText,
       ...useAdvancedFeatures(spendingKeyPair.value),
       ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
     };

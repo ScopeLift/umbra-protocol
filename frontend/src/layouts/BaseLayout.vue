@@ -141,16 +141,11 @@
             />
             <span class="dark-toggle text-caption q-ml-md">Advanced mode {{ advancedMode ? 'on' : 'off' }}</span>
             <span>
-              <q-icon class="dark-toggle" right name="fas fa-question-circle">
-                <q-tooltip
-                  content-class="bg-muted dark-toggle shadow-2 q-pa-md"
-                  :hide-delay="$q.screen.lt.lg ? 1000 : 0"
-                  max-width="14rem"
-                >
-                  Enables advanced features such as private key export, additional recipient ID options, and event
-                  scanning settings. <span class="text-bold">Use with caution!</span>
-                </q-tooltip>
-              </q-icon>
+              <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+                Enables advanced features such as private key export, additional recipient ID options, and event
+                scanning settings.
+                <span class="text-bold">Use with caution!</span>
+              </base-tooltip>
             </span>
           </p>
 
@@ -213,6 +208,7 @@
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import BaseButton from 'src/components/BaseButton.vue';
+import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'src/components/ConnectWallet.vue';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
@@ -222,7 +218,7 @@ import NetworkDropdown from './NetworkDropdown.vue';
 
 export default defineComponent({
   name: 'BaseLayout',
-  components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton },
+  components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton, BaseTooltip },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
     const { isLoading, network, userDisplayAddress, isAccountSetup } = useWalletStore();
