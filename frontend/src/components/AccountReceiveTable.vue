@@ -68,7 +68,7 @@
                 <div class="row justify-between items-center">
                   <div>
                     <span class="q-mr-xs">Stealth Receiver</span>
-                    <base-tooltip icon="fas fa-question-circle" :keepOpen="true">
+                    <base-tooltip icon="fas fa-question-circle">
                       <span>
                         {{ receiverTooltipText }}
                       </span>
@@ -141,7 +141,7 @@
               {{ col.label }}
 
               <!-- Question mark with tooltip for receiver column -->
-              <base-tooltip v-if="col.name === 'receiver'" icon="fas fa-question-circle" :keepOpen="true">
+              <base-tooltip v-if="col.name === 'receiver'" icon="fas fa-question-circle">
                 <span>
                   {{ receiverTooltipText }}
                 </span>

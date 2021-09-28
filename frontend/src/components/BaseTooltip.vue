@@ -1,7 +1,8 @@
 <template>
   <q-btn-dropdown
     @mouseover.native="isShown = true"
-    @mouseleave.native="!keepOpen ? (isShown = false) : undefined"
+    @mouseleave.native="onRootMouseLeave"
+    ref="rootRef"
     v-model="isShown"
     :dropdown-icon="icon"
     :label="label"
@@ -16,8 +17,8 @@
     :class="{ 'without-icon': icon === ' ' }"
   >
     <q-item
-      @mouseleave.native="isShown = false"
-      v-close-popup
+      @mouseleave.native="onTooltipMouseLeave"
+      ref="tooltipRef"
       class="bg-muted dark-toggle shadow-2 q-pa-md"
       style="max-width: 14rem; font-size: 10px; display: inline-block"
     >
@@ -27,6 +28,7 @@
 </template>
 
 <script lang="ts">
+import Vue from 'vue';
 import { defineComponent, ref } from '@vue/composition-api';
 
 export default defineComponent({
@@ -43,16 +45,25 @@ export default defineComponent({
       required: false,
       default: ' ',
     },
-    keepOpen: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   setup() {
     const isShown = ref(false);
+    const rootRef = ref<Vue | null>(null);
+    const tooltipRef = ref<Vue | null>(null);
 
-    return { isShown };
+    const onRootMouseLeave = (e: MouseEvent) => {
+      if (tooltipRef.value?.$el !== e.relatedTarget) {
+        isShown.value = false;
+      }
+    };
+
+    const onTooltipMouseLeave = (e: MouseEvent) => {
+      if (!rootRef.value?.$el?.contains(e.relatedTarget as Node)) {
+        isShown.value = false;
+      }
+    };
+
+    return { isShown, rootRef, tooltipRef, onRootMouseLeave, onTooltipMouseLeave };
   },
 });
 </script>
