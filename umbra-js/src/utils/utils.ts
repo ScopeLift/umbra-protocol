@@ -17,6 +17,7 @@ import {
 import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
 import { ens, cns } from '..';
 import { DomainService } from '../classes/DomainService';
+import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { EthersProvider } from '../types';
 
 // Lengths of various properties when represented as full hex strings
@@ -98,12 +99,30 @@ async function getSentTransaction(address: string, ethersProvider: EthersProvide
   return txHash;
 }
 
+// Takes an ENS, CNS, or address, and returns the checksummed address
+export async function toAddress(name: string, domainService: DomainService) {
+  if (cns.isCnsDomain(name)) {
+    return domainService.udResolution.addr(name, 'ETH'); // throws error if it does not resolve to an address
+  }
+  if (ens.isEnsDomain(name)) {
+    const address = await domainService.provider.resolveName(name); // returns null if it does not resolve to an address
+    if (!address) throw new Error(`Name ${name} does not resolve to an address`);
+    return address;
+  }
+  return getAddress(name);
+}
+
 /**
  * @notice Returns public keys from the recipientId
+ * @dev When providing a public key, transaction hash, or address with advanced mode, the spending and viewing
+ * public keys will be the same. Only keys retrieved from the StealthKeyRegistry will have different spending
+ * and viewing keys
  * @param id Recipient identifier, must be an ENS name, CNS name, address, transaction hash, or public key
  * @param provider ethers provider to use
+ * @param options Object containing lookup options:
+ *   advanced: looks for public keys in StealthKeyRegistry when false, recovers them from on-chain transaction when true
  */
-export async function lookupRecipient(id: string, provider: EthersProvider) {
+export async function lookupRecipient(id: string, provider: EthersProvider, { advanced }: { advanced?: boolean } = {}) {
   // Check if identifier is a public key. If so we just return that directly
   const isPublicKey = id.length === 132 && isHexString(id);
   if (isPublicKey) {
@@ -111,7 +130,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
     return { spendingPublicKey: id, viewingPublicKey: id };
   }
 
-  // Check if identifier is a transaction hash
+  // Check if identifier is a transaction hash. If so, we recover the sender's public keys from the transaction
   const isTxHash = id.length === 66 && isHexString(id);
   if (isTxHash) {
     const publicKey = await recoverPublicKeyFromTransaction(id, provider);
@@ -119,30 +138,22 @@ export async function lookupRecipient(id: string, provider: EthersProvider) {
     return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
   }
 
-  // Check if this is a valid address
-  const isValidAddress = id.length === 42 && isHexString(id);
-  if (isValidAddress) {
-    // Get last transaction hash sent by that address
-    const txHash = await getSentTransaction(getAddress(id), provider);
-    if (!txHash) {
-      throw new Error('Could not get public key because the provided address has not sent any transactions');
-    }
+  // The remaining checks are dependent on the advanced mode option. The provided identifier is now either an
+  // ENS name, CNS name, or address, so we resolve it to an address
+  const address = await toAddress(id, new DomainService(provider)); // throws if an invalid address is provided
 
-    // Get public key from that transaction
-    const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
-    assertValidPoint(publicKey);
-    return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
+  // If we're not using advanced mode, use the StealthKeyRegistry
+  if (!advanced) {
+    const registry = new StealthKeyRegistry(provider);
+    return registry.getStealthKeys(address);
   }
 
-  // Check if this is a valid ENS or CNS name
-  const isDomainService = ens.isEnsDomain(id) || cns.isCnsDomain(id);
-  if (isDomainService) {
-    const domainService = new DomainService(provider);
-    return domainService.getPublicKeys(id); // validation of public key points is done within this method
-  }
-
-  // Invalid identifier provided
-  throw new Error(`Invalid identifier of ${id} provided`);
+  // Otherwise, get public key based on the most recent transaction sent by that address
+  const txHash = await getSentTransaction(address, provider);
+  if (!txHash) throw new Error('Could not get public key because the provided account has not sent any transactions');
+  const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
+  assertValidPoint(publicKey);
+  return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 }
 
 /**

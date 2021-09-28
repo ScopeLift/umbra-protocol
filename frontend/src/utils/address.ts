@@ -3,7 +3,7 @@
  */
 
 import { CnsQueryResponse, Provider } from 'components/models';
-import { DomainService, cns, ens } from '@umbra/umbra-js';
+import { DomainService, cns, ens, utils } from '@umbra/umbra-js';
 import { getAddress } from 'src/utils/ethers';
 
 // ================================================== Address Helpers ==================================================
@@ -77,17 +77,7 @@ const lookupEnsOrCns = async (address: string, provider: Provider) => {
 };
 
 // Takes an ENS, CNS, or address, and returns the checksummed address
-export const toAddress = async (name: string, domainService: DomainService) => {
-  if (cns.isCnsDomain(name)) {
-    return domainService.udResolution.addr(name, 'ETH'); // throws error if it does not resolve to an address
-  }
-  if (ens.isEnsDomain(name)) {
-    const address = await domainService.provider.resolveName(name); // returns null if it does not resolve to an address
-    if (!address) throw new Error(`Name ${name} does not resolve to an address`);
-    return address;
-  }
-  return getAddress(name);
-};
+export const toAddress = utils.toAddress;
 
 // =============================================== Bulk Address Helpers ================================================
 // Duplicates of the above methods for operating on multiple addresses in parallel
