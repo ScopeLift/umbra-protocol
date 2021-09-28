@@ -1,15 +1,7 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
-import { DomainService, KeyPair, Umbra } from '@umbra/umbra-js';
-import {
-  Chain,
-  MulticallResponse,
-  Network,
-  Provider,
-  Signer,
-  supportedChainIds,
-  SupportedChainIds,
-} from 'components/models';
+import { DomainService, KeyPair, Umbra, StealthKeyRegistry } from '@umbra/umbra-js';
+import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds } from 'components/models'; // prettier-ignore
 import Multicall from 'src/contracts/Multicall.json';
 import ERC20 from 'src/contracts/ERC20.json';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
@@ -50,6 +42,7 @@ const userCns = ref<string>(); // user's CNS name
 const network = ref<Network>(); // connected network, derived from provider
 const umbra = ref<Umbra>(); // instance of Umbra class
 const domainService = ref<DomainService>(); // instance DomainService class
+const stealthKeyRegistry = ref<StealthKeyRegistry>(); // instance of the StealthKeyRegistry class
 const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for spending receiving funds
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
 const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
@@ -230,8 +223,9 @@ export default function useWalletStore() {
       return;
     }
 
-    // Set Umbra and DomainService classes
+    // Set Umbra, StealthKeyRegistry, and DomainService classes
     umbra.value = new Umbra(provider.value, chainId);
+    stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
     domainService.value = new DomainService(provider.value);
 
     // Get ENS and CNS names
@@ -374,6 +368,7 @@ export default function useWalletStore() {
     setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status),
     // "Direct" properties, i.e. return them directly without modification
     balances: computed(() => balances.value),
+    stealthKeyRegistry: computed(() => stealthKeyRegistry.value),
     domainService: computed(() => domainService.value),
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
