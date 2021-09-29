@@ -1,7 +1,7 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
-import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds } from 'components/models'; // prettier-ignore
+import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
 import Multicall from 'src/contracts/Multicall.json';
 import ERC20 from 'src/contracts/ERC20.json';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
@@ -340,7 +340,7 @@ export default function useWalletStore() {
     return { ...ETH_TOKEN_INFO, chainId: network.value?.chainId as number };
   });
 
-  const tokens = computed(() => {
+  const tokens = computed((): TokenInfo[] => {
     // Add ETH as a supported token
     const supportedTokens = relayer.value?.tokens || [];
     return [ETH_TOKEN.value, ...supportedTokens];
