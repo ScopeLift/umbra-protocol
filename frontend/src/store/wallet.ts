@@ -323,6 +323,11 @@ export default function useWalletStore() {
     hasCnsKeys.value = false;
   }
 
+  // Mark account setup complete after a user first registers their stealth keys
+  function setIsAccountSetup(status: boolean) {
+    isAccountSetup.value = status;
+  }
+
   // ------------------------------------- Computed parameters -------------------------------------
   // "True" computed properties, i.e. derived from this module's state
 
@@ -355,6 +360,7 @@ export default function useWalletStore() {
     connectWallet,
     getPrivateKeys,
     getTokenBalances,
+    setIsAccountSetup,
     setProvider,
     setNetwork,
     setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status), // LEGACY

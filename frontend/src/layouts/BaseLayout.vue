@@ -155,13 +155,6 @@
               </base-tooltip>
             </span>
           </p>
-
-          <p v-if="isAccountSetup">
-            <q-icon class="dark-toggle icon" name="fas fa-user q-mr-xs" />
-            <span class="dark-toggle text-caption q-ml-sm">
-              Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
-            </span>
-          </p>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
