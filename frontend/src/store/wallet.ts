@@ -2,8 +2,7 @@ import { computed, onMounted, ref, watch } from '@vue/composition-api';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { DomainService, KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
-import Multicall from 'src/contracts/Multicall.json';
-import ERC20 from 'src/contracts/ERC20.json';
+import { ERC20_ABI, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ITXRelayer } from 'src/utils/relayer';
 import useSettingsStore from 'src/store/settings';
@@ -110,8 +109,8 @@ export default function useWalletStore() {
     if (!relayer.value) throw new Error('Relayer instance not found');
     const network = await provider.value.getNetwork();
     const chainId = String(network.chainId) as SupportedChainIds;
-    const multicallAddress = Multicall.addresses[chainId];
-    const multicall = new Contract(multicallAddress, Multicall.abi, provider.value);
+    const multicallAddress = MULTICALL_ADDRESSES[chainId];
+    const multicall = new Contract(multicallAddress, MULTICALL_ABI, provider.value);
 
     // Generate balance calls using Multicall contract
     const calls = tokens.value.map((token) => {
@@ -122,7 +121,7 @@ export default function useWalletStore() {
           callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
         };
       } else {
-        const tokenContract = new Contract(tokenAddress, ERC20.abi, signer.value);
+        const tokenContract = new Contract(tokenAddress, ERC20_ABI, signer.value);
         return {
           target: tokenAddress,
           callData: tokenContract.interface.encodeFunctionData('balanceOf', [userAddress.value]),
