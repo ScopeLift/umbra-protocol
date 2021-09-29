@@ -380,8 +380,6 @@ export default function useWalletStore() {
     spendingKeyPair: computed(() => spendingKeyPair.value),
     umbra: computed(() => umbra.value),
     userAddress: computed(() => userAddress.value),
-    userCns: computed(() => userCns.value),
-    userEns: computed(() => userEns.value),
     viewingKeyPair: computed(() => viewingKeyPair.value),
     // "True" computed properties, i.e. derived from this module's state
     isSupportedNetwork: computed(() => isSupportedNetwork.value),
