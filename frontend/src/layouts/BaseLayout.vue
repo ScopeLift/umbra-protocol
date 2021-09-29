@@ -156,7 +156,7 @@
             </span>
           </p>
 
-          <p v-if="isAccountSetupLegacy">
+          <p v-if="isAccountSetup">
             <q-icon class="dark-toggle icon" name="fas fa-user q-mr-xs" />
             <span class="dark-toggle text-caption q-ml-sm">
               Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
@@ -228,11 +228,12 @@ export default defineComponent({
   components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton, BaseTooltip },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    const { isLoading, network, userDisplayAddress, isAccountSetupLegacy } = useWalletStore();
+    const { isLoading, network, userDisplayAddress, isAccountSetup, isAccountSetupLegacy } = useWalletStore();
     return {
       isLoading,
       network,
       userDisplayAddress,
+      isAccountSetup,
       isAccountSetupLegacy,
       advancedMode,
       toggleAdvancedMode,
