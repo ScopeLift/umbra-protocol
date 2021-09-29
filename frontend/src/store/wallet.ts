@@ -335,18 +335,8 @@ export default function useWalletStore() {
   });
 
   const userDisplayName = computed(() => {
-    // First try finding a domain name that has keys configured
-    if (userEns.value && hasEnsKeys.value) return userEns.value;
-    if (userCns.value && hasCnsKeys.value) return userCns.value;
-    // If none are configured, just try a domain name
     if (userEns.value) return userEns.value;
     if (userCns.value) return userCns.value;
-    // If no name service, just use a regular address
-    return userAddress.value ? formatAddress(userAddress.value) : undefined;
-  });
-
-  const userDisplayAddress = computed(() => {
-    // Format the regular address
     return userAddress.value ? formatAddress(userAddress.value) : undefined;
   });
 
@@ -385,7 +375,6 @@ export default function useWalletStore() {
     ETH_TOKEN: computed(() => ETH_TOKEN.value),
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
-    userDisplayAddress: computed(() => userDisplayAddress.value),
   };
 }
 

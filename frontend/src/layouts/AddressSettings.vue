@@ -1,8 +1,8 @@
 <template>
   <div class="row no-wrap">
     <connect-wallet>
-      <span v-if="userDisplayAddress" class="text-caption cursor-pointer dark-toggle">
-        {{ userDisplayAddress }}
+      <span v-if="userDisplayName" class="text-caption cursor-pointer dark-toggle">
+        {{ userDisplayName }}
       </span>
     </connect-wallet>
     <span v-if="advancedMode" class="q-ml-md">
@@ -20,7 +20,7 @@ export default defineComponent({
   name: 'AddressSettings',
   components: { BaseTooltip, ConnectWallet },
   props: {
-    userDisplayAddress: {
+    userDisplayName: {
       type: String,
       required: false,
     },

@@ -24,8 +24,8 @@
                       <q-spinner color="primary" size="1em" />
                     </div>
                     <address-settings
-                      v-else-if="!isLoading && (userDisplayAddress || network)"
-                      :userDisplayAddress="userDisplayAddress"
+                      v-else-if="!isLoading && (userDisplayName || network)"
+                      :userDisplayName="userDisplayName"
                       :advancedMode="advancedMode"
                       class="q-ml-md row"
                     />
@@ -55,9 +55,9 @@
             <div v-if="isLoading" class="row justify-end items-center">
               <q-spinner color="primary" size="1em" />
             </div>
-            <div v-else-if="!isLoading && (userDisplayAddress || network)" class="row justify-end items-center no-wrap">
+            <div v-else-if="!isLoading && (userDisplayName || network)" class="row justify-end items-center no-wrap">
               <div class="q-mr-md">
-                <address-settings :userDisplayAddress="userDisplayAddress" :advancedMode="advancedMode" class="row" />
+                <address-settings :userDisplayName="userDisplayName" :advancedMode="advancedMode" class="row" />
               </div>
               <network-dropdown />
             </div>
@@ -106,7 +106,7 @@
       <div class="col q-col-gutter-y-sm q-px-md">
         <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
       </div>
-      <div v-if="!isLoading && userDisplayAddress" class="row q-pt-sm q-px-md full-width">
+      <div v-if="!isLoading && userDisplayName" class="row q-pt-sm q-px-md full-width">
         <network-dropdown />
       </div>
       <connect-wallet v-else-if="!isLoading">
@@ -228,11 +228,11 @@ export default defineComponent({
   components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton, BaseTooltip },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    const { isLoading, network, userDisplayAddress, isAccountSetup, isAccountSetupLegacy } = useWalletStore();
+    const { isLoading, network, userDisplayName, isAccountSetup, isAccountSetupLegacy } = useWalletStore();
     return {
       isLoading,
       network,
-      userDisplayAddress,
+      userDisplayName,
       isAccountSetup,
       isAccountSetupLegacy,
       advancedMode,
