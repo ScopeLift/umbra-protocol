@@ -92,7 +92,7 @@ import { txNotify } from 'src/utils/alerts';
 import { getAddress, isHexString, MaxUint256, parseUnits, Contract } from 'src/utils/ethers';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfo } from 'components/models';
-import ERC20 from 'src/contracts/ERC20.json';
+import { ERC20_ABI } from 'src/utils/constants';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -173,7 +173,7 @@ function useSendForm() {
       isSending.value = true;
       if (token.value.symbol !== 'ETH') {
         // Check allowance
-        const tokenContract = new Contract(token.value.address, ERC20.abi, signer.value);
+        const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
         const umbraAddress = umbra.value.umbraContract.address;
         const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
         // If insufficient allowance, get approval
