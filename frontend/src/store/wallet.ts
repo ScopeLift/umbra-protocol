@@ -1,6 +1,6 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
-import { DomainService, KeyPair, Umbra, StealthKeyRegistry } from '@umbra/umbra-js';
+import { DomainService, KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds } from 'components/models'; // prettier-ignore
 import Multicall from 'src/contracts/Multicall.json';
 import ERC20 from 'src/contracts/ERC20.json';
@@ -49,6 +49,7 @@ const balances = ref<Record<string, BigNumber>>({}); // mapping from token addre
 const relayer = ref<ITXRelayer>(); // used for managing relay transactions
 const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name // LEGACY
 const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name // LEGACY
+const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
 const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
 
 // ========================================== Main Store ===========================================
@@ -221,10 +222,11 @@ export default function useWalletStore() {
     stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
     domainService.value = new DomainService(provider.value);
 
-    // Get ENS and CNS names
-    const [_userEns, _userCns] = await Promise.all([
+    // Get ENS name, CNS name, and check if user has registered their stealth keys
+    const [_userEns, _userCns, _isAccountSetup] = await Promise.all([
       lookupEnsName(_userAddress, provider.value),
       lookupCnsName(_userAddress, provider.value),
+      hasRegisteredStealthKeys(_userAddress, provider.value),
     ]);
 
     // Check if user has keys setup with their ENS or CNS names (if so, we hide Account Setup)
@@ -240,8 +242,9 @@ export default function useWalletStore() {
     userEns.value = _userEns;
     userCns.value = _userCns;
     network.value = _network;
-    hasEnsKeys.value = _hasEnsKeys;
-    hasCnsKeys.value = _hasCnsKeys;
+    hasEnsKeys.value = _hasEnsKeys; // LEGACY
+    hasCnsKeys.value = _hasCnsKeys; // LEGACY
+    isAccountSetup.value = _isAccountSetup;
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
@@ -365,6 +368,7 @@ export default function useWalletStore() {
     domainService: computed(() => domainService.value),
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
+    isAccountSetup: computed(() => isAccountSetup.value),
     isAccountSetupLegacy: computed(() => hasEnsKeys.value || hasCnsKeys.value), // LEGACY
     isLoading: computed(() => isLoading.value),
     provider: computed(() => provider.value),
@@ -395,3 +399,14 @@ const hasSetPublicKeys = async (name: string, domainService: DomainService) => {
     return false;
   }
 };
+
+// Helper method to check if user has registered public keys in the StealthKeyRegistry
+async function hasRegisteredStealthKeys(account: string, provider: Provider) {
+  try {
+    await utils.lookupRecipient(account, provider); // throws if no keys found
+    return true;
+  } catch (err) {
+    console.warn(err);
+    return false;
+  }
+}

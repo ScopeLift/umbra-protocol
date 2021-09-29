@@ -15,7 +15,7 @@
         description="View and withdraw received funds"
       />
       <home-action-card
-        v-if="!isAccountSetupLegacy"
+        v-if="!isAccountSetup"
         class="col-xs-12 col-4"
         to="setup"
         text="Setup"
@@ -58,8 +58,8 @@ export default defineComponent({
     window.logger.debug('test log level debug');
     window.logger.warn('test log level warn');
     window.logger.info('test log level info');
-    const { isAccountSetupLegacy } = useWalletStore();
-    return { isAccountSetupLegacy };
+    const { isAccountSetup } = useWalletStore();
+    return { isAccountSetup };
   },
 });
 </script>
