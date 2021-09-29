@@ -25,7 +25,7 @@ import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
-import * as erc20Abi from '../abi/ERC20.json';
+import { ERC20_ABI } from '../utils/constants';
 // prettier-ignore
 import type { Announcement, UserAnnouncement, ChainConfig, EthersProvider, SendOverrides, ScanOverrides } from '../types';
 
@@ -130,7 +130,7 @@ export class Umbra {
     // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
     // method also serves to validate the token input
     if (!isEth(token)) {
-      const tokenContract = new Contract(token, erc20Abi, signer) as ERC20;
+      const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
       const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
       if (tokenBalance.lt(amount)) {
         const providedAmount = BigNumber.from(amount).toString();

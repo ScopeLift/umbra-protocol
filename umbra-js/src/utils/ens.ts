@@ -5,8 +5,7 @@
 import { EthersProvider, TransactionResponse } from '../types';
 import { AddressZero, BigNumber, namehash as ensNamehash, Zero } from '../ethers';
 import { KeyPair } from '../classes/KeyPair';
-import * as ForwardingStealthKeyResolverAbi from '../abi/ForwardingStealthKeyResolver.json';
-import * as ENSRegistryAbi from '../abi/ENSRegistry.json';
+import { ENS_REGISTRY_ABI, FORWARDING_STEALTH_KEY_RESOLVER_ABI } from './constants';
 import { createContract } from './utils';
 
 type StealthKeys = {
@@ -24,7 +23,7 @@ const ENSRegistryAddress = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'; // same
  * @param provider Ethers provider
  */
 export const getResolverContract = async (name: string, provider: EthersProvider) => {
-  const registry = createContract(ENSRegistryAddress, ENSRegistryAbi, provider);
+  const registry = createContract(ENSRegistryAddress, ENS_REGISTRY_ABI, provider);
   const resolverAddress = (await registry.resolver(ensNamehash(name))) as string;
   // When using this method we expect the user will have an Umbra-compatible StealthKey resolver. There are two types:
   //   1. ForwardingStealthKeyResolver
@@ -33,7 +32,7 @@ export const getResolverContract = async (name: string, provider: EthersProvider
   //
   // Regardless of which type the user has, the ABI for getting and setting stealth keys is the same. Therefore
   // it's ok that we use always use the same ABI here)
-  return createContract(resolverAddress, ForwardingStealthKeyResolverAbi, provider);
+  return createContract(resolverAddress, FORWARDING_STEALTH_KEY_RESOLVER_ABI, provider);
 };
 
 /**
