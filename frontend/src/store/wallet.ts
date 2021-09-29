@@ -47,8 +47,8 @@ const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, f
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
 const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
 const relayer = ref<ITXRelayer>(); // used for managing relay transactions
-const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name
-const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name
+const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name // LEGACY
+const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name // LEGACY
 const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
 
 // ========================================== Main Store ===========================================
@@ -357,15 +357,15 @@ export default function useWalletStore() {
     getTokenBalances,
     setProvider,
     setNetwork,
-    setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status),
-    setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status),
+    setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status), // LEGACY
+    setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status), // LEGACY
     // "Direct" properties, i.e. return them directly without modification
     balances: computed(() => balances.value),
     stealthKeyRegistry: computed(() => stealthKeyRegistry.value),
     domainService: computed(() => domainService.value),
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
-    isAccountSetup: computed(() => hasEnsKeys.value || hasCnsKeys.value),
+    isAccountSetupLegacy: computed(() => hasEnsKeys.value || hasCnsKeys.value), // LEGACY
     isLoading: computed(() => isLoading.value),
     provider: computed(() => provider.value),
     relayer: computed(() => relayer.value),
@@ -385,7 +385,7 @@ export default function useWalletStore() {
   };
 }
 
-// Helper method to check if user has ENS or CNS keys
+// Helper method to check if user has ENS or CNS keys // LEGACY
 const hasSetPublicKeys = async (name: string, domainService: DomainService) => {
   try {
     await domainService.getPublicKeys(name); // throws if no keys found

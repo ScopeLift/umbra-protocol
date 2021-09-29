@@ -76,10 +76,17 @@
             </connect-wallet>
           </div>
         </div>
-        <!-- Alpha warning -->
-        <div class="dark-toggle text-center text-negative text-bold q-my-md">
-          This is beta software. Use at your own risk.
-          <router-link class="hyperlink" :to="{ path: '/faq#security' }">Learn more</router-link>
+        <!-- Legacy warning -->
+        <div
+          v-if="isAccountSetupLegacy"
+          class="dark-toggle text-center text-bold q-my-md q-pa-md"
+          style="border-radius: 15px"
+          :style="isDark ? 'color: #FFFAEB; background-color: #7c5e10' : 'color: #513C06; background-color: #fcefc7'"
+        >
+          We've upgraded our name resolution system. Use the
+          <router-link class="hyperlink" :to="{ name: 'setup' }">Setup</router-link> page to submit one transaction
+          which migrates you to the updated system. You won't be able to receive Umbra transactions until you've done
+          so. <router-link class="hyperlink" :to="{ path: '/TODO' }">Learn more</router-link>.
         </div>
       </div>
     </q-header>
@@ -149,7 +156,7 @@
             </span>
           </p>
 
-          <p v-if="isAccountSetup">
+          <p v-if="isAccountSetupLegacy">
             <q-icon class="dark-toggle icon" name="fas fa-user q-mr-xs" />
             <span class="dark-toggle text-caption q-ml-sm">
               Repeat <router-link class="hyperlink" :to="{ name: 'setup' }">account setup</router-link>
@@ -221,12 +228,12 @@ export default defineComponent({
   components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton, BaseTooltip },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    const { isLoading, network, userDisplayAddress, isAccountSetup } = useWalletStore();
+    const { isLoading, network, userDisplayAddress, isAccountSetupLegacy } = useWalletStore();
     return {
       isLoading,
       network,
       userDisplayAddress,
-      isAccountSetup,
+      isAccountSetupLegacy,
       advancedMode,
       toggleAdvancedMode,
       isDark,
