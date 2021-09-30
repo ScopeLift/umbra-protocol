@@ -267,7 +267,7 @@
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse } from 'src/utils/ethers';
-import { DomainService, Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
+import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
@@ -318,7 +318,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 }
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
-  const { domainService, ETH_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
+  const { ETH_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const showPrivacyModal = ref(false);
@@ -421,12 +421,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
     // Check if withdrawal destination is safe
+    if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
+    if (!userAddress.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
     activeAnnouncement.value = announcement;
-    const { safe, reason } = await isAddressSafe(
-      destinationAddress.value,
-      userAddress.value as string,
-      domainService.value as DomainService
-    );
+    const { safe, reason } = await isAddressSafe(destinationAddress.value, userAddress.value, provider.value);
 
     if (safe) {
       showConfirmationModal.value = true;
@@ -463,7 +461,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     const token = getTokenInfo(announcement.token);
     const stealthKeyPair = spendingKeyPair.mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
-    const acceptor = await toAddress(destinationAddress.value, domainService.value as DomainService);
+    const acceptor = await toAddress(destinationAddress.value, provider.value);
 
     // Send transaction
     try {

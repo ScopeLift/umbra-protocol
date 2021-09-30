@@ -1023,12 +1023,6 @@
               random number.
             </li>
             <li>
-              <span class="code">src/classes/DomainService.ts</span>: Since Umbra supports both ENS and CNS, this class
-              wraps around the two name services to help get or set public keys for the provided name. The two files
-              files class delegates to are <span class="code">src/utils/ens.ts</span> and
-              <span class="code">src/utils/cns.ts</span>.
-            </li>
-            <li>
               <span class="code">src/utils/utils.ts</span> contains various helper methods for a range of tasks,
               primarily related to getting a recipient’s public keys
             </li>

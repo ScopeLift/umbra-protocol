@@ -3,7 +3,7 @@
  */
 
 import { CnsQueryResponse, Provider } from 'components/models';
-import { DomainService, cns, ens, utils } from '@umbra/umbra-js';
+import { cns, ens, utils } from '@umbra/umbra-js';
 import { getAddress } from 'src/utils/ethers';
 
 // ================================================== Address Helpers ==================================================
@@ -98,7 +98,7 @@ export const lookupOrFormatAddresses = async (addresses: string[], provider: Pro
 
 // Checks for any potential risks of withdrawing to the provided name or address, returns object containing
 // a true/false judgement about risk, and a short description string
-export const isAddressSafe = async (name: string, userAddress: string, domainService: DomainService) => {
+export const isAddressSafe = async (name: string, userAddress: string, provider: Provider) => {
   userAddress = getAddress(userAddress);
 
   // Check if we're withdrawing to an ENS or CNS name
@@ -107,7 +107,6 @@ export const isAddressSafe = async (name: string, userAddress: string, domainSer
 
   // We aren't withdrawing to a domain, so let's get the checksummed address.
   const destinationAddress = getAddress(name);
-  const provider = domainService.provider as Provider;
 
   // Check if address resolves to an ENS name
   const ensName = await lookupEnsName(destinationAddress, provider);
