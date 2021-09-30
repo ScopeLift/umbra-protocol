@@ -1,11 +1,10 @@
 import { ethers } from 'hardhat';
 import { getDefaultProvider } from '@ethersproject/providers';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import * as utils from '../src/utils/utils';
 import type { EthersProvider } from '../src/types';
 import { expectRejection } from './utils';
 
-const { expect } = chai;
 const ethersProvider = ethers.provider;
 
 // Public key that derives to the address msolomon.eth resolves to
