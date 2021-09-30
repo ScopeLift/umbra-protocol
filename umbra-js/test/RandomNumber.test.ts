@@ -1,8 +1,7 @@
 import { RandomNumber } from '../src/classes/RandomNumber';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { BigNumber, isHexString } from '../src/ethers';
 
-const { expect } = chai;
 const numberOfRuns = 1000; // number of runs for tests that execute in a loop
 
 describe('RandomNumber class', () => {

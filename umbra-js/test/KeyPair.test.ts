@@ -1,4 +1,4 @@
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { Wallet } from 'ethers';
 import { RandomNumber } from '../src/classes/RandomNumber';
@@ -7,7 +7,6 @@ import { Umbra } from '../src/classes/Umbra';
 import * as utils from '../src/utils/utils';
 import { expectRejection } from './utils';
 
-const { expect } = chai;
 const ethersProvider = ethers.provider;
 const numberOfRuns = 100; // number of runs for tests that execute in a loop
 

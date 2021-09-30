@@ -1,10 +1,8 @@
 import '@nomiclabs/hardhat-ethers';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import * as ens from '../src/utils/ens';
 import { expectRejection } from './utils';
-
-const { expect } = chai;
 const ethersProvider = ethers.provider;
 
 // Truth parameters to test against

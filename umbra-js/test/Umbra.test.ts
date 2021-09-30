@@ -4,7 +4,7 @@ import { Umbra } from '../src/classes/Umbra';
 import { BigNumberish, BigNumber, JsonRpcProvider, Wallet } from '../src/ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { expectRejection } from './utils';
 import type { ChainConfig } from '../src/types';
 import {
@@ -14,9 +14,7 @@ import {
   UmbraFactory as Umbra__factory,
 } from '@umbra/contracts/typechain';
 
-const { expect } = chai;
 const { parseEther } = ethers.utils;
-
 const ethersProvider = ethers.provider;
 const jsonRpcProvider = new JsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
 

@@ -1,13 +1,11 @@
 import '@nomiclabs/hardhat-ethers';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import * as cns from '../src/utils/cns';
 import { expectRejection } from './utils';
 
-const { expect } = chai;
 const ethersProvider = ethers.provider;
-
 const resolution = new Resolution({
   sourceConfig: {
     cns: {
