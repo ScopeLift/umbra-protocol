@@ -80,7 +80,7 @@
 // --- External imports ---
 import { computed, defineComponent, onMounted, ref } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { ens, cns, utils as umbraUtils } from '@umbra/umbra-js';
+import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
 import BaseTooltip from 'components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
@@ -124,7 +124,7 @@ function useSendForm() {
   function isValidId(val: string | undefined) {
     if (!val) return true;
     const isValidAddress = val.length === 42 && isHexString(val);
-    if (val && (isValidAddress || ens.isEnsDomain(val) || cns.isCnsDomain(val))) return true;
+    if (val && (isValidAddress || umbraUtils.isDomain(val))) return true;
     if (advancedMode.value) {
       // Also allow identifying recipient by transaction hash, address, or public key. We copy the checks
       // used by utils.lookupRecipient() here

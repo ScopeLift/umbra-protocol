@@ -3,7 +3,7 @@
  */
 
 import { CnsQueryResponse, Provider } from 'components/models';
-import { cns, ens, utils } from '@umbra/umbra-js';
+import { utils } from '@umbra/umbra-js';
 import { getAddress } from 'src/utils/ethers';
 
 // ================================================== Address Helpers ==================================================
@@ -102,8 +102,7 @@ export const isAddressSafe = async (name: string, userAddress: string, provider:
   userAddress = getAddress(userAddress);
 
   // Check if we're withdrawing to an ENS or CNS name
-  if (ens.isEnsDomain(name)) return { safe: false, reason: `${name}, which is a publicly viewable ENS name` };
-  if (cns.isCnsDomain(name)) return { safe: false, reason: `${name}, which is a publicly viewable CNS name` };
+  if (utils.isDomain(name)) return { safe: false, reason: `${name}, which is a publicly viewable name` };
 
   // We aren't withdrawing to a domain, so let's get the checksummed address.
   const destinationAddress = getAddress(name);
