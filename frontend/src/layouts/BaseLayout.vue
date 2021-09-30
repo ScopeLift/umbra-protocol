@@ -127,7 +127,7 @@
     <q-footer class="q-mx-md q-mb-md q-pt-xl" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="row self-start justify-between all-content-format">
         <!-- Column 1: User settings -->
-        <div class="col-xs-12 col-sm-4">
+        <div class="col-xs-12 col-sm-4 q-mt-lg">
           <p class="dark-toggle spaced-letters">Settings</p>
           <!-- Dark mode toggle -->
           <p class="dark-toggle">
@@ -158,7 +158,7 @@
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
-        <div class="col-xs-12 col-sm-4">
+        <div class="col-xs-12 col-sm-4 q-mt-lg">
           <p class="dark-toggle spaced-letters">About</p>
           <p class="dark-toggle text-caption">
             Built by
@@ -173,7 +173,7 @@
         </div>
 
         <!-- Column 3: Links -->
-        <div class="col-xs-12 col-sm-4">
+        <div class="col-xs-12 col-sm-4 q-mt-lg">
           <p class="dark-toggle spaced-letters">Links</p>
           <p>
             <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
