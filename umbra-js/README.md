@@ -21,9 +21,8 @@ Below is an overview of the files within this library. If you like reading code 
    `relayWithdrawOnBehalf()` can be used to relay a meta-transaction using the default Umbra relayer
 2. `src/classes/KeyPair.ts`: This class is where the core cryptography logic lives. A KeyPair class is instantiated with either a private or public key, and the class methods help you perform various operations with those keys, including encryption/decryption, multiplication, and compression/decompression of public keys
 3. `src/classes/RandomNumber.ts`: This simple class is used to generate our 32 byte random number, and will properly format the number when provided an optional 16 byte payload extension
-4. `src/classes/DomainService.ts`: Since Umbra supports both ENS and CNS, this class wraps around the two name services to help get or set public keys for the provided name. The two files files class delegates to are `src/utils/ens.ts` and `src/utils/cns.ts`.
-5. `src/utils/utils.ts` contains various helper methods for a range of tasks, primarily related to getting a recipient’s public keys
-6. `src/types.ts`: You’ll see a few custom types used throughout the library, which are all defined here
+4. `src/utils/utils.ts` contains various helper methods for a range of tasks, primarily related to getting a recipient’s public keys
+5. `src/types.ts`: You’ll see a few custom types used throughout the library, which are all defined here
 
 ## Concepts
 
