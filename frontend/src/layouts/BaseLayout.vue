@@ -25,6 +25,7 @@
                     </div>
                     <address-settings
                       v-else-if="!isLoading && (userDisplayName || network)"
+                      :userAddress="userAddress"
                       :userDisplayName="userDisplayName"
                       :advancedMode="advancedMode"
                       class="q-ml-md row"
@@ -57,7 +58,12 @@
             </div>
             <div v-else-if="!isLoading && (userDisplayName || network)" class="row justify-end items-center no-wrap">
               <div class="q-mr-md">
-                <address-settings :userDisplayName="userDisplayName" :advancedMode="advancedMode" class="row" />
+                <address-settings
+                  :userAddress="userAddress"
+                  :userDisplayName="userDisplayName"
+                  :advancedMode="advancedMode"
+                  class="row"
+                />
               </div>
               <network-dropdown />
             </div>
@@ -221,10 +227,11 @@ export default defineComponent({
   components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton, BaseTooltip },
   setup() {
     const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    const { isLoading, network, userDisplayName, isAccountSetup, isAccountSetupLegacy } = useWalletStore();
+    const { isLoading, network, userAddress, userDisplayName, isAccountSetup, isAccountSetupLegacy } = useWalletStore();
     return {
       isLoading,
       network,
+      userAddress,
       userDisplayName,
       isAccountSetup,
       isAccountSetupLegacy,

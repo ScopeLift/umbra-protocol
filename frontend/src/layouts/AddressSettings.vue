@@ -5,6 +5,7 @@
         {{ userDisplayName }}
       </span>
     </connect-wallet>
+    <Jazzicon v-if="userAddress" :address="userAddress" class="q-ml-sm" />
     <span v-if="advancedMode" class="q-ml-md">
       <base-tooltip label="🧙">Advanced mode is on</base-tooltip>
     </span>
@@ -15,12 +16,17 @@
 import { defineComponent } from '@vue/composition-api';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
+import Jazzicon from 'src/components/Jazzicon.vue';
 
 export default defineComponent({
   name: 'AddressSettings',
-  components: { BaseTooltip, ConnectWallet },
+  components: { BaseTooltip, ConnectWallet, Jazzicon },
   props: {
     userDisplayName: {
+      type: String,
+      required: true,
+    },
+    userAddress: {
       type: String,
       required: false,
     },
