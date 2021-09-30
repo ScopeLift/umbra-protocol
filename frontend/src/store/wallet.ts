@@ -1,6 +1,6 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
-import { DomainService, KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
+import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
 import { ERC20_ABI, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
@@ -40,7 +40,6 @@ const userEns = ref<string>(); // user's ENS name
 const userCns = ref<string>(); // user's CNS name
 const network = ref<Network>(); // connected network, derived from provider
 const umbra = ref<Umbra>(); // instance of Umbra class
-const domainService = ref<DomainService>(); // instance DomainService class
 const stealthKeyRegistry = ref<StealthKeyRegistry>(); // instance of the StealthKeyRegistry class
 const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for spending receiving funds
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
@@ -223,10 +222,9 @@ export default function useWalletStore() {
       return;
     }
 
-    // Set Umbra, StealthKeyRegistry, and DomainService classes
+    // Set Umbra and StealthKeyRegistry classes
     umbra.value = new Umbra(provider.value, chainId);
     stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
-    domainService.value = new DomainService(provider.value);
 
     // Get ENS name, CNS name, and check if user has registered their stealth keys
     const [_userEns, _userCns, _isAccountSetup] = await Promise.all([
@@ -237,8 +235,8 @@ export default function useWalletStore() {
 
     // Check if user has keys setup with their ENS or CNS names (if so, we hide Account Setup)
     const [_hasEnsKeys, _hasCnsKeys] = await Promise.all([
-      Boolean(_userEns) && (await hasSetPublicKeys(_userEns as string, domainService.value)),
-      Boolean(_userCns) && (await hasSetPublicKeys(_userCns as string, domainService.value)),
+      Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, provider.value)),
+      Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, provider.value)),
     ]);
 
     // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
@@ -313,7 +311,6 @@ export default function useWalletStore() {
     userCns.value = undefined;
     network.value = undefined;
     umbra.value = undefined;
-    domainService.value = undefined;
     spendingKeyPair.value = undefined;
     viewingKeyPair.value = undefined;
     balances.value = {};
@@ -367,7 +364,6 @@ export default function useWalletStore() {
     // "Direct" properties, i.e. return them directly without modification
     balances: computed(() => balances.value),
     stealthKeyRegistry: computed(() => stealthKeyRegistry.value),
-    domainService: computed(() => domainService.value),
     hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
     isAccountSetup: computed(() => isAccountSetup.value),
@@ -389,9 +385,9 @@ export default function useWalletStore() {
 }
 
 // Helper method to check if user has ENS or CNS keys // LEGACY
-const hasSetPublicKeys = async (name: string, domainService: DomainService) => {
+const hasSetPublicKeysLegacy = async (name: string, provider: Provider) => {
   try {
-    await domainService.getPublicKeys(name); // throws if no keys found
+    await utils.getPublicKeysLegacy(name, provider);
     return true;
   } catch (err) {
     console.warn(err);
