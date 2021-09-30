@@ -2,7 +2,7 @@ import '@nomiclabs/hardhat-ethers';
 import * as chai from 'chai';
 import { ethers } from 'hardhat';
 import * as ens from '../src/utils/ens';
-import { expectRejection, registerEnsName } from './utils';
+import { expectRejection } from './utils';
 
 const { expect } = chai;
 const ethersProvider = ethers.provider;
@@ -15,26 +15,9 @@ const nameViewingPublicKey =
   '0x04cc7d4c34d8f78e7bd65a04bea64bc21589073c139658040b4a20cc58991da385f0706d354b3aace6d1184e1e49ce2201dc884a3eb2b7f03a2d3a2bfbab10bd7d';
 
 describe('ENS functions', () => {
-  it('properly identifies ENS domains', async () => {
-    ens.supportedEnsDomains.forEach((suffix) => {
-      // example suffixes: .eth, .xyz, etc.
-      expect(ens.isEnsDomain(`test${suffix}`)).to.be.true;
-    });
-  });
-
-  it('isCnsDomain returns false for empty ENS domains', () => {
-    expect(ens.isEnsDomain('')).to.be.false;
-  });
-
   it('throws when namehash is not given a string', () => {
     // @ts-expect-error
     expect(() => ens.namehash(123)).to.throw('Name must be a string');
-  });
-
-  it('throws when namehash is given a bad ENS suffix', async () => {
-    const badName = 'myname.com';
-    const errorMsg = `Name ${badName} does not end with supported suffix: ${ens.supportedEnsDomains.join(', ')}`;
-    expect(() => ens.namehash(badName)).to.throw(errorMsg);
   });
 
   it('computes the namehash of an ENS domain', () => {
@@ -72,25 +55,5 @@ describe('ENS functions', () => {
     const unsetEnsName = 'unsetStealthKeys.eth';
     const errorMsg = `Public keys not found for ${unsetEnsName}. Please ask them to setup their Umbra account`;
     await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
-  });
-
-  it('sets the public keys when resolver supports stealth keys', async () => {
-    // First we get public keys, which should fail
-    const user = (await ethers.getSigners())[0];
-    const ensLabel = 'umbrajs-test-name1';
-    const ensName = `${ensLabel}.eth`;
-    const errorMsg = `Name ${ensName} is not registered or user has not set their resolver`;
-    await expectRejection(ens.getPublicKeys(ensName, ethersProvider), errorMsg);
-
-    // Register name
-    await registerEnsName(ensLabel, user);
-
-    // Set the public keys
-    await ens.setPublicKeys(ensName, nameSpendingPublicKey, nameViewingPublicKey, ethersProvider);
-
-    // Retrieve them and verify they match expected values
-    const publicKeys = await ens.getPublicKeys(ensName, ethersProvider);
-    expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
-    expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 });

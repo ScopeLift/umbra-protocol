@@ -3,31 +3,12 @@
  */
 import { Point } from 'noble-secp256k1';
 import { default as Resolution } from '@unstoppabledomains/resolution';
-import type { EthersProvider, TransactionResponse } from '../types';
+import type { EthersProvider } from '../types';
 import { CNS_RESOLVER_ABI } from './constants';
 import { createContract } from './utils';
 
 export const cnsKeyPathSpending = 'crypto.ETH.umbra.spending_public_key';
 export const cnsKeyPathViewing = 'crypto.ETH.umbra.viewing_public_key';
-
-/**
- * @notice Returns supported CNS domain endings
- */
-export const supportedCnsDomains = ['.crypto', '.zil'];
-
-/**
- * @notice Returns true if the provided name is an CNS domain, false otherwise
- * @param domainName Name to check
- */
-export function isCnsDomain(domainName: string) {
-  if (!domainName) return false;
-  for (const suffix of supportedCnsDomains) {
-    if (domainName.endsWith(suffix)) {
-      return true;
-    }
-  }
-  return false;
-}
 
 /**
  * @notice Computes CNS namehash of the input CNS domain, normalized to CNS compatibility
@@ -37,9 +18,6 @@ export function isCnsDomain(domainName: string) {
 export function namehash(name: string, resolution: Resolution) {
   if (typeof name !== 'string') {
     throw new Error('Name must be a string');
-  }
-  if (!isCnsDomain(name)) {
-    throw new Error(`Name ${name} does not end with supported suffix: ${supportedCnsDomains.join(', ')}`);
   }
   return resolution.namehash(name);
 }
@@ -66,36 +44,4 @@ export async function getPublicKeys(name: string, provider: EthersProvider, reso
   const spendingPublicKey = `0x${Point.fromHex(compressedSpendingPublicKey.slice(2)).toHex()}`;
   const viewingPublicKey = `0x${Point.fromHex(compressedViewingPublicKey.slice(2)).toHex()}`;
   return { spendingPublicKey, viewingPublicKey };
-}
-
-/**
- * @notice For a given CNS domain, sets the associated umbra public keys
- * @param name CNS domain, e.g. myname.crypto
- * @param spendingPublicKey The public key for generating a stealth address as hex string
- * @param viewingPublicKey The public key to use for encryption as hex string
- * @param provider ethers provider to use
- * @param resolution Resolution instance of @unstoppabledomains/resolution
- * @returns Transaction hash
- */
-export async function setPublicKeys(
-  name: string,
-  spendingPublicKey: string,
-  viewingPublicKey: string,
-  provider: EthersProvider,
-  resolution: Resolution
-) {
-  // Compress public keys
-  const compressedSpendingPublicKey = `0x${Point.fromHex(spendingPublicKey.slice(2)).toHex(true)}`;
-  const compressedViewingPublicKey = `0x${Point.fromHex(viewingPublicKey.slice(2)).toHex(true)}`;
-
-  // Send transaction to set the keys
-  const domainNamehash = resolution.namehash(name);
-  const resolverAddress = await resolution.resolver(name);
-  const cnsResolver = createContract(resolverAddress, CNS_RESOLVER_ABI, provider);
-  const tx = await cnsResolver.setMany(
-    [cnsKeyPathSpending, cnsKeyPathViewing],
-    [compressedSpendingPublicKey, compressedViewingPublicKey],
-    domainNamehash
-  );
-  return tx as TransactionResponse;
 }

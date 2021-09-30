@@ -197,16 +197,16 @@ export async function getPublicKeysLegacy(name: string, provider: EthersProvider
   }
 }
 
-// --- Private helper methods ---
-
 /**
  * @notice Returns true if the provided name is a valid domain, without the protocol identifier such as https://
  * @param name Name or domain to test
  */
-function isDomain(name: string) {
+export function isDomain(name: string) {
   const regex = /^([a-z0-9|-]+\.)*[a-z0-9|-]+\.[a-z]+$/; // https://stackoverflow.com/questions/8959765/need-regex-to-get-domain-subdomain/8959842
   return regex.test(name);
 }
+
+// --- Private helper methods ---
 
 /**
  * @notice Returns an instance of the UD Resolution library

@@ -2,7 +2,7 @@
  * @dev Functions for interacting with the Ethereum Name Service (ENS)
  */
 
-import { EthersProvider, TransactionResponse } from '../types';
+import { EthersProvider } from '../types';
 import { AddressZero, BigNumber, namehash as ensNamehash, Zero } from '../ethers';
 import { KeyPair } from '../classes/KeyPair';
 import { ENS_REGISTRY_ABI, FORWARDING_STEALTH_KEY_RESOLVER_ABI } from './constants';
@@ -36,34 +36,12 @@ export const getResolverContract = async (name: string, provider: EthersProvider
 };
 
 /**
- * @notice Returns supported ENS domain endings
- */
-export const supportedEnsDomains = ['.eth', '.xyz', '.kred', '.luxe', '.club', '.art'];
-
-/**
- * @notice Returns true if the provided name is an ENS domain, false otherwise
- * @param domainName Name to check
- */
-export function isEnsDomain(domainName: string) {
-  if (!domainName) return false;
-  for (const suffix of supportedEnsDomains) {
-    if (domainName.endsWith(suffix)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
  * @notice Computes ENS namehash of the input ENS domain, normalized to ENS compatibility
  * @param name ENS domain, e.g. myname.eth
  */
 export function namehash(name: string) {
   if (typeof name !== 'string') {
     throw new Error('Name must be a string');
-  }
-  if (!isEnsDomain(name)) {
-    throw new Error(`Name ${name} does not end with supported suffix: ${supportedEnsDomains.join(', ')}`);
   }
   return ensNamehash(name);
 }
@@ -97,38 +75,4 @@ export async function getPublicKeys(name: string, provider: EthersProvider) {
   const spendingPublicKey = KeyPair.getUncompressedFromX(keys.spendingPubKey, keys.spendingPubKeyPrefix.toNumber());
   const viewingPublicKey = KeyPair.getUncompressedFromX(keys.viewingPubKey, keys.viewingPubKeyPrefix.toNumber());
   return { spendingPublicKey, viewingPublicKey };
-}
-
-/**
- * @notice For a given ENS domain, sets the associated umbra public keys
- * @param name ENS domain, e.g. myname.eth
- * @param spendingPublicKey The public key for generating a stealth address as hex string
- * @param viewingPublicKey The public key to use for encryption as hex string
- * @param provider Ethers provider
- * @returns Transaction
- */
-export async function setPublicKeys(
-  name: string,
-  spendingPublicKey: string,
-  viewingPublicKey: string,
-  provider: EthersProvider
-) {
-  // Break public keys into the required components to store compressed public keys
-  const { prefix: spendingPublicKeyPrefix, pubKeyXCoordinate: spendingPublicKeyX } = KeyPair.compressPublicKey(
-    spendingPublicKey
-  );
-  const { prefix: viewingPublicKeyPrefix, pubKeyXCoordinate: viewingPublicKeyX } = KeyPair.compressPublicKey(
-    viewingPublicKey
-  );
-
-  // Send transaction to set the keys
-  const resolver = await getResolverContract(name, provider);
-  const tx = await resolver.setStealthKeys(
-    namehash(name),
-    spendingPublicKeyPrefix,
-    spendingPublicKeyX,
-    viewingPublicKeyPrefix,
-    viewingPublicKeyX
-  );
-  return tx as TransactionResponse;
 }
