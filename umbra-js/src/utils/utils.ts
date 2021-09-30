@@ -16,7 +16,7 @@ import {
 } from '../ethers';
 import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
 import { ens, cns } from '..';
-import { DomainService } from '../classes/DomainService';
+import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { EthersProvider } from '../types';
 
@@ -100,15 +100,16 @@ async function getSentTransaction(address: string, ethersProvider: EthersProvide
 }
 
 // Takes an ENS, CNS, or address, and returns the checksummed address
-export async function toAddress(name: string, domainService: DomainService) {
-  if (cns.isCnsDomain(name)) {
-    return domainService.udResolution.addr(name, 'ETH'); // throws error if it does not resolve to an address
-  }
-  if (ens.isEnsDomain(name)) {
-    const address = await domainService.provider.resolveName(name); // returns null if it does not resolve to an address
-    if (!address) throw new Error(`Name ${name} does not resolve to an address`);
-    return address;
-  }
+export async function toAddress(name: string, provider: EthersProvider) {
+  // First try ENS
+  let address: string | null = null;
+  address = await resolveEns(name, provider); // will never throw, but returns null on failure
+  if (address) return address;
+
+  // Then try CNS
+  address = await resolveCns(name, provider); // will never throw, but returns null on failure
+  if (address) return address;
+
   return getAddress(name);
 }
 
@@ -140,7 +141,7 @@ export async function lookupRecipient(id: string, provider: EthersProvider, { ad
 
   // The remaining checks are dependent on the advanced mode option. The provided identifier is now either an
   // ENS name, CNS name, or address, so we resolve it to an address
-  const address = await toAddress(id, new DomainService(provider)); // throws if an invalid address is provided
+  const address = await toAddress(id, provider); // throws if an invalid address is provided
 
   // If we're not using advanced mode, use the StealthKeyRegistry
   if (!advanced) {
@@ -178,4 +179,79 @@ export function assertValidPoint(point: string) {
   }
   if (point.length === 130) Point.fromHex(point);
   if (point.length === 132) Point.fromHex(point.slice(2)); // trim 0x prefix
+}
+
+/**
+ * @notice Returns the public keys associated with the provided name, using the legacy lookup approach
+ * @param name Name or domain to test
+ * @param provider ethers provider instance
+ */
+export async function getPublicKeysLegacy(name: string, provider: EthersProvider) {
+  if (!isDomain(name)) throw new Error(`Name ${name} is not a valid domain`);
+  try {
+    // First try ENS (throws on failure)
+    return ens.getPublicKeys(name, provider);
+  } catch (e) {
+    // Fallback to CNS
+    return cns.getPublicKeys(name, provider, getResolutionInstance(provider));
+  }
+}
+
+// --- Private helper methods ---
+
+/**
+ * @notice Returns true if the provided name is a valid domain, without the protocol identifier such as https://
+ * @param name Name or domain to test
+ */
+function isDomain(name: string) {
+  const regex = /^([a-z0-9|-]+\.)*[a-z0-9|-]+\.[a-z]+$/; // https://stackoverflow.com/questions/8959765/need-regex-to-get-domain-subdomain/8959842
+  return regex.test(name);
+}
+
+/**
+ * @notice Returns an instance of the UD Resolution library
+ * @param provider ethers provider instance
+ */
+function getResolutionInstance(provider: EthersProvider) {
+  // If network name is homestead, use 'mainnet' as the network name
+  const networkName = provider.network.name === 'homestead' ? 'mainnet' : provider.network.name;
+  return new Resolution({
+    sourceConfig: {
+      cns: {
+        provider: Eip1993Factories.fromEthersProvider(provider),
+        network: networkName as 'mainnet' | 'rinkeby',
+      },
+    },
+  });
+}
+
+/**
+ * @notice Attempt to resolve an ENS name, and return null on failure
+ * @param name
+ * @param provider
+ * @returns
+ */
+async function resolveEns(name: string, provider: EthersProvider) {
+  try {
+    const address = await provider.resolveName(name);
+    return Boolean(address) ? address : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * @notice Attempt to resolve a CNS name, and return null on failure
+ * @param name
+ * @param provider
+ * @returns
+ */
+async function resolveCns(name: string, provider: EthersProvider) {
+  try {
+    const resolution = getResolutionInstance(provider);
+    const address = await resolution.addr(name, 'ETH');
+    return Boolean(address) ? address : null;
+  } catch (e) {
+    return null;
+  }
 }
