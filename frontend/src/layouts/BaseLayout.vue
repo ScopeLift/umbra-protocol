@@ -84,7 +84,7 @@
         </div>
         <!-- Legacy warning -->
         <div
-          v-if="isAccountSetupLegacy"
+          v-if="!isAccountSetup && isAccountSetupLegacy"
           class="dark-toggle text-center text-bold q-my-md q-pa-md"
           style="border-radius: 15px"
           :style="isDark ? 'color: #FFFAEB; background-color: #7c5e10' : 'color: #513C06; background-color: #fcefc7'"

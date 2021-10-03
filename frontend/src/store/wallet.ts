@@ -233,11 +233,13 @@ export default function useWalletStore() {
       hasRegisteredStealthKeys(_userAddress, provider.value),
     ]);
 
-    // Check if user has keys setup with their ENS or CNS names (if so, we hide Account Setup)
-    const [_hasEnsKeys, _hasCnsKeys] = await Promise.all([
-      Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, provider.value)),
-      Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, provider.value)),
-    ]);
+    // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
+    const [_hasEnsKeys, _hasCnsKeys] = _isAccountSetup
+      ? [false, false]
+      : await Promise.all([
+          Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, provider.value)),
+          Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, provider.value)),
+        ]);
 
     // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
     // parameters, and we want to ensure this method completed successfully before updating the UI
