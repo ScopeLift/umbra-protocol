@@ -11,10 +11,11 @@
 
       <!-- Identifier, advanced mode tooltip -->
       <div
+        v-if="advancedMode"
         class="row items-center text-caption q-pt-sm q-pb-lg"
         :style="!recipientId || isValidId(recipientId) === true ? 'margin-top:-2em' : ''"
       >
-        <q-checkbox v-if="advancedMode" v-model="useNormalPubKey" class="col-auto" dense>
+        <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
           Send using recipient's standard public key
         </q-checkbox>
         <base-tooltip class="col-auto q-ml-sm" icon="fas fa-question-circle">
