@@ -189,7 +189,9 @@ function useSendForm() {
       }
 
       // Send with Umbra
-      const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value);
+      const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value, {
+        advanced: shouldUseNormalPubKey.value,
+      });
       void txNotify(tx.hash, ethersProvider);
       await tx.wait();
       resetForm();

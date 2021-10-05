@@ -115,7 +115,9 @@ export class Umbra {
    * to send Ether
    * @param amount Amount to send, in units of that token (e.g. use 1e6 to send 1 USDC)
    * @param recipientId Identifier of recipient, e.g. their ENS name
-   * @param overrides Override the payload extension, gas limit, gas price, or nonce
+   * @param overrides Override the payload extension, gas limit, gas price, nonce, or advanced mode.
+   * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
+   * them from on-chain transaction when true
    */
   async send(
     signer: JsonRpcSigner | Wallet,
@@ -143,7 +145,8 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Lookup recipient's public key
-    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider);
+    const advanced = overrides?.advanced || false;
+    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, { advanced });
     if (!spendingPublicKey || !viewingPublicKey) {
       throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
     }
@@ -169,11 +172,13 @@ export class Umbra {
     let tx: ContractTransaction;
     if (isEth(token)) {
       const txOverrides = { ...overrides, value: toll.add(amount) };
+      delete txOverrides.advanced;
       tx = await this.umbraContract
         .connect(txSigner)
         .sendEth(stealthKeyPair.address, toll, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
     } else {
       const txOverrides = { ...overrides, value: toll };
+      delete txOverrides.advanced;
       tx = await this.umbraContract
         .connect(txSigner)
         .sendToken(stealthKeyPair.address, token, amount, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
