@@ -1,14 +1,14 @@
 <template>
   <div class="row no-wrap">
+    <span v-if="advancedMode" class="q-mr-sm">
+      <base-tooltip label="🧙" size="sm">Advanced mode is on</base-tooltip>
+    </span>
     <connect-wallet>
       <span v-if="userDisplayName" class="text-caption cursor-pointer dark-toggle">
         {{ userDisplayName }}
       </span>
     </connect-wallet>
     <Jazzicon v-if="userAddress" :address="userAddress" class="q-ml-sm" />
-    <span v-if="advancedMode" class="q-ml-md">
-      <base-tooltip label="🧙">Advanced mode is on</base-tooltip>
-    </span>
   </div>
 </template>
 
