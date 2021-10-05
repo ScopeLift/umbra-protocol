@@ -158,6 +158,7 @@ function useSendForm() {
     if (Number(val) < 25 && !isEth(tokenAddress)) return `Please send at least 25 ${token.value.symbol}`;
 
     const amount = parseUnits(val, decimals);
+    if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
     if (amount.gt(balances.value[tokenAddress])) return 'Amount exceeds wallet balance';
     return true;
   }
