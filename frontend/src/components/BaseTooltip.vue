@@ -12,7 +12,7 @@
     padding="0"
     flat
     :ripple="false"
-    size="xs"
+    :size="size"
     :unelevated="true"
     :class="{ 'without-icon': icon === ' ' }"
   >
@@ -45,6 +45,11 @@ export default defineComponent({
       required: false,
       default: ' ',
     },
+    size:{
+       type: String,
+       required: false,
+       default: 'xs'
+    }
   },
   setup() {
     const isShown = ref(false);
