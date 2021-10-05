@@ -213,6 +213,36 @@
         </f-a-q-item>
       </div>
 
+      <div @click="copyUrl" id="why-do-i-need-to-setup-my-account-again">
+        <f-a-q-item
+          :expanded="selectedId === 'why-do-i-need-to-setup-my-account-again'"
+          question="Why do I need to setup my account again?"
+        >
+          <p>
+            If you configured your Umbra account while the service was still in Beta&mdash;before October 2021&mdash;you
+            need to redo setup. This requires one signature and one transaction.
+          </p>
+          <p>
+            This additional setup step is due to an upgrade to Umbra's stealth key registry system. The old system
+            relied on records placed on the ENS resolver associated with a user's address. The new system is much
+            simpler, and uses a simple mapping between the user's address and their stealth keys.
+          </p>
+          <p>
+            The new system was developed in response to user feedback during Umbra's Beta period. The old system
+            required multiple transactions, and also required senders to use the receiver's ENS name, which caused
+            confusion. The new system requires only a single transaction, and senders can provide either the receiver's
+            ENS name or their regular Ethereum address. Overall, the new system is simpler to both configure and use.
+          </p>
+          <p>
+            For an even more in depth and technical explanation of this upgrade, see
+            <a href="https://github.com/ScopeLift/umbra-protocol/issues/214" class="hyperlink" target="_blank"
+              >this issue</a
+            >
+            on Umbra's Github repository.
+          </p>
+        </f-a-q-item>
+      </div>
+
       <div @click="copyUrl" id="should-i-use-my-own-ens-cns-name-or-an-umbra.eth-subdomain">
         <f-a-q-item
           :expanded="selectedId === 'should-i-use-my-own-ens-cns-name-or-an-umbra.eth-subdomain'"
