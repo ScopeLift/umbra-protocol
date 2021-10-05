@@ -38,8 +38,9 @@ export interface CompressedPublicKey {
 
 // Overrides when sending funds
 export interface SendOverrides extends Overrides {
-  // SendOverrides is the same as the standard Overrides, but defined as its own type for clarity and
-  // potential future extensibility
+  // When `advanced` is false the send method looks for public keys in StealthKeyRegistry, and when true it recovers
+  // them from on-chain transaction when true
+  advanced?: boolean
 }
 
 // Overrides for the start and end block numbers to use when scanning for events
