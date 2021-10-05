@@ -234,7 +234,7 @@ function getResolutionInstance(provider: EthersProvider) {
 async function resolveEns(name: string, provider: EthersProvider) {
   try {
     const address = await provider.resolveName(name);
-    return Boolean(address) ? address : null;
+    return address || null;
   } catch (e) {
     return null;
   }
@@ -250,7 +250,7 @@ async function resolveCns(name: string, provider: EthersProvider) {
   try {
     const resolution = getResolutionInstance(provider);
     const address = await resolution.addr(name, 'ETH');
-    return Boolean(address) ? address : null;
+    return address || null;
   } catch (e) {
     return null;
   }
