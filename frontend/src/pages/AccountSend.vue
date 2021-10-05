@@ -20,18 +20,20 @@
       <base-input v-model="recipientId" :disable="isSending" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
 
       <!-- Identifier, advanced mode tooltip -->
-      <q-checkbox
-        v-if="advancedMode"
-        v-model="useNormalPubKey"
-        class="text-caption q-pt-sm q-pb-lg"
-        dense
+      <div
+        class="row items-center text-caption q-pt-sm q-pb-lg"
         :style="!recipientId || isValidId(recipientId) === true ? 'margin-top:-2em' : ''"
       >
-        Send using recipient's standard public key
-        <base-tooltip icon="fas fa-question-circle">
+        <q-checkbox v-if="advancedMode" v-model="useNormalPubKey" class="col-auto" dense>
+          Send using recipient's standard public key
+        </q-checkbox>
+        <base-tooltip class="col-auto q-ml-sm" icon="fas fa-question-circle">
           <span>
-            When unchecked, if an ENS name or address is entered into the above box, the public keys stored on the
-            StealthKeyRegistry contract will be used. This is the normal behavior when advanced mode is turned off.
+            When checked, the public key used will be the standard public for the ene the user's Ethereum address. The
+            receiver will have to manipulate their account's private key to withdrawal the funds. Don't use this feature
+            unless you know what you're doing. Learn More. When unchecked, if an ENS name or address is entered into the
+            above box, the public keys stored on the StealthKeyRegistry contract will be used. This is the normal
+            behavior when advanced mode is turned off.
             <br /><br />
             When checked, the public key used will be the standard public key associated with the provided address.
             <br /><br />
@@ -47,7 +49,7 @@
             Learn more
           </router-link>
         </base-tooltip>
-      </q-checkbox>
+      </div>
 
       <!-- Token -->
       <div>Select token to send</div>
