@@ -189,27 +189,21 @@
       <div @click="copyUrl" id="what-is-account-setup">
         <f-a-q-item :expanded="selectedId === 'what-is-account-setup'" question="What is account setup?">
           <p>
-            A User signs a message, and from that an Umbra public key and private key are generated. A transaction is
-            made on the ENS registry associating this Umbra key with your ENS name.
+            A User signs a message, and from that Umbra public keys and private keys are generated. A transaction is
+            made on the Umbra stealth key registry, associating the public keys with your address.
           </p>
         </f-a-q-item>
       </div>
 
       <div @click="copyUrl" id="is-account-setup-required">
         <f-a-q-item :expanded="selectedId === 'is-account-setup-required'" question="Is account setup required?">
-          <p>This step is not required, but is strongly recommended for two reasons:</p>
-          <ol>
-            <li>
-              Convenience: Setting up ENS makes it easy for anyone to send you stealth payments with a human readable
-              address
-            </li>
-            <li>
-              Security: In order to access stealth funds, the Umbra app needs your private keys. Inputting your wallet’s
-              private keys into any website is very dangerous, and we don’t want you do to that! By going through the
-              account setup process, you sign a message to generate an app-specific set of Umbra private keys. This is
-              much more secure, as Umbra never has your wallet’s private key.
-            </li>
-          </ol>
+          <p>
+            This step is not technically required, but is strongly recommended for security reasons.
+            In order to access stealth funds, the Umbra app needs your private keys. Inputting your wallet’s
+            private keys into any website is very dangerous, and we don’t want you do to that! By going through the
+            account setup process, you sign a message to generate an app-specific set of Umbra private keys. This is
+            much more secure, as Umbra never has your wallet’s private key.
+          </p>
         </f-a-q-item>
       </div>
 
@@ -239,95 +233,6 @@
               >this issue</a
             >
             on Umbra's Github repository.
-          </p>
-        </f-a-q-item>
-      </div>
-
-      <div @click="copyUrl" id="should-i-use-my-own-ens-cns-name-or-an-umbra.eth-subdomain">
-        <f-a-q-item
-          :expanded="selectedId === 'should-i-use-my-own-ens-cns-name-or-an-umbra.eth-subdomain'"
-          question="Should I use my own ENS/CNS name or an umbra.eth subdomain?"
-        >
-          <p>
-            This is up to you, but there’s a few factors to consider here. Arguments in favor of an
-            <span class="code">umbra.eth</span> subdomain include:
-          </p>
-          <ol>
-            <li>
-              New account privacy: This is your standard ENS/CNS privacy issue— if you publicly share your ordinary
-              name, everyone can see what funds are in your regular wallet. If you use a brand new
-              <span class="code">umbra.eth</span> name with a new address, you’ll have no funds in it, giving you an
-              extra bit of privacy to start with. This choice does not impact the privacy of funds received via Umbra in
-              any way.
-            </li>
-            <li>
-              Convenience: Using a <span class="code">umbra.eth</span> name is a smoother and cheaper setup process. It
-              only takes one on-chain transaction, whereas configuring an existing name requires three on-chain
-              transactions (see "Why are there so many transactions to setup my account?" for more info on this).
-            </li>
-          </ol>
-          <p>Arguments in favor of using your existing ENS/CNS name include:</p>
-          <ol>
-            <li>
-              Convenience: Everyone already knows your public ENS/CNS name, and you don’t want to deal with maintaining
-              two names or sharing a new ENS name.
-            </li>
-            <li>
-              Security: As the owner of your ENS/CNS name, there is no third-party that can ever control your public key
-              configuration except you. See "<span
-                class="hyperlink"
-                @click="expandAndScrollToElement('can-my-subdomain-be-revoked')"
-                >Can my subdomain be revoked?</span
-              >" for more information.
-            </li>
-          </ol>
-        </f-a-q-item>
-      </div>
-
-      <div @click="copyUrl" id="why-are-there-so-many-transactions-to-setup-my-account">
-        <f-a-q-item
-          :expanded="selectedId === 'why-are-there-so-many-transactions-to-setup-my-account'"
-          question="Why are there so many transactions to setup my account?"
-        >
-          <p>
-            Most ENS users are using the default Public Resolver, but in order to store your app-specific public keys in
-            a gas-efficient way, Umbra relies on it’s own Stealth Key Resolver. This resolver falls back to the Public
-            Resolver for anything not related to stealth keys, so it can do everything the public resolver can and more.
-            This means you will not lose any functionality by switching to it.
-          </p>
-          <p>This migration from the Public Resolver to the Stealth Key Resolver takes 3 transactions:</p>
-          <ol>
-            <li>
-              Authorize the Stealth Key Resolver to set records on the Public Resolver on your behalf. This is required
-              so the Stealth Key Resolver can act as a fallback resolver with permission to set records on Public
-              Resolver whenver requested.
-            </li>
-            <li>Set your stealth keys on the Stealth Key Resolver</li>
-            <li>Set your new resolver as the Stealth Key Resolver</li>
-          </ol>
-        </f-a-q-item>
-      </div>
-
-      <div @click="copyUrl" id="can-my-subdomain-be-revoked">
-        <f-a-q-item :expanded="selectedId === 'can-my-subdomain-be-revoked'" question="Can my subdomain be revoked?">
-          <p>
-            In ENS, the owner of a root domain has control of the associated subdomains. We’ve delegated that control to
-            a
-            <a
-              class="hyperlink"
-              href="https://github.com/ScopeLift/ens-resolvers/blob/master/contracts/StealthKeyFIFSRegistrar.sol"
-              target="_blank"
-              >smart contract</a
-            >
-            that allows anyone to claim and configure an Umbra subdomain, but as owners of the root
-            <span class="code">umbra.eth</span> domain, we still have the ability to override this.
-          </p>
-          <p>
-            To mitigate this risk to users, we intend to transfer ownership of <span class="code">umbra.eth</span> to a
-            multi-sig address with publicly known participants, however that step has not yet been taken. While we can
-            promise you that we won’t use this capability, your risk assessment should include that we can. If you’ll be
-            receiving large, frequent payments via Umbra, then configuring your own ENS/CNS name remains the safest
-            route.
           </p>
         </f-a-q-item>
       </div>
