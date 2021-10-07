@@ -1,11 +1,12 @@
 import { Dark } from 'quasar';
-import BNotify, { NotificationType } from 'bnc-notify';
+import BNotify, { InitOptions, NotificationType } from 'bnc-notify';
 import { Provider } from 'components/models';
 import { getEtherscanUrl } from './utils';
 
 // Instantiate Blocknative's notify.js. We don't pass a dappId so we can use in UI only mode for any
 // notifications we need, i.e. not just Blocknative transaction notifications
-const bNotify = BNotify({ darkMode: Dark.isActive, desktopPosition: 'topRight', networkId: 1 });
+const bNotifyOptions = { darkMode: Dark.isActive, desktopPosition: 'topRight', networkId: 1 } as InitOptions;
+const bNotify = BNotify(bNotifyOptions);
 const defaultTimeout = 5000; // 4 seconds
 
 // Some error messages we don't want to show to the user, so return in these cases
@@ -23,6 +24,9 @@ const messagesToIgnore = [
  * @param message Message to display on notification
  */
 export function notifyUser(alertType: NotificationType, message: string) {
+  // Reset config in case user changed their dark mode setting
+  bNotify.config({ ...bNotifyOptions, darkMode: Dark.isActive });
+
   // If message matches any of the substrings in messagesToIgnore, we return and don't show the alert
   if (new RegExp(messagesToIgnore.join('|')).test(message)) return;
 
