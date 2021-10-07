@@ -45,11 +45,11 @@ export default defineComponent({
       required: false,
       default: ' ',
     },
-    size:{
-       type: String,
-       required: false,
-       default: 'xs'
-    }
+    size: {
+      type: String,
+      required: false,
+      default: 'xs',
+    },
   },
   setup() {
     const isShown = ref(false);
