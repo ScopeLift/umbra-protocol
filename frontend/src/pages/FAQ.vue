@@ -198,11 +198,11 @@
       <div @click="copyUrl" id="is-account-setup-required">
         <f-a-q-item :expanded="selectedId === 'is-account-setup-required'" question="Is account setup required?">
           <p>
-            This step is not technically required, but is strongly recommended for security reasons.
-            In order to access stealth funds, the Umbra app needs your private keys. Inputting your wallet’s
-            private keys into any website is very dangerous, and we don’t want you do to that! By going through the
-            account setup process, you sign a message to generate an app-specific set of Umbra private keys. This is
-            much more secure, as Umbra never has your wallet’s private key.
+            This step is not technically required, but is strongly recommended for security reasons. In order to access
+            stealth funds, the Umbra app needs your private keys. Inputting your wallet’s private keys into any website
+            is very dangerous, and we don’t want you do to that! By going through the account setup process, you sign a
+            message to generate an app-specific set of Umbra private keys. This is much more secure, as Umbra never has
+            your wallet’s private key.
           </p>
         </f-a-q-item>
       </div>
@@ -573,7 +573,42 @@
           :expanded="selectedId === 'what-networks-is-umbra-deployed-on-and-what-are-the-contract-addresses'"
           question="What networks is Umbra deployed on and what are the contract addresses?"
         >
-          Umbra is deployed at 0xTODO on mainnet and Rinkeby.
+          <p>
+            Umbra is deployed at 0xFb2dc580Eed955B528407b4d36FfaFe3da685401 on
+            <a
+              href="https://etherscan.io/address/0xfb2dc580eed955b528407b4d36ffafe3da685401"
+              class="hyperlink"
+              target="_blank"
+            >
+              mainnet
+            </a>
+            and
+            <a
+              href="https://rinkeby.etherscan.io/address/0xFb2dc580Eed955B528407b4d36FfaFe3da685401"
+              class="hyperlink"
+              target="_blank"
+            >
+              rinkeby </a
+            >.
+          </p>
+          <p>
+            The Umbra Stealth Key Registry is deployed at 0x31fe56609C65Cd0C510E7125f051D440424D38f3 on
+            <a
+              href="https://etherscan.io/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3"
+              class="hyperlink"
+              target="_blank"
+            >
+              mainnet
+            </a>
+            and
+            <a
+              href="https://rinkeby.etherscan.io/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3"
+              class="hyperlink"
+              target="_blank"
+            >
+              rinkeby
+            </a>
+          </p>
         </f-a-q-item>
       </div>
 
