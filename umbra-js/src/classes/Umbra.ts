@@ -144,9 +144,19 @@ export class Umbra {
     // Get toll amount from contract
     const toll = await this.umbraContract.toll();
 
+    // Parse provided overrides
+    const localOverrides = { ...overrides }; // avoid mutating the object passed in
+    const advanced = localOverrides?.advanced || false;
+    const supportPubKey = localOverrides?.supportPubKey || false;
+    const supportTxHash = localOverrides?.supportTxHash || false;
+    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
+
+    delete localOverrides.advanced;
+    delete localOverrides.supportPubKey;
+    delete localOverrides.supportTxHash;
+
     // Lookup recipient's public key
-    const advanced = overrides?.advanced || false;
-    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, { advanced });
+    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
     if (!spendingPublicKey || !viewingPublicKey) {
       throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
     }
@@ -171,14 +181,12 @@ export class Umbra {
     // Send transaction
     let tx: ContractTransaction;
     if (isEth(token)) {
-      const txOverrides = { ...overrides, value: toll.add(amount) };
-      delete txOverrides.advanced;
+      const txOverrides = { ...localOverrides, value: toll.add(amount) };
       tx = await this.umbraContract
         .connect(txSigner)
         .sendEth(stealthKeyPair.address, toll, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
     } else {
-      const txOverrides = { ...overrides, value: toll };
-      delete txOverrides.advanced;
+      const txOverrides = { ...localOverrides, value: toll };
       tx = await this.umbraContract
         .connect(txSigner)
         .sendToken(stealthKeyPair.address, token, amount, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);

@@ -37,16 +37,32 @@ describe('Utilities', () => {
 
     // --- Public key or transaction hash ---
     it('looks up recipients by public key', async () => {
-      const keys = await utils.lookupRecipient(publicKey, ethersProvider);
+      const keys = await utils.lookupRecipient(publicKey, ethersProvider, { supportPubKey: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
     });
 
+    it('throws when looking up recipients by public key without explicitly allowing it', async () => {
+      const errorMsg = `invalid address (argument="address", value="${publicKey}", code=INVALID_ARGUMENT, version=address/5.1.0)`; // prettier-ignore
+      await expectRejection(utils.lookupRecipient(publicKey, ethersProvider), errorMsg);
+    });
+
+    it('throws when given a public key not on the curve', async () => {
+      const errorMsg = 'Point is not on elliptic curve';
+      await expectRejection(utils.lookupRecipient(badPublicKey, ethersProvider, { supportPubKey: true }), errorMsg);
+    });
+
     it('looks up recipients by transaction hash', async () => {
       const hash = '0x45fa716ee2d484ac67ef787625908072d851bfa369db40567e16ee08a7fdefd2';
-      const keys = await utils.lookupRecipient(hash, ethersProvider);
+      const keys = await utils.lookupRecipient(hash, ethersProvider, { supportTxHash: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
+    });
+
+    it('throws when looking up recipients by transaction hash without explicitly allowing it', async () => {
+      const hash = '0x45fa716ee2d484ac67ef787625908072d851bfa369db40567e16ee08a7fdefd2';
+      const errorMsg = `invalid address (argument="address", value="${hash}", code=INVALID_ARGUMENT, version=address/5.1.0)`; // prettier-ignore
+      await expectRejection(utils.lookupRecipient(hash, ethersProvider), errorMsg);
     });
 
     // --- Address, advanced mode on (i.e. don't use the StealthKeyRegistry) ---
@@ -109,11 +125,6 @@ describe('Utilities', () => {
       const keys2 = await utils.lookupRecipient('udtestdev-msolomon.crypto', ethersProvider, { advanced: false });
       expect(keys2.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys2.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
-    });
-
-    // --- Revert test ---
-    it('throws when given a public key not on the curve', async () => {
-      await expectRejection(utils.lookupRecipient(badPublicKey, ethersProvider), 'Point is not on elliptic curve');
     });
   });
 

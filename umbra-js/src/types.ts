@@ -36,11 +36,11 @@ export interface CompressedPublicKey {
   pubKeyXCoordinate: string; // has 0x prefix
 }
 
-// Overrides when sending funds
+// Overrides when sending funds. See the lookupRecipient method documentation for more information
 export interface SendOverrides extends Overrides {
-  // When `advanced` is false the send method looks for public keys in StealthKeyRegistry, and when true it recovers
-  // them from on-chain transaction when true
-  advanced?: boolean
+  advanced?: boolean;
+  supportPubKey?: boolean;
+  supportTxHash?: boolean;
 }
 
 // Overrides for the start and end block numbers to use when scanning for events

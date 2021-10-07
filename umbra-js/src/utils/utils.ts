@@ -122,18 +122,28 @@ export async function toAddress(name: string, provider: EthersProvider) {
  * @param provider ethers provider to use
  * @param options Object containing lookup options:
  *   advanced: looks for public keys in StealthKeyRegistry when false, recovers them from on-chain transaction when true
+ *   supportPubKey: default false, when true allows a public key to be provided directly
+ *   supportTxHash: default false, when true allows public key to be recovered from the specified transaction hash
  */
-export async function lookupRecipient(id: string, provider: EthersProvider, { advanced }: { advanced?: boolean } = {}) {
+export async function lookupRecipient(
+  id: string,
+  provider: EthersProvider,
+  {
+    advanced,
+    supportPubKey,
+    supportTxHash,
+  }: { advanced?: boolean; supportPubKey?: boolean; supportTxHash?: boolean } = {}
+) {
   // Check if identifier is a public key. If so we just return that directly
   const isPublicKey = id.length === 132 && isHexString(id);
-  if (isPublicKey) {
+  if (supportPubKey && isPublicKey) {
     assertValidPoint(id);
     return { spendingPublicKey: id, viewingPublicKey: id };
   }
 
   // Check if identifier is a transaction hash. If so, we recover the sender's public keys from the transaction
   const isTxHash = id.length === 66 && isHexString(id);
-  if (isTxHash) {
+  if (supportTxHash && isTxHash) {
     const publicKey = await recoverPublicKeyFromTransaction(id, provider);
     assertValidPoint(publicKey);
     return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };

@@ -20,6 +20,7 @@ const jsonRpcProvider = new JsonRpcProvider(hardhatConfig.networks?.hardhat?.for
 
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const quantity = parseEther('5');
+const overrides = { supportPubKey: true }; // we directly enter a pubkey in these tests for convenience
 
 // We don't use the 0 or 1 index just to reduce the chance of conflicting with a signer for another use case
 const senderIndex = 2;
@@ -167,7 +168,7 @@ describe('Umbra class', () => {
       await mintAndApproveDai(sender, sender.address, quantity);
 
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey);
+      const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
       await tx.wait();
 
       // RECEIVER
@@ -209,7 +210,7 @@ describe('Umbra class', () => {
       await mintAndApproveDai(sender, sender.address, quantity);
 
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey);
+      const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
       await tx.wait();
 
       // RECEIVER
@@ -259,7 +260,7 @@ describe('Umbra class', () => {
     it('Without payload extension: send ETH, scan for it, withdraw it', async () => {
       // SENDER
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver!.publicKey);
+      const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver!.publicKey, overrides);
       await tx.wait();
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), quantity);
 
@@ -282,7 +283,7 @@ describe('Umbra class', () => {
     it('With payload extension: send ETH, scan for it, withdraw it', async () => {
       // SENDER
       // Send funds with Umbra
-      const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver.publicKey);
+      const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver.publicKey, overrides);
       await tx.wait();
 
       // RECEIVER
