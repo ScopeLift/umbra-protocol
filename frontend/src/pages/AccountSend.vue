@@ -36,25 +36,18 @@
         </q-checkbox>
         <base-tooltip class="col-auto q-ml-sm" icon="fas fa-question-circle">
           <span>
-            When checked, the public key used will be the standard public for the ene the user's Ethereum address. The
-            receiver will have to manipulate their account's private key to withdrawal the funds. Don't use this feature
-            unless you know what you're doing. Learn More. When unchecked, if an ENS name or address is entered into the
-            above box, the public keys stored on the StealthKeyRegistry contract will be used. This is the normal
-            behavior when advanced mode is turned off.
-            <br /><br />
-            When checked, the public key used will be the standard public key associated with the provided address.
-            <br /><br />
-            When a transaction hash or public key is entered, this check box has no effect.
-            <br /><br />
-            <span class="text-bold">Please make sure you understand the implications of checking this box</span>.
+            When checked, the public key used will be the standard public for the provided Ethereum address. The
+            receiver will have to enter their account's private key into this app to withdrawal the funds.
+            <span class="text-bold">
+              Don't use this feature unless you know what you're doing.
+              <router-link
+                class="dark-toggle hyperlink"
+                :to="{ name: 'FAQ', hash: '#how-do-i-send-funds-to-a-user-by-their-address-or-public-key' }"
+              >
+                Learn more
+              </router-link>
+            </span>
           </span>
-          <router-link
-            active-class="text-bold"
-            class="hyperlink dark-toggle"
-            :to="{ name: 'FAQ', hash: '#how-do-i-send-funds-to-a-user-by-their-address-or-public-key' }"
-          >
-            Learn more
-          </router-link>
         </base-tooltip>
       </div>
 
