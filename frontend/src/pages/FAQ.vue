@@ -67,6 +67,12 @@
         </f-a-q-item>
       </div>
 
+      <div @click="copyUrl" id="does-umbra-have-a-token">
+        <f-a-q-item :expanded="selectedId === 'does-umbra-have-a-token'" question="Does Umbra have a token?">
+          No.
+        </f-a-q-item>
+      </div>
+
       <div @click="copyUrl" id="how-does-it-work">
         <f-a-q-item :expanded="selectedId === 'how-does-it-work'" question="How does it work?">
           <p>Below is a high level description of how Umbra works:</p>
