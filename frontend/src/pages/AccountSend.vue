@@ -125,17 +125,27 @@ function useSendForm() {
 
   // Validators
   function isValidId(val: string | undefined) {
+    // Return true if nothing is provided
     if (!val) return true;
+
+    // Validate domain
+    if (umbraUtils.isDomain(val)) return true;
+
+    // Validate address
     const isValidAddress = val.length === 42 && isHexString(val);
-    if (val && (isValidAddress || umbraUtils.isDomain(val))) return true;
-    if (advancedMode.value) {
-      // Also allow identifying recipient by transaction hash, address, or public key. We copy the checks
-      // used by utils.lookupRecipient() here
-      const isPublicKey = val.length === 132 && isHexString(val);
-      const isTxHash = val.length === 66 && isHexString(val);
-      return isPublicKey || isTxHash || isValidAddress || 'Please enter a valid recipient identifer';
+    if (isValidAddress) {
+      try {
+        getAddress(val); // throws if invalid checksum
+        return true;
+      } catch (e) {
+        const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
+        if (e.reason) return toSentenceCase(e.reason);
+        return toSentenceCase(e.message);
+      }
     }
-    return 'Please enter an ENS name or address';
+
+    // Validation failed
+    return 'Please enter a valid address or ENS name';
   }
 
   const isEth = (address: string) => getAddress(address) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -158,20 +168,24 @@ function useSendForm() {
   async function onFormSubmit() {
     try {
       // Form validation
+      console.log(1);
       if (!recipientId.value || !token.value || !humanAmount.value) throw new Error('Please complete the form');
       if (!signer.value) throw new Error('Wallet not connected');
       if (!umbra.value) throw new Error('Umbra instance not configured');
+      console.log(2);
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
       // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval)
       const ethersProvider = provider.value as Provider;
       await umbraUtils.lookupRecipient(recipientId.value, ethersProvider, { advanced: shouldUseNormalPubKey.value });
+      console.log(3);
 
       // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected
       await getTokenBalances();
       const { address: tokenAddress, decimals } = token.value;
       const amount = parseUnits(humanAmount.value, decimals);
       if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
+      console.log(4);
 
       // If token, get approval when required
       isSending.value = true;
@@ -189,9 +203,11 @@ function useSendForm() {
       }
 
       // Send with Umbra
+      console.log(5);
       const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value, {
         advanced: shouldUseNormalPubKey.value,
       });
+      console.log(6);
       void txNotify(tx.hash, ethersProvider);
       await tx.wait();
       resetForm();
