@@ -8,6 +8,7 @@
       color="primary"
       class="col q-my-sm"
       data-cy="base-input"
+      :debounce="debounce"
       :dense="dense"
       :disable="disable"
       filled
@@ -121,6 +122,12 @@ export default Vue.extend({
       type: Number,
       required: false,
       default: undefined,
+    },
+
+    debounce: {
+      type: Number,
+      required: false,
+      default: 0,
     },
 
     dense: {
