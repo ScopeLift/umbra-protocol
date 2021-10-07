@@ -81,11 +81,9 @@
               When setting up your Umbra account, users sign a message. The hash of this message is used to generate two
               private keys—a "spending key" and a "viewing key".
             </li>
+            <li>The corresponding public keys are both published on-chain as records associated with your address.</li>
             <li>
-              The corresponding public keys are both published on-chain as records associated with your ENS or CNS name.
-            </li>
-            <li>
-              A payer uses your ENS or CNS name to look up your two public keys. Separately, the payer generates a
+              A payer uses your address or ENS name to look up your two public keys. Separately, the payer generates a
               random number.
             </li>
             <li>
@@ -140,8 +138,8 @@
           </p>
           <ol>
             <li>
-              Most users will use ENS names to send funds, so the recipient most likely has published keys under an ENS
-              name
+              Most users will use the Umbra stealth key registry to send funds, so the recipient most likely keys
+              published there.
             </li>
             <li>
               Poor hygiene when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy
@@ -598,7 +596,7 @@
             >.
           </p>
           <p>
-            The Umbra Stealth Key Registry is deployed at 0x31fe56609C65Cd0C510E7125f051D440424D38f3 on
+            The Umbra stealth key registry is deployed at 0x31fe56609C65Cd0C510E7125f051D440424D38f3 on
             <a
               href="https://etherscan.io/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3"
               class="hyperlink"
@@ -797,14 +795,17 @@
         >
           <p>
             As long as a user has sent at least one transaction on Ethereum, you can send funds to a stealth address
-            they control even if they have not setup an ENS name for use with Umbra. This works as follows:
+            they control even if they have not setup their address for use with Umbra. This works as follows:
           </p>
           <ol>
             <li>Enable Advanced Mode</li>
             <li>Navigate to the Send page and connect your wallet</li>
+            <li>Check the box that says "Send using recipient's standard public key"</li>
             <li>
-              The recipient field normally only accepts ENS/CNS names, but it will now also accept a public key, an
-              address, or even a transaction hash! (Using a transaction hash is effectively the same as entering the
+              The recipient field normally only accepts addresses in the stealth key registry, and uses the public keys
+              published there to generate stealth address. But now, it will allow you to put in any address, and use the
+              standard public key that underlies that address. It will also accept a public key, an address, or even a
+              transaction hash! (Using a transaction hash is effectively the same as entering the
               <span class="code">from</span> address of that transaction)
             </li>
             <li>Continue to send funds like normal</li>
