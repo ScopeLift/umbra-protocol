@@ -5,15 +5,21 @@
     <!-- Send form -->
     <q-form @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
-      <div v-if="!advancedMode">Recipient's ENS name or address</div>
-      <div v-else>Recipient's ENS name, CNS name, transaction hash, address, or uncompressed public key</div>
-      <base-input v-model="recipientId" :disable="isSending" placeholder="vitalik.eth" lazy-rules :rules="isValidId" />
+      <div>Recipient's ENS name or address</div>
+      <base-input
+        v-model="recipientId"
+        :debounce="250"
+        :disable="isSending"
+        placeholder="vitalik.eth"
+        lazy-rules
+        :rules="isValidId"
+      />
 
       <!-- Identifier, advanced mode tooltip -->
       <div
         v-if="advancedMode"
         class="row items-center text-caption q-pt-sm q-pb-lg"
-        :style="!recipientId || isValidId(recipientId) === true ? 'margin-top:-2em' : ''"
+        :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
       >
         <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
           Send using recipient's standard public key
@@ -81,7 +87,7 @@
 
 <script lang="ts">
 // --- External imports ---
-import { computed, defineComponent, onMounted, ref } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { QForm } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
@@ -92,7 +98,7 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
-import { getAddress, isHexString, MaxUint256, parseUnits, Contract } from 'src/utils/ethers';
+import { getAddress, MaxUint256, parseUnits, Contract } from 'src/utils/ethers';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfo } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
@@ -111,9 +117,15 @@ function useSendForm() {
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const token = ref<TokenInfo>();
   const humanAmount = ref<string>();
-  const isValidForm = computed(
-    () => isValidId(recipientId.value) === true && token.value && isValidTokenAmount(humanAmount.value) === true
-  );
+  const isValidForm = ref(false);
+  const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
+
+  watch([recipientId, token, humanAmount], async ([recipientId, token, humanAmount]) => {
+    const validId = Boolean(recipientId) && (await isValidId(recipientId as string)) === true;
+    isValidRecipientId.value = validId;
+    const validAmount = Boolean(humanAmount) && isValidTokenAmount(humanAmount as string) === true;
+    isValidForm.value = validId && Boolean(token) && validAmount;
+  });
 
   // Check for query parameters on load
   onMounted(async () => {
@@ -124,28 +136,21 @@ function useSendForm() {
   });
 
   // Validators
-  function isValidId(val: string | undefined) {
+  async function isValidId(val: string | undefined) {
     // Return true if nothing is provided
     if (!val) return true;
 
-    // Validate domain
-    if (umbraUtils.isDomain(val)) return true;
-
-    // Validate address
-    const isValidAddress = val.length === 42 && isHexString(val);
-    if (isValidAddress) {
-      try {
-        getAddress(val); // throws if invalid checksum
-        return true;
-      } catch (e) {
-        const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
-        if (e.reason) return toSentenceCase(e.reason);
-        return toSentenceCase(e.message);
-      }
+    // Check if recipient ID is valid
+    try {
+      await umbraUtils.lookupRecipient(recipientId.value as string, provider.value as Provider, {
+        advanced: shouldUseNormalPubKey.value,
+      });
+      return true;
+    } catch (e) {
+      const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
+      if (e.reason) return toSentenceCase(e.reason);
+      return toSentenceCase(e.message);
     }
-
-    // Validation failed
-    return 'Please enter a valid address or ENS name';
   }
 
   const isEth = (address: string) => getAddress(address) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -175,7 +180,8 @@ function useSendForm() {
       console.log(2);
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
-      // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval)
+      // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
+      // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
       const ethersProvider = provider.value as Provider;
       await umbraUtils.lookupRecipient(recipientId.value, ethersProvider, { advanced: shouldUseNormalPubKey.value });
       console.log(3);
@@ -227,16 +233,17 @@ function useSendForm() {
     advancedMode,
     humanAmount,
     isSending,
-    isValidId,
-    isValidTokenAmount,
     isValidForm,
+    isValidId,
+    isValidRecipientId,
+    isValidTokenAmount,
     onFormSubmit,
     recipientId,
     sendFormRef,
     token,
     tokenOptions,
-    userAddress,
     useNormalPubKey,
+    userAddress,
   };
 }
 
