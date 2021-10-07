@@ -42,9 +42,8 @@
           </p>
           <p>
             Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets
-            up his account with ENS, enabling anyone to privately pay him using the name
-            <span class="code">bob.eth</span>. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs
-            to know his ENS name.
+            up his account, enabling anyone to privately pay him using his address. Alice then uses Umbra to send 1,000
+            Dai to Bob each week— she only needs to know his address or ENS name.
           </p>
           <p>
             On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the
