@@ -365,27 +365,23 @@ export class Umbra {
    */
   async generatePrivateKeys(signer: JsonRpcSigner | Wallet) {
     // Base message that will be signed
-    const baseMessage =
-      'Sign this message to access your Umbra account.\n\nOnly sign this message for a trusted client!';
+    const baseMessage = 'Sign this message to access your Umbra account.\n\nOnly sign this message for a trusted client!'; // prettier-ignore
 
     // Append chain ID if not mainnet to mitigate replay attacks
     const { chainId } = await this.provider.getNetwork();
     const message = chainId === 1 ? baseMessage : `${baseMessage}\n\nChain ID: ${chainId}`;
 
-    // Get 65 byte signature from user
-    const isValidSignature = (sig: string) => isHexString(sig) && sig.length === 132; // used to verify signature
-    let signature: string;
-    signature = await signer.signMessage(message); // prompt to user is here, uses eth_sign
+    // Get 65 byte signature from user using personal_sign
+    const userAddress = await signer.getAddress();
+    const formattedMessage = hexlify(toUtf8Bytes(message));
+    const signature = String(await this.provider.send('personal_sign', [formattedMessage, userAddress.toLowerCase()]));
 
-    // Fallback to personal_sign if eth_sign isn't supported (e.g. for Status and other wallets)
-    if (!isValidSignature(signature)) {
-      const userAddress = await signer.getAddress();
-      signature = String(
-        await this.provider.send('personal_sign', [hexlify(toUtf8Bytes(message)), userAddress.toLowerCase()])
-      );
-    }
+    // If a user can no longer access funds because their wallet was using eth_sign before this update, stand up a
+    // special "fund recovery login page" which uses the commented out code below to sign with eth_sign
+    //     const signature = await signer.signMessage(message);
 
     // Verify signature
+    const isValidSignature = (sig: string) => isHexString(sig) && sig.length === 132;
     if (!isValidSignature(signature)) {
       throw new Error(`Invalid signature: ${signature}`);
     }
