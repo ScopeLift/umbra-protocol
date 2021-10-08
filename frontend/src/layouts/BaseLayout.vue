@@ -92,7 +92,10 @@
           🚨🚨🚨 We've upgraded our name resolution system. Use the
           <router-link class="hyperlink" :to="{ name: 'setup' }">Setup</router-link> page to submit one transaction
           which migrates you to the updated system. You won't be able to receive Umbra transactions until you've done
-          so. <router-link class="hyperlink" :to="{ path: '/TODO' }">Learn more</router-link>. 🚨🚨🚨
+          so.
+          <router-link class="hyperlink" :to="{ path: '/faq#why-do-i-need-to-setup-my-account-again' }"
+            >Learn more</router-link
+          >. 🚨🚨🚨
         </div>
       </div>
     </q-header>
