@@ -15,7 +15,7 @@
     <!-- Send form -->
     <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
-      <div>Recipient's ENS name or address</div>
+      <div>Recipient's ENS name, CNS name, or address</div>
       <base-input
         v-model="recipientId"
         :debounce="500"
