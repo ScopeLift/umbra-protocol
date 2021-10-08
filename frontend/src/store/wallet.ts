@@ -49,6 +49,7 @@ const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS
 const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name // LEGACY
 const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
 const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
+const isArgent = ref<boolean>(false); // true if user connected an argent wallet
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -219,11 +220,29 @@ export default function useWalletStore() {
     umbra.value = new Umbra(provider.value, chainId);
     stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
 
+    // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
+    // When using Argent, a user's funds are secured by the contract wallet, not by a private key. As a result:
+    //   1. We inform the user that the security of their Umbra funds is not protected by the standard Argent
+    //      security model
+    //   2. If a user recovers their Argent wallet (e.g. migrates wallet to a new phone) they will have a new
+    //      private key and be unable to access non-withdrawn Umbra funds unless they have the old device. Therefore
+    //      we also let a user know about this
+    //   3. As a consequence of 2, we require Argent user's to sign a message each time they visit the Umbra app.
+    //      If the public keys generated do not match what's in the registry, we ask them to update their keys in
+    //      the registry and notify them about funds that may be stuck if the user no longer has the old key
+    const argentDetector = {
+      // https://docs.argent.xyz/wallet-connect-and-argent#wallet-detection
+      address: chainId === 1 ? '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8' : '0xF230cF8980BaDA094720C01308319eF192F0F311', // prettier-ignore
+      abi: ['function isArgentWallet(address) external view returns (bool)'],
+    };
+    const detector = new Contract(argentDetector.address, argentDetector.abi, provider.value);
+
     // Get ENS name, CNS name, and check if user has registered their stealth keys
-    const [_userEns, _userCns, _isAccountSetup] = await Promise.all([
+    const [_userEns, _userCns, _isAccountSetup, _isArgent] = await Promise.all([
       lookupEnsName(_userAddress, provider.value),
       lookupCnsName(_userAddress, provider.value),
       hasRegisteredStealthKeys(_userAddress, provider.value),
+      [1, 3].includes(chainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
     ]);
 
     // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
@@ -244,9 +263,11 @@ export default function useWalletStore() {
     hasEnsKeys.value = _hasEnsKeys; // LEGACY
     hasCnsKeys.value = _hasCnsKeys; // LEGACY
     isAccountSetup.value = _isAccountSetup;
+    isArgent.value = _isArgent;
 
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
+
 
     setLoading(false);
   }
@@ -364,6 +385,7 @@ export default function useWalletStore() {
     isAccountSetup: computed(() => isAccountSetup.value),
     isAccountSetupLegacy: computed(() => hasEnsKeys.value || hasCnsKeys.value), // LEGACY
     isLoading: computed(() => isLoading.value),
+    isArgent: computed(() => isArgent.value),
     provider: computed(() => provider.value),
     relayer: computed(() => relayer.value),
     signer: computed(() => signer.value),

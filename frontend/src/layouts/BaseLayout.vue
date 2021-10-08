@@ -211,11 +211,17 @@
         </div>
       </div>
     </q-footer>
+
+    <!-- Argent warning modal -->
+    <q-dialog v-model="showArgentModal">
+      <argent-warning-modal @acknowledged="argentModalDismissed = true" class="q-pa-lg" />
+    </q-dialog>
   </q-layout>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { computed, defineComponent, ref } from '@vue/composition-api';
+import ArgentWarningModal from 'components/ArgentWarningModal.vue';
 import BaseButton from 'src/components/BaseButton.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'src/components/ConnectWallet.vue';
@@ -227,22 +233,26 @@ import NetworkDropdown from './NetworkDropdown.vue';
 
 export default defineComponent({
   name: 'BaseLayout',
-  components: { AddressSettings, HeaderLinks, NetworkDropdown, ConnectWallet, BaseButton, BaseTooltip },
+  components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
-    const { advancedMode, toggleAdvancedMode, isDark, toggleDarkMode } = useSettingsStore();
-    const { isLoading, network, userAddress, userDisplayName, isAccountSetup, isAccountSetupLegacy } = useWalletStore();
+    const { advancedMode, isDark, toggleAdvancedMode, toggleDarkMode } = useSettingsStore();
+    const { isAccountSetup, isAccountSetupLegacy, isArgent, isLoading, network, userAddress, userDisplayName } = useWalletStore(); // prettier-ignore
+    const argentModalDismissed = ref(false);
+    const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
     return {
-      isLoading,
-      network,
-      userAddress,
-      userDisplayName,
+      advancedMode,
+      argentModalDismissed,
+      drawerRight: ref(false),
       isAccountSetup,
       isAccountSetupLegacy,
-      advancedMode,
-      toggleAdvancedMode,
       isDark,
+      isLoading,
+      network,
+      showArgentModal,
+      toggleAdvancedMode,
       toggleDarkMode,
-      drawerRight: ref(false),
+      userAddress,
+      userDisplayName,
     };
   },
 });
