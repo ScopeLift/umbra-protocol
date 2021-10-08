@@ -8,7 +8,7 @@
       <div>Recipient's ENS name or address</div>
       <base-input
         v-model="recipientId"
-        :debounce="250"
+        :debounce="500"
         :disable="isSending"
         placeholder="vitalik.eth"
         lazy-rules
@@ -113,12 +113,21 @@ function useSendForm() {
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
 
-  watch([recipientId, token, humanAmount], async ([recipientId, token, humanAmount]) => {
-    const validId = Boolean(recipientId) && (await isValidId(recipientId as string)) === true;
-    isValidRecipientId.value = validId;
-    const validAmount = Boolean(humanAmount) && isValidTokenAmount(humanAmount as string) === true;
-    isValidForm.value = validId && Boolean(token) && validAmount;
-  });
+  watch(
+    // We watch `shouldUseNormalPubKey` to ensure the "Address 0x123 has not registered stealkth keys" validation
+    // message is hidden if the user checks the block after entering an address. We do this by checking if the
+    // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
+    // async validation rules
+    [recipientId, token, humanAmount, shouldUseNormalPubKey],
+    async ([recipientId, token, humanAmount, useNormalPubKey], [_p, _t, _h, prevUseNormalPubKey]) => {
+      [_p, _t, _h]; // silence unused parameter error from TS compiler
+      if (useNormalPubKey !== prevUseNormalPubKey) void sendFormRef.value?.validate();
+      const validId = Boolean(recipientId) && (await isValidId(recipientId as string)) === true;
+      isValidRecipientId.value = validId;
+      const validAmount = Boolean(humanAmount) && isValidTokenAmount(humanAmount as string) === true;
+      isValidForm.value = validId && Boolean(token) && validAmount;
+    }
+  );
 
   // Check for query parameters on load
   onMounted(async () => {
@@ -149,6 +158,7 @@ function useSendForm() {
   const isEth = (address: string) => getAddress(address) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
   function isValidTokenAmount(val: string | undefined) {
+    if (val === undefined) return true; // don't show error on empty field
     if (!val || !(Number(val) > 0)) return 'Please enter an amount';
     if (!token.value) return 'Please select a token';
 
