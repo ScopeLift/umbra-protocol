@@ -58,13 +58,9 @@
 
       <!-- Send button -->
       <div>
-        <base-button
-          :disable="!isValidForm || isSending"
-          :full-width="true"
-          label="Send"
-          :loading="isSending"
-          type="submit"
-        />
+        <connect-wallet>
+          <base-button :disable="isSending" :full-width="true" label="Send" :loading="isSending" type="submit" />
+        </connect-wallet>
         <base-button
           @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount })"
           :disable="isSending"
