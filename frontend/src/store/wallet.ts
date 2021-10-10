@@ -104,7 +104,14 @@ export default function useWalletStore() {
 
   watch(lastWallet, async () => {
     if (lastWallet.value && !userAddress.value) {
-      await connectWallet();
+      setLoading(true);
+      await onboard.value?.walletSelect(String(lastWallet.value));
+      const tempProvider = new Web3Provider(rawProvider.value);
+      const accounts = await tempProvider.listAccounts();
+
+      // If there are no accounts - the wallet is locked
+      if (!accounts.length) setLoading(false);
+      else await configureProvider();
     }
   });
 
