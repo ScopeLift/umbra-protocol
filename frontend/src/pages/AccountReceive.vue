@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { QForm } from 'quasar';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import { isHexString } from 'src/utils/ethers';
@@ -155,6 +155,17 @@ function useScan() {
     userAnnouncements.value = announcements;
     scanStatus.value = 'complete';
   }
+
+  function resetState() {
+    scanStatus.value = 'waiting';
+    startBlockLocal.value = undefined;
+    endBlockLocal.value = undefined;
+    scanPrivateKeyLocal.value = undefined;
+  }
+
+  watch(userAddress, () => {
+    if (userAddress.value) resetState();
+  });
 
   return {
     advancedMode,
