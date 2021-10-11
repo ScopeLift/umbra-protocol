@@ -4,11 +4,13 @@
       <base-tooltip label="🧙" size="sm">Advanced mode is on</base-tooltip>
     </span>
     <connect-wallet>
-      <span v-if="userDisplayName" class="text-caption cursor-pointer dark-toggle">
-        {{ userDisplayName }}
-      </span>
+      <div class="row text-caption cursor-pointer dark-toggle">
+        <span v-if="userDisplayName">
+          {{ userDisplayName }}
+        </span>
+        <Jazzicon v-if="userAddress" :address="userAddress" class="q-ml-sm" />
+      </div>
     </connect-wallet>
-    <Jazzicon v-if="userAddress" :address="userAddress" class="q-ml-sm" />
   </div>
 </template>
 
