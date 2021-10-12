@@ -99,9 +99,12 @@ function useScan() {
 
   // Form validators and configurations
   const badPrivKeyMsg = 'Please enter a valid private key';
-  const isAnyHex = (val: string) => isHexString(val) || isHexString(`0x${val}`);
-  const isValidPrivateKey = (val: string) =>
-    !val || (val.length === 66 && isAnyHex(val)) || (val.length === 64 && !val.startsWith('0x')) || badPrivKeyMsg;
+  const isValidPrivateKey = (val: string) => {
+    if (!val) return true;
+    if (val.length === 66 && isHexString(val)) return true;
+    if (val.length === 64 && isHexString(`0x${val}`)) return true;
+    return badPrivKeyMsg;
+  };
   const isValidStartBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const isValidEndBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const setFormStatus = (scanStatusVal: ScanStatus, scanPrivateKey: string) => {
