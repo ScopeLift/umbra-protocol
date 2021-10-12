@@ -32,32 +32,50 @@ export const round = (value: number | string, decimals = 2) => {
  */
 export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
 
-// Shape of data returned from the GasNow API
-type GasNowResponse = {
-  code: number; // status code, 200 for success
-  // Prices by speed are given in wei
-  data: {
-    rapid: number;
-    fast: number;
-    standard: number;
-    slow: number;
-    timestamp: number; // request timestamp
-  };
+// Shape of data returned from the Txprice API
+type TxpriceResponse = {
+  system: string;
+  network: string;
+  unit: string;
+  maxPrice: number;
+  currentBlockNumber: number;
+  msSinceLastBlock: number;
+  blockPrices: BlockPrice[];
 };
 
-// Valid types for specifying speed
-type GasNowSpeed = keyof Omit<GasNowResponse['data'], 'timestamp'>;
+type BlockPrice = {
+  blockNumber: number;
+  baseFeePerGas: number;
+  estimatedTransactionCount: number;
+  estimatedPrices: EstimatedPrice[];
+};
+
+type EstimatedPrice = {
+  confidence: number;
+  price: number;
+  maxPriorityFeePerGas: number;
+  maxFeePerGas: number;
+};
+
+// Valid confidence values
+type TxpriceConfidence = 99 | 95 | 90 | 80 | 70;
 
 /**
- * @notice Gets the current gas price via GasNow API
- * @param gasPriceSpeed string of gas price speed from GasNow (e.g. 'rapid')
+ * @notice Gets the current gas price via Txprice API
+ * @param gasPriceConfidence probability of transaction being confirmed
  */
-export const getGasPrice = async (gasPriceSpeed: GasNowSpeed = 'rapid'): Promise<BigNumber> => {
+export const getGasPrice = async (gasPriceConfidence: TxpriceConfidence = 99): Promise<BigNumber> => {
   try {
-    const response: GasNowResponse = await jsonFetch('https://www.gasnow.org/api/v3/gas/price');
-    const gasPriceInWei = response.data[gasPriceSpeed];
+    const response: TxpriceResponse = await jsonFetch('https://api.txprice.com/');
+    const estimatedPrice = response.blockPrices[0]?.estimatedPrices?.find(
+      (price) => price.confidence === gasPriceConfidence
+    );
+    const gasPriceInGwei = estimatedPrice?.price ?? 0;
+    const gasPriceInWei = gasPriceInGwei * 10 ** 9;
+
     return BigNumber.from(gasPriceInWei);
   } catch (e) {
-    throw new Error(`Error fetching gas price from GasNow API: ${e.message as string}`);
+    const message = (e as { message: string }).message;
+    throw new Error(`Error fetching gas price from Txprice API: ${message}`);
   }
 };
