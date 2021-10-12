@@ -2,18 +2,8 @@
   <q-page padding>
     <h2 class="page-title">Send</h2>
 
-    <!-- User has not connected wallet  -->
-    <div v-if="!userAddress">
-      <p class="text-center">Connect your wallet to send funds</p>
-      <div class="row justify-center">
-        <connect-wallet>
-          <base-button class="text-center" label="Connect Wallet" />
-        </connect-wallet>
-      </div>
-    </div>
-
     <!-- Send form -->
-    <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
+    <q-form @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
       <div>Recipient's ENS name, CNS name, or address</div>
       <base-input
@@ -68,13 +58,15 @@
 
       <!-- Send button -->
       <div>
-        <base-button
-          :disable="!isValidForm || isSending"
-          :full-width="true"
-          label="Send"
-          :loading="isSending"
-          type="submit"
-        />
+        <connect-wallet>
+          <base-button
+            :disable="!isValidForm || isSending"
+            :full-width="true"
+            label="Send"
+            :loading="isSending"
+            type="submit"
+          />
+        </connect-wallet>
         <base-button
           @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount })"
           :disable="isSending"

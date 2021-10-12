@@ -1,12 +1,12 @@
 <template>
-  <connect-wallet :to="to" style="max-width: 325px">
+  <router-link :to="to" class="no-text-decoration" style="max-width: 325px">
     <q-card class="card-border cursor-pointer q-py-md">
       <q-card-section class="text-center text-primary text-h6 header-black q-pb-none">
         {{ text }}
       </q-card-section>
-      <q-card-section class="text-center"> {{ description }} </q-card-section>
+      <q-card-section class="text-center text-black"> {{ description }} </q-card-section>
     </q-card>
-  </connect-wallet>
+  </router-link>
 </template>
 
 <script lang="ts">
