@@ -174,7 +174,7 @@ function useSendForm() {
 
     const { address: tokenAddress, decimals } = token.value;
     if (Number(val) < 0.01 && isEth(tokenAddress)) return 'Please send at least 0.01 ETH';
-    if (Number(val) < 25 && !isEth(tokenAddress)) return `Please send at least 25 ${token.value.symbol}`;
+    if (Number(val) < 50 && !isEth(tokenAddress)) return `Please send at least 50 ${token.value.symbol}`;
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
