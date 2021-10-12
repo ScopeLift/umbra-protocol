@@ -1,5 +1,5 @@
 import { supportedChains } from 'src/components/models';
-import { BigNumber, BigNumberish, hexValue } from './ethers';
+import { BigNumber, BigNumberish, hexValue, parseUnits } from './ethers';
 
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` and `chainId`
@@ -32,8 +32,8 @@ export const round = (value: number | string, decimals = 2) => {
  */
 export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
 
-// Shape of data returned from the Txprice API
-type TxpriceResponse = {
+// Shape of data returned from the TxPrice API
+type TxPriceResponse = {
   system: string;
   network: string;
   unit: string;
@@ -58,24 +58,25 @@ type EstimatedPrice = {
 };
 
 // Valid confidence values
-type TxpriceConfidence = 99 | 95 | 90 | 80 | 70;
+type TxPriceConfidence = 99 | 95 | 90 | 80 | 70;
 
 /**
- * @notice Gets the current gas price via Txprice API
+ * @notice Gets the current gas price via TxPrice API
  * @param gasPriceConfidence probability of transaction being confirmed
  */
-export const getGasPrice = async (gasPriceConfidence: TxpriceConfidence = 99): Promise<BigNumber> => {
+export const getGasPrice = async (gasPriceConfidence: TxPriceConfidence = 99): Promise<BigNumber> => {
   try {
-    const response: TxpriceResponse = await jsonFetch('https://api.txprice.com/');
+    const response: TxPriceResponse = await jsonFetch('https://api.TxPrice.com/');
     const estimatedPrice = response.blockPrices[0]?.estimatedPrices?.find(
       (price) => price.confidence === gasPriceConfidence
     );
-    const gasPriceInGwei = estimatedPrice?.price ?? 0;
-    const gasPriceInWei = gasPriceInGwei * 10 ** 9;
+    const gasPriceInGwei = estimatedPrice?.price;
+    if (!gasPriceInGwei) throw new Error('API did not return a valid gas price');
 
+    const gasPriceInWei = parseUnits(String(gasPriceInGwei), 'gwei');
     return BigNumber.from(gasPriceInWei);
   } catch (e) {
     const message = (e as { message: string }).message;
-    throw new Error(`Error fetching gas price from Txprice API: ${message}`);
+    throw new Error(`Error fetching gas price from TxPrice API: ${message}`);
   }
 };
