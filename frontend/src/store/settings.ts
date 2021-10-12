@@ -5,8 +5,6 @@ import { Dark, LocalStorage } from 'quasar';
 const settings = {
   isDark: 'is-dark',
   advancedMode: 'advanced-mode',
-  startBlock: 'start-block',
-  endBlock: 'end-block',
   lastWallet: 'last-wallet',
 };
 
@@ -24,8 +22,6 @@ export default function useSettingsStore() {
     // Load settings
     setDarkMode(Boolean(LocalStorage.getItem(settings.isDark)));
     advancedMode.value = Boolean(LocalStorage.getItem(settings.advancedMode));
-    startBlock.value = Number(LocalStorage.getItem(settings.startBlock)) || undefined;
-    endBlock.value = Number(LocalStorage.getItem(settings.endBlock)) || undefined;
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
@@ -51,8 +47,6 @@ export default function useSettingsStore() {
   function setScanBlocks(startBlock_: number, endBlock_: number) {
     startBlock.value = startBlock_;
     endBlock.value = endBlock_;
-    LocalStorage.set(settings.startBlock, startBlock_);
-    LocalStorage.set(settings.endBlock, endBlock_);
   }
 
   function setScanPrivateKey(key: string) {

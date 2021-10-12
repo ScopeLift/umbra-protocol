@@ -100,7 +100,8 @@ function useScan() {
   // Form validators and configurations
   const badPrivKeyMsg = 'Please enter a valid private key';
   const isAnyHex = (val: string) => isHexString(val) || isHexString(`0x${val}`);
-  const isValidPrivateKey = (val: string) => !val || (isAnyHex(val) && [66, 64].includes(val.length)) || badPrivKeyMsg;
+  const isValidPrivateKey = (val: string) =>
+    !val || (val.length === 66 && isAnyHex(val)) || (val.length === 64 && !val.startsWith('0x')) || badPrivKeyMsg;
   const isValidStartBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const isValidEndBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const setFormStatus = (scanStatusVal: ScanStatus, scanPrivateKey: string) => {
@@ -122,7 +123,7 @@ function useScan() {
       const isFormValid = await settingsFormRef.value?.validate(true);
       if (!isFormValid) return;
     }
-    if (Number(startBlock.value) > Number(endBlock.value)) {
+    if (Number(startBlockLocal.value) > Number(endBlockLocal.value)) {
       throw new Error('End block is larger than start block');
     }
 
@@ -150,7 +151,7 @@ function useScan() {
     // Scan for funds
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
-    const overrides = { startBlock: startBlock.value, endBlock: endBlock.value };
+    const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     const { userAnnouncements: announcements } = await umbra.value.scan(spendingPubKey, viewingPrivKey, overrides);
     userAnnouncements.value = announcements;
     scanStatus.value = 'complete';
