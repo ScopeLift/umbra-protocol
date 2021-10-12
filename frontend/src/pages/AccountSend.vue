@@ -108,7 +108,16 @@ import { ERC20_ABI } from 'src/utils/constants';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
-  const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, provider, userAddress } = useWalletStore();
+  const {
+    tokens: tokenOptions,
+    getTokenBalances,
+    balances,
+    umbra,
+    signer,
+    provider,
+    userAddress,
+    isSupportedNetwork,
+  } = useWalletStore();
 
   // Helpers
   const sendFormRef = ref<QForm>();
@@ -150,7 +159,9 @@ function useSendForm() {
   // Validators
   async function isValidId(val: string | undefined) {
     // Return true if nothing is provided
-    if (!val) return true;
+    // or if the wallet is not connected
+    // or if the network is unsupported
+    if (!val || !userAddress.value || !isSupportedNetwork) return true;
 
     // Check if recipient ID is valid
     try {
