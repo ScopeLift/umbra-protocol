@@ -268,7 +268,6 @@ export default function useWalletStore() {
     // Get token balances in the background. User may not be sending funds so we don't await this
     void getTokenBalances();
 
-
     setLoading(false);
   }
 
