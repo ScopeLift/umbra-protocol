@@ -71,6 +71,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
 
   // Recover sender's public key
   const signature = new Signature(BigInt(tx.r), BigInt(tx.s));
+  signature.assertValidity();
   const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;
   const publicKey = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
   if (!publicKey) throw new Error('Could not recover public key');
