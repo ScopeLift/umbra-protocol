@@ -59,12 +59,19 @@ export default function useSettingsStore() {
     LocalStorage.set(settings.lastWallet, walletName);
   }
 
+  function resetScanSettings() {
+    startBlock.value = undefined;
+    endBlock.value = undefined;
+    scanPrivateKey.value = undefined;
+  }
+
   return {
     toggleDarkMode,
     toggleAdvancedMode,
     setScanBlocks,
     setScanPrivateKey,
     setLastWallet,
+    resetScanSettings,
     isDark: computed(() => isDark.value),
     advancedMode: computed(() => advancedMode.value),
     startBlock: computed(() => startBlock.value),
