@@ -19,9 +19,13 @@ export type Chain = {
   chainId: string;
   chainName: string;
   nativeCurrency: {
+    // The address and logoURI fields are not part of the EIP-3085 spec but are added to make this field
+    // compatible with type TokenInfo
+    address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
     name: string;
     symbol: string;
     decimals: 18;
+    logoURI: string;
   };
   rpcUrls: string[];
   blockExplorerUrls?: string[];
@@ -37,71 +41,41 @@ export const supportedChains: Array<Chain> = [
     chainId: '0x1',
     chainName: 'Mainnet',
     nativeCurrency: {
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
       name: 'Ethereum',
       symbol: 'ETH',
       decimals: 18,
+      logoURI: '/tokens/eth.svg',
     },
     rpcUrls: [`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
     blockExplorerUrls: ['etherscan.io'],
     iconUrls: [ETH_NETWORK_LOGO],
     logoURI: ETH_NETWORK_LOGO,
   },
-  // {
-  //   chainId: '0x3',
-  //   chainName: 'Ropsten',
-  //   nativeCurrency: {
-  //     name: 'Ethereum',
-  //     symbol: 'ETH',
-  //     decimals: 18,
-  //   },
-  //   rpcUrls: [`https://ropsten.infura.io/v3/${String(process.env.INFURA_ID)}`],
-  //   blockExplorerUrls: ['ropsten.etherscan.io'],
-  //   iconUrls: [],
-  // },
   {
     chainId: '0x4',
     chainName: 'Rinkeby',
     nativeCurrency: {
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
       name: 'Ethereum',
       symbol: 'ETH',
       decimals: 18,
+      logoURI: '/tokens/eth.svg',
     },
     rpcUrls: [`https://rinkeby.infura.io/v3/${String(process.env.INFURA_ID)}`],
     blockExplorerUrls: ['rinkeby.etherscan.io'],
     iconUrls: [ETH_NETWORK_LOGO],
     logoURI: ETH_NETWORK_LOGO,
   },
-  // {
-  //   chainId: '0x5',
-  //   chainName: 'Goerli',
-  //   nativeCurrency: {
-  //     name: 'Ethereum',
-  //     symbol: 'ETH',
-  //     decimals: 18,
-  //   },
-  //   rpcUrls: [`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`],
-  //   blockExplorerUrls: ['goerli.etherscan.io'],
-  //   iconUrls: [],
-  // },
-  // {
-  //   chainId: '0x2a', // 42 as hex
-  //   chainName: 'Kovan',
-  //   nativeCurrency: {
-  //     name: 'Ethereum',
-  //     symbol: 'ETH',
-  //     decimals: 18,
-  //   },
-  //   rpcUrls: [`https://kovan.infura.io/v3/${String(process.env.INFURA_ID)}`],
-  //   blockExplorerUrls: ['kovan.etherscan.io'],
-  //   iconUrls: [],
-  // },
   {
     chainId: '0x89', // 137 as hex
     chainName: 'Polygon',
     nativeCurrency: {
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
       name: 'Matic',
       symbol: 'MATIC',
       decimals: 18,
+      logoURI: '/tokens/polygon.png',
     },
     rpcUrls: [`https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
     blockExplorerUrls: ['polygonscan.com'],
