@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import { TransactionReceipt, JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
 import type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 import { UmbraLogger } from 'components/logger';
+import { ETH_NETWORK_LOGO } from 'src/utils/constants';
 
 export type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 export { BigNumber, Network, TransactionResponse } from 'src/utils/ethers';
@@ -25,7 +26,12 @@ export type Chain = {
   rpcUrls: string[];
   blockExplorerUrls?: string[];
   iconUrls?: string[];
+  // logoURI is not part of EIP-3085, but is added for convenience because that is what our BaseSelect component
+  // uses to display images form the chain objects it recevies. It's not required because we always want a chain
+  // logo to be showin in the network selector dropdown
+  logoURI: string;
 };
+
 export const supportedChains: Array<Chain> = [
   {
     chainId: '0x1',
@@ -37,7 +43,8 @@ export const supportedChains: Array<Chain> = [
     },
     rpcUrls: [`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
     blockExplorerUrls: ['etherscan.io'],
-    iconUrls: [],
+    iconUrls: [ETH_NETWORK_LOGO],
+    logoURI: ETH_NETWORK_LOGO,
   },
   // {
   //   chainId: '0x3',
@@ -61,7 +68,8 @@ export const supportedChains: Array<Chain> = [
     },
     rpcUrls: [`https://rinkeby.infura.io/v3/${String(process.env.INFURA_ID)}`],
     blockExplorerUrls: ['rinkeby.etherscan.io'],
-    iconUrls: [],
+    iconUrls: [ETH_NETWORK_LOGO],
+    logoURI: ETH_NETWORK_LOGO,
   },
   // {
   //   chainId: '0x5',
@@ -97,7 +105,8 @@ export const supportedChains: Array<Chain> = [
     },
     rpcUrls: [`https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
     blockExplorerUrls: ['polygonscan.com'],
-    iconUrls: [],
+    iconUrls: ['/networks/polygon.svg'],
+    logoURI: '/networks/polygon.svg',
   },
 ];
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
