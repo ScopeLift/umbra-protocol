@@ -37,6 +37,7 @@ const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on al
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, startBlock: 12343914 }, // Mainnet
   4: { chainId: 4, umbraAddress, startBlock: 8505089 }, // Rinkeby
+  137: { chainId: 137, umbraAddress, startBlock: 20717318 }, // Polygon
   1337: { chainId: 1337, umbraAddress, startBlock: 8505089 }, // Local
 };
 
