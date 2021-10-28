@@ -1,13 +1,15 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
-import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
-import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
-import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
-import { ERC20_ABI, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
-import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
-import { ITXRelayer } from 'src/utils/relayer';
-import useSettingsStore from 'src/store/settings';
 import Onboard from 'bnc-onboard';
 import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
+import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
+
+import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
+import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
+import { ERC20_ABI, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
+import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
+import { ITXRelayer } from 'src/utils/relayer';
+import { getChainById } from 'src/utils/utils';
+import useSettingsStore from 'src/store/settings';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -16,15 +18,6 @@ import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
  * Since we want the wallet state to be shared between all instances when this file is imported,
  * we defined state outside of the function definition.
  */
-
-const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-const ETH_TOKEN_INFO = {
-  address: ETH_ADDRESS,
-  name: 'Ether',
-  decimals: 18,
-  symbol: 'ETH',
-  logoURI: '/tokens/eth.svg',
-};
 
 // ============================================= State =============================================
 // We do not publicly expose the state to provide control over when and how it's changed. It
@@ -115,7 +108,7 @@ export default function useWalletStore() {
     // Generate balance calls using Multicall contract
     const calls = tokens.value.map((token) => {
       const { address: tokenAddress } = token;
-      if (tokenAddress === ETH_ADDRESS) {
+      if (tokenAddress === currentChain.value?.nativeCurrency.address) {
         return {
           target: multicallAddress,
           callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
@@ -342,13 +335,17 @@ export default function useWalletStore() {
   // ------------------------------------- Computed parameters -------------------------------------
   // "True" computed properties, i.e. derived from this module's state
 
+  const currentChain = computed(() => {
+    return getChainById(network.value?.chainId || 1);
+  });
+
   const isSupportedNetwork = computed(() => {
     if (!network.value) return true; // assume valid if we have no network information
     return supportedChainIds.includes(network.value.chainId);
   });
 
   const ETH_TOKEN = computed(() => {
-    return { ...ETH_TOKEN_INFO, chainId: network.value?.chainId as number };
+    return { ...(currentChain.value?.nativeCurrency as TokenInfo), chainId: network.value?.chainId as number };
   });
 
   const tokens = computed((): TokenInfo[] => {
