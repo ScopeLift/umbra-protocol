@@ -576,42 +576,22 @@
           :expanded="selectedId === 'what-networks-is-umbra-deployed-on-and-what-are-the-contract-addresses'"
           question="What networks is Umbra deployed on and what are the contract addresses?"
         >
-          <p>
-            Umbra is deployed at 0xFb2dc580Eed955B528407b4d36FfaFe3da685401 on
-            <a
-              href="https://etherscan.io/address/0xfb2dc580eed955b528407b4d36ffafe3da685401"
-              class="hyperlink"
-              target="_blank"
-            >
-              mainnet
-            </a>
-            and
-            <a
-              href="https://rinkeby.etherscan.io/address/0xFb2dc580Eed955B528407b4d36FfaFe3da685401"
-              class="hyperlink"
-              target="_blank"
-            >
-              rinkeby </a
-            >.
-          </p>
-          <p>
-            The Umbra stealth key registry is deployed at 0x31fe56609C65Cd0C510E7125f051D440424D38f3 on
-            <a
-              href="https://etherscan.io/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3"
-              class="hyperlink"
-              target="_blank"
-            >
-              mainnet
-            </a>
-            and
-            <a
-              href="https://rinkeby.etherscan.io/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3"
-              class="hyperlink"
-              target="_blank"
-            >
-              rinkeby
-            </a>
-          </p>
+          <ul>
+            <li>
+              The core <span class="code">Umbra</span> contract is deployed at
+              <span class="code">{{ deployments.umbra }}</span> on
+              <a :href="getEtherscanUrl(deployments.umbra, 1)" class="hyperlink" target="_blank"> mainnet </a>,
+              <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Rinkeby </a>, and
+              <a :href="getEtherscanUrl(deployments.umbra, 137)" class="hyperlink" target="_blank"> Polygon </a>
+            </li>
+            <li>
+              The <span class="code">StealthKeyRegistry</span> is deployed at
+              <span class="code">{{ deployments.registry }}</span> on
+              <a :href="getEtherscanUrl(deployments.registry, 1)" class="hyperlink" target="_blank"> mainnet </a>,
+              <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Rinkeby </a>, and
+              <a :href="getEtherscanUrl(deployments.registry, 137)" class="hyperlink" target="_blank"> Polygon </a>
+            </li>
+          </ul>
         </f-a-q-item>
       </div>
 
@@ -1117,6 +1097,7 @@ import { defineComponent, onMounted, ref, SetupContext } from '@vue/composition-
 import FAQItem from 'components/FAQItem.vue';
 import { copyToClipboard, scroll } from 'quasar';
 import { notifyUser } from 'src/utils/alerts';
+import { getEtherscanUrl } from 'src/utils/utils';
 
 function useScrollToElement(context: SetupContext) {
   const { getScrollTarget, setScrollPosition } = scroll;
@@ -1160,7 +1141,11 @@ export default defineComponent({
   name: 'PageFAQ',
   components: { FAQItem },
   setup(_props, context) {
-    return { ...useScrollToElement(context) };
+    const deployments = {
+      umbra: '0xFb2dc580Eed955B528407b4d36FfaFe3da685401',
+      registry: '0x31fe56609C65Cd0C510E7125f051D440424D38f3',
+    };
+    return { ...useScrollToElement(context), deployments, getEtherscanUrl };
   },
 });
 </script>
