@@ -2,11 +2,16 @@
   <q-page padding>
     <h2 class="page-title">Send</h2>
 
+    <div v-if="isLoading" class="row justify-center">
+      <q-spinner-puff color="primary" size="3rem" />
+    </div>
+
     <!-- Send form -->
-    <q-form @submit="onFormSubmit" class="form" ref="sendFormRef">
+    <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
       <div>Recipient's ENS name, CNS name, or address</div>
       <base-input
+        ref="recipientIdBaseInputRef"
         v-model="recipientId"
         :debounce="500"
         :disable="isSending"
@@ -44,6 +49,7 @@
       <!-- Token -->
       <div>Select token to send</div>
       <base-select
+        ref="tokenBaseInputRef"
         v-model="token"
         :disable="isSending"
         filled
@@ -54,7 +60,14 @@
 
       <!-- Amount -->
       <div>Amount to send</div>
-      <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
+      <base-input
+        ref="humanAmountBaseInputRef"
+        v-model="humanAmount"
+        :disable="isSending"
+        placeholder="0"
+        lazy-rules
+        :rules="isValidTokenAmount"
+      />
 
       <!-- Send button -->
       <div>
@@ -83,7 +96,7 @@
 <script lang="ts">
 // --- External imports ---
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
-import { QForm } from 'quasar';
+import { QForm, QInput } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
 import BaseTooltip from 'components/BaseTooltip.vue';
@@ -108,6 +121,7 @@ function useSendForm() {
     signer,
     provider,
     userAddress,
+    isLoading,
     isSupportedNetwork,
   } = useWalletStore();
 
@@ -117,10 +131,13 @@ function useSendForm() {
 
   // Form parameters
   const recipientId = ref<string>();
+  const recipientIdBaseInputRef = ref<Vue>();
   const useNormalPubKey = ref(false);
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
-  const token = ref<TokenInfo>();
+  const token = ref<TokenInfo | null>();
+  const tokenBaseInputRef = ref<Vue>();
   const humanAmount = ref<string>();
+  const humanAmountBaseInputRef = ref<Vue>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
 
@@ -129,23 +146,51 @@ function useSendForm() {
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
     // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
     // async validation rules
-    [recipientId, token, humanAmount, shouldUseNormalPubKey],
-    async ([recipientId, token, humanAmount, useNormalPubKey], [_p, _t, _h, prevUseNormalPubKey]) => {
-      [_p, _t, _h]; // silence unused parameter error from TS compiler
-      if (useNormalPubKey !== prevUseNormalPubKey) void sendFormRef.value?.validate();
-      const validId = Boolean(recipientId) && (await isValidId(recipientId as string)) === true;
+    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount],
+    async (
+      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue],
+      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue]
+    ) => {
+      const recipientIdInputRef = recipientIdBaseInputRef.value?.$children[0] as QInput;
+      const tokenInputRef = tokenBaseInputRef.value?.$children[0] as QInput;
+      const humanAmountInputRef = humanAmountBaseInputRef.value?.$children[0] as QInput;
+
+      // validates values initially passed through params
+      if (recipientIdInputRef && recipientIdValue && typeof prevRecipientIdValue === 'undefined') {
+        await recipientIdInputRef.validate();
+      }
+
+      if (tokenInputRef && tokenValue && typeof prevTokenValue === 'undefined') {
+        await tokenInputRef.validate();
+      }
+
+      if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
+        await humanAmountInputRef.validate();
+      }
+
+      // resets token and amount if token is not supported on the network
+      if (!tokenOptions.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)) {
+        token.value = undefined;
+        humanAmount.value = undefined;
+      }
+
+      // revalidates form on network change
+      if (useNormalPubKey !== prevUseNormalPubKey || isLoadingValue !== prevIsLoadingValue)
+        void sendFormRef.value?.validate();
+
+      const validId = Boolean(recipientIdValue) && (await isValidId(recipientIdValue as string)) === true;
       isValidRecipientId.value = validId;
-      const validAmount = Boolean(humanAmount) && isValidTokenAmount(humanAmount as string) === true;
-      isValidForm.value = validId && Boolean(token) && validAmount;
+      const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
+      isValidForm.value = validId && Boolean(tokenValue) && validAmount;
     }
   );
 
   // Check for query parameters on load
   onMounted(async () => {
     const { to, token: paymentToken, amount } = await parsePaymentLink();
-    if (to) recipientId.value = to;
-    if (paymentToken?.symbol) token.value = paymentToken;
-    if (amount) humanAmount.value = amount;
+    recipientId.value = to ?? '';
+    token.value = paymentToken ?? null;
+    humanAmount.value = amount ?? '';
   });
 
   // Validators
@@ -161,10 +206,11 @@ function useSendForm() {
         advanced: shouldUseNormalPubKey.value,
       });
       return true;
-    } catch (e) {
+    } catch (lookupError) {
+      const { reason, message } = lookupError as Record<string, string>;
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
-      if (e.reason) return toSentenceCase(e.reason);
-      return toSentenceCase(e.message);
+      if (reason) return toSentenceCase(reason);
+      return toSentenceCase(message);
     }
   }
 
@@ -248,6 +294,8 @@ function useSendForm() {
   return {
     advancedMode,
     humanAmount,
+    humanAmountBaseInputRef,
+    isLoading,
     isSending,
     isValidForm,
     isValidId,
@@ -255,8 +303,10 @@ function useSendForm() {
     isValidTokenAmount,
     onFormSubmit,
     recipientId,
+    recipientIdBaseInputRef,
     sendFormRef,
     token,
+    tokenBaseInputRef,
     tokenOptions,
     useNormalPubKey,
     userAddress,
