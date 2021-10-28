@@ -2,12 +2,13 @@ import { supportedChains } from 'src/components/models';
 import { BigNumber, BigNumberish, hexValue, parseUnits } from './ethers';
 
 /**
- * @notice Generates the Etherscan URL based on the given `txHash` and `chainId`
+ * @notice Generates the Etherscan URL based on the given `txHash` or `address and `chainId`
  */
-export const getEtherscanUrl = (txHash: string, chainId: number) => {
+export const getEtherscanUrl = (txHashOrAddress: string, chainId: number) => {
+  const group = txHashOrAddress.length === 42 ? 'address' : 'tx';
   const chain = getChainById(chainId);
-  const networkPrefix = chain?.blockExplorerUrls?.length ? chain?.blockExplorerUrls[0] : '';
-  return `https://${networkPrefix}/tx/${txHash}`;
+  const networkPrefix = chain?.blockExplorerUrls?.length ? chain?.blockExplorerUrls[0] : 'etherscan.io';
+  return `https://${networkPrefix}/${group}/${txHashOrAddress}`;
 };
 
 /**
