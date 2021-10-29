@@ -24,6 +24,7 @@ const chainIds = {
   mainnet: 1,
   rinkeby: 4,
   ropsten: 3,
+  polygon: 137,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -95,6 +96,17 @@ const config: HardhatUserConfig = {
       chainId: chainIds['mainnet'],
       url: `https://mainnet.infura.io/v3/${infuraApiKey}`,
       gasPrice: 60000000000, // 60 gwei
+    },
+    polygon: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['polygon'],
+      url: 'https://polygon-rpc.com/',
+      gasPrice: 33000000000, // 33 gwei
     },
   },
   paths: {

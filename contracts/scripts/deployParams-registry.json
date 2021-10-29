@@ -10,5 +10,9 @@
   "mainnet": {
     "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
     "expectedNonce": 5
+  },
+  "polygon": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "expectedNonce": 5
   }
 }

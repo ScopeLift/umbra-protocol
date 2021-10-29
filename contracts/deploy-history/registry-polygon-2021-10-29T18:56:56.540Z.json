@@ -1,0 +1,7 @@
+{
+  "deployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+  "contracts": {
+    "StealthKeyRegistry": "0x31fe56609C65Cd0C510E7125f051D440424D38f3"
+  },
+  "actions": { "DeployingContractsToNetwork": "polygon" }
+}
