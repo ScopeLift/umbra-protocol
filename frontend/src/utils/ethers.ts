@@ -7,7 +7,7 @@
 export { getAddress } from '@ethersproject/address';
 export { BigNumberish, BigNumber } from '@ethersproject/bignumber';
 export { hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
-export { AddressZero, MaxUint256 } from '@ethersproject/constants';
+export { AddressZero, MaxUint256, Zero } from '@ethersproject/constants';
 export { Contract } from '@ethersproject/contracts';
 export { namehash } from '@ethersproject/hash';
 export { keccak256 } from '@ethersproject/keccak256';
