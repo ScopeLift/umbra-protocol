@@ -165,7 +165,7 @@ function useSendForm() {
     }
   }
 
-  const isEth = (address: string) => getAddress(address) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+  const isEth = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
 
   function isValidTokenAmount(val: string | undefined) {
     if (val === undefined) return true; // don't show error on empty field

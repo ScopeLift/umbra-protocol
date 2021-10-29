@@ -344,14 +344,14 @@ export default function useWalletStore() {
     return supportedChainIds.includes(network.value.chainId);
   });
 
-  const ETH_TOKEN = computed(() => {
+  const NATIVE_TOKEN = computed(() => {
     return { ...(currentChain.value?.nativeCurrency as TokenInfo), chainId: network.value?.chainId as number };
   });
 
   const tokens = computed((): TokenInfo[] => {
     // Add ETH as a supported token
     const supportedTokens = relayer.value?.tokens || [];
-    return [ETH_TOKEN.value, ...supportedTokens];
+    return [NATIVE_TOKEN.value, ...supportedTokens];
   });
 
   const userDisplayName = computed(() => {
@@ -390,8 +390,9 @@ export default function useWalletStore() {
     userAddress: computed(() => userAddress.value),
     viewingKeyPair: computed(() => viewingKeyPair.value),
     // "True" computed properties, i.e. derived from this module's state
+    currentChain,
     isSupportedNetwork: computed(() => isSupportedNetwork.value),
-    ETH_TOKEN: computed(() => ETH_TOKEN.value),
+    NATIVE_TOKEN: computed(() => NATIVE_TOKEN.value),
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
   };

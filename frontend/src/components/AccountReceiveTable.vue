@@ -318,7 +318,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 }
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
-  const { ETH_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
+  const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const showPrivacyModal = ref(false);
@@ -347,7 +347,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const getFeeEstimate = async (tokenAddress: string) => {
     if (isEth(tokenAddress)) {
       // no fee for ETHY
-      activeFee.value = { fee: '0', token: ETH_TOKEN.value };
+      activeFee.value = { fee: '0', token: NATIVE_TOKEN.value };
       return;
     }
     isFeeLoading.value = true;
