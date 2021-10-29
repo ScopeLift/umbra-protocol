@@ -66,6 +66,62 @@
       <div>Amount to send</div>
       <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
 
+      <!-- Toll + summary details -->
+      <div v-if="toll && toll.gt(0) && humanAmount && token">
+        <div class="text-bold">Summary</div>
+
+        <q-markup-table class="q-mb-lg" dense flat separator="none">
+          <tbody>
+            <!-- What user is sending -->
+            <tr>
+              <td class="min text-left" style="padding: 0 2rem 0 0">Sending</td>
+              <td class="min text-right">{{ humanAmount }}</td>
+              <td class="min text-left">{{ token.symbol }}</td>
+              <td class="min text-left"><img :src="token.logoURI" height="15rem" /></td>
+              <td><!-- Fills space --></td>
+            </tr>
+            <!-- Toll -->
+            <tr>
+              <td class="min text-left" style="padding: 0 2rem 0 0">
+                Umbra Fee
+                <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
+                  <span>
+                    Transactions on {{ currentChain.chainName }} are very cheap, so a small fee is charged to deter
+                    spamming the protocol.
+                    <router-link class="dark-toggle hyperlink" :to="{ name: 'FAQ', hash: '#' }">
+                      Learn more
+                    </router-link>
+                  </span>
+                </base-tooltip>
+              </td>
+              <td class="min text-right">{{ humanToll }}</td>
+              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
+              <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
+              <td><!-- Fills space --></td>
+            </tr>
+            <!-- Summary if they're sending native token -->
+            <tr v-if="token.address === NATIVE_TOKEN.address">
+              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
+              <td class="min text-right">{{ humanAmount + humanToll }}</td>
+              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
+              <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
+              <td><!-- Fills space --></td>
+            </tr>
+            <!-- Summary if they're sending other token -->
+            <tr v-else>
+              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
+              <td class="min text-right">{{ humanAmount }}</td>
+              <td class="min text-left">{{ token.symbol }}</td>
+              <td class="min text-left">+</td>
+              <td class="min text-right" style="padding-left: 0">{{ humanToll }}</td>
+              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
+
+              <td><!-- Fills space --></td>
+            </tr>
+          </tbody>
+        </q-markup-table>
+      </div>
+
       <!-- Send button -->
       <div>
         <base-button
@@ -101,14 +157,25 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
-import { getAddress, MaxUint256, parseUnits, Contract } from 'src/utils/ethers';
+import { BigNumber, Contract, formatUnits, getAddress, MaxUint256, parseUnits, Zero } from 'src/utils/ethers';
+import { round } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfo } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
-  const { tokens: tokenOptions, getTokenBalances, balances, umbra, signer, provider, userAddress } = useWalletStore();
+  const {
+    balances,
+    currentChain,
+    getTokenBalances,
+    NATIVE_TOKEN,
+    provider,
+    signer,
+    tokens: tokenOptions,
+    umbra,
+    userAddress,
+  } = useWalletStore();
 
   // Helpers
   const sendFormRef = ref<QForm>();
@@ -122,6 +189,8 @@ function useSendForm() {
   const humanAmount = ref<string>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
+  const toll = ref<BigNumber>(Zero);
+  const humanToll = computed(() => round(formatUnits(toll.value, 18), 4));
 
   watch(
     // We watch `shouldUseNormalPubKey` to ensure the "Address 0x123 has not registered stealkth keys" validation
@@ -136,6 +205,9 @@ function useSendForm() {
       isValidRecipientId.value = validId;
       const validAmount = Boolean(humanAmount) && isValidTokenAmount(humanAmount as string) === true;
       isValidForm.value = validId && Boolean(token) && validAmount;
+
+      // Fetch toll
+      toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
     }
   );
 
@@ -244,17 +316,21 @@ function useSendForm() {
 
   return {
     advancedMode,
+    currentChain,
     humanAmount,
+    humanToll,
     isSending,
     isValidForm,
     isValidId,
     isValidRecipientId,
     isValidTokenAmount,
+    NATIVE_TOKEN,
     onFormSubmit,
     recipientId,
     sendFormRef,
     token,
     tokenOptions,
+    toll,
     useNormalPubKey,
     userAddress,
   };
@@ -268,3 +344,14 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+// Workaround so table only takes up the minimum required width
+// https://stackoverflow.com/questions/26983301/how-to-make-a-table-column-be-a-minimum-width/26983473
+td
+  width: auto
+
+td.min
+  width: 1%
+  white-space: nowrap
+</style>
