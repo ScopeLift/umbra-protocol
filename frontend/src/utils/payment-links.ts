@@ -1,9 +1,10 @@
 import { copyToClipboard } from 'quasar';
-import { notifyUser } from 'src/utils/alerts';
-import { JsonRpcProvider } from 'src/utils/ethers';
-import useWalletStore from 'src/store/wallet';
 import { TokenInfo } from 'components/models';
 import { utils as umbraUtils } from '@umbra/umbra-js';
+import useWalletStore from 'src/store/wallet';
+import { notifyUser } from 'src/utils/alerts';
+import { ETH_NETWORK_LOGO } from 'src/utils/constants';
+import { JsonRpcProvider } from 'src/utils/ethers';
 import { ITXRelayer } from 'src/utils/relayer';
 
 /**
@@ -27,7 +28,7 @@ async function getTokens() {
   const relayerInstance = await ITXRelayer.create(provider);
 
   // Make sure ETH is on the list. It's ok if it's there twice because we use the first found instance when parsing links
-  const ethToken = { address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', name: 'Ether', decimals: 18, symbol: 'ETH', logoURI: '/tokens/eth.svg', chainId: 1 }; // prettier-ignore
+  const ethToken = { address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', name: 'Ether', decimals: 18, symbol: 'ETH', logoURI: ETH_NETWORK_LOGO, chainId: 1 }; // prettier-ignore
   return [...relayerInstance.tokens, ethToken];
 }
 
