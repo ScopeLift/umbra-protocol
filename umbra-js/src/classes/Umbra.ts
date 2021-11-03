@@ -111,12 +111,13 @@ export class Umbra {
    * @notice Send funds to a recipient via Umbra
    * @dev If sending tokens, make sure to handle the approvals before calling this method
    * @dev The provider used for sending the transaction is the one associated with the Umbra instance
+   * @dev Fetching the latest toll and including that value on top of `amount` is automatically handled
    * @param signer Signer to send transaction from
-   * @param token Address of token to send. Use 'ETH' or '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+   * @param token Address of token to send, excluding toll. Use 'ETH' or '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
    * to send Ether
    * @param amount Amount to send, in units of that token (e.g. use 1e6 to send 1 USDC)
    * @param recipientId Identifier of recipient, e.g. their ENS name
-   * @param overrides Override the payload extension, gas limit, gas price, nonce, or advanced mode.
+   * @param overrides Override the gas limit, gas price, nonce, or advanced mode.
    * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
    * them from on-chain transaction when true
    */

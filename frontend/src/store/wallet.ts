@@ -350,8 +350,9 @@ export default function useWalletStore() {
 
   const tokens = computed((): TokenInfo[] => {
     // Add ETH as a supported token
+    // When connected to Polygon, we currently only support the native token as the relayer is not yet configured
     const supportedTokens = relayer.value?.tokens || [];
-    return [NATIVE_TOKEN.value, ...supportedTokens];
+    return currentChain.value?.chainId === '0x89' ? [NATIVE_TOKEN.value] : [NATIVE_TOKEN.value, ...supportedTokens];
   });
 
   const userDisplayName = computed(() => {

@@ -226,7 +226,7 @@ function useSendForm() {
 
       // Reset token and amount if token is not supported on the network
       if (!tokenOptions.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)) {
-        token.value = undefined;
+        token.value = tokenOptions.value[0];
         humanAmount.value = undefined;
       }
 
@@ -241,12 +241,15 @@ function useSendForm() {
     }
   );
 
-  // Check for query parameters on load
   onMounted(async () => {
+    // Check for query parameters on load
     const { to, token: paymentToken, amount } = await parsePaymentLink();
     if (to) recipientId.value = to;
-    if (paymentToken?.symbol) token.value = paymentToken;
     if (amount) humanAmount.value = amount;
+
+    // For token, we always default to the chain's native token if none was selected
+    if (paymentToken?.symbol) token.value = paymentToken;
+    else token.value = tokenOptions.value[0];
   });
 
   // Validators
@@ -298,11 +301,21 @@ function useSendForm() {
       const ethersProvider = provider.value as Provider;
       await umbraUtils.lookupRecipient(recipientId.value, ethersProvider, { advanced: shouldUseNormalPubKey.value });
 
-      // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected
+      // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
+      // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
       await getTokenBalances();
       const { address: tokenAddress, decimals } = token.value;
-      const amount = parseUnits(humanAmount.value, decimals);
-      if (amount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
+      const tokenAmount = parseUnits(humanAmount.value, decimals);
+      if (tokenAddress === NATIVE_TOKEN.value.address) {
+        // Sending the native token, so check that user has balance of: amount being sent + toll
+        const requiredAmount = tokenAmount.add(toll.value);
+        if (requiredAmount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
+      } else {
+        // Sending other tokens, so we need to check both separately
+        const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} required for Umbra fee exceeds wallet balance`;
+        if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
+        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(`Amount exceeds wallet balance`);
+      }
 
       // If token, get approval when required
       isSending.value = true;
@@ -312,7 +325,7 @@ function useSendForm() {
         const umbraAddress = umbra.value.umbraContract.address;
         const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
         // If insufficient allowance, get approval
-        if (amount.gt(allowance)) {
+        if (tokenAmount.gt(allowance)) {
           const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
           void txNotify(approveTx.hash, ethersProvider);
           await approveTx.wait();
@@ -320,7 +333,7 @@ function useSendForm() {
       }
 
       // Send with Umbra
-      const { tx } = await umbra.value.send(signer.value, tokenAddress, amount, recipientId.value, {
+      const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
         advanced: shouldUseNormalPubKey.value,
       });
       void txNotify(tx.hash, ethersProvider);
