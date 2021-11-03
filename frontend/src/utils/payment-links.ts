@@ -3,7 +3,6 @@ import { TokenInfo } from 'components/models';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 import useWalletStore from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
-import { ETH_NETWORK_LOGO } from 'src/utils/constants';
 import { JsonRpcProvider } from 'src/utils/ethers';
 import { ITXRelayer } from 'src/utils/relayer';
 
@@ -18,7 +17,7 @@ function getProvider() {
 /**
  * @notice Returns a list of supported tokens, falling back to the mainnet token list
  */
-async function getTokens() {
+async function getTokens(nativeToken: TokenInfo) {
   // If we have a valid relayer instance and associated token list, return it
   const { relayer, tokens } = useWalletStore();
   if (relayer.value && tokens.value) return tokens.value;
@@ -27,9 +26,9 @@ async function getTokens() {
   const provider = getProvider();
   const relayerInstance = await ITXRelayer.create(provider);
 
-  // Make sure ETH is on the list. It's ok if it's there twice because we use the first found instance when parsing links
-  const ethToken = { address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', name: 'Ether', decimals: 18, symbol: 'ETH', logoURI: ETH_NETWORK_LOGO, chainId: 1 }; // prettier-ignore
-  return [...relayerInstance.tokens, ethToken];
+  // Make sure the native token is on the list
+  // It's ok if it's there twice because we use the first found instance when parsing links
+  return [nativeToken, ...relayerInstance.tokens];
 }
 
 /**
@@ -67,7 +66,7 @@ export async function generatePaymentLink({
 /**
  * @notice Parses a payment link based on the query parameters of the current page
  */
-export async function parsePaymentLink() {
+export async function parsePaymentLink(nativeToken: TokenInfo) {
   // Setup output object
   const paymentData: { to: string | null; token: TokenInfo | null; amount: string | null } = {
     to: null,
@@ -85,7 +84,7 @@ export async function parsePaymentLink() {
     }
 
     // Otherwise, parse the token symbol into it's TokenInfo object
-    const tokens = await getTokens(); // get list of supported tokens
+    const tokens = await getTokens(nativeToken); // get list of supported tokens
     paymentData['token'] = tokens.filter((token) => token.symbol.toLowerCase() === value.toLowerCase())[0];
   }
 

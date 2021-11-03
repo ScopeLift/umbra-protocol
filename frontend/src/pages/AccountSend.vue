@@ -243,7 +243,7 @@ function useSendForm() {
 
   onMounted(async () => {
     // Check for query parameters on load
-    const { to, token: paymentToken, amount } = await parsePaymentLink();
+    const { to, token: paymentToken, amount } = await parsePaymentLink(NATIVE_TOKEN.value);
     if (to) recipientId.value = to;
     if (amount) humanAmount.value = amount;
 
@@ -270,7 +270,7 @@ function useSendForm() {
     }
   }
 
-  const isEth = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
+  const isNativeToken = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
 
   function isValidTokenAmount(val: string | undefined) {
     if (val === undefined) return true; // don't show error on empty field
@@ -278,8 +278,8 @@ function useSendForm() {
     if (!token.value) return 'Please select a token';
 
     const { address: tokenAddress, decimals } = token.value;
-    if (Number(val) < 0.01 && isEth(tokenAddress)) return 'Please send at least 0.01 ETH';
-    if (Number(val) < 50 && !isEth(tokenAddress)) return `Please send at least 50 ${token.value.symbol}`;
+    if (Number(val) < 0.01 && isNativeToken(tokenAddress)) return `Please send at least 0.01 ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
+    if (Number(val) < 50 && !isNativeToken(tokenAddress)) return `Please send at least 50 ${token.value.symbol}`;
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
@@ -319,7 +319,7 @@ function useSendForm() {
 
       // If token, get approval when required
       isSending.value = true;
-      if (token.value.symbol !== 'ETH') {
+      if (token.value.symbol !== NATIVE_TOKEN.value.symbol) {
         // Check allowance
         const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
         const umbraAddress = umbra.value.umbraContract.address;
