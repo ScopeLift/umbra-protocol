@@ -147,7 +147,7 @@
 <script lang="ts">
 // --- External imports ---
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
-import { QForm } from 'quasar';
+import { QForm, QInput } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
 import BaseTooltip from 'components/BaseTooltip.vue';
@@ -169,6 +169,7 @@ function useSendForm() {
     balances,
     currentChain,
     getTokenBalances,
+    isLoading,
     NATIVE_TOKEN,
     provider,
     signer,
@@ -183,10 +184,13 @@ function useSendForm() {
 
   // Form parameters
   const recipientId = ref<string>();
+  const recipientIdBaseInputRef = ref<Vue>();
   const useNormalPubKey = ref(false);
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
-  const token = ref<TokenInfo>();
+  const token = ref<TokenInfo | null>();
+  const tokenBaseInputRef = ref<Vue>();
   const humanAmount = ref<string>();
+  const humanAmountBaseInputRef = ref<Vue>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
@@ -197,17 +201,43 @@ function useSendForm() {
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
     // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
     // async validation rules
-    [recipientId, token, humanAmount, shouldUseNormalPubKey],
-    async ([recipientId, token, humanAmount, useNormalPubKey], [_p, _t, _h, prevUseNormalPubKey]) => {
-      [_p, _t, _h]; // silence unused parameter error from TS compiler
-      if (useNormalPubKey !== prevUseNormalPubKey) void sendFormRef.value?.validate();
-      const validId = Boolean(recipientId) && (await isValidId(recipientId as string)) === true;
-      isValidRecipientId.value = validId;
-      const validAmount = Boolean(humanAmount) && isValidTokenAmount(humanAmount as string) === true;
-      isValidForm.value = validId && Boolean(token) && validAmount;
-
+    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount],
+    async (
+      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue],
+      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue]
+    ) => {
       // Fetch toll
       toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
+
+      // Validates value initially passed through params
+      const recipientIdInputRef = recipientIdBaseInputRef.value?.$children[0] as QInput;
+      const tokenInputRef = tokenBaseInputRef.value?.$children[0] as QInput;
+      const humanAmountInputRef = humanAmountBaseInputRef.value?.$children[0] as QInput;
+      if (recipientIdInputRef && recipientIdValue && typeof prevRecipientIdValue === 'undefined') {
+        await recipientIdInputRef.validate();
+      }
+
+      if (tokenInputRef && tokenValue && typeof prevTokenValue === 'undefined') {
+        await tokenInputRef.validate();
+      }
+      if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
+        await humanAmountInputRef.validate();
+      }
+
+      // Reset token and amount if token is not supported on the network
+      if (!tokenOptions.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)) {
+        token.value = undefined;
+        humanAmount.value = undefined;
+      }
+
+      // Revalidates form on network change
+      if (useNormalPubKey !== prevUseNormalPubKey || isLoadingValue !== prevIsLoadingValue) {
+        void sendFormRef.value?.validate();
+      }
+      const validId = Boolean(recipientIdValue) && (await isValidId(recipientIdValue as string)) === true;
+      isValidRecipientId.value = validId;
+      const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
+      isValidForm.value = validId && Boolean(tokenValue) && validAmount;
     }
   );
 
