@@ -2,7 +2,7 @@ import { copyToClipboard } from 'quasar';
 import { notifyUser } from 'src/utils/alerts';
 import { JsonRpcProvider } from 'src/utils/ethers';
 import useWalletStore from 'src/store/wallet';
-import { TokenInfo } from 'components/models';
+import { TokenInfo, Chain, supportedChains } from 'components/models';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 import { ITXRelayer } from 'src/utils/relayer';
 
@@ -39,22 +39,26 @@ async function getTokens() {
  * @param amount Amount to send, as a human-readable number
  */
 export async function generatePaymentLink({
+  network = undefined,
   to = undefined,
   token = undefined,
   amount = undefined,
 }: {
+  network: Chain | undefined;
   to: string | undefined;
   token: TokenInfo | undefined;
   amount: string | undefined;
 }) {
   // Ensure at least one form field was provided
-  if (!to && !token && !amount) throw new Error('Please complete at least one field to generate a payment link');
+  if (!network && !to && !token && !amount)
+    throw new Error('Please complete at least one field to generate a payment link');
 
   // Verify the recipient ID is valid if provided (this throws if public keys could not be found)
   if (to) await umbraUtils.lookupRecipient(to, getProvider());
 
   // Generate payment link and copy to clipboard
   const url = new URL(`${window.location.href}`);
+  if (network) url.searchParams.set('network', network.chainName);
   if (to) url.searchParams.set('to', to);
   if (token) url.searchParams.set('token', token.symbol);
   if (amount) url.searchParams.set('amount', amount);
@@ -68,7 +72,8 @@ export async function generatePaymentLink({
  */
 export async function parsePaymentLink() {
   // Setup output object
-  const paymentData: { to: string | null; token: TokenInfo | null; amount: string | null } = {
+  const paymentData: { network: Chain | null; to: string | null; token: TokenInfo | null; amount: string | null } = {
+    network: null,
     to: null,
     token: null,
     amount: null,
@@ -81,11 +86,14 @@ export async function parsePaymentLink() {
     if (key === 'to' || key === 'amount') {
       paymentData[key] = value;
       continue;
+    } else if (key === 'token') {
+      // Parse the token symbol into its TokenInfo object
+      const tokens = await getTokens(); // get list of supported tokens
+      paymentData['token'] = tokens.find((token) => token.symbol.toLowerCase() === value.toLowerCase()) || null;
+    } else if (key === 'network') {
+      // Parse the network name into its Chain object
+      paymentData['network'] = supportedChains.find((chain) => chain.chainName === value) || null;
     }
-
-    // Otherwise, parse the token symbol into it's TokenInfo object
-    const tokens = await getTokens(); // get list of supported tokens
-    paymentData['token'] = tokens.filter((token) => token.symbol.toLowerCase() === value.toLowerCase())[0];
   }
 
   return paymentData;

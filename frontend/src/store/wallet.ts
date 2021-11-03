@@ -1,13 +1,14 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
-import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
+import { BigNumber, Contract, getAddress, hexValue, Web3Provider } from 'src/utils/ethers';
 import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
-import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
+import { Chain, MulticallResponse, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
 import { ERC20_ABI, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ITXRelayer } from 'src/utils/relayer';
 import useSettingsStore from 'src/store/settings';
 import Onboard from 'bnc-onboard';
 import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
+import { getChainById } from 'src/utils/utils';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -38,7 +39,7 @@ const signer = ref<Signer>(); // ethers signer
 const userAddress = ref<string>(); // user's wallet address
 const userEns = ref<string>(); // user's ENS name
 const userCns = ref<string>(); // user's CNS name
-const network = ref<Network>(); // connected network, derived from provider
+const network = ref<Chain>(); // connected network, derived from provider
 const umbra = ref<Umbra>(); // instance of Umbra class
 const stealthKeyRegistry = ref<StealthKeyRegistry>(); // instance of the StealthKeyRegistry class
 const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for spending receiving funds
@@ -86,7 +87,7 @@ export default function useWalletStore() {
             }
           },
           network: async (chainId) => {
-            if (network.value?.chainId && network.value.chainId !== chainId) {
+            if (network.value?.chainId && network.value.chainId !== hexValue(chainId)) {
               await configureProvider();
             }
           },
@@ -207,7 +208,7 @@ export default function useWalletStore() {
     ]);
 
     // If nothing has changed, no need to continue configuring
-    if (_userAddress === userAddress.value && _network.chainId === network.value?.chainId) {
+    if (_userAddress === userAddress.value && hexValue(_network.chainId) === network.value?.chainId) {
       setLoading(false);
       return;
     }
@@ -217,8 +218,8 @@ export default function useWalletStore() {
 
     // Exit if not a valid network
     const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
-    if (!supportedChainIds.includes(_network.chainId)) {
-      network.value = _network;
+    if (!supportedChainIds.includes(hexValue(_network.chainId))) {
+      network.value = getChainById(_network.chainId);
       setLoading(false);
       return;
     }
@@ -266,7 +267,7 @@ export default function useWalletStore() {
     userAddress.value = _userAddress;
     userEns.value = _userEns;
     userCns.value = _userCns;
-    network.value = _network;
+    network.value = getChainById(_network.chainId);
     hasEnsKeys.value = _hasEnsKeys; // LEGACY
     hasCnsKeys.value = _hasCnsKeys; // LEGACY
     isAccountSetup.value = _isAccountSetup;
@@ -314,12 +315,10 @@ export default function useWalletStore() {
       if (code === 4902) {
         try {
           await provider.value?.send('wallet_addEthereumChain', [chain]);
-        } catch (addError) {
-          console.log(addError);
+        } catch (_) {
           setLoading(false);
         }
       } else {
-        console.log(switchError);
         setLoading(false);
       }
     }
@@ -355,7 +354,7 @@ export default function useWalletStore() {
   });
 
   const ETH_TOKEN = computed(() => {
-    return { ...ETH_TOKEN_INFO, chainId: network.value?.chainId as number };
+    return { ...ETH_TOKEN_INFO, chainId: parseInt(network.value?.chainId?.slice(2) ?? '') };
   });
 
   const tokens = computed((): TokenInfo[] => {

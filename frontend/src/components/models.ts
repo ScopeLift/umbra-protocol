@@ -118,7 +118,7 @@ export const supportedChains: Array<Chain> = [
 ];
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
 export type SupportedChainIds = '1' | '4'; // strings for indexing into JSON files
-export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
+export const supportedChainIds = supportedChains.map((chain) => chain.chainId); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response
 type CnsName = { name: string };

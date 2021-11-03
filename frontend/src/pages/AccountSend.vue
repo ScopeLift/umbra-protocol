@@ -6,6 +6,16 @@
       <q-spinner-puff color="primary" size="3rem" />
     </div>
 
+    <!-- Connect wallet button -->
+    <div v-else-if="!userAddress">
+      <p class="text-center">Connect your wallet to send funds</p>
+      <div class="row justify-center">
+        <connect-wallet>
+          <base-button class="text-center" label="Connect Wallet" />
+        </connect-wallet>
+      </div>
+    </div>
+
     <!-- Send form -->
     <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
@@ -81,7 +91,7 @@
           />
         </connect-wallet>
         <base-button
-          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount })"
+          @click="generatePaymentLink({ network, to: recipientId, token, amount: humanAmount })"
           :disable="isSending"
           :flat="true"
           :full-width="true"
@@ -119,6 +129,8 @@ function useSendForm() {
     balances,
     umbra,
     signer,
+    network,
+    setNetwork,
     provider,
     userAddress,
     isLoading,
@@ -187,7 +199,10 @@ function useSendForm() {
 
   // Check for query parameters on load
   onMounted(async () => {
-    const { to, token: paymentToken, amount } = await parsePaymentLink();
+    const { network: paymentNetwork, to, token: paymentToken, amount } = await parsePaymentLink();
+
+    if (paymentNetwork && paymentNetwork.chainId !== network.value?.chainId) await setNetwork(paymentNetwork);
+
     recipientId.value = to ?? '';
     token.value = paymentToken ?? null;
     humanAmount.value = amount ?? '';
@@ -301,6 +316,7 @@ function useSendForm() {
     isValidId,
     isValidRecipientId,
     isValidTokenAmount,
+    network,
     onFormSubmit,
     recipientId,
     recipientIdBaseInputRef,
