@@ -17,11 +17,13 @@
       />
       <!-- Fee estimate -->
       <div class="q-mb-lg">
-        <div v-if="!isEth && isFeeLoading" class="text-caption text-italic">
+        <div v-if="!isNativeToken && isFeeLoading" class="text-caption text-italic">
           <q-spinner-puff class="q-my-none q-mr-sm" color="primary" size="2rem" />
           Fetching fee estimate...
         </div>
-        <div v-else-if="isEth" class="text-caption">Withdrawal fee: <span class="text-bold"> 0 ETH </span></div>
+        <div v-else-if="isNativeToken" class="text-caption">
+          Withdrawal fee: <span class="text-bold"> 0 {{ nativeTokenSymbol }} </span>
+        </div>
         <div v-else-if="activeFee" class="text-caption">
           Estimated withdrawal fee:
           <span class="text-bold">
@@ -64,9 +66,10 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { FeeEstimateResponse } from './models';
 import { formatUnits } from 'src/utils/ethers';
 import { round } from 'src/utils/utils';
-import { FeeEstimateResponse } from './models';
+import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
   name: 'WithdrawForm',
@@ -83,7 +86,7 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-    isEth: {
+    isNativeToken: {
       type: Boolean,
       required: true,
     },
@@ -101,9 +104,10 @@ export default defineComponent({
     },
   },
   setup({ destinationAddress }, { emit }) {
+    const { NATIVE_TOKEN } = useWalletStore();
     const content = ref<string>(destinationAddress || '');
-
-    return { formatUnits, round, emit, content };
+    const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
+    return { formatUnits, round, emit, content, nativeTokenSymbol };
   },
 });
 </script>

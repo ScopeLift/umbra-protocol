@@ -123,7 +123,7 @@
                     :destinationAddress="destinationAddress"
                     :isWithdrawInProgress="isWithdrawInProgress"
                     :isFeeLoading="isFeeLoading"
-                    :isEth="isEth(props.row.token)"
+                    :isNativeToken="isNativeToken(props.row.token)"
                     :spendingPrivateKey="spendingPrivateKey"
                     :activeFee="activeFee"
                     :advancedMode="advancedMode"
@@ -213,7 +213,7 @@
              so we explain the two things it does here:
               1. First it calls hidePrivateKey(), which is an advancedMode only feature to show your private key.
                  We call this to make sure a private key is never shown when initially expanding a row
-              2. For tokens (but not ETH), we get the fee estimate to withdraw the token
+              2. For tokens (but not ETH/native token of the network), we get the fee estimate to withdraw the token
               3. If the new row key is the same as the value of the value of expanded[0], we clicked the currently
                  expanded row and therefore set `expanded = []` to hide the row. Otherwise we update the `expanded`
                  array so it's only element is the key of the new row. This enables showing/hiding of rows and ensures
@@ -250,7 +250,7 @@
                 :destinationAddress="destinationAddress"
                 :isWithdrawInProgress="isWithdrawInProgress"
                 :isFeeLoading="isFeeLoading"
-                :isEth="isEth(props.row.token)"
+                :isNativeToken="isNativeToken(props.row.token)"
                 :spendingPrivateKey="spendingPrivateKey"
                 :activeFee="activeFee"
                 :advancedMode="advancedMode"
@@ -326,12 +326,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const privacyModalAddressDescription = ref('a wallet that may be publicly associated with you');
   const destinationAddress = ref('');
   const activeAnnouncement = ref<UserAnnouncement>();
-  const activeFee = ref<FeeEstimateResponse>(); // null if ETH
+  const activeFee = ref<FeeEstimateResponse>(); // null if native token
   // UI status variables
   const isLoading = ref(false);
   const isFeeLoading = ref(false);
   const isWithdrawInProgress = ref(false);
-  const txHashIfEth = ref(''); // if withdrawing ETH, show the transaction hash (if token, we have an ITX ID)
+  const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have an ITX ID)
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
@@ -345,8 +345,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
   // Relayer helper method
   const getFeeEstimate = async (tokenAddress: string) => {
-    if (isEth(tokenAddress)) {
-      // no fee for ETHY
+    if (isNativeToken(tokenAddress)) {
+      // no fee for native token
       activeFee.value = { fee: '0', token: NATIVE_TOKEN.value };
       return;
     }
@@ -358,10 +358,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   // Table formatters and helpers
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
   const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
-  const isEth = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+  const isNativeToken = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
   const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
-    if (isEth(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
+    if (isNativeToken(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
     return (await umbra.value?.umbraContract.tokenPayments(userAddress, tokenAddress)) as BigNumber;
   };
   const getTokenSymbol = (tokenAddress: string) => getTokenInfo(tokenAddress).symbol;
@@ -467,7 +467,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     try {
       isWithdrawInProgress.value = true;
       let tx: TransactionResponse;
-      if (token.symbol === 'ETH') {
+      if (token.symbol === NATIVE_TOKEN.value.symbol) {
         const { gasPrice } = options;
         tx = await umbra.value.withdraw(spendingPrivateKey, token.address, acceptor, { gasPrice });
         txHashIfEth.value = tx.hash;
@@ -535,7 +535,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     getTokenLogoUri,
     getTokenSymbol,
     initializeWithdraw,
-    isEth,
+    isNativeToken,
     isFeeLoading,
     isLoading,
     isWithdrawInProgress,

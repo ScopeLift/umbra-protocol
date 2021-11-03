@@ -17,7 +17,7 @@
       </div>
 
       <div>
-        <div v-if="isEth" class="text-caption text-grey q-mt-md row items-center">
+        <div v-if="isNativeToken" class="text-caption text-grey q-mt-md row items-center">
           <div>{{ useCustomFee ? 'Custom' : '' }} Transaction Fee</div>
           <base-button
             v-if="useCustomFee"
@@ -53,7 +53,7 @@
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
           <div v-if="loaded">-{{ formattedFee }} {{ symbol }}</div>
           <q-icon
-            v-if="isEth && loaded"
+            v-if="isNativeToken && loaded"
             @click="toggleCustomFee"
             class="cursor-pointer"
             color="primary"
@@ -109,6 +109,7 @@ import { FeeEstimate } from 'components/models';
 import { formatAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
 import { getEtherscanUrl, getGasPrice, round } from 'src/utils/utils';
+import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
   name: 'AccountReceiveTableWithdrawConfirmation',
@@ -119,7 +120,7 @@ export default defineComponent({
       required: true,
     },
 
-    // This refers to the relayer fee returned from the server. For ETH withdrawals, this is ignored
+    // This refers to the relayer fee returned from the server. For native token withdrawals, this is ignored
     activeFee: {
       type: Object as PropType<FeeEstimate>,
       required: true,
@@ -148,7 +149,8 @@ export default defineComponent({
 
   setup(props, context) {
     // Parse the provided props
-    const isEth = props.activeFee.token.symbol === 'ETH';
+    const { NATIVE_TOKEN } = useWalletStore();
+    const isNativeToken = props.activeFee.token.symbol === NATIVE_TOKEN.value.symbol;
     const amount = props.activeAnnouncement.amount; // amount being withdrawn
     const decimals = props.activeFee.token.decimals; // number of decimals token has
     const symbol = props.activeFee.token.symbol; // token symbol
@@ -157,7 +159,7 @@ export default defineComponent({
     // Get properties dependent on those props
     const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdrawal tx hash URL
     const ethDisplayDecimals = 6;
-    const numDecimals = isEth ? ethDisplayDecimals : 2; // maximum number of decimals to show for numbers the UI (ETH fee will be small, hence the larger value)
+    const numDecimals = isNativeToken ? ethDisplayDecimals : 2; // maximum number of decimals to show for numbers the UI (ETH fee will be small, hence the larger value)
     const formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being withdrawn, rounded
     function isValidFeeAmount(val: string) {
       if (!val || !(Number(val) > 0)) return 'Please enter an amount';
@@ -167,7 +169,7 @@ export default defineComponent({
       return true;
     }
 
-    // Get initial fee on component mount. If ETH, calculate gas cost of a transfer, otherwise use the provided relayer fee
+    // Get initial fee on component mount. If native token, calculate gas cost of a transfer, otherwise use the provided relayer fee
     const fee = ref<BigNumber | string>('0'); // default to a fee of zero
     const loaded = ref(false); // true once we've fetched the initial gas price, to prevent resize issue shown here: https://github.com/ScopeLift/umbra-protocol/pull/206#pullrequestreview-718683599
 
@@ -188,7 +190,7 @@ export default defineComponent({
     );
 
     onMounted(async () => {
-      if (isEth) {
+      if (isNativeToken) {
         const gasPrice = await getGasPrice();
         const ethFee = BigNumber.from('21000').mul(gasPrice);
         fee.value = ethFee;
@@ -212,7 +214,7 @@ export default defineComponent({
       return BigNumber.from(amount).gt(feeInWei) && BigNumber.from('0').lt(feeInWei);
     });
     const confirmationOptions = computed(() => {
-      if (!isEth) return {};
+      if (!isNativeToken) return {};
       return {
         // fee is the total cost in wei for the gas, so we divide by the tx cost
         gasPrice: useCustomFee.value ? customGasInWei.value : BigNumber.from(fee.value).div('21000'),
@@ -230,7 +232,7 @@ export default defineComponent({
       formattedFee,
       formattedCustomFee,
       formattedCustomFeeEth,
-      isEth,
+      isNativeToken,
       isValidFeeAmount,
       loaded,
       symbol,
