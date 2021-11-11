@@ -6,6 +6,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
 import { expect } from 'chai';
 import { expectRejection } from './utils';
+import { testPrivateKeys } from './testPrivateKeys';
 import type { ChainConfig } from '../src/types';
 import {
   TestToken as ERC20,
@@ -132,10 +133,20 @@ describe('Umbra class', () => {
 
   describe('Private key generation', () => {
     it('properly generates private keys', async () => {
-      const wallet = ethers.Wallet.createRandom();
-      const { spendingKeyPair, viewingKeyPair } = await umbra.generatePrivateKeys(wallet);
-      expect(spendingKeyPair.privateKeyHex).to.have.length(66);
-      expect(viewingKeyPair.privateKeyHex).to.have.length(66);
+      // We use 100 because that's how many initial accounts are generated in the hardhat config
+      for (let i = 0; i < 100; i += 1) {
+        // We must use a default hardhat account so hardhat has access to the private key to sign with
+        // `provider.send('personal_sign', [params])`, but we instantiate the wallet manually with the
+        // private key since the SignerWithAddress type is not a valid input type to generatePrivateKeys
+
+        const walletHardhat = (await ethers.getSigners())[i];
+        const wallet = new Wallet(testPrivateKeys[i]);
+        if (walletHardhat.address !== wallet.address) throw new Error('Address mismatch');
+
+        const { spendingKeyPair, viewingKeyPair } = await umbra.generatePrivateKeys(wallet);
+        expect(spendingKeyPair.privateKeyHex).to.have.length(66);
+        expect(viewingKeyPair.privateKeyHex).to.have.length(66);
+      }
     });
   });
 

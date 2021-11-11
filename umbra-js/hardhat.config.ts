@@ -47,7 +47,7 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds.hardhat,
       accounts: {
-        count: 10,
+        count: 100,
         initialIndex: 0,
         mnemonic,
         path: "m/44'/60'/1'/0",
