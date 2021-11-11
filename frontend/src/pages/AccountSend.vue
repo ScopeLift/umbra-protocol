@@ -225,7 +225,10 @@ function useSendForm() {
       }
 
       // Reset token and amount if token is not supported on the network
-      if (!tokenOptions.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)) {
+      if (
+        tokenOptions.value.length &&
+        !tokenOptions.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)
+      ) {
         token.value = tokenOptions.value[0];
         humanAmount.value = undefined;
       }
