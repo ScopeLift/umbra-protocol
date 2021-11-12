@@ -5,7 +5,7 @@ import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 
 import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
-import { ERC20_ABI, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
+import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { ITXRelayer } from 'src/utils/relayer';
 import { getChainById } from 'src/utils/utils';
@@ -51,8 +51,6 @@ export default function useWalletStore() {
   onMounted(() => {
     // Initialize onboard.js if not yet done
     if (!onboard.value) {
-      const rpcUrl = `https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`;
-
       onboard.value = Onboard({
         dappId: process.env.BLOCKNATIVE_API_KEY,
         networkId: 1,
@@ -63,9 +61,9 @@ export default function useWalletStore() {
             { walletName: 'walletConnect', infuraKey: process.env.INFURA_ID, preferred: true },
             { walletName: 'fortmatic', apiKey: process.env.FORTMATIC_API_KEY, preferred: true },
             { walletName: 'portis', apiKey: process.env.PORTIS_API_KEY },
-            { walletName: 'ledger', rpcUrl },
+            { walletName: 'ledger', rpcUrl: MAINNET_RPC_URL },
             { walletName: 'torus', preferred: true },
-            { walletName: 'lattice', rpcUrl, appName: 'Umbra' },
+            { walletName: 'lattice', rpcUrl: MAINNET_RPC_URL, appName: 'Umbra' },
             { walletName: 'opera' },
           ],
         },
@@ -232,7 +230,7 @@ export default function useWalletStore() {
 
     // Get ENS name, CNS name, and check if user has registered their stealth keys
     const [_userEns, _userCns, _isAccountSetup, _isArgent] = await Promise.all([
-      lookupEnsName(_userAddress, provider.value),
+      lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
       lookupCnsName(_userAddress, provider.value),
       hasRegisteredStealthKeys(_userAddress, provider.value),
       [1, 3].includes(chainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten

@@ -9,6 +9,7 @@ import {
   EtherscanProvider,
   getAddress,
   isHexString,
+  JsonRpcProvider,
   keccak256,
   resolveProperties,
   serialize as serializeTransaction,
@@ -238,12 +239,18 @@ function getResolutionInstance(provider: EthersProvider) {
 
 /**
  * @notice Attempt to resolve an ENS name, and return null on failure
- * @param name
- * @param provider
+ * @param name Name to resolve
+ * @param provider Provider connected to mainnet. If the provider is connected to a different
+ * network, we use the umbra-js default provider instead
  * @returns
  */
 async function resolveEns(name: string, provider: EthersProvider) {
   try {
+    // Ensure we have a mainnet provider by using the provided provider if it's connected to mainnet,
+    // and overriding with a mainnet provider otherwise. This ensures ENS resolution is always done
+    // against L1, as explained here: https://twitter.com/makoto_inoue/status/1453737962110275598
+    const { chainId } = await provider.getNetwork();
+    if (chainId !== 1) provider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
     const address = await provider.resolveName(name);
     return address || null;
   } catch (e) {
