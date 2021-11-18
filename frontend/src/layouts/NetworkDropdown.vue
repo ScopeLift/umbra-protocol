@@ -6,7 +6,7 @@
     :filled="false"
     :hideBottomSpace="true"
     outlined
-    :options="supportedChains"
+    :options="chainOptions"
     option-label="chainName"
     rounded
   >
@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from '@vue/composition-api';
+import { computed, defineComponent, ref, watchEffect } from '@vue/composition-api';
 import { Chain, supportedChains } from 'src/components/models';
 import useWalletStore from 'src/store/wallet';
 import { getChainById } from 'src/utils/utils';
@@ -31,13 +31,19 @@ export default defineComponent({
   setup() {
     const { network, setNetwork, isSupportedNetwork } = useWalletStore();
 
+    // We only show Rinkeby as an option in the network dropdown if the user is connected to Rinkeby
+    const chainOptions = computed(() => {
+      if (network.value?.chainId === 4) return supportedChains;
+      return supportedChains.filter((chain) => chain.chainName !== 'Rinkeby');
+    });
+
     watchEffect(() => {
       if (network.value) {
         currentNetwork.value = getChainById(network.value.chainId) || unsupportedNetwork;
       }
     });
 
-    return { supportedChains, currentNetwork, setNetwork, isSupportedNetwork };
+    return { chainOptions, currentNetwork, setNetwork, isSupportedNetwork };
   },
 });
 </script>
