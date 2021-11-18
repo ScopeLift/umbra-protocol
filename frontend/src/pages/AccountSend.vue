@@ -102,7 +102,7 @@
             <!-- Summary if they're sending native token -->
             <tr v-if="token.address === NATIVE_TOKEN.address">
               <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
-              <td class="min text-right">{{ Number(humanAmount) + Number(humanToll) }}</td>
+              <td class="min text-right">{{ formatNumber(Number(humanAmount) + Number(humanToll)) }}</td>
               <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
               <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
               <td><!-- Fills space --></td>
@@ -115,7 +115,6 @@
               <td class="min text-left">+</td>
               <td class="min text-right" style="padding-left: 0">{{ humanToll }}</td>
               <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
-
               <td><!-- Fills space --></td>
             </tr>
           </tbody>
@@ -357,6 +356,7 @@ function useSendForm() {
   return {
     advancedMode,
     currentChain,
+    formatNumber: (x: number) => parseFloat(x.toFixed(4)), // rounds to 4 decimals, then shows minimum number of digits
     humanAmount,
     humanToll,
     isSending,
