@@ -88,7 +88,10 @@
                   <span>
                     Transactions on {{ currentChain.chainName }} are very cheap, so a small fee is charged to deter
                     spamming the protocol.
-                    <router-link class="dark-toggle hyperlink" :to="{ name: 'FAQ', hash: '#' }">
+                    <router-link
+                      class="dark-toggle hyperlink"
+                      :to="{ name: 'FAQ', hash: '#why-is-there-sometimes-an-umbra-fee' }"
+                    >
                       Learn more
                     </router-link>
                   </span>
