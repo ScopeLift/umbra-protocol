@@ -266,7 +266,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date, copyToClipboard } from 'quasar';
-import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse } from 'src/utils/ethers';
+import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
@@ -277,6 +277,7 @@ import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
+import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl, round } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
@@ -382,7 +383,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
-    const formattedAddresses = await lookupOrFormatAddresses(fromAddresses, provider.value);
+    const formattedAddresses = await lookupOrFormatAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
     formattedAnnouncements.value.forEach((announcement, index) => {
       announcement.from = formattedAddresses[index];
     });
