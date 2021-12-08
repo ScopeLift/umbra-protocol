@@ -316,7 +316,7 @@ function useSendForm() {
         // Sending other tokens, so we need to check both separately
         const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} required for Umbra fee exceeds wallet balance`;
         if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
-        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(`Amount exceeds wallet balance`);
+        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
       }
 
       // If token, get approval when required
