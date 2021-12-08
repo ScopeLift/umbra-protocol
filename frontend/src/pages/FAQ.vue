@@ -305,6 +305,23 @@
         </f-a-q-item>
       </div>
 
+      <div @click="copyUrl" id="why-is-there-sometimes-an-umbra-fee">
+        <f-a-q-item
+          :expanded="selectedId === 'why-is-there-sometimes-an-umbra-fee'"
+          question="Why is there sometimes an Umbra fee?"
+        >
+          <p>
+            Finding funds you've received through Umbra requires scanning through all sent transactions, then checking
+            each to find which ones are for you.
+          </p>
+          <p>
+            On networks with very cheap transaction fees, the Umbra contract charges a small
+            <span class="code">toll</span> when sending funds to deter spam transactions, as spam would make it more
+            difficult to scan through all sent transactions.
+          </p>
+        </f-a-q-item>
+      </div>
+
       <div @click="copyUrl" id="what-are-payment-links">
         <f-a-q-item :expanded="selectedId === 'what-are-payment-links'" question="What are the payment links?">
           <p>
