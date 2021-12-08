@@ -1,13 +1,9 @@
 import {
   BigNumber,
-  Block,
-  Event,
   ExternalProvider as EthersExternalProvider,
   JsonRpcFetchFunc,
   JsonRpcProvider,
   Overrides,
-  TransactionReceipt,
-  TransactionResponse,
   Web3Provider,
 } from './ethers';
 
@@ -22,6 +18,7 @@ export interface ChainConfig {
   chainId: number; // Chain ID of the deployed contract
   umbraAddress: string; // address of Umbra contract
   startBlock: number; // block Umbra contract was deployed at
+  subgraphUrl: string | false; // URL of the subgraph used to fetch Announcement events, or false to not use a subgraph
 }
 
 // Used for passing around encrypted random number
@@ -51,22 +48,35 @@ export interface ScanOverrides {
 
 // Type definition for Announcement events emitted from the contract
 export interface Announcement {
-  receiver: string;
   amount: BigNumber;
-  token: string;
-  pkx: string;
   ciphertext: string;
+  pkx: string;
+  receiver: string;
+  token: string;
+}
+
+// Modified announcement data received from subgraph queries
+export interface SubgraphAnnouncement {
+  amount: string;
+  block: string;
+  ciphertext: string;
+  from: string;
+  id: string; // the subgraph uses an ID of `timestamp-logIndex`
+  pkx: string;
+  receiver: string;
+  timestamp: string;
+  token: string;
+  txHash: string;
 }
 
 // A UserAnnouncement is an Announcement event from Umbra where the recipient is the specified user
 export interface UserAnnouncement {
-  event: Event;
+  amount: BigNumber;
+  from: string; // sender address
+  isWithdrawn: boolean;
   randomNumber: string;
   receiver: string;
-  amount: BigNumber;
+  timestamp: string;
   token: string; // token address
-  block: Block;
-  tx: TransactionResponse;
-  receipt: TransactionReceipt;
-  isWithdrawn: boolean;
+  txHash: string;
 }

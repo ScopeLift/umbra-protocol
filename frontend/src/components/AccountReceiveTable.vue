@@ -60,8 +60,8 @@
               <q-card-section>
                 <div class="row justify-between items-center">
                   <div>Sender</div>
-                  <div @click="copyAddress(props.row.receipt.from, 'Sender')" class="cursor-pointer copy-icon-parent">
-                    <span>{{ props.row.receipt.from }}</span>
+                  <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
+                    <span>{{ props.row.from }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
@@ -89,8 +89,8 @@
                 <div class="row justify-between items-center text-caption text-grey">
                   <div>Received</div>
                   <div>
-                    {{ formatDate(props.row.block.timestamp * 1000) }}
-                    {{ formatTime(props.row.block.timestamp * 1000) }}
+                    {{ formatDate(props.row.timestamp * 1000) }}
+                    {{ formatTime(props.row.timestamp * 1000) }}
                   </div>
                 </div>
               </q-card-section>
@@ -169,8 +169,8 @@
                   class="row justify-start items-center cursor-pointer external-link-icon-parent"
                 >
                   <div class="col-auto">
-                    <div>{{ formatDate(col.value.timestamp * 1000) }}</div>
-                    <div class="text-caption text-grey">{{ formatTime(col.value.timestamp * 1000) }}</div>
+                    <div>{{ formatDate(col.value * 1000) }}</div>
+                    <div class="text-caption text-grey">{{ formatTime(col.value * 1000) }}</div>
                   </div>
                   <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
                 </div>
@@ -189,8 +189,8 @@
 
               <!-- Sender column -->
               <div v-else-if="col.name === 'from'" class="d-inline-block">
-                <div @click="copyAddress(props.row.tx.from, 'Sender')" class="cursor-pointer copy-icon-parent">
-                  <span>{{ col.value.from }}</span>
+                <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
+                  <span>{{ col.value }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -337,9 +337,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
   const toString = (val: BigNumber) => val.toString();
   const mainTableColumns = [
-    { align: 'left', field: 'block', label: 'Date Received', name: 'date', sortable: true, sort: sortByTime },
+    { align: 'left', field: 'timestamp', label: 'Date Received', name: 'date', sortable: true, sort: sortByTime },
     { align: 'left', field: 'amount', label: 'Amount', name: 'amount', sortable: true, format: toString },
-    { align: 'left', field: 'receipt', label: 'Sender', name: 'from', sortable: true },
+    { align: 'left', field: 'from', label: 'Sender', name: 'from', sortable: true },
     { align: 'left', field: 'receiver', label: 'Stealth Receiver', name: 'receiver', sortable: false },
   ];
 
@@ -381,10 +381,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
 
     // Format addresses to use ENS, CNS, or formatted address
-    const fromAddresses = announcements.map((announcement) => announcement.receipt.from);
+    const fromAddresses = announcements.map((announcement) => announcement.from);
     const formattedAddresses = await lookupOrFormatAddresses(fromAddresses, provider.value);
     formattedAnnouncements.value.forEach((announcement, index) => {
-      announcement.receipt.from = formattedAddresses[index];
+      announcement.from = formattedAddresses[index];
     });
 
     // Find announcements that have been withdrawn
@@ -400,7 +400,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @notice Copies the address of type to the clipboard
    */
   async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
-    // row.receipt.from has the truncated from address shown in the UI, so here we use the row.tx.from address
     await copyToClipboard(address);
     notifyUser('success', `${type} address copied to clipboard`);
   }
@@ -412,7 +411,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
     // Assume mainnet unless we have Rinkeby chainId
     const chainId = provider.value.network.chainId || 1;
-    window.open(getEtherscanUrl(row.tx.hash, chainId));
+    window.open(getEtherscanUrl(row.txHash, chainId));
   }
 
   /**
