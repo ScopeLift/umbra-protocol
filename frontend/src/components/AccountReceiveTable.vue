@@ -4,7 +4,8 @@
     <q-dialog v-model="showPrivacyModal">
       <account-receive-table-warning
         @acknowledged="confirmWithdraw"
-        :addressDescription="privacyModalAddressDescription"
+        :destinationAddress="destinationAddress"
+        :warnings="privacyModalAddressWarnings"
         class="q-pa-lg"
       />
     </q-dialog>
@@ -324,7 +325,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const expanded = ref<string[]>([]); // for managing expansion rows
   const showPrivacyModal = ref(false);
   const showConfirmationModal = ref(false);
-  const privacyModalAddressDescription = ref('a wallet that may be publicly associated with you');
+  const privacyModalAddressWarnings = ref<string[]>([]);
   const destinationAddress = ref('');
   const activeAnnouncement = ref<UserAnnouncement>();
   const activeFee = ref<FeeEstimateResponse>(); // null if native token
@@ -424,13 +425,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
     if (!userAddress.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
     activeAnnouncement.value = announcement;
-    const { safe, reason } = await isAddressSafe(destinationAddress.value, userAddress.value, provider.value);
+    const { safe, reasons } = await isAddressSafe(destinationAddress.value, userAddress.value, provider.value);
 
     if (safe) {
       showConfirmationModal.value = true;
     } else {
       showPrivacyModal.value = true;
-      privacyModalAddressDescription.value = reason;
+      privacyModalAddressWarnings.value = reasons;
     }
   }
 
@@ -542,7 +543,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     mainTableColumns,
     openInEtherscan,
     paginationConfig,
-    privacyModalAddressDescription,
+    privacyModalAddressWarnings,
     round,
     showConfirmationModal,
     showPrivacyModal,
