@@ -12,7 +12,7 @@
 
     <q-card-section>
       <p>
-        You are withdrawing to<span class="code">{{ destinationAddress }}</span
+        You are withdrawing to <span class="code">{{ destinationAddress }}</span
         >, which has the following warnings:
       </p>
       <ul>
