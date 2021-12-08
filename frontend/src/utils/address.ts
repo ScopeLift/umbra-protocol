@@ -4,7 +4,9 @@
 
 import { CnsQueryResponse, Provider } from 'components/models';
 import { utils } from '@umbra/umbra-js';
+import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getAddress } from 'src/utils/ethers';
+import { getChainById } from 'src/utils/utils';
 
 // ================================================== Address Helpers ==================================================
 
@@ -97,34 +99,48 @@ export const lookupOrFormatAddresses = async (addresses: string[], provider: Pro
 // ================================================== Privacy Checks ===================================================
 
 // Checks for any potential risks of withdrawing to the provided name or address, returns object containing
-// a true/false judgement about risk, and a short description string
+// a true/false judgement about risk, and HTML strings with details about the warnings
 export const isAddressSafe = async (name: string, userAddress: string, provider: Provider) => {
+  const reasons: string[] = [];
   userAddress = getAddress(userAddress);
 
   // Check if we're withdrawing to an ENS or CNS name
-  if (utils.isDomain(name)) return { safe: false, reason: `${name}, which is a publicly viewable name` };
+  const isDomain = utils.isDomain(name);
+  if (isDomain) reasons.push('This name is publicly viewable');
 
-  // We aren't withdrawing to a domain, so let's get the checksummed address.
-  const destinationAddress = getAddress(name);
+  // Get the address the provided name/address resolves to
+  const destinationAddress = isDomain ? await utils.toAddress(name, provider) : getAddress(name);
 
-  // Check if address resolves to an ENS name
-  const ensName = await lookupEnsName(destinationAddress, provider);
-  if (ensName) return { safe: false, reason: `an address that resolves to the publicly viewable ENS name ${ensName}` };
+  // If input was an address, check if address resolves to an ENS or CNS name
+  if (!isDomain) {
+    const ensName = await lookupEnsName(destinationAddress, provider);
+    if (ensName) reasons.push(`This name resolves to the publicly viewable ENS name ${ensName}`);
 
-  // Check if address owns a CNS name
-  const cnsName = await lookupCnsName(destinationAddress, provider);
-  if (cnsName) return { safe: false, reason: `an address that resolves to the publicly viewable CNS name ${cnsName}` };
+    const cnsName = await lookupCnsName(destinationAddress, provider);
+    if (cnsName) reasons.push(`This name resolves to the publicly viewable CNS name ${cnsName}`);
+  }
 
   // Check if address is the wallet user is logged in with
-  if (destinationAddress === userAddress) return { safe: false, reason: 'the same address as the connected wallet' };
+  if (destinationAddress === userAddress) reasons.push(`It ${isDomain ? 'resolves to' : 'has'} the same address as the connected wallet`); // prettier-ignore
 
   // Check if address owns any POAPs
-  if (await hasPOAPs(destinationAddress)) return { safe: false, reason: 'an address that has POAP tokens' };
+  if (await hasPOAPs(destinationAddress)) reasons.push(`${isDomain ? 'The address it resolves to' : 'It has'} has POAP tokens`); // prettier-ignore
 
   // Check if address has contributed to Gitcoin Grants
   // TODO
 
-  return { safe: true, reason: '' };
+  // If we're withdrawing to an ENS name, and if we're not on L1, and if the L1 address it resolves to is a contract,
+  // warn that the contract may not exist or may not be the same contract on
+  const { chainId } = await provider.getNetwork();
+  if (isDomain && chainId !== 1) {
+    const code = await MAINNET_PROVIDER.getCode(destinationAddress);
+    if (code !== '0x') {
+      const networkName = getChainById(chainId)?.chainName as string;
+      reasons.push(`It resolves to address <span class="code">${destinationAddress}</span>. This resolution is done via mainnet, but you are withdrawing on ${networkName}. This address contains a contract on mainnet, and <span class="text-bold">that same contract may not exist on ${networkName}</span>`); // prettier-ignore
+    }
+  }
+
+  return { safe: reasons.length === 0, reasons };
 };
 
 const jsonFetch = (url: string) => fetch(url).then((res) => res.json());

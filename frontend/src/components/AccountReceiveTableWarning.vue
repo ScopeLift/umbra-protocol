@@ -11,8 +11,16 @@
     </q-card-section>
 
     <q-card-section>
-      You are withdrawing to {{ addressDescription }}. <span class="text-bold">This is not recommended</span> unless you
-      know what you are doing, as this may reduce or entirely remove the privacy properties provided by Umbra.
+      <p>
+        You are withdrawing to<span class="code">{{ destinationAddress }}</span
+        >, which has the following warnings:
+      </p>
+      <ul>
+        <li v-html="warning" v-for="(warning, index) in warnings" :key="index" class="q-my-sm" />
+      </ul>
+
+      <span class="text-bold">Continuing with withdrawal is not recommended</span> unless you know what you are doing,
+      as this may reduce or entirely remove the privacy properties provided by Umbra.
     </q-card-section>
 
     <q-card-section>
@@ -28,14 +36,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, PropType } from '@vue/composition-api';
 
 export default defineComponent({
   name: 'AccountReceiveTableWarning',
 
   props: {
-    addressDescription: {
+    destinationAddress: {
       type: String,
+      require: true,
+    },
+    warnings: {
+      type: Array as PropType<string[]>,
       required: true,
     },
   },
