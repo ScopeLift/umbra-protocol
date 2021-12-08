@@ -26,19 +26,24 @@ import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import { ERC20_ABI } from '../utils/constants';
-// prettier-ignore
-import type { Announcement, UserAnnouncement, ChainConfig, EthersProvider, SendOverrides, ScanOverrides } from '../types';
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement } from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
+const subgraphs = {
+  1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
+  4: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby',
+  137: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
+};
+
 const chainConfigs: Record<number, ChainConfig> = {
-  1: { chainId: 1, umbraAddress, startBlock: 12343914 }, // Mainnet
-  4: { chainId: 4, umbraAddress, startBlock: 8505089 }, // Rinkeby
-  137: { chainId: 137, umbraAddress, startBlock: 20717318 }, // Polygon
-  1337: { chainId: 1337, umbraAddress, startBlock: 8505089 }, // Local
+  1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
+  4: { chainId: 4, umbraAddress, startBlock: 8505089, subgraphUrl: subgraphs[4] }, // Rinkeby
+  137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
+  1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
 };
 
 /**
@@ -60,15 +65,20 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
   }
 
   // Otherwise verify the user's provided chain config is valid and return it
-  const { umbraAddress, startBlock, chainId } = chainConfig;
+  const { chainId, startBlock, subgraphUrl, umbraAddress } = chainConfig;
   const isValidStartBlock = typeof startBlock === 'number' && startBlock >= 0;
+
   if (!isValidStartBlock) {
     throw new Error(`Invalid start block provided in chainConfig. Got '${startBlock}'`);
   }
   if (typeof chainId !== 'number' || !Number.isInteger(chainId)) {
     throw new Error(`Invalid chainId provided in chainConfig. Got '${chainId}'`);
   }
-  return { umbraAddress: getAddress(umbraAddress), startBlock, chainId };
+  if (subgraphUrl !== false && typeof subgraphUrl !== 'string') {
+    throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${subgraphUrl}'`);
+  }
+
+  return { umbraAddress: getAddress(umbraAddress), startBlock, chainId, subgraphUrl };
 };
 
 /**
@@ -298,65 +308,113 @@ export class Umbra {
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
 
-    // Get list of all Announcement events
-    const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
-    const announcements = await this.umbraContract.queryFilter(announcementFilter, startBlock, endBlock);
-
-    // Determine which announcements are for the user
-    const userAnnouncements = [] as UserAnnouncement[];
-    for (let i = 0; i < announcements.length; i += 1) {
+    // Try querying events using the Graph, fallback to querying logs.
+    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
+    // that window is defined first to avoid trying to use fetch in node environments
+    if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
       try {
-        const event = announcements[i];
+        // Query subgraph
+        const subgraphAnnouncements: SubgraphAnnouncement[] = await recursiveGraphFetch(
+          this.chainConfig.subgraphUrl,
+          'announcementEntities',
+          (filter: string) => `{
+            announcementEntities(${filter}) {
+              amount
+              block
+              ciphertext
+              from
+              id
+              pkx
+              receiver
+              timestamp
+              token
+              txHash
+            }
+          }`
+        );
 
-        // Extract out event parameters
-        const { receiver, amount, token, pkx, ciphertext } = (event.args as unknown) as Announcement;
+        // Determine which announcements are for the user.
+        // First we map the subgraph amount field from string to BigNumber, then we reduce the array to the
+        // subset of announcements for the user
+        const announcements = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+        const userAnnouncements = announcements.reduce((userAnns, ann) => {
+          const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
+          const { isForUser, randomNumber } = isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
+          const token = getAddress(tokenAddr); // ensure checksummed address
+          const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
+          if (isForUser) userAnns.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
+          return userAnns;
+        }, [] as UserAnnouncement[]);
 
-        // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
-        const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
-
-        // Decrypt to get random number
-        const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
-        const viewingKeyPair = new KeyPair(viewingPrivateKey);
-        const randomNumber = viewingKeyPair.decrypt(payload);
-
-        // Get what our receiving address would be with this random number
-        const spendingKeyPair = new KeyPair(spendingPublicKey);
-        const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
-
-        // If our receiving address matches the event's recipient, the transfer was for us
-        if (computedReceivingAddress === getAddress(receiver)) {
-          const [block, tx, receipt] = await Promise.all([
-            event.getBlock(),
-            event.getTransaction(),
-            event.getTransactionReceipt(),
-          ]);
-          userAnnouncements.push({
-            event,
-            randomNumber,
-            receiver,
-            amount,
-            token: getAddress(token),
-            block,
-            tx,
-            receipt,
-            isWithdrawn: false,
-          });
-        }
+        // Filtering and parsing done, return announcements
+        return { userAnnouncements };
       } catch (err) {
-        // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
-        // fail when uncompressing. For now we just silence these
-        // console.log('The following event had the below problem while processing:', announcements[i]);
-        // console.warn(err);
+        // Graph query failed, try requesting logs directly IF we are not on polygon. If we are on
+        // Polygon, there isn't much we can do, so for now just show a warning and return an empty array
+        if (this.chainConfig.chainId === 137) {
+          console.warn('Cannot fetch Announcements from logs on Polygon, please try again later');
+          return { userAnnouncements: [] };
+        }
+        const userAnnouncements = await this.userAnnouncementsFromLogs(spendingPublicKey, viewingPrivateKey, startBlock, endBlock); // prettier-ignore
+        return { userAnnouncements };
       }
     }
 
-    // For each of the user's announcement events, determine if the funds were withdrawn
-    // TODO
-
+    // Subgraph not available, try requesting logs directly IF we are not on Polygon. If we are on
+    // Polygon, there isn't much we can do, so for now just show a warning and return an empty array
+    if (this.chainConfig.chainId === 137) {
+      console.warn('Cannot fetch Announcements from logs on Polygon, please try again later');
+      return { userAnnouncements: [] };
+    }
+    const userAnnouncements = await this.userAnnouncementsFromLogs(spendingPublicKey, viewingPrivateKey, startBlock, endBlock); // prettier-ignore
     return { userAnnouncements };
   }
 
   // ======================================= HELPER METHODS ========================================
+
+  /**
+   * @notice Queries the node for logs, and returns the set of Announcements that were intended for the specified user
+   * @param spendingPublicKey Receiver's spending private key
+   * @param viewingPrivateKey Receiver's viewing public key
+   * @param startBlock Block to start scanning from
+   * @param endBlock Block to scan until
+   */
+  async userAnnouncementsFromLogs(
+    spendingPublicKey: string,
+    viewingPrivateKey: string,
+    startBlock: string | number,
+    endBlock: string | number
+  ): Promise<UserAnnouncement[]> {
+    // Get list of all Announcement events
+    const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
+    const announcements = await this.umbraContract.queryFilter(announcementFilter, startBlock, endBlock);
+
+    const userAnnouncements = await Promise.all(
+      announcements.map(async (event) => {
+        // Extract out event parameters
+        const announcement = (event.args as unknown) as Announcement;
+        const { receiver, amount, token } = announcement;
+        const { isForUser, randomNumber } = isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, announcement);
+
+        // If  receiving address matches event's recipient, the transfer was for the user. Otherwise it wasn't,
+        // so return null and filter later
+        if (!isForUser) return null;
+        const [block, tx] = await Promise.all([event.getBlock(), event.getTransaction()]);
+        return {
+          randomNumber,
+          receiver,
+          amount,
+          token: getAddress(token),
+          from: tx.from,
+          txHash: event.transactionHash,
+          timestamp: String(block.timestamp),
+          isWithdrawn: false,
+        };
+      })
+    );
+
+    return userAnnouncements.filter((ann) => ann !== null) as UserAnnouncement[];
+  }
 
   /**
    * @notice Asks a user to sign a message to generate two Umbra-specific private keys for them
@@ -475,5 +533,81 @@ export class Umbra {
     );
     const rawSig = await stealthWallet.signMessage(arrayify(digest));
     return splitSignature(rawSig);
+  }
+}
+
+// ============================== PRIVATE, FUNCTIONAL HELPER METHODS ==============================
+
+/**
+ * @notice Generic method to recursively grab every 'page' of results
+ * @dev NOTE: the query MUST return the ID field
+ * @dev Modifies from: https://github.com/dcgtc/dgrants/blob/f5a783524d0b56eea12c127b2146fba8fb9273b4/app/src/utils/utils.ts#L443
+ * @dev Relevant docs: https://thegraph.com/docs/developer/graphql-api#example-3
+ * @dev Lives outside of the class instance because user's should not need access to this method
+ * @dev TODO support node.js by replacing reliance on browser's fetch module with https://github.com/paulmillr/micro-ftch
+ * @param url the url we will recursively fetch from
+ * @param key the key in the response object which holds results
+ * @param query a function which will return the query string (with the page in place)
+ * @param before the current array of objects
+ */
+async function recursiveGraphFetch(
+  url: string,
+  key: string,
+  query: (filter: string) => string,
+  before: any[] = []
+): Promise<any[]> {
+  // retrieve the last ID we collected to use as the starting point for this query
+  const fromId = before.length ? before[before.length - 1].id : false;
+
+  // Fetch this 'page' of results - please note that the query MUST return an ID
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: query(`
+        first: 1000, 
+        where: {
+          ${fromId ? `id_gt: "${fromId}",` : ''}
+        }
+      `),
+    }),
+  });
+
+  // Resolve the json
+  const json = await res.json();
+
+  // If there were results on this page then query the next page, otherwise return the data
+  if (!json.data[key].length) return [...before];
+  else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]]);
+}
+
+/**
+ * @notice If the provided announcement is for the user with the specified keys, return true and the decoded
+ * random number
+ * @param spendingPublicKey Receiver's spending private key
+ * @param viewingPrivateKey Receiver's viewing public key
+ * @param announcement Parameters emitted in the announcement event
+ */
+function isAnnouncementForUser(spendingPublicKey: string, viewingPrivateKey: string, announcement: Announcement) {
+  try {
+    // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
+    const { receiver, pkx, ciphertext } = announcement;
+    const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
+
+    // Decrypt to get random number
+    const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
+    const viewingKeyPair = new KeyPair(viewingPrivateKey);
+    const randomNumber = viewingKeyPair.decrypt(payload);
+
+    // Get what our receiving address would be with this random number
+    const spendingKeyPair = new KeyPair(spendingPublicKey);
+    const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
+
+    // If our receiving address matches the event's recipient, the transfer was for the user with the specified keys
+    return { isForUser: computedReceivingAddress === getAddress(receiver), randomNumber };
+  } catch (err) {
+    // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
+    // fail when uncompressing. For now we just silently ignore these and return false
+    return { isForUser: false, randomNumber: '' };
   }
 }

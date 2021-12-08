@@ -79,6 +79,7 @@ describe('Umbra class', () => {
       chainId: (await ethersProvider.getNetwork()).chainId,
       umbraAddress: umbraContract.address,
       startBlock: lastBlockNumber,
+      subgraphUrl: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
     };
 
     // Get Umbra instance
@@ -92,34 +93,47 @@ describe('Umbra class', () => {
       expect(umbra1.provider._isProvider).to.be.true;
       expect(umbra1.chainConfig.umbraAddress).to.equal(chainConfig.umbraAddress);
       expect(umbra1.chainConfig.startBlock).to.equal(chainConfig.startBlock);
+      expect(umbra1.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
 
       // Web3 provider
       const umbra2 = new Umbra(ethersProvider, chainConfig);
       expect(umbra2.provider._isProvider).to.be.true;
       expect(umbra2.chainConfig.umbraAddress).to.equal(chainConfig.umbraAddress);
       expect(umbra2.chainConfig.startBlock).to.equal(chainConfig.startBlock);
+      expect(umbra2.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
     });
 
     it('initializes correctly when passing a default chainId', async () => {
-      // Localhost with URL provider
+      // --- Localhost ---
+      // URL provider
       const umbra1 = new Umbra(jsonRpcProvider, 1337);
       expect(umbra1.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       expect(umbra1.chainConfig.startBlock).to.equal(8505089);
+      expect(umbra1.chainConfig.subgraphUrl).to.equal(false);
 
-      // Localhost with Web3 provider
+      // Web3 provider
       const umbra2 = new Umbra(ethersProvider, 1337);
       expect(umbra2.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       expect(umbra2.chainConfig.startBlock).to.equal(8505089);
+      expect(umbra2.chainConfig.subgraphUrl).to.equal(false);
 
-      // Ropsten with URL provider
+      // --- Rinkeby ---
       const umbra3 = new Umbra(jsonRpcProvider, 4);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       expect(umbra3.chainConfig.startBlock).to.equal(8505089);
+      expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby');
 
-      // Ropsten with Web3 provider
-      const umbra4 = new Umbra(jsonRpcProvider, 4);
+      // --- Mainnet ---
+      const umbra4 = new Umbra(jsonRpcProvider, 1);
       expect(umbra4.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra4.chainConfig.startBlock).to.equal(8505089);
+      expect(umbra4.chainConfig.startBlock).to.equal(12343914);
+      expect(umbra4.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet');
+
+      // --- Polygon ---
+      const umbra5 = new Umbra(jsonRpcProvider, 137);
+      expect(umbra5.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra5.chainConfig.startBlock).to.equal(20717318);
+      expect(umbra5.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon');
     });
 
     it('does not allow invalid default chain IDs to be provided', async () => {
@@ -323,6 +337,7 @@ describe('Umbra class', () => {
       const errorMsg2 = "Invalid start block provided in chainConfig. Got '1'";
       const badChainId = '1.1';
       const errorMsg3 = `Invalid chainId provided in chainConfig. Got '${badChainId}'`;
+      const errorMsg4 = "Invalid subgraphUrl provided in chainConfig. Got 'undefined'";
       const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // address does not matter here
 
       // @ts-expect-error
@@ -332,15 +347,19 @@ describe('Umbra class', () => {
       // @ts-expect-error
       expect(() => new Umbra(ethersProvider, { umbraAddress })).to.throw(errorMsg1);
       // @ts-expect-error
-      expect(() => new Umbra(ethersProvider, { startBlock: 0, chainId: 4 })).to.throw(
+      expect(() => new Umbra(ethersProvider, { umbraAddress: '123', startBlock: '1', subgraphUrl: false })).to.throw(
+        errorMsg2
+      );
+      expect(
+        // @ts-expect-error
+        () => new Umbra(ethersProvider, { umbraAddress: '123', startBlock: 1, chainId: badChainId, subgraphUrl: false })
+      ).to.throw(errorMsg3);
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider, { umbraAddress: '123', startBlock: 1, chainId: 1 })).to.throw(errorMsg4);
+      // @ts-expect-error
+      expect(() => new Umbra(ethersProvider, { startBlock: 0, chainId: 4, subgraphUrl: false })).to.throw(
         'invalid address (argument="address", value=undefined, code=INVALID_ARGUMENT, version=address/5.1.0)'
       );
-      // @ts-expect-error
-      expect(() => new Umbra(ethersProvider, { umbraAddress: '123', startBlock: '1' })).to.throw(errorMsg2);
-
-      const badChainConfig = { umbraAddress: '123', startBlock: 1, chainId: badChainId };
-      // @ts-expect-error
-      expect(() => new Umbra(ethersProvider, badChainConfig)).to.throw(errorMsg3);
     });
 
     it('throws when isEth is passed a bad address', async () => {
