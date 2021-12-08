@@ -5,7 +5,7 @@
 import { CnsQueryResponse, Provider } from 'components/models';
 import { utils } from '@umbra/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
-import { getAddress } from 'src/utils/ethers';
+import { getAddress, Web3Provider } from 'src/utils/ethers';
 import { getChainById } from 'src/utils/utils';
 
 // ================================================== Address Helpers ==================================================
@@ -113,7 +113,7 @@ export const isAddressSafe = async (name: string, userAddress: string, provider:
 
   // If input was an address, check if address resolves to an ENS or CNS name
   if (!isDomain) {
-    const ensName = await lookupEnsName(destinationAddress, provider);
+    const ensName = await lookupEnsName(destinationAddress, MAINNET_PROVIDER as Web3Provider);
     if (ensName) reasons.push(`This name resolves to the publicly viewable ENS name ${ensName}`);
 
     const cnsName = await lookupCnsName(destinationAddress, provider);
