@@ -149,7 +149,7 @@ export default defineComponent({
 
   setup(props, context) {
     // Parse the provided props
-    const { NATIVE_TOKEN } = useWalletStore();
+    const { NATIVE_TOKEN, network, provider } = useWalletStore();
     const isNativeToken = props.activeFee.token.symbol === NATIVE_TOKEN.value.symbol;
     const amount = props.activeAnnouncement.amount; // amount being withdrawn
     const decimals = props.activeFee.token.decimals; // number of decimals token has
@@ -191,11 +191,11 @@ export default defineComponent({
 
     onMounted(async () => {
       if (isNativeToken) {
-        const gasPrice = await getGasPrice();
-        const ethFee = BigNumber.from('21000').mul(gasPrice);
+        const gasPrice = network.value?.chainId === 1 ? await getGasPrice() : await provider.value?.getGasPrice(); // use blocknative on mainnet, the node elsewhere
+        const ethFee = BigNumber.from('21000').mul(gasPrice as BigNumber);
         fee.value = ethFee;
         // flooring this b/c the string we get back from formatUnits is a decimal
-        formattedCustomFee.value = String(Math.floor(Number(formatUnits(gasPrice, 'gwei'))));
+        formattedCustomFee.value = String(Math.floor(Number(formatUnits(gasPrice as BigNumber, 'gwei'))));
       } else {
         fee.value = props.activeFee.fee;
       }
