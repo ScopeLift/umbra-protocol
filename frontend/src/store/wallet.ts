@@ -297,7 +297,9 @@ export default function useWalletStore() {
       // This error code indicates that the chain has not been added to MetaMask.
       if (code === 4902) {
         try {
-          await provider.value?.send('wallet_addEthereumChain', [chain]);
+          const eip3085Chain = <any>{ ...chain }; // without casting to any, TS errors on `delete` since we're deleting a required property
+          delete eip3085Chain.logoURI; // if you don't remove extraneous fields, adding the chain will error
+          await provider.value?.send('wallet_addEthereumChain', [eip3085Chain]);
         } catch (addError) {
           console.log(addError);
           setLoading(false);
