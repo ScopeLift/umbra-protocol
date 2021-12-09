@@ -231,7 +231,7 @@ export default function useWalletStore() {
     // Get ENS name, CNS name, and check if user has registered their stealth keys
     const [_userEns, _userCns, _isAccountSetup, _isArgent] = await Promise.all([
       lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
-      lookupCnsName(_userAddress, provider.value),
+      lookupCnsName(_userAddress),
       hasRegisteredStealthKeys(_userAddress, provider.value),
       [1, 3].includes(chainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
     ]);
