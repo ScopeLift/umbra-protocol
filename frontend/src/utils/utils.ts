@@ -7,8 +7,8 @@ import { BigNumber, BigNumberish, hexValue, parseUnits } from './ethers';
 export const getEtherscanUrl = (txHashOrAddress: string, chainId: number) => {
   const group = txHashOrAddress.length === 42 ? 'address' : 'tx';
   const chain = getChainById(chainId);
-  const networkPrefix = chain?.blockExplorerUrls?.length ? chain?.blockExplorerUrls[0] : 'etherscan.io';
-  return `https://${networkPrefix}/${group}/${txHashOrAddress}`;
+  const networkPrefix = chain?.blockExplorerUrls?.length ? chain?.blockExplorerUrls[0] : 'https://etherscan.io';
+  return `${networkPrefix}/${group}/${txHashOrAddress}`;
 };
 
 /**
