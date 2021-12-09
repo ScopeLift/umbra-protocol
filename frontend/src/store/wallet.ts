@@ -180,7 +180,7 @@ export default function useWalletStore() {
       return;
     }
 
-    provider.value = new Web3Provider(rawProvider.value);
+    provider.value = new Web3Provider(rawProvider.value, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
     signer.value = provider.value.getSigner();
 
     // Get user and network information
