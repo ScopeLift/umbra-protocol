@@ -25,11 +25,11 @@
 
     <q-card-section>
       <div class="row justify-evenly">
+        <base-button @click="context.emit('acknowledged')" label="I acknowledge the risks" :outline="true" />
         <router-link class="no-text-decoration" target="_blank" to="/faq#receiving-funds">
           <!-- Button does nothing on click, but we wrap with router-link to open the page in a new tab -->
-          <base-button label="Learn More" :outline="true" />
+          <base-button label="Learn More" />
         </router-link>
-        <base-button label="I acknowledge the risks" @click="context.emit('acknowledged')" />
       </div>
     </q-card-section>
   </q-card>
