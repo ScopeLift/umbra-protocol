@@ -37,15 +37,11 @@ export const lookupEnsName = async (address: string, provider: Provider) => {
   }
 };
 
-// Fetches all CNS names owned by an address and returns the first one
-export const lookupCnsName = async (address: string, provider: Provider) => {
-  // Assume mainnet unless we're given the Rinkeby chainId
-  const baseUrl = 'https://api.thegraph.com/subgraphs/name/unstoppable-domains-integrations';
-  const chainId = provider.network.chainId;
-  const url = chainId === 4 ? `${baseUrl}/dot-crypto-rinkeby-registry` : `${baseUrl}/dot-crypto-registry`;
-
-  // Send request to get names
+// Fetches all mainnet CNS names owned by an address and returns the first one
+export const lookupCnsName = async (address: string) => {
   try {
+    // Send request to get names
+    const url = 'https://api.thegraph.com/subgraphs/name/unstoppable-domains-integrations/dot-crypto-registry';
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -72,7 +68,7 @@ const lookupEnsOrCns = async (address: string, provider: Provider) => {
   const ensName = await lookupEnsName(address, provider);
   if (ensName) return ensName;
 
-  const cnsName = await lookupCnsName(address, provider);
+  const cnsName = await lookupCnsName(address);
   if (cnsName) return cnsName;
 
   return undefined;
@@ -116,7 +112,7 @@ export const isAddressSafe = async (name: string, userAddress: string, provider:
     const ensName = await lookupEnsName(destinationAddress, MAINNET_PROVIDER as Web3Provider);
     if (ensName) reasons.push(`This name resolves to the publicly viewable ENS name ${ensName}`);
 
-    const cnsName = await lookupCnsName(destinationAddress, provider);
+    const cnsName = await lookupCnsName(destinationAddress);
     if (cnsName) reasons.push(`This name resolves to the publicly viewable CNS name ${cnsName}`);
   }
 
