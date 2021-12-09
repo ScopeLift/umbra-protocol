@@ -70,7 +70,7 @@
       <div v-if="toll && toll.gt(0) && humanAmount && token">
         <div class="text-bold">Summary</div>
 
-        <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color:rgba(0, 0, 0, 0)">
+        <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color: rgba(0, 0, 0, 0)">
           <tbody>
             <!-- What user is sending -->
             <tr>
@@ -276,6 +276,17 @@ function useSendForm() {
   }
 
   const isNativeToken = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
+  const getMinSendAmount = (tokenAddress: string) => {
+    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+    // Polygon
+    if (chainId === 137) {
+      if (isNativeToken(tokenAddress)) return 0.5;
+      else return 1; // 1 stablecoin token minimum
+    }
+    // Mainnet, Rinkeby, and other networks have 0.01 ETH and 50 stable-token minimums due to higher fees
+    if (isNativeToken(tokenAddress)) return 0.01;
+    else return 50; // 50 stablecoin token minimum
+  };
 
   function isValidTokenAmount(val: string | undefined) {
     if (val === undefined) return true; // don't show error on empty field
@@ -283,8 +294,9 @@ function useSendForm() {
     if (!token.value) return 'Please select a token';
 
     const { address: tokenAddress, decimals } = token.value;
-    if (Number(val) < 0.01 && isNativeToken(tokenAddress)) return `Please send at least 0.01 ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
-    if (Number(val) < 50 && !isNativeToken(tokenAddress)) return `Please send at least 50 ${token.value.symbol}`;
+    const minAmt = getMinSendAmount(tokenAddress);
+    if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `Please send at least ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
+    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `Please send at least ${minAmt} ${token.value.symbol}`; // prettier-ignore
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
