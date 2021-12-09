@@ -29,8 +29,8 @@ const rawProvider = ref<any>(); // raw provider from the user's wallet, e.g. EIP
 const provider = ref<Provider>(); // ethers provider
 const signer = ref<Signer>(); // ethers signer
 const userAddress = ref<string>(); // user's wallet address
-const userEns = ref<string>(); // user's ENS name
-const userCns = ref<string>(); // user's CNS name
+const userEns = ref<string | null>(); // user's ENS name
+const userCns = ref<string | null>(); // user's CNS name
 const network = ref<Network>(); // connected network, derived from provider
 const umbra = ref<Umbra>(); // instance of Umbra class
 const stealthKeyRegistry = ref<StealthKeyRegistry>(); // instance of the StealthKeyRegistry class
@@ -41,7 +41,7 @@ const relayer = ref<ITXRelayer>(); // used for managing relay transactions
 const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name // LEGACY
 const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name // LEGACY
 const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
-const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
+const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instafnce
 const isArgent = ref<boolean>(false); // true if user connected an argent wallet
 
 // ========================================== Main Store ===========================================
