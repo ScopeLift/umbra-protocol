@@ -494,11 +494,18 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         const { relayTransactionHash } = (await relayer.value?.relayWithdraw(token.address, withdrawalInputs)) as {
           relayTransactionHash: string;
         };
-        console.log(`Relayed with ITX ID ${relayTransactionHash}`);
 
-        // Wait for withdraw transaction to be mined
-        const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedITXStatusResponse;
-        console.log('Withdraw successful. Receipt:', receipt);
+        if (chainId === 137) {
+          // No ITX support on this network, so this is a regular transaction hash
+          console.log(`Relayed with transaction hash ${relayTransactionHash}`);
+          const receipt = await provider.value.waitForTransaction(relayTransactionHash);
+          console.log('Withdraw successful. Receipt:', receipt);
+        } else {
+          // Received an ITX relay transaction hash, wait for withdraw transaction to be mined
+          console.log(`Relayed with ITX ID ${relayTransactionHash}`);
+          const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedITXStatusResponse;
+          console.log('Withdraw successful. Receipt:', receipt);
+        }
       }
 
       // Send complete, cleanup state
