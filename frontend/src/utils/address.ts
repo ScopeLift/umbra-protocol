@@ -33,7 +33,7 @@ export const lookupEnsName = async (address: string, provider: Provider) => {
   } catch (err) {
     console.warn('Error in lookupEnsName');
     console.warn(err);
-    return undefined;
+    return null;
   }
 };
 
@@ -51,19 +51,19 @@ export const lookupCnsName = async (address: string) => {
       }),
     });
 
-    // Return the first name in the array, or undefined if user has no CNS names
+    // Return the first name in the array, or null if user has no CNS names
     const json = (await res.json()) as CnsQueryResponse;
     const names = json.data.domains;
-    return names.length > 0 ? names[0].name : undefined;
+    return names.length > 0 ? names[0].name : null;
   } catch (err) {
     // Scenario that prompted this try/catch was that The Graph API threw with a CORS error on localhost, blocking login
     console.warn('Error in lookupCnsName');
     console.warn(err);
-    return undefined;
+    return null;
   }
 };
 
-// Returns an ENS or CNS name if found, otherwise returns undefined
+// Returns an ENS or CNS name if found, otherwise returns null
 const lookupEnsOrCns = async (address: string, provider: Provider) => {
   const ensName = await lookupEnsName(address, provider);
   if (ensName) return ensName;
@@ -71,7 +71,7 @@ const lookupEnsOrCns = async (address: string, provider: Provider) => {
   const cnsName = await lookupCnsName(address);
   if (cnsName) return cnsName;
 
-  return undefined;
+  return null;
 };
 
 // Takes an ENS, CNS, or address, and returns the checksummed address
