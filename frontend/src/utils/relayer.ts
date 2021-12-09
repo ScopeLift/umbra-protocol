@@ -20,7 +20,7 @@ export class ITXRelayer {
   static async create(provider: Provider | JsonRpcProvider) {
     // Get API URL based on chain ID
     const chainId = (await provider.getNetwork()).chainId;
-    const baseUrl = 'https://rinkeby.api.umbra.cash'; // works for all networks
+    const baseUrl = 'https://mainnet.api.umbra.cash'; // works for all networks
 
     // Get list of tokens supported on this network
     const response = await fetch(`${baseUrl}/tokens?chainId=${chainId}`);
