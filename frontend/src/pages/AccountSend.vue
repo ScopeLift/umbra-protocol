@@ -70,7 +70,7 @@
       <div v-if="toll && toll.gt(0) && humanAmount && token">
         <div class="text-bold">Summary</div>
 
-        <q-markup-table class="q-mb-lg" dense flat separator="none">
+        <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color:rgba(0, 0, 0, 0)">
           <tbody>
             <!-- What user is sending -->
             <tr>
