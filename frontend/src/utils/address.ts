@@ -120,7 +120,7 @@ export const isAddressSafe = async (name: string, userAddress: string, provider:
   if (destinationAddress === userAddress) reasons.push(`It ${isDomain ? 'resolves to' : 'has'} the same address as the connected wallet`); // prettier-ignore
 
   // Check if address owns any POAPs
-  if (await hasPOAPs(destinationAddress)) reasons.push(`${isDomain ? 'The address it resolves to' : 'It has'} has POAP tokens`); // prettier-ignore
+  if (await hasPOAPs(destinationAddress)) reasons.push(`${isDomain ? 'The address it resolves to' : 'It'} has POAP tokens`); // prettier-ignore
 
   // Check if address has contributed to Gitcoin Grants
   // TODO
