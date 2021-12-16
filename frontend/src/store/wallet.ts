@@ -140,35 +140,41 @@ export default function useWalletStore() {
   }
 
   async function connectWallet() {
-    if (isLoading.value) return;
+    try {
+      if (isLoading.value) return;
 
-    setLoading(true);
+      setLoading(true);
 
-    // Clear existing wallet selection
-    onboard.value?.walletReset();
+      // Clear existing wallet selection
+      onboard.value?.walletReset();
 
-    // Use stored wallet on initialization if there is one
-    const hasSelected =
-      userAddress.value || !lastWallet.value
-        ? await onboard.value?.walletSelect()
-        : await onboard.value?.walletSelect(String(lastWallet.value));
-    if (!hasSelected) {
+      // Use stored wallet on initialization if there is one
+      const hasSelected =
+        userAddress.value || !lastWallet.value
+          ? await onboard.value?.walletSelect()
+          : await onboard.value?.walletSelect(String(lastWallet.value));
+      if (!hasSelected) {
+        setLoading(false);
+        return;
+      }
+
+      const hasChecked = await onboard.value?.walletCheck();
+      if (!hasChecked) {
+        setLoading(false);
+        return;
+      }
+
+      // Get ENS name, CNS names, etc.
+      await configureProvider();
+
+      // Add wallet name to localStorage
+      const walletName = onboard.value?.getState().wallet.name;
+      if (walletName) setLastWallet(walletName);
+    } catch (e) {
+      resetState();
       setLoading(false);
-      return;
+      throw e;
     }
-
-    const hasChecked = await onboard.value?.walletCheck();
-    if (!hasChecked) {
-      setLoading(false);
-      return;
-    }
-
-    // Get ENS name, CNS names, etc.
-    await configureProvider();
-
-    // Add wallet name to localStorage
-    const walletName = onboard.value?.getState().wallet.name;
-    if (walletName) setLastWallet(walletName);
   }
 
   async function configureProvider() {
