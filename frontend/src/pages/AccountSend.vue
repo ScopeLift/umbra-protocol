@@ -1,6 +1,12 @@
 <template>
-  <q-page v-if="isMaintenanceMode" padding class="text-center q-mt-xl">
-    Sending via Umbra has been temporarily disabled while we perform system maintenance. Please check back soon!
+  <q-page v-if="isMaintenanceMode" padding>
+    <div
+      class="dark-toggle form-max-wide text-center text-bold q-pa-md"
+      style="border-radius: 15px"
+      :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
+    >
+      Sending via Umbra has been temporarily disabled while we perform system maintenance. Please check back soon!
+    </div>
   </q-page>
 
   <q-page v-else padding>
