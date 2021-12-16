@@ -172,94 +172,98 @@ export default function useWalletStore() {
   }
 
   async function configureProvider() {
-    setLoading(true);
+    try {
+      resetState();
+      setLoading(true);
 
-    // Set network/wallet properties
-    if (!rawProvider.value) {
-      setLoading(false);
-      return;
-    }
+      // Set network/wallet properties
+      if (!rawProvider.value) {
+        setLoading(false);
+        return;
+      }
 
-    provider.value = new Web3Provider(rawProvider.value, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
-    signer.value = provider.value.getSigner();
+      provider.value = new Web3Provider(rawProvider.value, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
+      signer.value = provider.value.getSigner();
 
-    // Get user and network information
-    const [_userAddress, _network, _relayer] = await Promise.all([
-      signer.value.getAddress(), // get user's address
-      provider.value.getNetwork(), // get information on the connected network
-      ITXRelayer.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
-    ]);
+      // Get user and network information
+      const [_userAddress, _network, _relayer] = await Promise.all([
+        signer.value.getAddress(), // get user's address
+        provider.value.getNetwork(), // get information on the connected network
+        ITXRelayer.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
+      ]);
 
-    // If nothing has changed, no need to continue configuring
-    if (_userAddress === userAddress.value && _network.chainId === network.value?.chainId) {
-      setLoading(false);
-      return;
-    }
+      // If nothing has changed, no need to continue configuring
+      if (_userAddress === userAddress.value && _network.chainId === network.value?.chainId) {
+        setLoading(false);
+        return;
+      }
 
-    // Clear state
-    resetState();
+      // Exit if not a valid network
+      const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
+      if (!supportedChainIds.includes(_network.chainId)) {
+        network.value = _network;
+        setLoading(false);
+        return;
+      }
 
-    // Exit if not a valid network
-    const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
-    if (!supportedChainIds.includes(_network.chainId)) {
+      // Set Umbra and StealthKeyRegistry classes
+      umbra.value = new Umbra(provider.value, chainId);
+      stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
+
+      // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
+      // When using Argent, a user's funds are secured by the contract wallet, not by a private key. As a result:
+      //   1. We inform the user that the security of their Umbra funds is not protected by the standard Argent
+      //      security model
+      //   2. If a user recovers their Argent wallet (e.g. migrates wallet to a new phone) they will have a new
+      //      private key and be unable to access non-withdrawn Umbra funds unless they have the old device. Therefore
+      //      we also let a user know about this
+      //   3. As a consequence of 2, we require Argent user's to sign a message each time they visit the Umbra app.
+      //      If the public keys generated do not match what's in the registry, we ask them to update their keys in
+      //      the registry and notify them about funds that may be stuck if the user no longer has the old key
+      const argentDetector = {
+        // https://docs.argent.xyz/wallet-connect-and-argent#wallet-detection
+        address: chainId === 1 ? '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8' : '0xF230cF8980BaDA094720C01308319eF192F0F311', // prettier-ignore
+        abi: ['function isArgentWallet(address) external view returns (bool)'],
+      };
+      const detector = new Contract(argentDetector.address, argentDetector.abi, provider.value);
+
+      // Get ENS name, CNS name, and check if user has registered their stealth keys
+      const [_userEns, _userCns, _isAccountSetup, _isArgent] = await Promise.all([
+        lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
+        lookupCnsName(_userAddress),
+        hasRegisteredStealthKeys(_userAddress, provider.value),
+        [1, 3].includes(chainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
+      ]);
+
+      // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
+      const [_hasEnsKeys, _hasCnsKeys] = _isAccountSetup
+        ? [false, false]
+        : await Promise.all([
+            Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, provider.value)),
+            Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, provider.value)),
+          ]);
+
+      // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
+      // parameters, and we want to ensure this method completed successfully before updating the UI
+      relayer.value = _relayer;
+      userAddress.value = _userAddress;
+      userEns.value = _userEns;
+      userCns.value = _userCns;
       network.value = _network;
+      hasEnsKeys.value = _hasEnsKeys; // LEGACY
+      hasCnsKeys.value = _hasCnsKeys; // LEGACY
+      isAccountSetup.value = _isAccountSetup;
+      isArgent.value = _isArgent;
+
+      // Get token balances in the background. User may not be sending funds so we don't await this
+      void getTokenBalances();
+
       setLoading(false);
-      return;
+    } catch (e) {
+      resetState();
+      setLoading(false);
+      throw e;
     }
-
-    // Set Umbra and StealthKeyRegistry classes
-    umbra.value = new Umbra(provider.value, chainId);
-    stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
-
-    // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
-    // When using Argent, a user's funds are secured by the contract wallet, not by a private key. As a result:
-    //   1. We inform the user that the security of their Umbra funds is not protected by the standard Argent
-    //      security model
-    //   2. If a user recovers their Argent wallet (e.g. migrates wallet to a new phone) they will have a new
-    //      private key and be unable to access non-withdrawn Umbra funds unless they have the old device. Therefore
-    //      we also let a user know about this
-    //   3. As a consequence of 2, we require Argent user's to sign a message each time they visit the Umbra app.
-    //      If the public keys generated do not match what's in the registry, we ask them to update their keys in
-    //      the registry and notify them about funds that may be stuck if the user no longer has the old key
-    const argentDetector = {
-      // https://docs.argent.xyz/wallet-connect-and-argent#wallet-detection
-      address: chainId === 1 ? '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8' : '0xF230cF8980BaDA094720C01308319eF192F0F311', // prettier-ignore
-      abi: ['function isArgentWallet(address) external view returns (bool)'],
-    };
-    const detector = new Contract(argentDetector.address, argentDetector.abi, provider.value);
-
-    // Get ENS name, CNS name, and check if user has registered their stealth keys
-    const [_userEns, _userCns, _isAccountSetup, _isArgent] = await Promise.all([
-      lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
-      lookupCnsName(_userAddress),
-      hasRegisteredStealthKeys(_userAddress, provider.value),
-      [1, 3].includes(chainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
-    ]);
-
-    // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
-    const [_hasEnsKeys, _hasCnsKeys] = _isAccountSetup
-      ? [false, false]
-      : await Promise.all([
-          Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, provider.value)),
-          Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, provider.value)),
-        ]);
-
-    // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
-    // parameters, and we want to ensure this method completed successfully before updating the UI
-    relayer.value = _relayer;
-    userAddress.value = _userAddress;
-    userEns.value = _userEns;
-    userCns.value = _userCns;
-    network.value = _network;
-    hasEnsKeys.value = _hasEnsKeys; // LEGACY
-    hasCnsKeys.value = _hasCnsKeys; // LEGACY
-    isAccountSetup.value = _isAccountSetup;
-    isArgent.value = _isArgent;
-
-    // Get token balances in the background. User may not be sending funds so we don't await this
-    void getTokenBalances();
-
-    setLoading(false);
   }
 
   /**
