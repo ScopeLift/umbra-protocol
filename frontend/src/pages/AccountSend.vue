@@ -1,5 +1,9 @@
 <template>
-  <q-page padding>
+  <q-page v-if="isMaintenanceMode" padding class="text-center q-mt-xl">
+    Sending via Umbra has been temporarily disabled while we perform system maintenance. Please check back soon!
+  </q-page>
+
+  <q-page v-else padding>
     <h2 class="page-title">Send</h2>
 
     <!-- User has not connected wallet  -->
@@ -395,7 +399,8 @@ export default defineComponent({
   name: 'PageSend',
   components: { BaseTooltip, ConnectWallet },
   setup() {
-    return { generatePaymentLink, ...useSendForm() };
+    const isMaintenanceMode = Number(process.env.MAINTENANCE_MODE_SEND) === 1;
+    return { generatePaymentLink, ...useSendForm(), isMaintenanceMode };
   },
 });
 </script>
