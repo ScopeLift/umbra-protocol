@@ -146,10 +146,10 @@ function useScan() {
       // we log them as strings for easy comparison against Etherscan
       const { prefix: spendingPrefix, pubKeyXCoordinate: spendingPubKeyX } = KeyPair.compressPublicKey(String(spendingKeyPair.value?.publicKeyHex)); // prettier-ignore
       const { prefix: viewingPrefix, pubKeyXCoordinate: viewingPubKeyX } = KeyPair.compressPublicKey(String(viewingKeyPair.value?.publicKeyHex)); // prettier-ignore
-      console.log('spendingPrefix : ', spendingPrefix);
-      console.log('spendingPubKeyX: ', BigNumber.from(spendingPubKeyX).toString());
-      console.log('viewingPrefix:   ', viewingPrefix);
-      console.log('viewingPubKeyX:  ', BigNumber.from(viewingPubKeyX).toString());
+      window.logger.debug('spendingPrefix : ', spendingPrefix);
+      window.logger.debug('spendingPubKeyX: ', BigNumber.from(spendingPubKeyX).toString());
+      window.logger.debug('viewingPrefix:   ', viewingPrefix);
+      window.logger.debug('viewingPubKeyX:  ', BigNumber.from(viewingPubKeyX).toString());
 
       // if unsuccessful, user denied signature or an error was thrown
       if (!success) return;
