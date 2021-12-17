@@ -38,7 +38,8 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
       >
-        You won't be able to receive funds until you've configured Umbra.<br />Please navigate to the
+        You won't be able to receive funds {{ advancedMode ? '(unless the sender uses advanced mode)' : '' }} until you've
+        configured Umbra.<br />Please navigate to the
         <router-link class="hyperlink" :to="{ name: 'setup' }">Setup</router-link> page and do so
       </div>
       <div
