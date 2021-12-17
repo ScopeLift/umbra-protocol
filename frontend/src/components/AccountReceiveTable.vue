@@ -32,6 +32,16 @@
 
     <!-- Received funds table -->
     <div v-else>
+      <div
+        v-if="!isAccountSetup"
+        class="dark-toggle text-center text-bold q-pa-md q-mb-lg"
+        style="border-radius: 15px"
+        :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
+      >
+        You won't be able to receive funds until you've configured Umbra.<br>Please navigate to the
+        <router-link class="hyperlink" :to="{ name: 'setup' }">Setup</router-link> page and do so
+      </div>
+
       <div v-if="advancedMode" class="text-caption q-mb-sm">
         <!-- This scanDescriptionString describes scan settings that were used -->
         {{ scanDescriptionString }}.
@@ -572,10 +582,10 @@ export default defineComponent({
   },
 
   setup(props, context) {
-    const { advancedMode, scanPrivateKey } = useSettingsStore();
+    const { advancedMode, isDark, scanPrivateKey } = useSettingsStore();
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
-    const { keysMatch, spendingKeyPair: spendingKeyPairFromSig } = useWalletStore();
+    const { isAccountSetup, keysMatch, spendingKeyPair: spendingKeyPairFromSig } = useWalletStore();
     const spendingKeyPair = computed(() => {
       if (advancedMode.value && scanPrivateKey.value) return new KeyPair(scanPrivateKey.value);
       return spendingKeyPairFromSig.value as KeyPair;
@@ -588,6 +598,8 @@ export default defineComponent({
       advancedMode,
       context,
       receiverTooltipText,
+      isAccountSetup,
+      isDark,
       keysMatch,
       ...useAdvancedFeatures(spendingKeyPair.value),
       ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
