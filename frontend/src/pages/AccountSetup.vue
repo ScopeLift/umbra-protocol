@@ -12,7 +12,11 @@
       </div>
     </div>
 
-    <div v-else-if="!isSetupComplete && (!isAccountSetup || keysMatch === false)" class="form-max-wide shadow-2" :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'">
+    <div
+      v-else-if="!isSetupComplete && (!isAccountSetup || keysMatch === false)"
+      class="form-max-wide shadow-2"
+      :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'"
+    >
       <h5 class="q-my-md q-pt-none">Generate and Publish Stealth Keys</h5>
       <div class="q-mt-md">
         Use the button below to complete the setup process. This will result in two prompts from your wallet:
@@ -104,7 +108,7 @@ function useKeys() {
     }
   }
 
-  return { isAccountSetup,isSetupComplete, isLoading, keysMatch, setupAccount, userAddress };
+  return { isAccountSetup, isSetupComplete, isLoading, keysMatch, setupAccount, userAddress };
 }
 
 export default defineComponent({
