@@ -43,6 +43,7 @@ const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS
 const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
 const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instafnce
 const isArgent = ref<boolean>(false); // true if user connected an argent wallet
+const stealthKeys = ref<{ spendingPublicKey: string; viewingPublicKey: string } | null>();
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -234,12 +235,13 @@ export default function useWalletStore() {
       const detector = new Contract(argentDetector.address, argentDetector.abi, provider.value);
 
       // Get ENS name, CNS name, and check if user has registered their stealth keys
-      const [_userEns, _userCns, _isAccountSetup, _isArgent] = await Promise.all([
+      const [_userEns, _userCns, _stealthKeys, _isArgent] = await Promise.all([
         lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
         lookupCnsName(_userAddress),
-        hasRegisteredStealthKeys(_userAddress, provider.value),
+        getRegisteredStealthKeys(_userAddress, provider.value),
         [1, 3].includes(chainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
       ]);
+      const _isAccountSetup = _stealthKeys !== null;
 
       // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
       const [_hasEnsKeys, _hasCnsKeys] = _isAccountSetup
@@ -260,6 +262,7 @@ export default function useWalletStore() {
       hasCnsKeys.value = _hasCnsKeys; // LEGACY
       isAccountSetup.value = _isAccountSetup;
       isArgent.value = _isArgent;
+      stealthKeys.value = _isAccountSetup ? _stealthKeys : null;
 
       // Get token balances in the background. User may not be sending funds so we don't await this
       void getTokenBalances();
@@ -371,6 +374,27 @@ export default function useWalletStore() {
     return userAddress.value ? formatAddress(userAddress.value) : undefined;
   });
 
+  const keysMatch = computed(() => {
+    if (stealthKeys.value && spendingKeyPair.value && viewingKeyPair.value) {
+      if (
+        stealthKeys.value.spendingPublicKey !== spendingKeyPair.value.publicKeyHex ||
+        stealthKeys.value.viewingPublicKey !== viewingKeyPair.value.publicKeyHex
+      ) {
+        window.logger.warn('KEYS DO NOT MATCH:');
+        window.logger.warn('spendingPublicKey (found):    ', stealthKeys.value.spendingPublicKey);
+        window.logger.warn('spendingPublicKey (expected): ', spendingKeyPair.value.publicKeyHex);
+        window.logger.warn('viewingPublicKey (found):     ', stealthKeys.value.viewingPublicKey);
+        window.logger.warn('viewingPublicKey (expected):  ', viewingKeyPair.value.publicKeyHex);
+        return false;
+      }
+      // Things matched, so just log them for debugging purposes
+      window.logger.debug('stealthKeys.value.spendingPublicKey: ', stealthKeys.value.spendingPublicKey);
+      window.logger.debug('stealthKeys.value.viewingPublicKey:  ', stealthKeys.value.viewingPublicKey);
+      return true;
+    }
+    return null;
+  });
+
   // ------------------------------------- Exposed parameters --------------------------------------
   // Define computed properties and parts of store that should be exposed. Everything exposed is a
   // computed property to facilitate reactivity and avoid accidental state mutations
@@ -403,6 +427,7 @@ export default function useWalletStore() {
     // "True" computed properties, i.e. derived from this module's state
     currentChain,
     isSupportedNetwork: computed(() => isSupportedNetwork.value),
+    keysMatch,
     NATIVE_TOKEN: computed(() => NATIVE_TOKEN.value),
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
@@ -415,18 +440,18 @@ const hasSetPublicKeysLegacy = async (name: string, provider: Provider) => {
     await utils.getPublicKeysLegacy(name, provider);
     return true;
   } catch (err) {
-    console.warn(err);
+    window.logger.warn(err);
     return false;
   }
 };
 
 // Helper method to check if user has registered public keys in the StealthKeyRegistry
-async function hasRegisteredStealthKeys(account: string, provider: Provider) {
+async function getRegisteredStealthKeys(account: string, provider: Provider) {
   try {
-    await utils.lookupRecipient(account, provider); // throws if no keys found
-    return true;
+    const stealthPubKeys = await utils.lookupRecipient(account, provider); // throws if no keys found
+    return stealthPubKeys;
   } catch (err) {
-    console.warn(err);
-    return false;
+    window.logger.warn(err);
+    return null;
   }
 }

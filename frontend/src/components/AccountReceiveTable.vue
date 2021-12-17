@@ -260,6 +260,9 @@
           </q-tr>
         </template>
       </q-table>
+      <div v-if="keysMatch" class="text-caption text-right q-mt-md" style="opacity: 0.5">
+        <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> Scanning completed successfully
+      </div>
     </div>
   </div>
 </template>
@@ -572,7 +575,7 @@ export default defineComponent({
     const { advancedMode, scanPrivateKey } = useSettingsStore();
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
-    const { spendingKeyPair: spendingKeyPairFromSig } = useWalletStore();
+    const { keysMatch, spendingKeyPair: spendingKeyPairFromSig } = useWalletStore();
     const spendingKeyPair = computed(() => {
       if (advancedMode.value && scanPrivateKey.value) return new KeyPair(scanPrivateKey.value);
       return spendingKeyPairFromSig.value as KeyPair;
@@ -585,6 +588,7 @@ export default defineComponent({
       advancedMode,
       context,
       receiverTooltipText,
+      keysMatch,
       ...useAdvancedFeatures(spendingKeyPair.value),
       ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
     };
