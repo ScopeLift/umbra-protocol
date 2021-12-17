@@ -38,8 +38,8 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
       >
-        You won't be able to receive funds {{ advancedMode ? '(unless the sender uses advanced mode)' : '' }} until you've
-        configured Umbra.<br />Please navigate to the
+        You won't be able to receive funds {{ advancedMode ? '(unless the sender uses advanced mode)' : '' }} until
+        you've configured Umbra.<br />Please navigate to the
         <router-link class="hyperlink" :to="{ name: 'setup' }">Setup</router-link> page and do so
       </div>
       <div
@@ -283,7 +283,11 @@
           </q-tr>
         </template>
       </q-table>
-      <div v-if="keysMatch" class="text-caption text-right q-mt-md" style="opacity: 0.5">
+      <div
+        v-if="keysMatch || (advancedMode && isCustomPrivateKey)"
+        class="text-caption text-right q-mt-md"
+        style="opacity: 0.5"
+      >
         <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> Scanning completed successfully
       </div>
     </div>
@@ -613,6 +617,7 @@ export default defineComponent({
       receiverTooltipText,
       isAccountSetup,
       isDark,
+      isCustomPrivateKey: scanPrivateKey.value?.length,
       keysMatch,
       ...useAdvancedFeatures(spendingKeyPair.value),
       ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
