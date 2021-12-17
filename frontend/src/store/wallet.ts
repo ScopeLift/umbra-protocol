@@ -345,6 +345,14 @@ export default function useWalletStore() {
     isAccountSetup.value = status;
   }
 
+  // Call this after a user completes account setup to ensure keysMatch is true
+  function syncStealthKeys() {
+    stealthKeys.value = {
+      spendingPublicKey: <string>spendingKeyPair.value?.publicKeyHex,
+      viewingPublicKey: <string>viewingKeyPair.value?.publicKeyHex,
+    };
+  }
+
   // ------------------------------------- Computed parameters -------------------------------------
   // "True" computed properties, i.e. derived from this module's state
 
@@ -400,6 +408,7 @@ export default function useWalletStore() {
   // computed property to facilitate reactivity and avoid accidental state mutations
   return {
     // Methods
+    configureProvider,
     connectWallet,
     getPrivateKeys,
     getTokenBalances,
@@ -408,6 +417,7 @@ export default function useWalletStore() {
     setNetwork,
     setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status), // LEGACY
     setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status), // LEGACY
+    syncStealthKeys,
     // "Direct" properties, i.e. return them directly without modification
     balances: computed(() => balances.value),
     stealthKeyRegistry: computed(() => stealthKeyRegistry.value),

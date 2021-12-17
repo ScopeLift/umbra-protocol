@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div v-else-if="!isAccountSetup" class="form-max-wide shadow-2" :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'">
+    <div v-else-if="!isSetupComplete && (!isAccountSetup || keysMatch === false)" class="form-max-wide shadow-2" :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'">
       <h5 class="q-my-md q-pt-none">Generate and Publish Stealth Keys</h5>
       <div class="q-mt-md">
         Use the button below to complete the setup process. This will result in two prompts from your wallet:
@@ -55,8 +55,20 @@ import useWalletStore from 'src/store/wallet';
 import { txNotify } from 'src/utils/alerts';
 
 function useKeys() {
-  const { getPrivateKeys, isAccountSetup, setIsAccountSetup, signer, spendingKeyPair, stealthKeyRegistry, userAddress, viewingKeyPair } = useWalletStore(); // prettier-ignore
+  const {
+    getPrivateKeys,
+    isAccountSetup,
+    keysMatch,
+    setIsAccountSetup,
+    syncStealthKeys,
+    signer,
+    spendingKeyPair,
+    stealthKeyRegistry,
+    userAddress,
+    viewingKeyPair,
+  } = useWalletStore();
   const isLoading = ref(false);
+  const isSetupComplete = ref(false);
 
   async function setupAccount() {
     try {
@@ -83,6 +95,8 @@ function useKeys() {
       void txNotify(tx.hash, signer.value?.provider as Provider);
       await tx.wait();
       setIsAccountSetup(true);
+      syncStealthKeys(); // update store with new keys
+      isSetupComplete.value = true;
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
@@ -90,7 +104,7 @@ function useKeys() {
     }
   }
 
-  return { isAccountSetup, isLoading, setupAccount, userAddress };
+  return { isAccountSetup,isSetupComplete, isLoading, keysMatch, setupAccount, userAddress };
 }
 
 export default defineComponent({
