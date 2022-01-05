@@ -290,12 +290,12 @@ function useSendForm() {
     const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
     // Polygon
     if (chainId === 137) {
-      if (isNativeToken(tokenAddress)) return 0.5;
-      else return 1; // 1 stablecoin token minimum
+      if (isNativeToken(tokenAddress)) return 1.0;
+      else return 3; // stablecoin token minimum
     }
-    // Mainnet, Rinkeby, and other networks have 0.01 ETH and 50 stable-token minimums due to higher fees
+    // Mainnet, Rinkeby, and other networks have higher ETH and stablecoin minimums due to higher fees
     if (isNativeToken(tokenAddress)) return 0.01;
-    else return 50; // 50 stablecoin token minimum
+    else return 100; // stablecoin token minimum
   };
 
   function isValidTokenAmount(val: string | undefined) {
