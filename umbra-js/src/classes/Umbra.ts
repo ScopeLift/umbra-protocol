@@ -41,7 +41,7 @@ const subgraphs = {
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
-  4: { chainId: 4, umbraAddress, startBlock: 8505089, subgraphUrl: subgraphs[4] }, // Rinkeby
+  4: { chainId: 4, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Rinkeby Graph disabled due to outage/issues
   137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
 };
