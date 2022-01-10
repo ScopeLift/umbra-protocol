@@ -121,7 +121,8 @@ describe('Umbra class', () => {
       const umbra3 = new Umbra(jsonRpcProvider, 4);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       expect(umbra3.chainConfig.startBlock).to.equal(8505089);
-      expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby');
+      //expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby');
+      expect(umbra3.chainConfig.subgraphUrl).to.equal(false);
 
       // --- Mainnet ---
       const umbra4 = new Umbra(jsonRpcProvider, 1);
