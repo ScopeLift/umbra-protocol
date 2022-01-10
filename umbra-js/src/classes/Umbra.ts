@@ -26,7 +26,7 @@ import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import { ERC20_ABI } from '../utils/constants';
-import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement } from '../types'; // prettier-ignore
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
@@ -295,6 +295,100 @@ export class Umbra {
    */
   async relayWithdrawOnBehalf() {
     // TODO
+  }
+
+  async fetchAllAnnouncements(overrides: ScanOverrides = {}): Promise<AnnouncementDetail[]> {
+    // Get start and end blocks to scan events for
+    const startBlock = overrides.startBlock || this.chainConfig.startBlock;
+    const endBlock = overrides.endBlock || 'latest';
+
+    // Try querying events using the Graph, fallback to querying logs.
+    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
+    // that window is defined first to avoid trying to use fetch in node environments
+    if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
+      try {
+        // Map the subgraph amount field from string to BigNumber
+        const subgraphAnnouncements = await this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock);
+        return subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+      } catch (err) {
+        return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+      }
+    }
+
+    return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+  }
+
+  async fetchAllAnnouncementsFromSubgraph(
+    startBlock: string | number,
+    endBlock: string | number
+  ): Promise<SubgraphAnnouncement[]> {
+    if (!this.chainConfig.subgraphUrl) {
+      throw new Error('Subgraph URL must be defined to fetch via subgraph');
+    }
+
+    // TODO: We're ignoring these overrides for The Graph. Is this intentional?
+    startBlock;
+    endBlock;
+
+    // Query subgraph
+    const subgraphAnnouncements: SubgraphAnnouncement[] = await recursiveGraphFetch(
+      this.chainConfig.subgraphUrl,
+      'announcementEntities',
+      (filter: string) => `{
+        announcementEntities(${filter}) {
+          amount
+          block
+          ciphertext
+          from
+          id
+          pkx
+          receiver
+          timestamp
+          token
+          txHash
+        }
+      }`
+    );
+
+    return subgraphAnnouncements;
+  }
+
+  async fetchAllAnnouncementFromLogs(
+    startBlock: string | number,
+    endBlock: string | number
+  ): Promise<AnnouncementDetail[]> {
+    // Graph query failed, try requesting logs directly IF we are not on polygon. If we are on
+    // Polygon, there isn't much we can do, so for now just show a warning and return an empty array
+    if (this.chainConfig.chainId === 137) {
+      throw new Error('Cannot fetch Announcements from logs on Polygon, please try again later');
+    }
+
+    // Get list of all Announcement events
+    const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
+    const announcementEvents = await this.umbraContract.queryFilter(announcementFilter, startBlock, endBlock);
+
+    const announcements = await Promise.all(
+      announcementEvents.map(async (event) => {
+        // Extract out event parameters
+        const announcement = (event.args as unknown) as Announcement;
+        const { receiver, amount, token, ciphertext, pkx } = announcement;
+
+        const [block, tx] = await Promise.all([event.getBlock(), event.getTransaction()]);
+        return {
+          amount,
+          block: block.number.toString(),
+          ciphertext,
+          from: tx.from,
+          receiver,
+          pkx,
+          timestamp: String(block.timestamp),
+          token: getAddress(token),
+          txHash: event.transactionHash,
+        };
+      })
+    );
+
+    return announcements;
   }
 
   /**

@@ -178,8 +178,13 @@ function useScan() {
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
-    const { userAnnouncements: announcements } = await umbra.value.scan(spendingPubKey, viewingPrivKey, overrides);
-    userAnnouncements.value = announcements;
+    const allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+    console.log(allAnnouncements);
+
+    //const { userAnnouncements: announcements } = await umbra.value.scan(spendingPubKey, viewingPrivKey, overrides);
+    //userAnnouncements.value = announcements;
+
+    userAnnouncements.value = [];
     scanStatus.value = 'complete';
   }
 

@@ -55,6 +55,19 @@ export interface Announcement {
   token: string;
 }
 
+// Type definition for Announcement event with extra data from the chain
+export interface AnnouncementDetail {
+  amount: BigNumber;
+  ciphertext: string;
+  pkx: string;
+  receiver: string;
+  token: string;
+  block: string;
+  from: string;
+  timestamp: string;
+  txHash: string;
+}
+
 // Modified announcement data received from subgraph queries
 export interface SubgraphAnnouncement {
   amount: string;
