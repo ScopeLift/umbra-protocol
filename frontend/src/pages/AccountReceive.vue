@@ -80,8 +80,8 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { UserAnnouncement, KeyPair } from '@umbra/umbra-js';
-import { BigNumber, isHexString } from 'src/utils/ethers';
+import { UserAnnouncement, Umbra, KeyPair } from '@umbra/umbra-js';
+import { BigNumber, isHexString, getAddress } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
 import useWallet from 'src/store/wallet';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';
@@ -179,12 +179,18 @@ function useScan() {
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     const allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
-    console.log(allAnnouncements);
 
-    //const { userAnnouncements: announcements } = await umbra.value.scan(spendingPubKey, viewingPrivKey, overrides);
-    //userAnnouncements.value = announcements;
+    // TODO: This is what we need to move to the webworker
+    const filteredAnnouncements = allAnnouncements.reduce((userAnns, ann) => {
+      const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
+      const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPubKey, viewingPrivKey, ann);
+      const token = getAddress(tokenAddr); // ensure checksummed address
+      const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
+      if (isForUser) userAnns.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
+      return userAnns;
+    }, [] as UserAnnouncement[]);
 
-    userAnnouncements.value = [];
+    userAnnouncements.value = filteredAnnouncements;
     scanStatus.value = 'complete';
   }
 

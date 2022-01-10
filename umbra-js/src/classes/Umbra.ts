@@ -433,7 +433,7 @@ export class Umbra {
         const announcements = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
         const userAnnouncements = announcements.reduce((userAnns, ann) => {
           const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
-          const { isForUser, randomNumber } = isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
+          const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
           const token = getAddress(tokenAddr); // ensure checksummed address
           const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
           if (isForUser) userAnns.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
@@ -488,7 +488,11 @@ export class Umbra {
         // Extract out event parameters
         const announcement = (event.args as unknown) as Announcement;
         const { receiver, amount, token } = announcement;
-        const { isForUser, randomNumber } = isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, announcement);
+        const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(
+          spendingPublicKey,
+          viewingPrivateKey,
+          announcement
+        );
 
         // If  receiving address matches event's recipient, the transfer was for the user. Otherwise it wasn't,
         // so return null and filter later
@@ -508,6 +512,37 @@ export class Umbra {
     );
 
     return userAnnouncements.filter((ann) => ann !== null) as UserAnnouncement[];
+  }
+
+  /**
+   * @notice If the provided announcement is for the user with the specified keys, return true and the decoded
+   * random number
+   * @param spendingPublicKey Receiver's spending private key
+   * @param viewingPrivateKey Receiver's viewing public key
+   * @param announcement Parameters emitted in the announcement event
+   */
+  static isAnnouncementForUser(spendingPublicKey: string, viewingPrivateKey: string, announcement: Announcement) {
+    try {
+      // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
+      const { receiver, pkx, ciphertext } = announcement;
+      const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
+
+      // Decrypt to get random number
+      const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
+      const viewingKeyPair = new KeyPair(viewingPrivateKey);
+      const randomNumber = viewingKeyPair.decrypt(payload);
+
+      // Get what our receiving address would be with this random number
+      const spendingKeyPair = new KeyPair(spendingPublicKey);
+      const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
+
+      // If our receiving address matches the event's recipient, the transfer was for the user with the specified keys
+      return { isForUser: computedReceivingAddress === getAddress(receiver), randomNumber };
+    } catch (err) {
+      // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
+      // fail when uncompressing. For now we just silently ignore these and return false
+      return { isForUser: false, randomNumber: '' };
+    }
   }
 
   /**
@@ -673,35 +708,4 @@ async function recursiveGraphFetch(
   // If there were results on this page then query the next page, otherwise return the data
   if (!json.data[key].length) return [...before];
   else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]]);
-}
-
-/**
- * @notice If the provided announcement is for the user with the specified keys, return true and the decoded
- * random number
- * @param spendingPublicKey Receiver's spending private key
- * @param viewingPrivateKey Receiver's viewing public key
- * @param announcement Parameters emitted in the announcement event
- */
-function isAnnouncementForUser(spendingPublicKey: string, viewingPrivateKey: string, announcement: Announcement) {
-  try {
-    // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
-    const { receiver, pkx, ciphertext } = announcement;
-    const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
-
-    // Decrypt to get random number
-    const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
-    const viewingKeyPair = new KeyPair(viewingPrivateKey);
-    const randomNumber = viewingKeyPair.decrypt(payload);
-
-    // Get what our receiving address would be with this random number
-    const spendingKeyPair = new KeyPair(spendingPublicKey);
-    const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
-
-    // If our receiving address matches the event's recipient, the transfer was for the user with the specified keys
-    return { isForUser: computedReceivingAddress === getAddress(receiver), randomNumber };
-  } catch (err) {
-    // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
-    // fail when uncompressing. For now we just silently ignore these and return false
-    return { isForUser: false, randomNumber: '' };
-  }
 }
