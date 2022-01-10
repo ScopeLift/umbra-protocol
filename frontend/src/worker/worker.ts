@@ -1,5 +1,5 @@
 import { AnnouncementDetail, UserAnnouncement, Umbra } from '@umbra/umbra-js';
-import { getAddress } from 'src/utils/ethers';
+import { getAddress } from '@ethersproject/address';
 
 export const filterUserAnnouncements = (
   spendingPublicKey: string,
