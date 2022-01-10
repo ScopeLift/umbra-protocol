@@ -63,6 +63,10 @@
       <div v-else-if="scanStatus === 'scanning'" class="text-center">
         <loading-spinner />
         <div class="text-center text-italic">Scanning for funds...</div>
+        <div class="text-center text-italic q-mt-lg">
+          This may take a minute or two and your browser may seem frozen during that time, but this is
+          normal&mdash;please be patient
+        </div>
       </div>
 
       <!-- Scanning complete -->
