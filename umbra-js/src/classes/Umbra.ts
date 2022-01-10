@@ -26,7 +26,7 @@ import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import { ERC20_ABI } from '../utils/constants';
-import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement } from '../types'; // prettier-ignore
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
@@ -297,6 +297,100 @@ export class Umbra {
     // TODO
   }
 
+  async fetchAllAnnouncements(overrides: ScanOverrides = {}): Promise<AnnouncementDetail[]> {
+    // Get start and end blocks to scan events for
+    const startBlock = overrides.startBlock || this.chainConfig.startBlock;
+    const endBlock = overrides.endBlock || 'latest';
+
+    // Try querying events using the Graph, fallback to querying logs.
+    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
+    // that window is defined first to avoid trying to use fetch in node environments
+    if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
+      try {
+        // Map the subgraph amount field from string to BigNumber
+        const subgraphAnnouncements = await this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock);
+        return subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+      } catch (err) {
+        return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+      }
+    }
+
+    return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+  }
+
+  async fetchAllAnnouncementsFromSubgraph(
+    startBlock: string | number,
+    endBlock: string | number
+  ): Promise<SubgraphAnnouncement[]> {
+    if (!this.chainConfig.subgraphUrl) {
+      throw new Error('Subgraph URL must be defined to fetch via subgraph');
+    }
+
+    // TODO: We're ignoring these overrides for The Graph. Is this intentional?
+    startBlock;
+    endBlock;
+
+    // Query subgraph
+    const subgraphAnnouncements: SubgraphAnnouncement[] = await recursiveGraphFetch(
+      this.chainConfig.subgraphUrl,
+      'announcementEntities',
+      (filter: string) => `{
+        announcementEntities(${filter}) {
+          amount
+          block
+          ciphertext
+          from
+          id
+          pkx
+          receiver
+          timestamp
+          token
+          txHash
+        }
+      }`
+    );
+
+    return subgraphAnnouncements;
+  }
+
+  async fetchAllAnnouncementFromLogs(
+    startBlock: string | number,
+    endBlock: string | number
+  ): Promise<AnnouncementDetail[]> {
+    // Graph query failed, try requesting logs directly IF we are not on polygon. If we are on
+    // Polygon, there isn't much we can do, so for now just show a warning and return an empty array
+    if (this.chainConfig.chainId === 137) {
+      throw new Error('Cannot fetch Announcements from logs on Polygon, please try again later');
+    }
+
+    // Get list of all Announcement events
+    const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
+    const announcementEvents = await this.umbraContract.queryFilter(announcementFilter, startBlock, endBlock);
+
+    const announcements = await Promise.all(
+      announcementEvents.map(async (event) => {
+        // Extract out event parameters
+        const announcement = (event.args as unknown) as Announcement;
+        const { receiver, amount, token, ciphertext, pkx } = announcement;
+
+        const [block, tx] = await Promise.all([event.getBlock(), event.getTransaction()]);
+        return {
+          amount,
+          block: block.number.toString(),
+          ciphertext,
+          from: tx.from,
+          receiver,
+          pkx,
+          timestamp: String(block.timestamp),
+          token: getAddress(token),
+          txHash: event.transactionHash,
+        };
+      })
+    );
+
+    return announcements;
+  }
+
   /**
    * @notice Scans Umbra event logs for funds sent to the specified address
    * @param spendingPublicKey Receiver's spending private key
@@ -339,7 +433,7 @@ export class Umbra {
         const announcements = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
         const userAnnouncements = announcements.reduce((userAnns, ann) => {
           const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
-          const { isForUser, randomNumber } = isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
+          const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
           const token = getAddress(tokenAddr); // ensure checksummed address
           const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
           if (isForUser) userAnns.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
@@ -394,7 +488,11 @@ export class Umbra {
         // Extract out event parameters
         const announcement = (event.args as unknown) as Announcement;
         const { receiver, amount, token } = announcement;
-        const { isForUser, randomNumber } = isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, announcement);
+        const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(
+          spendingPublicKey,
+          viewingPrivateKey,
+          announcement
+        );
 
         // If  receiving address matches event's recipient, the transfer was for the user. Otherwise it wasn't,
         // so return null and filter later
@@ -414,6 +512,37 @@ export class Umbra {
     );
 
     return userAnnouncements.filter((ann) => ann !== null) as UserAnnouncement[];
+  }
+
+  /**
+   * @notice If the provided announcement is for the user with the specified keys, return true and the decoded
+   * random number
+   * @param spendingPublicKey Receiver's spending private key
+   * @param viewingPrivateKey Receiver's viewing public key
+   * @param announcement Parameters emitted in the announcement event
+   */
+  static isAnnouncementForUser(spendingPublicKey: string, viewingPrivateKey: string, announcement: Announcement) {
+    try {
+      // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
+      const { receiver, pkx, ciphertext } = announcement;
+      const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
+
+      // Decrypt to get random number
+      const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
+      const viewingKeyPair = new KeyPair(viewingPrivateKey);
+      const randomNumber = viewingKeyPair.decrypt(payload);
+
+      // Get what our receiving address would be with this random number
+      const spendingKeyPair = new KeyPair(spendingPublicKey);
+      const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
+
+      // If our receiving address matches the event's recipient, the transfer was for the user with the specified keys
+      return { isForUser: computedReceivingAddress === getAddress(receiver), randomNumber };
+    } catch (err) {
+      // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
+      // fail when uncompressing. For now we just silently ignore these and return false
+      return { isForUser: false, randomNumber: '' };
+    }
   }
 
   /**
@@ -579,35 +708,4 @@ async function recursiveGraphFetch(
   // If there were results on this page then query the next page, otherwise return the data
   if (!json.data[key].length) return [...before];
   else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]]);
-}
-
-/**
- * @notice If the provided announcement is for the user with the specified keys, return true and the decoded
- * random number
- * @param spendingPublicKey Receiver's spending private key
- * @param viewingPrivateKey Receiver's viewing public key
- * @param announcement Parameters emitted in the announcement event
- */
-function isAnnouncementForUser(spendingPublicKey: string, viewingPrivateKey: string, announcement: Announcement) {
-  try {
-    // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
-    const { receiver, pkx, ciphertext } = announcement;
-    const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
-
-    // Decrypt to get random number
-    const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
-    const viewingKeyPair = new KeyPair(viewingPrivateKey);
-    const randomNumber = viewingKeyPair.decrypt(payload);
-
-    // Get what our receiving address would be with this random number
-    const spendingKeyPair = new KeyPair(spendingPublicKey);
-    const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
-
-    // If our receiving address matches the event's recipient, the transfer was for the user with the specified keys
-    return { isForUser: computedReceivingAddress === getAddress(receiver), randomNumber };
-  } catch (err) {
-    // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
-    // fail when uncompressing. For now we just silently ignore these and return false
-    return { isForUser: false, randomNumber: '' };
-  }
 }
