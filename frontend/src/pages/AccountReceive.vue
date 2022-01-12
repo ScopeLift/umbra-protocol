@@ -182,7 +182,7 @@ function useScan() {
     const allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
 
     // TODO: This is what we need to move to the webworker
-    const filteredAnnouncements = filterUserAnnouncements(spendingPubKey, viewingPrivKey, allAnnouncements);
+    const filteredAnnouncements = await filterUserAnnouncements(spendingPubKey, viewingPrivKey, allAnnouncements);
 
     userAnnouncements.value = filteredAnnouncements;
     scanStatus.value = 'complete';
