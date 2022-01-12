@@ -1,18 +1,18 @@
 import { AnnouncementDetail, UserAnnouncement, Umbra } from '@umbra/umbra-js';
 import { getAddress } from 'src/utils/ethers';
 
-export const filterUserAnnouncements = async (
+export const filterUserAnnouncements = (
   spendingPublicKey: string,
   viewingPrivateKey: string,
-  announcements: AnnouncementDetail[]
+  announcements: AnnouncementDetail[],
+  progress: (percentage: number) => void,
+  completion: (userAnnouncements: UserAnnouncement[]) => void
 ) => {
-
-  
   const userAnnouncements: UserAnnouncement[] = [];
   let index = 0;
   const chunk = 10;
 
-  const doChunk = async () => {
+  const doChunk = () => {
     for (let count = chunk; count > 0 && index < announcements.length; count--, index++) {
       const ann = announcements[index];
       const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
@@ -25,18 +25,12 @@ export const filterUserAnnouncements = async (
     }
 
     if (index < announcements.length) {
-      const prom = new Promise(function(resolve) {
-        setTimeout(() => {
-          doChunk();
-          resolve(null);
-        }, 1);
-      });
-
-      await prom;
+      progress((100 * index) / announcements.length);
+      setTimeout(doChunk, 1);
+    } else {
+      completion(userAnnouncements);
     }
-  }
+  };
 
-  await doChunk();
-
-  return userAnnouncements;
+  doChunk();
 };
