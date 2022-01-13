@@ -191,9 +191,9 @@
             </a>
           </p>
           <p>
-            <a href="https://t.me/UmbraCash" target="_blank" class="no-text-decoration">
-              <q-icon class="dark-toggle q-mr-md" name="fab fa-telegram" size="xs" />
-              <span class="hyperlink text-caption">Telegram</span>
+            <a href="https://discord.com/invite/uw4y5J2p7C" target="_blank" class="no-text-decoration">
+              <q-icon class="dark-toggle q-mr-md" name="fab fa-discord" size="xs" />
+              <span class="hyperlink text-caption">Discord</span>
             </a>
           </p>
           <p>

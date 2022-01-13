@@ -4,18 +4,20 @@
 
     <p class="horizontal-center q-pb-lg" style="max-width: 400px">
       Read the <router-link class="hyperlink" :to="{ name: 'FAQ' }">FAQ</router-link> and still have questions? Feel
-      free to get in touch! You'll likely get the fastest response on Telegram.
+      free to get in touch! You'll likely get the fastest response on Discord.
     </p>
     <p class="horizontal-center" style="max-width: 400px">
       <q-list>
-        <!-- Telegram -->
+        <!-- Discord -->
         <q-item class="q-pl-none">
           <q-item-section avatar>
-            <q-icon class="telegram" name="fab fa-telegram" />
+            <q-icon class="discord" name="fab fa-discord" />
           </q-item-section>
 
           <q-item-section class="text-left">
-            <div><a class="hyperlink" href="https://t.me/UmbraCash" target="_blank">Join us</a> on Telegram</div>
+            <div>
+              <a class="hyperlink" href="https://discord.com/invite/uw4y5J2p7C" target="_blank">Join us</a> on Discord
+            </div>
           </q-item-section>
         </q-item>
 
@@ -59,8 +61,8 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-.telegram
-  color: #0088cc
+.discord
+  color: #5865F2
 
 .twitter
   color: #1DA1F2
