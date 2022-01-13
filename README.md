@@ -11,6 +11,8 @@
 <p align="center">
 	🚀 <a href="https://app.umbra.cash">app.umbra.cash</a>
 	🐦 <a href="https://twitter.com/umbracash">@UmbraCash</a>
+	💬 <a href="https://discord.com/invite/uw4y5J2p7C">Discord</a>
+	🤑 <a href="https://gitcoin.co/grants/821/umbra-privacy-preserving-stealth-payments">Gitcoin</a>
 	🏗️ <a href="https://twitter.com/scopelift">@ScopeLift</a>
 </p>
 
@@ -37,13 +39,13 @@ Umbra is a protocol for stealth payments on EVM blockchain networks. It enables 
 
 Umbra is a stealth address protocol for EVM networks. That means it allows a payer to send funds to a fresh address. That address is controlled by the intended receiver, but only the payer and the receiver know that.
 
-One way to think of Umbra is this: Imagine if, before anyone sent you funds, you sent them a brand new, never before used address. Only the sender would know you control that address, which adds a layer of privacy to your payment. Payments via Umbra work similarly, but are non-interactive—you don’t need to give someone a fresh address, they can just generate one they know only you will be able to access.
+One way to think of Umbra is this: before anyone sent you funds, you sent them a brand new, never before used address. Only the sender would know you control that address, which adds a layer of privacy to your payment. Payments via Umbra work similarly, but are non-interactive—you don’t need to give someone a fresh address, the sender can just generate one they know only you will be able to access.
 
 #### Can you walk me through an example?
 
 Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work. Bob owns the ENS address bob.eth. If Alice sent the funds each week to bob.eth, anyone looking at the chain could trivially know that Alice is paying Bob 1,000 Dai each week.
 
-Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets up his account with ENS, enabling anyone to privately pay him using the name bob.eth. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs to know his ENS name.
+Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets up his account, enabling anyone to privately pay him via Umbra using the name bob.eth, or his normal Ethereum address. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs to know his ENS name.
 
 On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the keys to each of these addresses via Umbra, but nobody except Alice and Bob knows this.
 
@@ -54,8 +56,8 @@ Consider another example: Liza runs a website that asks for donations. If everyo
 #### How does it work?
 
 1. When setting up your Umbra account, users sign a message. The hash of this message is used to generate two private keys—a "spending key" and a "viewing key".
-2. The corresponding public keys are both published on-chain as records associated with your ENS or CNS name.
-3. A payer uses your ENS or CNS name to look up your two public keys. Separately, the payer generates a random number.
+2. The corresponding public keys are both published on-chain as records associated with your address.
+3. A payer uses your address, ENS, or CNS name to look up your two public keys. Separately, the payer generates a random number.
 4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The viewing public key is used to encrypt the random number.
 5. Using the Umbra contract, the payer sends funds to the stealth address and the stealth address and encrypted random number are emitted as an Announcement event.
 6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Annoucement, this payment was for the receiver
