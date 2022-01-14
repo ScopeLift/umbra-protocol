@@ -59,6 +59,11 @@
         </q-card>
       </div>
 
+      <div v-else-if="scanStatus === 'fetching'" class="text-center">
+        <loading-spinner />
+        <div class="text-center text-italic">Fetching announcements...</div>
+      </div>
+
       <!-- Scanning in progress -->
       <div v-else-if="scanStatus === 'scanning'" class="text-center">
         <loading-spinner />
@@ -90,7 +95,7 @@ import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useScan() {
   const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress } = useWallet();
-  type ScanStatus = 'waiting' | 'scanning' | 'complete';
+  type ScanStatus = 'waiting' | 'fetching' | 'scanning' | 'complete';
   const scanStatus = ref<ScanStatus>('waiting');
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
@@ -167,7 +172,7 @@ function useScan() {
 
   async function scan() {
     if (!umbra.value) throw new Error('No umbra instance found. Please make sure you are on a supported network');
-    scanStatus.value = 'scanning';
+    scanStatus.value = 'fetching';
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
     const chooseKey = (keyPair: string | undefined | null) => {
@@ -175,11 +180,14 @@ function useScan() {
       return String(keyPair);
     };
 
-    // Scan for funds
-    const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
-    const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
+    // Fetch announcements
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     const allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+
+    // Scan for funds
+    scanStatus.value = 'scanning';
+    const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
+    const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
 
     // TODO: This is what we need to move to the webworker instead of chunking
     filterUserAnnouncements(
