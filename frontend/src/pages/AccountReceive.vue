@@ -66,7 +66,7 @@
 
       <!-- Scanning in progress -->
       <div v-else-if="scanStatus === 'scanning'" class="text-center">
-        <loading-spinner />
+        <progress-indicator :percentage="scanPercentage" />
         <div class="text-center text-italic">Scanning for funds...</div>
         <div class="text-center text-italic q-mt-lg">
           This may take a couple of minutes depending on your connection and device. This is normal&mdash; please be
@@ -97,6 +97,7 @@ function useScan() {
   const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress } = useWallet();
   type ScanStatus = 'waiting' | 'fetching' | 'scanning' | 'complete';
   const scanStatus = ref<ScanStatus>('waiting');
+  const scanPercentage = ref<number>(0);
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
   // Start and end blocks for advanced mode settings
@@ -195,8 +196,7 @@ function useScan() {
       viewingPrivKey,
       allAnnouncements,
       (percent) => {
-        percent;
-        // TODO: use this to show a progress bar
+        scanPercentage.value = Math.floor(percent);
       },
       (filteredAnnouncements) => {
         userAnnouncements.value = filteredAnnouncements;
@@ -207,6 +207,7 @@ function useScan() {
 
   function resetState() {
     scanStatus.value = 'waiting';
+    scanPercentage.value = 0;
     startBlockLocal.value = undefined;
     endBlockLocal.value = undefined;
     scanPrivateKeyLocal.value = undefined;
@@ -227,6 +228,7 @@ function useScan() {
     needsSignature,
     scanPrivateKeyLocal,
     scanStatus,
+    scanPercentage,
     setFormStatus,
     setScanBlocks,
     settingsFormRef,
