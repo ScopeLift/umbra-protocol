@@ -297,6 +297,12 @@ export class Umbra {
     // TODO
   }
 
+  /**
+   * @notice Fetches all Umbra event logs using The Graph, if available, falling back to RPC if not
+   * @param overrides Override the start and end block used for scanning; ignored if using The Graph
+   * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
+   * timestamp, and txhash
+   */
   async fetchAllAnnouncements(overrides: ScanOverrides = {}): Promise<AnnouncementDetail[]> {
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
@@ -318,6 +324,15 @@ export class Umbra {
     return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
   }
 
+  /**
+   * @notice Fetches all Umbra event logs using The Graph
+   * @dev Currently ignores the start and end block parameters and returns all events; this may change in a
+   * future version
+   * @param startBlock Ignored
+   * @param endBlock Ignored
+   * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
+   * timestamp, txhash, and the subgraph identifier
+   */
   async fetchAllAnnouncementsFromSubgraph(
     startBlock: string | number,
     endBlock: string | number
@@ -326,7 +341,8 @@ export class Umbra {
       throw new Error('Subgraph URL must be defined to fetch via subgraph');
     }
 
-    // TODO: We're ignoring these overrides for The Graph. Is this intentional?
+    // TODO: We're ignoring these overrides for The Graph. Is this intentional? Should we remove the parameters,
+    // or update so it uses them?
     startBlock;
     endBlock;
 
@@ -353,6 +369,13 @@ export class Umbra {
     return subgraphAnnouncements;
   }
 
+  /**
+   * @notice Fetches all Umbra event logs between specified blocks using the standard RPC provider
+   * @param startBlock Block number to begin scanning for events
+   * @param endBlock Block number to end scanning for events, or 'latest'
+   * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
+   * timestamp, and txhash
+   */
   async fetchAllAnnouncementFromLogs(
     startBlock: string | number,
     endBlock: string | number
@@ -392,126 +415,28 @@ export class Umbra {
   }
 
   /**
-   * @notice Scans Umbra event logs for funds sent to the specified address
+   * @notice Scans all Umbra event logs for funds sent to the specified address
+   * @dev This is a convenience method that first runs `fetchAllAnnouncements`, then filters them through
+   * the static helper `isAnnouncementForUser`. The latter is CPU intensive and this method will block while
+   * all announcements are processed. To avoid performance issues, you may need to run fetching and filtering
+   * steps separately, and use chunking, web workers, or other threading strategies.
    * @param spendingPublicKey Receiver's spending private key
    * @param viewingPrivateKey Receiver's viewing public key
    * @param overrides Override the start and end block used for scanning
    */
   async scan(spendingPublicKey: string, viewingPrivateKey: string, overrides: ScanOverrides = {}) {
-    // Get start and end blocks to scan events for
-    const startBlock = overrides.startBlock || this.chainConfig.startBlock;
-    const endBlock = overrides.endBlock || 'latest';
+    const announcements = await this.fetchAllAnnouncements(overrides);
 
-    // Try querying events using the Graph, fallback to querying logs.
-    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
-    // that window is defined first to avoid trying to use fetch in node environments
-    if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
-      try {
-        // Query subgraph
-        const subgraphAnnouncements: SubgraphAnnouncement[] = await recursiveGraphFetch(
-          this.chainConfig.subgraphUrl,
-          'announcementEntities',
-          (filter: string) => `{
-            announcementEntities(${filter}) {
-              amount
-              block
-              ciphertext
-              from
-              id
-              pkx
-              receiver
-              timestamp
-              token
-              txHash
-            }
-          }`
-        );
+    const userAnnouncements = announcements.reduce((userAnns, ann) => {
+      const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
+      const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
+      const token = getAddress(tokenAddr); // ensure checksummed address
+      const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
+      if (isForUser) userAnns.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
+      return userAnns;
+    }, [] as UserAnnouncement[]);
 
-        // Determine which announcements are for the user.
-        // First we map the subgraph amount field from string to BigNumber, then we reduce the array to the
-        // subset of announcements for the user
-        const announcements = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
-        const userAnnouncements = announcements.reduce((userAnns, ann) => {
-          const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
-          const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
-          const token = getAddress(tokenAddr); // ensure checksummed address
-          const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
-          if (isForUser) userAnns.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
-          return userAnns;
-        }, [] as UserAnnouncement[]);
-
-        // Filtering and parsing done, return announcements
-        return { userAnnouncements };
-      } catch (err) {
-        // Graph query failed, try requesting logs directly IF we are not on polygon. If we are on
-        // Polygon, there isn't much we can do, so for now just show a warning and return an empty array
-        if (this.chainConfig.chainId === 137) {
-          console.warn('Cannot fetch Announcements from logs on Polygon, please try again later');
-          return { userAnnouncements: [] };
-        }
-        const userAnnouncements = await this.userAnnouncementsFromLogs(spendingPublicKey, viewingPrivateKey, startBlock, endBlock); // prettier-ignore
-        return { userAnnouncements };
-      }
-    }
-
-    // Subgraph not available, try requesting logs directly IF we are not on Polygon. If we are on
-    // Polygon, there isn't much we can do, so for now just show a warning and return an empty array
-    if (this.chainConfig.chainId === 137) {
-      console.warn('Cannot fetch Announcements from logs on Polygon, please try again later');
-      return { userAnnouncements: [] };
-    }
-    const userAnnouncements = await this.userAnnouncementsFromLogs(spendingPublicKey, viewingPrivateKey, startBlock, endBlock); // prettier-ignore
     return { userAnnouncements };
-  }
-
-  // ======================================= HELPER METHODS ========================================
-
-  /**
-   * @notice Queries the node for logs, and returns the set of Announcements that were intended for the specified user
-   * @param spendingPublicKey Receiver's spending private key
-   * @param viewingPrivateKey Receiver's viewing public key
-   * @param startBlock Block to start scanning from
-   * @param endBlock Block to scan until
-   */
-  async userAnnouncementsFromLogs(
-    spendingPublicKey: string,
-    viewingPrivateKey: string,
-    startBlock: string | number,
-    endBlock: string | number
-  ): Promise<UserAnnouncement[]> {
-    // Get list of all Announcement events
-    const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
-    const announcements = await this.umbraContract.queryFilter(announcementFilter, startBlock, endBlock);
-
-    const userAnnouncements = await Promise.all(
-      announcements.map(async (event) => {
-        // Extract out event parameters
-        const announcement = (event.args as unknown) as Announcement;
-        const { receiver, amount, token } = announcement;
-        const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(
-          spendingPublicKey,
-          viewingPrivateKey,
-          announcement
-        );
-
-        // If  receiving address matches event's recipient, the transfer was for the user. Otherwise it wasn't,
-        // so return null and filter later
-        if (!isForUser) return null;
-        const [block, tx] = await Promise.all([event.getBlock(), event.getTransaction()]);
-        return {
-          randomNumber,
-          receiver,
-          amount,
-          token: getAddress(token),
-          from: tx.from,
-          txHash: event.transactionHash,
-          timestamp: String(block.timestamp),
-          isWithdrawn: false,
-        };
-      })
-    );
-
-    return userAnnouncements.filter((ann) => ann !== null) as UserAnnouncement[];
   }
 
   /**
