@@ -245,8 +245,14 @@ function useSendForm() {
         humanAmount.value = undefined;
       }
 
-      // Revalidates form on network change
-      if (useNormalPubKey !== prevUseNormalPubKey || isLoadingValue !== prevIsLoadingValue) {
+      // Revalidates form
+      if (
+        // on network change
+        useNormalPubKey !== prevUseNormalPubKey ||
+        isLoadingValue !== prevIsLoadingValue ||
+        // when both token and value are present
+        (tokenValue && humanAmountValue)
+      ) {
         void sendFormRef.value?.validate();
       }
       const validId = Boolean(recipientIdValue) && (await isValidId(recipientIdValue as string)) === true;
