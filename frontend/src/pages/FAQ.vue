@@ -137,7 +137,7 @@
           </p>
           <ol>
             <li>
-              Most users will use the Umbra stealth key registry to send funds, so the recipient most likely keys
+              Most users will use the Umbra stealth key registry to send funds, so the recipient most likely has keys
               published there.
             </li>
             <li>
