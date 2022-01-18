@@ -313,8 +313,8 @@ export class Umbra {
     // that window is defined first to avoid trying to use fetch in node environments
     if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
       try {
-        // Map the subgraph amount field from string to BigNumber
         const subgraphAnnouncements = await this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock);
+        // Map the subgraph amount field from string to BigNumber
         return subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
       } catch (err) {
         return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
@@ -380,8 +380,8 @@ export class Umbra {
     startBlock: string | number,
     endBlock: string | number
   ): Promise<AnnouncementDetail[]> {
-    // Graph query failed, try requesting logs directly IF we are not on polygon. If we are on
-    // Polygon, there isn't much we can do, so for now just show a warning and return an empty array
+     // Fetching announcements from logs is not possible on Polygon because the network produces too
+     // many blocks too quickly. If this is attempted, we throw an error.
     if (this.chainConfig.chainId === 137) {
       throw new Error('Cannot fetch Announcements from logs on Polygon, please try again later');
     }
