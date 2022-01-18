@@ -26,7 +26,7 @@ export const filterUserAnnouncements = (
 
     if (index < announcements.length) {
       progress((100 * index) / announcements.length);
-      setTimeout(doChunk, 1);
+      setTimeout(doChunk, 0);
     } else {
       completion(userAnnouncements);
     }
