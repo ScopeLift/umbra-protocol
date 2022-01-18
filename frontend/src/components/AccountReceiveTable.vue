@@ -27,7 +27,7 @@
 
     <div v-if="isLoading" class="text-center">
       <loading-spinner />
-      <div class="text-center text-italic">Scanning for funds...</div>
+      <div class="text-center text-italic">Processing results...</div>
     </div>
 
     <!-- Received funds table -->
