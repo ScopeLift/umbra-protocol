@@ -296,8 +296,13 @@ function useSendForm() {
     const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
     // Polygon
     if (chainId === 137) {
-      if (isNativeToken(tokenAddress)) return 1.0;
-      else return 3; // stablecoin token minimum
+      if (isNativeToken(tokenAddress)) {
+        return 1.0;
+      } else if (tokenAddress === '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619') {
+        return 0.001; // weth token minimum
+      } else {
+        return 3; // stablecoin token minimum
+      }
     }
     // Mainnet, Rinkeby, and other networks have higher ETH and stablecoin minimums due to higher fees
     if (isNativeToken(tokenAddress)) return 0.01;
