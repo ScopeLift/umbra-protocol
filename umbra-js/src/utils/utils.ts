@@ -13,6 +13,7 @@ import {
   resolveProperties,
   serialize as serializeTransaction,
   splitSignature,
+  UnsignedTransaction,
 } from '../ethers';
 import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
 import { ens, cns } from '..';
@@ -54,16 +55,66 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
     throw new Error('Transaction not found. Are the provider and transaction hash on the same network?');
   }
 
-  // Reconstruct transaction payload that was originally signed
-  const txData = {
-    chainId: tx.chainId,
-    data: tx.data,
-    gasLimit: tx.gasLimit,
-    gasPrice: tx.gasPrice,
-    nonce: tx.nonce,
-    to: tx.to, // this works for both regular and contract transactions
-    value: tx.value,
-  };
+  // Reconstruct transaction payload that was originally signed. Relevant EIPs:
+  //   - https://eips.ethereum.org/EIPS/eip-155  (EIP-155: Simple replay attack protection)
+  //   - https://eips.ethereum.org/EIPS/eip-2718 (EIP-2718: Typed Transaction Envelope)
+  //   - https://eips.ethereum.org/EIPS/eip-2930 (EIP-2930: Optional access lists)
+  //   - https://eips.ethereum.org/EIPS/eip-1559 (EIP-1559: Fee market change for ETH 1.0 chain)
+  //
+  // Properly defining the `txData` signed by the sender is essential to ensuring sent funds can be
+  // accessed by the recipient. This only affects the "advanced mode" option of sending directly
+  // to a recipient's standard public key, i.e. is does not affect users sending via the
+  // recommended approach of the StealthKeyRegistry.
+  //
+  // Any time a new transaction type is added to Ethereum, the below will need to be updated to
+  // support that transaction type
+  //
+  // chainId and type are appended after the `if` blocks when applicable
+  let txData: UnsignedTransaction;
+  if (tx.type === 0 || !tx.type) {
+    // LegacyTransaction is rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])
+    txData = {
+      nonce: tx.nonce,
+      gasPrice: tx.gasPrice,
+      gasLimit: tx.gasLimit,
+      to: tx.to,
+      value: tx.value,
+      data: tx.data,
+    };
+  } else if (tx.type === 1) {
+    // 0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s])
+    txData = {
+      nonce: tx.nonce,
+      gasPrice: tx.gasPrice,
+      gasLimit: tx.gasLimit,
+      to: tx.to,
+      value: tx.value,
+      data: tx.data,
+      accessList: tx.accessList,
+    };
+  } else if (tx.type === 2) {
+    // 0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, v, r, s])
+    txData = {
+      nonce: tx.nonce,
+      maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
+      maxFeePerGas: tx.maxFeePerGas,
+      gasLimit: tx.gasLimit,
+      to: tx.to,
+      value: tx.value,
+      data: tx.data,
+      accessList: tx.accessList,
+    };
+  } else {
+    throw new Error(`Unsupported transaction type: ${tx.type}`);
+  }
+
+  // Add chainId and type fields if present
+  if (tx.chainId) {
+    txData.chainId = tx.chainId;
+  }
+  if (tx.type && tx.type >= 0) {
+    txData.type = tx.type;
+  }
 
   // Properly format transaction payload to get the correct message
   const resolvedTx = await resolveProperties(txData);
@@ -71,6 +122,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   const msgHash = keccak256(rawTx);
 
   // Recover sender's public key
+  // Even though the type definitions say v,r,s are optional, they will always be defined: https://github.com/ethers-io/ethers.js/issues/1181
   const signature = new Signature(BigInt(tx.r), BigInt(tx.s));
   signature.assertValidity();
   const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;

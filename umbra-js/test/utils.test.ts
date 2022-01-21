@@ -23,10 +23,41 @@ const pubKeysUmbra = {
 const badPublicKey = '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98709dc9e18b3bddafce903ea49a44b78d57626448c83f8649d3ec4e7c72d8777823f49583b4'; // prettier-ignore
 
 describe('Utilities', () => {
-  describe('Helpers', () => {
-    it('recovers public keys from transactions', async () => {
+  describe('Public key recovery', () => {
+    it("recovers public keys from transactions that don't specify a type", async () => {
+      // TODO find Rinkeby transaction hash where provider.getTransaction() has
+      // no `type`? Does this exist?
+    });
+
+    it('recovers public keys from type 0 transaction', async () => {
       const hash = '0x45fa716ee2d484ac67ef787625908072d851bfa369db40567e16ee08a7fdefd2';
+      const tx = await ethersProvider.getTransaction(hash);
+      expect(tx.type).to.equal(0);
       expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
+    });
+
+    it('recovers public keys from type 1 transaction', async () => {
+      const hash = '0xa75bc0c12658f0fb1cdf501e9395c9cb9e5198c1ea34cbbac6c61caf94076e7c'; // sent with empty access list
+      const tx = await ethersProvider.getTransaction(hash);
+      expect(tx.type).to.equal(1);
+      expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
+
+      const hash2 = '0x9e35a3fbc2951060a169c0ed5a7bc858f2712617f358f8a7386626adca9cea07'; // sent with data in access list
+      const tx2 = await ethersProvider.getTransaction(hash2);
+      expect(tx2.type).to.equal(1);
+      expect(await utils.recoverPublicKeyFromTransaction(hash2, ethersProvider)).to.equal(publicKey);
+    });
+
+    it('recovers public keys from type 2 transaction', async () => {
+      const hash = '0x3173fc771f7cae822a6e5e2023382b78120b7a7008a8cecc84eab0b1ee561786';
+      const tx = await ethersProvider.getTransaction(hash);
+      expect(tx.type).to.equal(2);
+      expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
+
+      const hash2 = '0xeefa02a50aef12956fa4e612fda89b1745b903bc8f170e39e81cdcd5dfd47aab';
+      const tx2 = await ethersProvider.getTransaction(hash2);
+      expect(tx2.type).to.equal(2);
+      expect(await utils.recoverPublicKeyFromTransaction(hash2, ethersProvider)).to.equal(publicKey);
     });
   });
 
