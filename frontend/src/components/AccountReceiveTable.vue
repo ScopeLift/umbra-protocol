@@ -441,7 +441,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   function openInEtherscan(row: UserAnnouncement) {
     if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
-    // Assume mainnet unless we have Rinkeby chainId
+    // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     window.open(getEtherscanUrl(row.txHash, chainId));
   }
