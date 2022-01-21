@@ -7,8 +7,9 @@ import { expectRejection } from './utils';
 
 const ethersProvider = ethers.provider;
 
-// Public key that derives to the address msolomon.eth resolves to
+// Public key and address corresponding to msolomon.eth
 const publicKey = '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee'; // prettier-ignore
+const address = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
 
 // Public keys generated from a signature by the address msolomon.eth resolves to
 const pubKeysWallet = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
@@ -67,7 +68,6 @@ describe('Utilities', () => {
 
     // --- Address, advanced mode on (i.e. don't use the StealthKeyRegistry) ---
     it('looks up recipients by address, advanced mode on', async () => {
-      const address = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
       const ethersProvider = getDefaultProvider('rinkeby') as EthersProvider;
       const keys = await utils.lookupRecipient(address, ethersProvider, { advanced: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
@@ -90,7 +90,6 @@ describe('Utilities', () => {
 
     // --- Address, advanced mode off (i.e. use the StealthKeyRegistry) ---
     it('looks up recipients by address, advanced mode off', async () => {
-      const address = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
       const ethersProvider = getDefaultProvider('rinkeby') as EthersProvider; // otherwise throws with unsupported network since we're on localhost
       const keys = await utils.lookupRecipient(address, ethersProvider);
       expect(keys.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
@@ -125,6 +124,25 @@ describe('Utilities', () => {
       const keys2 = await utils.lookupRecipient('udtestdev-msolomon.crypto', ethersProvider, { advanced: false });
       expect(keys2.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys2.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
+    });
+
+    // --- Address history by network ---
+    it('looks up transaction history on mainnet', async () => {
+      const ethersProvider = getDefaultProvider('mainnet') as EthersProvider;
+      const txHash = await utils.getSentTransaction(address, ethersProvider);
+      expect(txHash).to.have.lengthOf(66);
+    });
+
+    it('looks up transaction history on rinkeby', async () => {
+      const ethersProvider = getDefaultProvider('rinkeby') as EthersProvider;
+      const txHash = await utils.getSentTransaction(address, ethersProvider);
+      expect(txHash).to.have.lengthOf(66);
+    });
+
+    it('looks up transaction history on polygon', async () => {
+      const ethersProvider = new ethers.providers.JsonRpcProvider('https://polygon-rpc.com') as EthersProvider;
+      const txHash = await utils.getSentTransaction(address, ethersProvider);
+      expect(txHash).to.have.lengthOf(66);
     });
   });
 

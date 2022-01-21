@@ -6,7 +6,6 @@ import {
   AddressZero,
   Contract,
   ContractInterface,
-  EtherscanProvider,
   getAddress,
   isHexString,
   JsonRpcProvider,
@@ -19,6 +18,7 @@ import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
 import { ens, cns } from '..';
 import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
+import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider } from '../types';
 
 // Lengths of various properties when represented as full hex strings
@@ -85,11 +85,11 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
  * @param address Address to lookup
  * @param provider ethers provider instance
  */
-async function getSentTransaction(address: string, ethersProvider: EthersProvider) {
+export async function getSentTransaction(address: string, ethersProvider: EthersProvider) {
   address = getAddress(address); // address input validation
   const network = await ethersProvider.getNetwork();
-  const etherscanProvider = new EtherscanProvider(network.chainId);
-  const history = await etherscanProvider.getHistory(address);
+  const txHistoryProvider = new TxHistoryProvider(network.chainId);
+  const history = await txHistoryProvider.getHistory(address);
   let txHash;
   for (let i = 0; i < history.length; i += 1) {
     const tx = history[i];
