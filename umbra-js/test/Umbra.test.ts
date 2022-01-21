@@ -222,7 +222,7 @@ describe('Umbra class', () => {
       const withdrawTxEth = await umbra.withdraw(stealthPrivateKey, ETH_ADDRESS, destinationWallet.address);
       await withdrawTxEth.wait();
       const withdrawEthReceipt = await ethersProvider.getTransactionReceipt(withdrawTxEth.hash);
-      const withdrawTokenTxCost = withdrawEthReceipt.gasUsed.mul(withdrawTxEth.gasPrice);
+      const withdrawTokenTxCost = withdrawEthReceipt.gasUsed.mul(withdrawEthReceipt.effectiveGasPrice);
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
       verifyEqualValues(
         await getEthBalance(destinationWallet.address),
@@ -301,7 +301,8 @@ describe('Umbra class', () => {
       const destinationWallet = ethers.Wallet.createRandom();
       const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
-      const txCost = withdrawTx.gasLimit.mul(withdrawTx.gasPrice);
+      const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
+      const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
       verifyEqualValues(await getEthBalance(destinationWallet.address), quantity.sub(txCost));
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
     });
@@ -323,7 +324,8 @@ describe('Umbra class', () => {
       const destinationWallet = ethers.Wallet.createRandom();
       const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
-      const txCost = withdrawTx.gasLimit.mul(withdrawTx.gasPrice);
+      const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
+      const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
       verifyEqualValues(await getEthBalance(destinationWallet.address), quantity.sub(txCost));
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
     });
@@ -359,7 +361,7 @@ describe('Umbra class', () => {
       expect(() => new Umbra(ethersProvider, { umbraAddress: '123', startBlock: 1, chainId: 1 })).to.throw(errorMsg4);
       // @ts-expect-error
       expect(() => new Umbra(ethersProvider, { startBlock: 0, chainId: 4, subgraphUrl: false })).to.throw(
-        'invalid address (argument="address", value=undefined, code=INVALID_ARGUMENT, version=address/5.1.0)'
+        'invalid address (argument="address", value=undefined, code=INVALID_ARGUMENT, version=address/5.5.0)'
       );
     });
 
@@ -367,12 +369,12 @@ describe('Umbra class', () => {
       // These error messages come from ethers
       await expectRejection(
         umbra.send(sender, '123', '1', '1'), // last two args are dummy args since we're testing the second input
-        'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.1.0)'
+        'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.5.0)'
       );
       await expectRejection(
         // @ts-expect-error
         umbra.send(sender, 123, '1', '1'), // last two args are dummy args since we're testing the second input
-        'invalid address (argument="address", value=123, code=INVALID_ARGUMENT, version=address/5.1.0)'
+        'invalid address (argument="address", value=123, code=INVALID_ARGUMENT, version=address/5.5.0)'
       );
     });
 
@@ -385,15 +387,15 @@ describe('Umbra class', () => {
       // These error messages come from ethers
       await expectRejection(
         Umbra.signWithdraw(privateKey, 4, umbra.umbraContract.address, badAddress, tokenAddress, goodAddress, '1'),
-        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.1.0)'
+        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.5.0)'
       );
       await expectRejection(
         Umbra.signWithdraw(privateKey, 4, umbra.umbraContract.address, goodAddress, tokenAddress, badAddress, '1'),
-        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.1.0)'
+        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.5.0)'
       );
       await expectRejection(
         Umbra.signWithdraw(privateKey, 4, badAddress, goodAddress, tokenAddress, goodAddress, '1'),
-        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.1.0)'
+        'invalid address (argument="address", value="0x123", code=INVALID_ARGUMENT, version=address/5.5.0)'
       );
     });
 

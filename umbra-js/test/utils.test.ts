@@ -43,7 +43,7 @@ describe('Utilities', () => {
     });
 
     it('throws when looking up recipients by public key without explicitly allowing it', async () => {
-      const errorMsg = `invalid address (argument="address", value="${publicKey}", code=INVALID_ARGUMENT, version=address/5.1.0)`; // prettier-ignore
+      const errorMsg = `invalid address (argument="address", value="${publicKey}", code=INVALID_ARGUMENT, version=address/5.5.0)`; // prettier-ignore
       await expectRejection(utils.lookupRecipient(publicKey, ethersProvider), errorMsg);
     });
 
@@ -61,7 +61,7 @@ describe('Utilities', () => {
 
     it('throws when looking up recipients by transaction hash without explicitly allowing it', async () => {
       const hash = '0x45fa716ee2d484ac67ef787625908072d851bfa369db40567e16ee08a7fdefd2';
-      const errorMsg = `invalid address (argument="address", value="${hash}", code=INVALID_ARGUMENT, version=address/5.1.0)`; // prettier-ignore
+      const errorMsg = `invalid address (argument="address", value="${hash}", code=INVALID_ARGUMENT, version=address/5.5.0)`; // prettier-ignore
       await expectRejection(utils.lookupRecipient(hash, ethersProvider), errorMsg);
     });
 
@@ -156,7 +156,7 @@ describe('Utilities', () => {
 
     it('throws when provided an invalid identifier', async () => {
       const id = '123';
-      const errMsg = 'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.1.0)';
+      const errMsg = 'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.5.0)';
       await expectRejection(utils.lookupRecipient(id, ethersProvider), errMsg);
     });
   });
