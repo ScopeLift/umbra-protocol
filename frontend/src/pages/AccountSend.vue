@@ -37,7 +37,7 @@
 
       <!-- Identifier, advanced mode tooltip -->
       <div
-        v-if="advancedMode"
+        v-if="advancedMode && false"
         class="row items-center text-caption q-pt-sm q-pb-lg"
         :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
       >
