@@ -4,6 +4,7 @@
 
 import {
   AddressZero,
+  computeAddress,
   Contract,
   ContractInterface,
   getAddress,
@@ -68,52 +69,34 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   //
   // Any time a new transaction type is added to Ethereum, the below will need to be updated to
   // support that transaction type
-  //
-  // chainId and type are appended after the `if` blocks when applicable
-  let txData: UnsignedTransaction;
-  if (tx.type === 0 || !tx.type) {
-    // LegacyTransaction is rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])
-    txData = {
-      nonce: tx.nonce,
-      gasPrice: tx.gasPrice,
-      gasLimit: tx.gasLimit,
-      to: tx.to,
-      value: tx.value,
-      data: tx.data,
-    };
-  } else if (tx.type === 1) {
-    // 0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s])
-    txData = {
-      nonce: tx.nonce,
-      gasPrice: tx.gasPrice,
-      gasLimit: tx.gasLimit,
-      to: tx.to,
-      value: tx.value,
-      data: tx.data,
-      accessList: tx.accessList,
-    };
-  } else if (tx.type === 2) {
-    // 0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, v, r, s])
-    txData = {
-      nonce: tx.nonce,
-      maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
-      maxFeePerGas: tx.maxFeePerGas,
-      gasLimit: tx.gasLimit,
-      to: tx.to,
-      value: tx.value,
-      data: tx.data,
-      accessList: tx.accessList,
-    };
-  } else {
-    throw new Error(`Unsupported transaction type: ${tx.type}`);
-  }
+  let txData: UnsignedTransaction = {};
 
-  // Add chainId and type fields if present
+  // First we add fields that are always required
+  txData.type = tx.type;
+  txData.nonce = tx.nonce;
+  txData.gasLimit = tx.gasLimit;
+  txData.to = tx.to;
+  txData.value = tx.value;
+  txData.data = tx.data;
   if (tx.chainId) {
     txData.chainId = tx.chainId;
   }
-  if (tx.type && tx.type >= 0) {
-    txData.type = tx.type;
+
+  // Now we add fields specific to the transaction type
+  if (tx.type === 0 || !tx.type) {
+    // LegacyTransaction is rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])
+    txData.gasPrice = tx.gasPrice;
+  } else if (tx.type === 1) {
+    // 0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s])
+    txData.gasPrice = tx.gasPrice;
+    txData.accessList = tx.accessList;
+  } else if (tx.type === 2) {
+    // 0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data, accessList, v, r, s])
+    txData.accessList = tx.accessList;
+    txData.maxPriorityFeePerGas = tx.maxPriorityFeePerGas;
+    txData.maxFeePerGas = tx.maxFeePerGas;
+  } else {
+    throw new Error(`Unsupported transaction type: ${tx.type}`);
   }
 
   // Properly format transaction payload to get the correct message
@@ -126,9 +109,15 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   const signature = new Signature(BigInt(tx.r), BigInt(tx.s));
   signature.assertValidity();
   const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;
-  const publicKey = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
-  if (!publicKey) throw new Error('Could not recover public key');
-  return `0x${publicKey}`;
+  const publicKeyNo0xPrefix = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
+  if (!publicKeyNo0xPrefix) throw new Error('Could not recover public key');
+
+  // Verify that recovered public key derives to the transaction from address
+  const publicKey = `0x${publicKeyNo0xPrefix}`;
+  if (computeAddress(publicKey) !== tx.from) {
+    throw new Error(`Public key not recovered properly`);
+  }
+  return publicKey;
 }
 
 /**

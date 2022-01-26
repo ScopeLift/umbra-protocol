@@ -24,11 +24,6 @@ const badPublicKey = '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98
 
 describe('Utilities', () => {
   describe('Public key recovery', () => {
-    it("recovers public keys from transactions that don't specify a type", async () => {
-      // TODO find Rinkeby transaction hash where provider.getTransaction() has
-      // no `type`? Does this exist?
-    });
-
     it('recovers public keys from type 0 transaction', async () => {
       const hash = '0x45fa716ee2d484ac67ef787625908072d851bfa369db40567e16ee08a7fdefd2';
       const tx = await ethersProvider.getTransaction(hash);
