@@ -176,6 +176,8 @@ export default defineComponent({
 
     // Get initial fee on component mount. If native token, calculate gas cost of a transfer, otherwise use the provided relayer fee
     const fee = ref<BigNumber | string>('0'); // default to a fee of zero
+    const gasLimit = ref<BigNumber>(BigNumber.from('21000')); // default to a 21k gaslimit
+
     const loaded = ref(false); // true once we've fetched the initial gas price, to prevent resize issue shown here: https://github.com/ScopeLift/umbra-protocol/pull/206#pullrequestreview-718683599
 
     const useCustomFee = ref<boolean>(false);
@@ -187,8 +189,7 @@ export default defineComponent({
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
     const customFeeInWei = computed(() => {
-      const transactionGasUsed = '21000';
-      return BigNumber.from(transactionGasUsed).mul(customGasInWei.value);
+      return gasLimit.value.mul(customGasInWei.value);
     });
     const formattedCustomFeeEth = computed(() =>
       round(formatUnits(customFeeInWei.value, decimals), ethDisplayDecimals)
@@ -206,8 +207,17 @@ export default defineComponent({
 
     onMounted(async () => {
       if (isNativeToken) {
+
+        gasLimit.value = (await provider.value?.estimateGas({
+          to: props.destinationAddress,
+          from: props.activeAnnouncement.receiver,
+          value: amount,
+          gasPrice: 0,
+        })) as BigNumber;
+
         const gasPrice = network.value?.chainId === 1 ? await tryGetGasPrice() : await provider.value?.getGasPrice(); // use blocknative on mainnet, the node elsewhere
-        const ethFee = BigNumber.from('21000').mul(gasPrice as BigNumber);
+        const ethFee = gasLimit.value.mul(gasPrice as BigNumber);
+
         fee.value = ethFee;
         // flooring this b/c the string we get back from formatUnits is a decimal
         formattedCustomFee.value = String(Math.floor(Number(formatUnits(gasPrice as BigNumber, 'gwei'))));
