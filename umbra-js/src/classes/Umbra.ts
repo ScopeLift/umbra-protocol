@@ -231,8 +231,23 @@ export class Umbra {
       // Withdraw ETH
       // Based on gas price, compute how much ETH to transfer to avoid dust
       const ethBalance = await this.provider.getBalance(stealthWallet.address); // stealthWallet.address is our stealthAddress
+
+      // Estimate gas limit if not provided
+      if (!overrides.gasLimit) {
+        try {
+          overrides.gasLimit = await this.provider.estimateGas({
+            to: destination,
+            from: stealthWallet.address,
+            value: ethBalance,
+            gasPrice: 0
+          });
+        } catch {
+          overrides.gasLimit = '21000';
+        }
+      }
+
       const gasPrice = BigNumber.from(overrides.gasPrice || (await this.provider.getGasPrice()));
-      const gasLimit = BigNumber.from(overrides.gasLimit || '21000');
+      const gasLimit = BigNumber.from(overrides.gasLimit);
       const txCost = gasPrice.mul(gasLimit);
       if (txCost.gt(ethBalance)) {
         throw new Error('Stealth address ETH balance is not enough to pay for withdrawal gas cost');
