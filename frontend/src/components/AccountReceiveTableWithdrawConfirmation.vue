@@ -194,9 +194,19 @@ export default defineComponent({
       round(formatUnits(customFeeInWei.value, decimals), ethDisplayDecimals)
     );
 
+    // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
+    async function tryGetGasPrice() {
+      try {
+        return await getGasPrice();
+      } catch (e) {
+        console.warn(`Could not get gas price: ${JSON.stringify(e)}`);
+        return await provider.value?.getGasPrice();
+      }
+    }
+
     onMounted(async () => {
       if (isNativeToken) {
-        const gasPrice = network.value?.chainId === 1 ? await getGasPrice() : await provider.value?.getGasPrice(); // use blocknative on mainnet, the node elsewhere
+        const gasPrice = network.value?.chainId === 1 ? await tryGetGasPrice() : await provider.value?.getGasPrice(); // use blocknative on mainnet, the node elsewhere
         const ethFee = BigNumber.from('21000').mul(gasPrice as BigNumber);
         fee.value = ethFee;
         // flooring this b/c the string we get back from formatUnits is a decimal
