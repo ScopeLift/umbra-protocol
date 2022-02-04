@@ -106,7 +106,7 @@
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
-import { formatAddress } from 'src/utils/address';
+import { formatAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
 import { getEtherscanUrl, getGasPrice, round, roundTokenAmount } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
@@ -207,9 +207,8 @@ export default defineComponent({
 
     onMounted(async () => {
       if (isNativeToken) {
-
         gasLimit.value = (await provider.value?.estimateGas({
-          to: props.destinationAddress,
+          to: toAddress(props.destinationAddress, provider.value),
           from: props.activeAnnouncement.receiver,
           value: amount,
           gasPrice: 0,
