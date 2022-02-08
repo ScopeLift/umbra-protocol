@@ -24,7 +24,6 @@ self.addEventListener(
         worker_id: worker_id,
         done: false,
         index: index,
-        data: {},
       });
     }
 
