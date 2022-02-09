@@ -65,7 +65,12 @@ export const filterUserAnnouncements = (
         const done = e.data.done;
 
         if (done) {
-          userAnnouncements.push(...e.data.data);
+          e.data.data.forEach(function(data: any) {
+            const { index, randomNumber, token } = data;
+            const { amount, from, receiver, timestamp, txHash } = subAnnouncements[worker_id][index];
+            const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
+            userAnnouncements.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
+          });
         }
 
         progressRecorder[worker_id] = e.data.index;

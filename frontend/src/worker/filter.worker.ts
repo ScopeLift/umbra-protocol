@@ -13,12 +13,11 @@ self.addEventListener(
     const results = [];
     for (let index = 0; index < announcements.length; index++) {
       const ann = announcements[index];
-      const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
+      const { token: tokenAddr } = ann;
       const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
       const token = getAddress(tokenAddr); // ensure checksummed address
-      const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
       if (isForUser) {
-        results.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
+        results.push({ index: index, randomNumber: randomNumber, token: token });
       }
       ctx.postMessage({
         worker_id: worker_id,
