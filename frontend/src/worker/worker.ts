@@ -1,5 +1,6 @@
 import { AnnouncementDetail, UserAnnouncement, Umbra } from '@umbra/umbra-js';
 import { getAddress } from 'src/utils/ethers';
+// Here we use `worker-loader` to load worker, remember worker is not a module.
 import Worker from 'worker-loader!./filter.worker';
 
 export const filterUserAnnouncements = (
@@ -10,10 +11,12 @@ export const filterUserAnnouncements = (
   completion: (userAnnouncements: UserAnnouncement[]) => void
 ) => {
   const userAnnouncements: UserAnnouncement[] = [];
-  let index = 0;
 
   if (!window.Worker) {
+    // Current browser does not support web worker, so we gracefully degrade the scanning algorithm
+    // to former one (i.e. setInterval()).
     const chunk = 10;
+    let index = 0;
     const doChunk = () => {
       for (let count = chunk; count > 0 && index < announcements.length; count--, index++) {
         const ann = announcements[index];
@@ -36,30 +39,34 @@ export const filterUserAnnouncements = (
 
     doChunk();
   } else {
+    // Current browser supports web worker, will will employ multiple workers to collaboratively completing the
+    // scanning task. The basic usage of web worker can be found at:
+    // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+    // In a nutshell, this file (worker.ts) will act as a worker controller that controls real workers, including
+    // initializing, passing message, receiving message and terminating.
+
     // navigator.hardwareConcurrency is not enabled in safari at compile time by default, but we know that WebKit
     // browsers clamp the max value for navigator.hardwareConcurrency to 2 on iOS and to 8 on others devices
     // https://caniuse.com/?search=hardwareConcurrency
-    let nCores = 2;
-    if (navigator.hardwareConcurrency) {
-      nCores = navigator.hardwareConcurrency;
-    }
+    const nCores = navigator.hardwareConcurrency || 2;
 
     console.log(`[Worker] Cores: ${nCores}`);
 
     // split announcements into nCores sub lists
     const subAnnouncements: AnnouncementDetail[][] = Array.from(Array(nCores), () => []);
-    for (; index < announcements.length; index++) {
+    for (let index = 0; index < announcements.length; index++) {
       subAnnouncements[index % nCores].push(announcements[index]);
     }
-    index = 0;
 
     // assign tasks to workers
     const workers: Worker[] = [];
     const progressRecorder: number[] = [];
     let progressSum = 0;
-    for (; index < nCores; index++) {
+    // Here we will initialize `nCores` workers by constructing `Worker()` imported from worker script `filter.worker.ts`
+    for (let index = 0; index < nCores; index++) {
       progressRecorder.push(0);
       workers.push(new Worker());
+      // Here we add event listener to each worker to handle the case where it sends message to controller (i.e. worker.ts)
       workers[index].addEventListener('message', function(e: MessageEvent) {
         const worker_id = e.data.worker_id;
         const done = e.data.done;
@@ -88,6 +95,7 @@ export const filterUserAnnouncements = (
           completion(userAnnouncements);
         }
       });
+      // Here we pass essential variables to each worker, letting them start computing.
       workers[index].postMessage({
         worker_id: index,
         announcements: subAnnouncements[index],
