@@ -42,7 +42,7 @@ export const supportedChains: Array<Chain> = [
     chainName: 'Mainnet',
     nativeCurrency: {
       address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-      name: 'Ethereum',
+      name: 'Ether',
       symbol: 'ETH',
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
@@ -57,7 +57,7 @@ export const supportedChains: Array<Chain> = [
     chainName: 'Rinkeby',
     nativeCurrency: {
       address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-      name: 'Ethereum',
+      name: 'Ether',
       symbol: 'ETH',
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
@@ -66,6 +66,21 @@ export const supportedChains: Array<Chain> = [
     blockExplorerUrls: ['https://rinkeby.etherscan.io'],
     iconUrls: [ETH_NETWORK_LOGO],
     logoURI: ETH_NETWORK_LOGO,
+  },
+  {
+    chainId: '0xa', // 10 as hex
+    chainName: 'Optimism',
+    nativeCurrency: {
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      name: 'Ether',
+      symbol: 'OETH',
+      decimals: 18,
+      logoURI: ETH_NETWORK_LOGO,
+    },
+    rpcUrls: ['https://mainnet.optimism.io', `https://optimism-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['https://optimistic.etherscan.io/'],
+    iconUrls: ['/networks/optimism.svg'],
+    logoURI: '/networks/optimism.svg',
   },
   {
     chainId: '0x89', // 137 as hex
@@ -82,9 +97,25 @@ export const supportedChains: Array<Chain> = [
     iconUrls: ['/networks/polygon.svg'],
     logoURI: '/networks/polygon.svg',
   },
+  {
+    chainId: '0xa4b1', // 42161 as hex
+    chainName: 'Arbitrum',
+    nativeCurrency: {
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      name: 'Ether',
+      symbol: 'AETH',
+      decimals: 18,
+      logoURI: ETH_NETWORK_LOGO,
+    },
+    rpcUrls: ['https://arb1.arbitrum.io/rpc', `https://arbitrum-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    blockExplorerUrls: ['https://arbiscan.io/'],
+    iconUrls: ['/networks/arbitrum.svg'],
+    logoURI: '/networks/arbitrum.svg',
+  },
 ];
+
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
-export type SupportedChainIds = '1' | '4' | '137'; // strings for indexing into JSON files
+export type SupportedChainIds = '1' | '4' | '10' | '137' | '42161'; // strings for indexing into JSON files
 export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response

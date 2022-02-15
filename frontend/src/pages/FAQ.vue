@@ -602,15 +602,19 @@
               The core <span class="code">Umbra</span> contract is deployed at
               <span class="code">{{ deployments.umbra }}</span> on
               <a :href="getEtherscanUrl(deployments.umbra, 1)" class="hyperlink" target="_blank"> mainnet </a>,
-              <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Rinkeby </a>, and
-              <a :href="getEtherscanUrl(deployments.umbra, 137)" class="hyperlink" target="_blank"> Polygon </a>
+              <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Rinkeby </a>,
+              <a :href="getEtherscanUrl(deployments.umbra, 10)" class="hyperlink" target="_blank"> Optimism </a>,
+              <a :href="getEtherscanUrl(deployments.umbra, 137)" class="hyperlink" target="_blank"> Polygon </a>, and
+              <a :href="getEtherscanUrl(deployments.umbra, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
             </li>
             <li>
               The <span class="code">StealthKeyRegistry</span> is deployed at
               <span class="code">{{ deployments.registry }}</span> on
               <a :href="getEtherscanUrl(deployments.registry, 1)" class="hyperlink" target="_blank"> mainnet </a>,
-              <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Rinkeby </a>, and
-              <a :href="getEtherscanUrl(deployments.registry, 137)" class="hyperlink" target="_blank"> Polygon </a>
+              <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Rinkeby </a>,
+              <a :href="getEtherscanUrl(deployments.registry, 10)" class="hyperlink" target="_blank"> Optimism </a>,
+              <a :href="getEtherscanUrl(deployments.registry, 137)" class="hyperlink" target="_blank"> Polygon </a>, and
+              <a :href="getEtherscanUrl(deployments.registry, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
             </li>
           </ul>
         </f-a-q-item>

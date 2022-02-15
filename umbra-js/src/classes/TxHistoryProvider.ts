@@ -13,8 +13,14 @@ export class TxHistoryProvider extends EtherscanProvider {
       case 4: // rinkeby
         defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
         break;
+      case 10: // optimism
+        defaultApiKey = <string>process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
+        break;
       case 137: // polygon
         defaultApiKey = <string>process.env.POLYGONSCAN_API_KEY;
+        break;
+      case 42161: // arbitrum
+        defaultApiKey = <string>process.env.ARBISCAN_API_KEY;
         break;
       default:
         throw new Error(`Unsupported chain ID ${_chainId}`);
@@ -29,8 +35,12 @@ export class TxHistoryProvider extends EtherscanProvider {
         return 'https://api.etherscan.io';
       case 4:
         return 'https://api-rinkeby.etherscan.io';
+      case 10:
+        return 'https://api-optimistic.etherscan.io';
       case 137:
         return 'https://api.polygonscan.com';
+      case 42161:
+        return 'https://api.arbiscan.com';
     }
 
     throw new Error(`Unsupported network ${JSON.stringify(this.network.chainId)}`);
