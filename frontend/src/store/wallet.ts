@@ -44,6 +44,7 @@ const isAccountSetup = ref(false); // true if user has registered their address 
 const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instafnce
 const isArgent = ref<boolean>(false); // true if user connected an argent wallet
 const stealthKeys = ref<{ spendingPublicKey: string; viewingPublicKey: string } | null>();
+const avatar = ref<string | null>('');
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -243,6 +244,18 @@ export default function useWalletStore() {
       ]);
       const _isAccountSetup = _stealthKeys !== null;
 
+      if (typeof _userEns === 'string') {
+        // can only look up an avatar if there is an ENS address
+        if (provider.value.network.chainId === 1) {
+          avatar.value = await provider.value.getAvatar(_userEns);
+        } else {
+          const currentNetworkAvatar = await provider.value.getAvatar(_userEns);
+          const mainnetAvatar= await MAINNET_PROVIDER.getAvatar(_userEns);
+          // prefer the avatar on the current chain, if one exists
+          avatar.value = currentNetworkAvatar || mainnetAvatar;
+        }
+      }
+
       // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
       const [_hasEnsKeys, _hasCnsKeys] = _isAccountSetup
         ? [false, false]
@@ -427,6 +440,7 @@ export default function useWalletStore() {
     isLoading: computed(() => isLoading.value),
     isArgent: computed(() => isArgent.value),
     provider: computed(() => provider.value),
+    avatar: computed(() => avatar.value),
     relayer: computed(() => relayer.value),
     signer: computed(() => signer.value),
     spendingKeyPair: computed(() => spendingKeyPair.value),
