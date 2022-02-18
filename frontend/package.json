@@ -23,7 +23,7 @@
     "bnc-notify": "^1.5.1",
     "bnc-onboard": "^1.13.0",
     "core-js": "^3.6.5",
-    "ethers": "^5.5.3",
+    "ethers": "5.5",
     "quasar": "^1.0.0"
   },
   "devDependencies": {
