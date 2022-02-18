@@ -59,6 +59,7 @@
             <div v-else-if="!isLoading && (userDisplayName || network)" class="row justify-end items-center no-wrap">
               <div class="q-mr-md">
                 <address-settings
+                  :avatar="avatar"
                   :userAddress="userAddress"
                   :userDisplayName="userDisplayName"
                   :advancedMode="advancedMode"
@@ -236,10 +237,20 @@ export default defineComponent({
   components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
     const { advancedMode, isDark, toggleAdvancedMode, toggleDarkMode } = useSettingsStore();
-    const { isAccountSetup, isAccountSetupLegacy, isArgent, isLoading, network, userAddress, userDisplayName } = useWalletStore(); // prettier-ignore
+    const {
+      avatar,
+      isAccountSetup,
+      isAccountSetupLegacy,
+      isArgent,
+      isLoading,
+      network,
+      userAddress,
+      userDisplayName
+    } = useWalletStore();
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
     return {
+      avatar,
       advancedMode,
       argentModalDismissed,
       drawerRight: ref(false),
