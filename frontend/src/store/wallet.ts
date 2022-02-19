@@ -244,15 +244,21 @@ export default function useWalletStore() {
       ]);
       const _isAccountSetup = _stealthKeys !== null;
 
-      if (typeof _userEns === 'string') {
-        // can only look up an avatar if there is an ENS address
-        if (provider.value.network.chainId === 1) {
-          avatar.value = await provider.value.getAvatar(_userEns);
-        } else {
-          const currentNetworkAvatar = await provider.value.getAvatar(_userEns);
-          const mainnetAvatar= await MAINNET_PROVIDER.getAvatar(_userEns);
-          // prefer the avatar on the current chain, if one exists
-          avatar.value = currentNetworkAvatar || mainnetAvatar;
+      if (typeof _userEns === 'string') { // ENS address must exist
+        const chainId = provider.value.network.chainId;
+        switch (chainId) {
+          case 1: // mainnet
+          case 137: // polygon mainnet
+            avatar.value = await MAINNET_PROVIDER.getAvatar(_userEns);
+            break;
+          case 4: // rinkeby
+            const currentNetworkAvatar = await provider.value.getAvatar(_userEns);
+            const mainnetAvatar= await MAINNET_PROVIDER.getAvatar(_userEns);
+            // prefer the avatar on the current chain, if one exists
+            avatar.value = currentNetworkAvatar || mainnetAvatar;
+            break;
+          default:
+            console.log(`unhandled network ${chainId} for ENS avatars`);
         }
       }
 
