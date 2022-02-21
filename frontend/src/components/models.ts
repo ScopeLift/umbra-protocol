@@ -99,7 +99,7 @@ export const supportedChains: Array<Chain> = [
   },
   {
     chainId: '0xa4b1', // 42161 as hex
-    chainName: 'Arbitrum',
+    chainName: 'Arbitrum One',
     nativeCurrency: {
       address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
       name: 'Ether',

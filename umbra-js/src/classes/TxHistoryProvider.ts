@@ -40,7 +40,7 @@ export class TxHistoryProvider extends EtherscanProvider {
       case 137:
         return 'https://api.polygonscan.com';
       case 42161:
-        return 'https://api.arbiscan.com';
+        return 'https://api.arbiscan.io';
     }
 
     throw new Error(`Unsupported network ${JSON.stringify(this.network.chainId)}`);

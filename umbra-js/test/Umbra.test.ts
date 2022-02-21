@@ -121,7 +121,7 @@ describe('Umbra class', () => {
       const umbra3 = new Umbra(jsonRpcProvider, 4);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       expect(umbra3.chainConfig.startBlock).to.equal(8505089);
-      //expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby');
+      // expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby');
       expect(umbra3.chainConfig.subgraphUrl).to.equal(false);
 
       // --- Mainnet ---
@@ -130,11 +130,23 @@ describe('Umbra class', () => {
       expect(umbra4.chainConfig.startBlock).to.equal(12343914);
       expect(umbra4.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet');
 
-      // --- Polygon ---
-      const umbra5 = new Umbra(jsonRpcProvider, 137);
+      // --- Optimism ---
+      const umbra5 = new Umbra(jsonRpcProvider, 10);
       expect(umbra5.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra5.chainConfig.startBlock).to.equal(20717318);
-      expect(umbra5.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon');
+      expect(umbra5.chainConfig.startBlock).to.equal(4069556);
+      expect(umbra5.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbraoptimism'); // prettier-ignore
+
+      // --- Polygon ---
+      const umbra6 = new Umbra(jsonRpcProvider, 137);
+      expect(umbra6.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra6.chainConfig.startBlock).to.equal(20717318);
+      expect(umbra6.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon');
+
+      // --- Arbitrum ---
+      const umbra7 = new Umbra(jsonRpcProvider, 42161);
+      expect(umbra7.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra7.chainConfig.startBlock).to.equal(7285883);
+      expect(umbra7.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone'); // prettier-ignore
     });
 
     it('does not allow invalid default chain IDs to be provided', async () => {

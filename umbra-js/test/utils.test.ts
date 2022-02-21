@@ -170,6 +170,18 @@ describe('Utilities', () => {
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
     });
+
+    it('looks up transaction history on optimism', async () => {
+      const ethersProvider = new ethers.providers.JsonRpcProvider('https://mainnet.optimism.io') as EthersProvider;
+      const txHash = await utils.getSentTransaction(address, ethersProvider);
+      expect(txHash).to.have.lengthOf(66);
+    });
+
+    it('looks up transaction history on arbitrum one', async () => {
+      const ethersProvider = new ethers.providers.JsonRpcProvider('https://arb1.arbitrum.io/rpc') as EthersProvider;
+      const txHash = await utils.getSentTransaction(address, ethersProvider);
+      expect(txHash).to.have.lengthOf(66);
+    });
   });
 
   describe('Input validation', () => {

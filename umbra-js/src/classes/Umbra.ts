@@ -36,14 +36,18 @@ const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on al
 const subgraphs = {
   1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
   4: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby',
+  10: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraoptimism',
   137: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
+  42161: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone',
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
   4: { chainId: 4, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Rinkeby Graph disabled due to outage/issues
+  10: { chainId: 10, umbraAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
   137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
+  42161: { chainId: 42161, umbraAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
 };
 
 /**
