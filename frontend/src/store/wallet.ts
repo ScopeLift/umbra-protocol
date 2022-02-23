@@ -245,21 +245,7 @@ export default function useWalletStore() {
       const _isAccountSetup = _stealthKeys !== null;
 
       if (typeof _userEns === 'string') { // ENS address must exist
-        const chainId = provider.value.network.chainId;
-        switch (chainId) {
-          case 1: // mainnet
-          case 137: // polygon mainnet
-            avatar.value = await MAINNET_PROVIDER.getAvatar(_userEns);
-            break;
-          case 4: // rinkeby
-            const currentNetworkAvatar = await provider.value.getAvatar(_userEns);
-            const mainnetAvatar= await MAINNET_PROVIDER.getAvatar(_userEns);
-            // prefer the avatar on the current chain, if one exists
-            avatar.value = currentNetworkAvatar || mainnetAvatar;
-            break;
-          default:
-            console.log(`unhandled network ${chainId} for ENS avatars`);
-        }
+        avatar.value = await MAINNET_PROVIDER.getAvatar(_userEns);
       }
 
       // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
