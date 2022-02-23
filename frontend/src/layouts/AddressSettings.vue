@@ -8,10 +8,7 @@
         <span v-if="userDisplayName">
           {{ userDisplayName }}
         </span>
-        <span v-if="userAddress">
-          <Avatar v-if="avatar" :avatar="avatar" class="q-ml-sm" />
-          <Jazzicon v-else :address="userAddress" class="q-ml-sm" />
-        </span>
+        <Avatar v-if="userAddress" :address="userAddress" :avatar="avatar" class="q-ml-sm" />
       </div>
     </connect-wallet>
   </div>
@@ -21,12 +18,11 @@
 import { defineComponent, PropType } from '@vue/composition-api';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
-import Jazzicon from 'src/components/Jazzicon.vue';
 import Avatar from 'src/components/Avatar.vue';
 
 export default defineComponent({
   name: 'AddressSettings',
-  components: { BaseTooltip, ConnectWallet, Jazzicon, Avatar },
+  components: { BaseTooltip, ConnectWallet, Avatar },
   props: {
     avatar: {
       type: (null as unknown) as PropType<string | null>,
