@@ -1,5 +1,5 @@
 <template>
-  <div class="flex" id="icon" />
+  <div class="flex" id="jazzicon" />
 </template>
 
 <script lang="ts">
@@ -15,7 +15,7 @@ export default defineComponent({
     onMounted(() => {
       const width = 20;
       const identicon = jazzicon(width, parseInt(props.address.slice(2, 10), 16));
-      document.querySelector('#icon')?.appendChild(identicon);
+      document.querySelector('#jazzicon')?.appendChild(identicon);
     });
   },
 });
