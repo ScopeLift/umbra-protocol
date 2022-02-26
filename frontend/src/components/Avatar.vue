@@ -1,6 +1,7 @@
 <template>
-  <img v-if="avatar" :src="avatar" id="avatar" width='20px' style='border-radius: 50%' />
-  <Jazzicon v-else :address="address" />
+  <span id="avatar-container">
+    <Jazzicon :address="address" />
+  </span>
 </template>
 
 <script lang="ts">
@@ -20,5 +21,23 @@ export default defineComponent({
       required: true,
     },
   },
+  setup: (props) => {
+    if (props.avatar) {
+      // load the avatar image async and display the jazzicon while waiting
+      const avatarImg = new Image();
+      avatarImg.onload = () => {
+        document.querySelector('#jazzicon')?.remove();
+        document.querySelector('#avatar-container')?.appendChild(avatarImg);
+      }
+      avatarImg.id = 'avatar';
+      avatarImg.width = '20';
+      avatarImg.src = props.avatar;
+    }
+  },
 });
 </script>
+
+<style lang="sass">
+#avatar
+  border-radius: 50%
+</style>
