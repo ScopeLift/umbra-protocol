@@ -1,5 +1,5 @@
 <template>
-  <span id="avatar-container">
+  <span id="avatar-container" class="row">
     <Jazzicon :address="address" />
   </span>
 </template>
@@ -28,9 +28,9 @@ export default defineComponent({
       avatarImg.onload = () => {
         document.querySelector('#jazzicon')?.remove();
         document.querySelector('#avatar-container')?.appendChild(avatarImg);
-      }
+      };
       avatarImg.id = 'avatar';
-      avatarImg.width = '20';
+      avatarImg.width = 20;
       avatarImg.src = props.avatar;
     }
   },
