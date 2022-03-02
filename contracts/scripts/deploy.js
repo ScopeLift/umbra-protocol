@@ -1,24 +1,13 @@
-/**
- * @notice Umbra Deployment script
- * @dev At each contract deployment or transaction, we wait for the transaction to be mined before
- * continuing to the next step. This is done because it makes it simpler to continue from that spot
- * rather than restart the full deployment
- * @dev To initialize a deploy:
- *   `yarn deploy --network <network>`   (where network specifies a netwrk found in the hardhat.config.ts file)
- * If deploying to a local node (--network localhost), first start Hardhat using `yarn hardhat node`
- */
 const fs = require('fs');
 const hre = require('hardhat');
-const { exit } = require('process');
 const { ethers } = hre;
 
 const network = process.env.HARDHAT_NETWORK;
-const shouldDeployGSN = process.env.DEPLOY_GSN === 'true';
 
 // Initialize object that will hold all deploy info. We'll continually update this and save it to
 // a file using the save() method below
 const parameters = {
-  admin: null,
+  deployer: null,
   contracts: {}, // will be populated with all contract addresses
   actions: {}, // will be populated with deployment actions
 };
@@ -32,7 +21,7 @@ fs.mkdir(folderName, (err) => {
   if (err && err.code !== 'EEXIST') throw err;
 });
 
-// method to save the deploy info to 2 JSON files
+//  save the deploy info to 2 JSON files:
 //  first one named with network and timestamp, contains all relevant deployment info
 //  second one name with network and "latest", contains only contract addresses deployed
 const save = (value, field, subfield = undefined) => {
@@ -44,88 +33,72 @@ const save = (value, field, subfield = undefined) => {
   fs.writeFileSync(fileName, JSON.stringify(parameters));
 };
 
+// Send 0.01 ETH to oneself and wait for it to be mined, bumping the wallet's nonce
+const doBumpNonceTx = async (wallet) => {
+  const tx = await wallet.sendTransaction({
+    to: wallet.address,
+    value: ethers.utils.parseEther('0.01'),
+  });
+
+  console.log(`Executing nonce bump tx ${tx.hash}`);
+  
+  await tx.wait();
+};
+
 // IIFE async function so "await"s can be performed for each operation
 (async function () {
   try {
     const deployParams = require('./deployParams.json');
     const deployParamsForNetwork = deployParams[network];
 
-    if (!deployParamsForNetwork) {
-      console.log('Invalid network requested', network);
-      save(network, 'actions', 'InvalidNetworkRequested');
-      exit();
-    }
+    // When testing deployment on localhost, the expected deployer is 0x2c399eD6c510C89793C90f7A186FDd2bD1Fd6AdD, which
+    // corresponds to address[0] of the mnemonic "test test test test test test test test test test silent junk".
+    // We could not use the default hardhat mnemonic because the nonce for that address on a forked Rinkeby would
+    // be unpredictable (since lots of people execute txs with that account).
+    const { expectedDeployer, toll, tollCollector, tollReceiver, expectedRegistryNonce } = deployParamsForNetwork;
 
     console.log('Deploying to: ', network);
     save(network, 'actions', 'DeployingContractsToNetwork');
 
-    const [adminWallet] = await ethers.getSigners();
-    save(adminWallet.address, 'admin');
+    const [deployerWallet] = await ethers.getSigners();
+    save(deployerWallet.address, 'deployer');
 
-    // deploy the Umbra contracts
-    const Umbra = await ethers.getContractFactory('Umbra', adminWallet);
+    if (deployerWallet.address !== expectedDeployer) {
+      throw new Error(`Unexpected deployer address. Found ${deployerWallet.address}, expected ${expectedDeployer}.`);
+    }
+
+    let deployerNonce = await deployerWallet.getTransactionCount();
+
+    if (deployerNonce !== 0) {
+      throw new Error('Unexpected non-zero nonce before deploying Umbra');
+    }
+
+    // deploy the Umbra contract
+    const Umbra = await ethers.getContractFactory('Umbra', deployerWallet);
     const umbra = await Umbra.deploy(
-      deployParamsForNetwork.toll,
-      deployParamsForNetwork.tollCollector,
-      deployParamsForNetwork.tollReceiver
+      toll,
+      tollCollector,
+      tollReceiver
     );
     await umbra.deployed();
     save(umbra.address, 'contracts', 'Umbra');
     console.log('Umbra contract deployed to address: ', umbra.address);
 
-    if (shouldDeployGSN) {
-      const UmbraForwarder = await ethers.getContractFactory('UmbraForwarder', adminWallet);
-      const umbraForwarder = await UmbraForwarder.deploy();
-      await umbraForwarder.deployed();
-      save(umbraForwarder.address, 'contracts', 'UmbraForwarder');
-      console.log('UmbraForwarder contract deployed to address: ', umbraForwarder.address);
+    // bump the nonce until the level needed for the registry
+    deployerNonce = await deployerWallet.getTransactionCount();
 
-      const UmbraRelayRecipient = await ethers.getContractFactory('UmbraRelayRecipient', adminWallet);
-      const umbraRelayRecipient = await UmbraRelayRecipient.deploy(umbra.address, umbraForwarder.address);
-      await umbraRelayRecipient.deployed();
-      save(umbraRelayRecipient.address, 'contracts', 'UmbraRelayRecipient');
-      console.log('UmbraRelayRecipient contract deployed to address: ', umbraRelayRecipient.address);
-
-      const UmbraPaymaster = await ethers.getContractFactory('UmbraPaymaster', adminWallet);
-      const umbraPaymaster = await UmbraPaymaster.deploy(umbraRelayRecipient.address);
-      await umbraPaymaster.deployed();
-      save(umbraPaymaster.address, 'contracts', 'UmbraPaymaster');
-      console.log('UmbraPaymaster contract deployed to address: ', umbraPaymaster.address);
-
-      // set the relayer address on the Paymaster contract
-      const setRelayHubTxReceipt = await umbraPaymaster.setRelayHub(deployParamsForNetwork.payMasterPublicRelayer);
-      setRelayHubTxReceipt.wait();
-      save(deployParamsForNetwork.payMasterPublicRelayer, 'actions', 'SetPaymasterRelayHub');
-      save(setRelayHubTxReceipt.hash, 'actions', 'SetPaymasterRelayHubTxHash');
-      console.log(
-        'UmbraPaymaster relay hub set to address: ',
-        deployParamsForNetwork.payMasterPublicRelayer,
-        ' at transaction hash:',
-        setRelayHubTxReceipt.hash
-      );
-
-      const setTrustedForwaderTxReceipt = await umbraPaymaster.setTrustedForwarder(umbraForwarder.address);
-      setTrustedForwaderTxReceipt.wait();
-      save(umbraForwarder.address, 'actions', 'SetTrustedForwarder');
-      save(setTrustedForwaderTxReceipt.hash, 'actions', 'SetTrustedForwarderTxHash');
-      console.log(
-        'UmbraPaymaster trusted forwarder set to address: ',
-        umbraForwarder.address,
-        ' at transaction hash: ',
-        setTrustedForwaderTxReceipt.hash
-      );
-
-      // Create transaction to send funds to Paymaster contract
-      const tx = {
-        to: umbraPaymaster.address,
-        value: ethers.utils.parseEther('1'),
-        gasLimit: 1000000,
-      };
-      const receipt = await adminWallet.sendTransaction(tx);
-      await receipt.wait();
-      save(receipt.hash, 'actions', 'SendPaymasterFundsTx');
-      console.log(`Paymaster funding transaction successful with hash: ${receipt.hash}`);
+    while (deployerNonce < expectedRegistryNonce) {
+      console.log(`Deployer nonce is ${deployerNonce}`);
+      await doBumpNonceTx(deployerWallet);
+      deployerNonce = await deployerWallet.getTransactionCount();
     }
+
+    // deploy the Registry contract
+    const StealthKeyRegistry = await ethers.getContractFactory('StealthKeyRegistry', deployerWallet);
+    const registry = await StealthKeyRegistry.deploy();
+    await registry.deployed();
+    save(registry.address, 'contracts', 'StealthKeyRegistry');
+    console.log('StealthKeyRegistry contract deployed to address: ', registry.address);
 
     // everything went well, save the deployment info in the 'latest' JSON file
     fs.writeFileSync(latestFileName, JSON.stringify(parameters));
