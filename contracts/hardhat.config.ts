@@ -28,6 +28,7 @@ const chainIds = {
   rinkarby: 421611,
   arbitrum: 42161,
   optimistic_kovan: 69,
+  optimism: 10,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -140,6 +141,16 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds['optimistic_kovan'],
       url: 'https://kovan.optimism.io',
+    },
+    optimism: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['optimism'],
+      url: 'https://mainnet.optimism.io',
     },
   },
   paths: {
