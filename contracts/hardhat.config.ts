@@ -46,10 +46,10 @@ if (!process.env.INFURA_ID) {
 }
 
 let etherscanApiKey = '';
-if (!process.env.ETHERSCAN_API_KEY) {
+if (!process.env.ETHERSCAN_VALIDATION_API_KEY) {
   console.warn('Please set your ETHERSCAN_API_KEY in a .env file');
 } else {
-  etherscanApiKey = process.env.ETHERSCAN_API_KEY;
+  etherscanApiKey = process.env.ETHERSCAN_VALIDATION_API_KEY;
 }
 
 const shouldReportGas = process.env.REPORT_GAS === 'true';
@@ -118,7 +118,7 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds['rinkarby'],
       url: 'https://rinkeby.arbitrum.io/rpc',
-    }
+    },
   },
   paths: {
     artifacts: './artifacts',
