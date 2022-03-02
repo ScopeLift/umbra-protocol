@@ -25,6 +25,7 @@ const chainIds = {
   rinkeby: 4,
   ropsten: 3,
   polygon: 137,
+  rinkarby: 421611,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -108,6 +109,16 @@ const config: HardhatUserConfig = {
       url: 'https://polygon-rpc.com/',
       gasPrice: 33000000000, // 33 gwei
     },
+    rinkarby: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['rinkarby'],
+      url: 'https://rinkeby.arbitrum.io/rpc',
+    }
   },
   paths: {
     artifacts: './artifacts',
