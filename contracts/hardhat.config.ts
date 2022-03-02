@@ -26,6 +26,7 @@ const chainIds = {
   ropsten: 3,
   polygon: 137,
   rinkarby: 421611,
+  arbitrum: 42161,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -118,6 +119,16 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds['rinkarby'],
       url: 'https://rinkeby.arbitrum.io/rpc',
+    },
+    arbitrum: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['arbitrum'],
+      url: 'https://arb1.arbitrum.io/rpc',
     },
   },
   paths: {
