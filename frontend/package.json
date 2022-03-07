@@ -27,6 +27,7 @@
     "quasar": "^1.0.0"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.16.7",
     "@quasar/app": "^2.0.0",
     "@quasar/quasar-app-extension-dotenv": "^1.0.5",
     "@types/node": "^12.17.15",
@@ -35,6 +36,7 @@
     "babel-eslint": "^10.0.1",
     "eslint-loader": "^3.0.3",
     "eslint-plugin-vue": "^6.1.2",
+    "jest": "^27.5.1",
     "postinstall-postinstall": "^2.1.0",
     "worker-loader": "^3.0.8"
   },
@@ -51,5 +53,10 @@
   ],
   "volta": {
     "extends": "../package.json"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "src/(.*)": "<rootDir>/src/$1"
+    }
   }
 }
