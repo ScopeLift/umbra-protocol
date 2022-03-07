@@ -1,4 +1,8 @@
 /* eslint-env node */
 module.exports = {
-  presets: ['@quasar/babel-preset-app'],
+  presets: [
+    '@babel/preset-env',
+    '@quasar/babel-preset-app',
+    '@babel/preset-typescript',
+  ],
 };
