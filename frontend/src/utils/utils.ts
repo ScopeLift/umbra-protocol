@@ -45,6 +45,24 @@ export const roundTokenAmount = (amount: BigNumberish, token: { decimals: number
 };
 
 /**
+ * @notice Rounds to appropriate human readable decimals for the token
+ * @param amount
+ * @param token
+ * @returns string
+ */
+export const humanizeTokenAmount = (
+  amount: BigNumberish,
+  token: { decimals: number; address: string },
+): string => {
+  const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
+  if (formattedAmount <= 1) return formattedAmount.toPrecision(2);
+  return formattedAmount.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })
+};
+
+/**
  * @notice GETs JSON from the provided `url`
  */
 export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
