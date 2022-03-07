@@ -19,5 +19,5 @@
       "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
     }
   },
-  "include": ["src", "src/**/*.json"]
+  "include": ["src", "test/*", "src/**/*.json"]
 }
