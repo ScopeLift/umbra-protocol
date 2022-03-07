@@ -27,7 +27,7 @@
         <div v-else-if="activeFee" class="text-caption">
           Estimated withdrawal fee:
           <span class="text-bold">
-            {{ roundTokenAmount(activeFee.fee, activeFee.token) }}
+            {{ humanizeTokenAmount(activeFee.fee, activeFee.token) }}
             {{ activeFee.token.symbol }}
           </span>
         </div>
@@ -68,7 +68,7 @@
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { FeeEstimateResponse } from './models';
 import { formatUnits } from 'src/utils/ethers';
-import { roundTokenAmount } from 'src/utils/utils';
+import { humanizeTokenAmount } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -107,7 +107,7 @@ export default defineComponent({
     const { NATIVE_TOKEN } = useWalletStore();
     const content = ref<string>(destinationAddress || '');
     const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
-    return { formatUnits, roundTokenAmount, emit, content, nativeTokenSymbol };
+    return { formatUnits, humanizeTokenAmount, emit, content, nativeTokenSymbol };
   },
 });
 </script>

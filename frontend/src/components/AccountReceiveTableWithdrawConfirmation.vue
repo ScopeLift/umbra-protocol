@@ -108,7 +108,7 @@ import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import { getEtherscanUrl, getGasPrice, round, roundTokenAmount } from 'src/utils/utils';
+import { getEtherscanUrl, getGasPrice, round, humanizeTokenAmount } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -164,7 +164,7 @@ export default defineComponent({
     if (isNativeToken) {
       formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being withdrawn, rounded
     } else {
-      formattedAmount = roundTokenAmount(amount, props.activeFee.token);
+      formattedAmount = humanizeTokenAmount(amount, props.activeFee.token);
     }
     function isValidFeeAmount(val: string) {
       if (!val || !(Number(val) > 0)) return 'Please enter an amount';
@@ -233,7 +233,7 @@ export default defineComponent({
       if (isNativeToken) {
         round(formatUnits(fee.value, decimals), ethDisplayDecimals);
       } else {
-        return roundTokenAmount(props.activeFee.fee, props.activeFee.token);
+        return humanizeTokenAmount(props.activeFee.fee, props.activeFee.token);
       }
       return round(formatUnits(fee.value, decimals), numDecimals);
     }); // relayer fee, rounded
@@ -241,7 +241,7 @@ export default defineComponent({
       if (isNativeToken) {
         return round(formatUnits(amountReceived.value, decimals), numDecimals);
       } else {
-        return roundTokenAmount(amountReceived.value, props.activeFee.token);
+        return humanizeTokenAmount(amountReceived.value, props.activeFee.token);
       }
     }); // amount user will receive, rounded
     // prevent withdraw attempts if fee is larger than amount
