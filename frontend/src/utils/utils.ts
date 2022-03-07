@@ -30,22 +30,6 @@ export const round = (value: number | string, decimals = 2) => {
 
 /**
  * @notice Rounds to appropriate human readable decimals for the token
- * @dev This is very fragile and should be replace with something robust, i.e. something that walks
- * value and rounds considering sig-figs or similar
- */
-export const roundTokenAmount = (amount: BigNumberish, token: { decimals: number; address: string }): string => {
-  const formatted = formatUnits(amount, token.decimals);
-  // WETH on Polygon
-  const isWeth = token.address === '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619';
-  if (isWeth) {
-    return round(formatted, 6);
-  } else {
-    return round(formatted, 2);
-  }
-};
-
-/**
- * @notice Rounds to appropriate human readable decimals for the token
  * @param amount
  * @param token
  * @returns string
