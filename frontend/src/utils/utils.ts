@@ -1,4 +1,4 @@
-import { supportedChains } from 'src/components/models';
+import { supportedChains, TokenInfo } from 'src/components/models';
 import { BigNumber, BigNumberish, hexValue, parseUnits, formatUnits } from './ethers';
 
 /**
@@ -36,7 +36,7 @@ export const round = (value: number | string, decimals = 2) => {
  */
 export const humanizeTokenAmount = (
   amount: BigNumberish,
-  token: { decimals: number; address: string },
+  token: TokenInfo,
 ): string => {
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
   if (formattedAmount <= 1) return formattedAmount.toPrecision(2);
