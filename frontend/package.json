@@ -8,7 +8,7 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "prettier": "prettier --write .",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "jest",
     "dev": "quasar dev",
     "build": "quasar build && cp _redirects dist/spa/",
     "clean": "rimraf dist",
