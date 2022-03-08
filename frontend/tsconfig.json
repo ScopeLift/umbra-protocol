@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "outDir": "build",
     "resolveJsonModule": true,
-    "rootDir": "src",
+    "skipLibCheck": true,
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],
@@ -19,5 +19,6 @@
       "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
     }
   },
-  "include": ["src", "test/*", "src/**/*.json"]
+  "include": ["src", "test/*", "src/**/*.json"],
+  "exclude": ["build/*"]
 }
