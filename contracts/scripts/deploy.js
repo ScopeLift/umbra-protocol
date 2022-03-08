@@ -72,7 +72,7 @@ const doBumpNonceTx = async (wallet) => {
     const [deployerWallet] = await ethers.getSigners();
     save(deployerWallet.address, 'deployer');
 
-    if (deployerWallet.address !== expectedDeployer) {
+    if (deployerWallet.address !== ethers.utils.getAddress(expectedDeployer)) {
       throw new Error(`Unexpected deployer address. Found ${deployerWallet.address}, expected ${expectedDeployer}.`);
     }
 
