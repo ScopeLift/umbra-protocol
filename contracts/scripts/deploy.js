@@ -1,3 +1,12 @@
+/**
+ * @notice Umbra Deployment script
+ * Deploys the core Umbra contract, along with the Umbra Stealth Key Registry, checkilng for the correct
+ * nonces at each step to ensure we get the same contract addresses across networks.
+ * @dev To initialize a deploy:
+ *   `yarn deploy --network <network>`   (where network specifies a network found in the hardhat.config.ts file)
+ * If deploying to a local node (--network localhost), first start Hardhat using `yarn hardhat node`
+ */
+
 const fs = require('fs');
 const hre = require('hardhat');
 const { ethers } = hre;
