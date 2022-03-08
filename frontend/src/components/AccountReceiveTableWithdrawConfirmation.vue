@@ -108,7 +108,7 @@ import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import { getEtherscanUrl, getGasPrice, round, humanizeTokenAmount } from 'src/utils/utils';
+import { getEtherscanUrl, getGasPrice, humanizeTokenAmount } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -152,20 +152,15 @@ export default defineComponent({
     const { NATIVE_TOKEN, network, provider } = useWalletStore();
     const isNativeToken = props.activeFee.token.symbol === NATIVE_TOKEN.value.symbol;
     const amount = props.activeAnnouncement.amount; // amount being withdrawn
-    const decimals = props.activeFee.token.decimals; // number of decimals token has
     const symbol = props.activeFee.token.symbol; // token symbol
     const tokenURL = props.activeFee.token.logoURI; // URL pointing to image of token logo
 
     // Get properties dependent on those props
     const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdrawal tx hash URL
-    const ethDisplayDecimals = 6;
-    const numDecimals = isNativeToken ? ethDisplayDecimals : 2; // maximum number of decimals to show for numbers the UI (ETH fee will be small, hence the larger value)
-    let formattedAmount: string;
-    if (isNativeToken) {
-      formattedAmount = round(formatUnits(amount, decimals), numDecimals); // amount being withdrawn, rounded
-    } else {
-      formattedAmount = humanizeTokenAmount(amount, props.activeFee.token);
-    }
+
+    // amount being withdrawn, rounded
+    const formattedAmount: string  = humanizeTokenAmount(amount, props.activeFee.token);
+
     function isValidFeeAmount(val: string) {
       if (!val || !(Number(val) > 0)) return 'Please enter an amount';
       if (BigNumber.from(amount).lte(customFeeInWei.value)) {
@@ -191,9 +186,9 @@ export default defineComponent({
     const customFeeInWei = computed(() => {
       return gasLimit.value.mul(customGasInWei.value);
     });
-    const formattedCustomFeeEth = computed(() =>
-      round(formatUnits(customFeeInWei.value, decimals), ethDisplayDecimals)
-    );
+    const formattedCustomFeeEth = computed(() => {
+      return humanizeTokenAmount(customFeeInWei.value, props.activeFee.token);
+    });
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
     async function tryGetGasPrice() {
@@ -229,21 +224,8 @@ export default defineComponent({
     // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
     // Variables prefixed with `formatted*` are inteded for display in the U)
     const amountReceived = computed(() => amount.sub(useCustomFee.value ? customFeeInWei.value : fee.value)); // amount user will receive
-    const formattedFee = computed(() => {
-      if (isNativeToken) {
-        round(formatUnits(fee.value, decimals), ethDisplayDecimals);
-      } else {
-        return humanizeTokenAmount(props.activeFee.fee, props.activeFee.token);
-      }
-      return round(formatUnits(fee.value, decimals), numDecimals);
-    }); // relayer fee, rounded
-    const formattedAmountReceived = computed(() => {
-      if (isNativeToken) {
-        return round(formatUnits(amountReceived.value, decimals), numDecimals);
-      } else {
-        return humanizeTokenAmount(amountReceived.value, props.activeFee.token);
-      }
-    }); // amount user will receive, rounded
+    const formattedFee = computed(() => humanizeTokenAmount(props.activeFee.fee, props.activeFee.token)); // relayer fee, rounded
+    const formattedAmountReceived = computed(() => humanizeTokenAmount(amountReceived.value, props.activeFee.token)); // amount user will receive, rounded
     // prevent withdraw attempts if fee is larger than amount
     const canWithdraw = computed(() => {
       if (!loaded.value) return true; // assume true until finished loading, to prevent resize issue shown here: https://github.com/ScopeLift/umbra-protocol/pull/206#pullrequestreview-718683599
