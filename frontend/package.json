@@ -27,9 +27,9 @@
     "quasar": "^1.0.0"
   },
   "devDependencies": {
-    "@babel/preset-typescript": "^7.16.7",
     "@quasar/app": "^2.0.0",
     "@quasar/quasar-app-extension-dotenv": "^1.0.5",
+    "@types/jest": "^27.4.1",
     "@types/node": "^12.17.15",
     "@typescript-eslint/eslint-plugin": "^3.3.0",
     "@typescript-eslint/parser": "^3.3.0",
@@ -38,6 +38,7 @@
     "eslint-plugin-vue": "^6.1.2",
     "jest": "^27.5.1",
     "postinstall-postinstall": "^2.1.0",
+    "ts-jest": "^27.1.3",
     "worker-loader": "^3.0.8"
   },
   "browserslist": [
@@ -55,6 +56,8 @@
     "extends": "../package.json"
   },
   "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
     "moduleNameMapper": {
       "src/(.*)": "<rootDir>/src/$1"
     }
