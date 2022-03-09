@@ -186,9 +186,7 @@ export default defineComponent({
     const customFeeInWei = computed(() => {
       return gasLimit.value.mul(customGasInWei.value);
     });
-    const formattedCustomFeeEth = computed(() => {
-      return humanizeTokenAmount(customFeeInWei.value, props.activeFee.token);
-    });
+    const formattedCustomFeeEth = computed(() => humanizeTokenAmount(customFeeInWei.value, props.activeFee.token));
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
     async function tryGetGasPrice() {
