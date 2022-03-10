@@ -28,6 +28,14 @@ import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typecha
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
+// When withdrawing ETH from a stealth address, the cost is typically 21000 gas. However,
+// this is not true for networks with different gas metering like Arbitrum One
+const DEFAULT_GAS_LIMIT = '21000';
+const DEFAULT_CUSTOM_GAS_LIMIT: Record<number, string> = {
+  42161: '450000', // TODO this number seems to vary but this may be sufficiently conservative -- confirm what to use here
+};
+const getDefaultGasLimit = (chainId: number) => DEFAULT_CUSTOM_GAS_LIMIT[chainId] || DEFAULT_GAS_LIMIT;
+
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
 
@@ -237,16 +245,22 @@ export class Umbra {
       const ethBalance = await this.provider.getBalance(stealthWallet.address); // stealthWallet.address is our stealthAddress
 
       // Estimate gas limit if not provided
+      // For some reason, when estimating gas and the recipient is an EOA, the returned estimate
+      // is 21001 gas instead of 21000 gas. Therefore, we check if the recipient is an EOA and
+      // if so hardcode the gas limit to 21000. If thee recipient is not an EOA, we estimate gas
       if (!overrides.gasLimit) {
         try {
-          overrides.gasLimit = await this.provider.estimateGas({
-            to: destination,
-            from: stealthWallet.address,
-            value: ethBalance,
-            gasPrice: 0
-          });
+          const isEoa = (await this.provider.getCode(destination)) === '0x';
+          overrides.gasLimit = isEoa
+            ? getDefaultGasLimit(this.provider.network.chainId)
+            : await this.provider.estimateGas({
+                to: destination,
+                from: stealthWallet.address,
+                value: ethBalance,
+                gasPrice: 0,
+              });
         } catch {
-          overrides.gasLimit = '21000';
+          overrides.gasLimit = getDefaultGasLimit(this.provider.network.chainId);
         }
       }
 
@@ -399,8 +413,8 @@ export class Umbra {
     startBlock: string | number,
     endBlock: string | number
   ): Promise<AnnouncementDetail[]> {
-     // Fetching announcements from logs is not possible on Polygon because the network produces too
-     // many blocks too quickly. If this is attempted, we throw an error.
+    // Fetching announcements from logs is not possible on Polygon because the network produces too
+    // many blocks too quickly. If this is attempted, we throw an error.
     if (this.chainConfig.chainId === 137) {
       throw new Error('Cannot fetch Announcements from logs on Polygon, please try again later');
     }
