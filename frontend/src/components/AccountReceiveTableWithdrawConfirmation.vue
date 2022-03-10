@@ -37,7 +37,7 @@
           </div>
           <div class="col-12" :style="{ maxWidth: '200px' }">
             <base-input
-              v-model="formattedCustomFee"
+              v-model="formattedCustomTxCost"
               type="number"
               suffix="Gwei"
               :dense="true"
@@ -177,10 +177,10 @@ export default defineComponent({
 
     const useCustomFee = ref<boolean>(false);
     const toggleCustomFee = () => (useCustomFee.value = !useCustomFee.value);
-    const formattedCustomFee = ref<BigNumber | string>('0'); // gas price in Gwei
+    const formattedCustomTxCost = ref<BigNumber | string>('0'); // gas price in Gwei
     // the custom gas price; determines what gas price is actually used when withdrawing
     const customGasPriceInWei = computed(() => {
-      const customGasInGwei = formattedCustomFee.value ? formattedCustomFee.value : 0;
+      const customGasInGwei = formattedCustomTxCost.value ? formattedCustomTxCost.value : 0;
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
     const customFeeInWei = computed(() => {
@@ -212,7 +212,7 @@ export default defineComponent({
 
         fee.value = ethFee;
         // flooring this b/c the string we get back from formatUnits is a decimal
-        formattedCustomFee.value = String(Math.floor(Number(formatUnits(gasPrice as BigNumber, 'gwei'))));
+        formattedCustomTxCost.value = String(Math.floor(Number(formatUnits(gasPrice as BigNumber, 'gwei'))));
       } else {
         fee.value = props.activeFee.fee;
       }
