@@ -33,7 +33,7 @@
         <div v-if="useCustomFee" class="row justify-start items-center">
           <div class="col-12 row items-center">
             <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
-            <span>-{{ formattedCustomFeeEth }} {{ symbol }}</span>
+            <span>-{{ formattedCustomTxCostEth }} {{ symbol }}</span>
           </div>
           <div class="col-12" :style="{ maxWidth: '200px' }">
             <base-input
@@ -186,7 +186,7 @@ export default defineComponent({
     const customFeeInWei = computed(() => {
       return gasLimit.value.mul(customGasPriceInWei.value);
     });
-    const formattedCustomFeeEth = computed(() => humanizeTokenAmount(customFeeInWei.value, props.activeFee.token));
+    const formattedCustomTxCostEth = computed(() => humanizeTokenAmount(customFeeInWei.value, props.activeFee.token));
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
     async function tryGetGasPrice() {
@@ -247,9 +247,9 @@ export default defineComponent({
       formatAddress,
       formattedAmount,
       formattedAmountReceived,
-      formattedFee,
-      formattedCustomFee,
-      formattedCustomFeeEth,
+      formattedDefaultTxCostEth,
+      formattedCustomTxCost,
+      formattedCustomTxCostEth,
       isNativeToken,
       isValidFeeAmount,
       loaded,
