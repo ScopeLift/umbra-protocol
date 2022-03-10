@@ -70,7 +70,6 @@
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
-          <div v-else-if="useCustomFee" class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
           <div v-else class="text-bold">{{ formattedAmountReceived }} {{ symbol }}</div>
         </div>
       </div>
