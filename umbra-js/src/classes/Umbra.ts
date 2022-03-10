@@ -87,7 +87,7 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
     throw new Error(`Invalid chainId provided in chainConfig. Got '${chainId}'`);
   }
   if (subgraphUrl !== false && typeof subgraphUrl !== 'string') {
-    throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${subgraphUrl}'`);
+    throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${String(subgraphUrl)}'`);
   }
 
   return { umbraAddress: getAddress(umbraAddress), startBlock, chainId, subgraphUrl };
@@ -644,7 +644,7 @@ async function recursiveGraphFetch(
   before: any[] = []
 ): Promise<any[]> {
   // retrieve the last ID we collected to use as the starting point for this query
-  const fromId = before.length ? before[before.length - 1].id : false;
+  const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
 
   // Fetch this 'page' of results - please note that the query MUST return an ID
   const res = await fetch(url, {
@@ -664,6 +664,8 @@ async function recursiveGraphFetch(
   const json = await res.json();
 
   // If there were results on this page then query the next page, otherwise return the data
+  /* eslint-disable @typescript-eslint/no-unsafe-return */
   if (!json.data[key].length) return [...before];
   else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]]);
 }
+/* eslint-enable @typescript-eslint/no-unsafe-return */

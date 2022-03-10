@@ -69,7 +69,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   //
   // Any time a new transaction type is added to Ethereum, the below will need to be updated to
   // support that transaction type
-  let txData: UnsignedTransaction = {};
+  const txData: UnsignedTransaction = {};
 
   // First we add fields that are always required
   txData.type = tx.type;
@@ -115,7 +115,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   // Verify that recovered public key derives to the transaction from address
   const publicKey = `0x${publicKeyNo0xPrefix}`;
   if (computeAddress(publicKey) !== tx.from) {
-    throw new Error(`Public key not recovered properly`);
+    throw new Error('Public key not recovered properly');
   }
   return publicKey;
 }
