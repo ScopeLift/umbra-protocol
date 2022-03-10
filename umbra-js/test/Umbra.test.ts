@@ -210,7 +210,7 @@ describe('Umbra class', () => {
       await tx.wait();
 
       // RECEIVER
-      // Receiver scans for funds send to them
+      // Receiver scans for funds sent to them
       const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
@@ -252,7 +252,7 @@ describe('Umbra class', () => {
       await tx.wait();
 
       // RECEIVER
-      // Receiver scans for funds send to them
+      // Receiver scans for funds sent to them
       const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
@@ -303,7 +303,7 @@ describe('Umbra class', () => {
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), quantity);
 
       // RECEIVER
-      // Receiver scans for funds send to them
+      // Receiver scans for funds sent to them
       const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
