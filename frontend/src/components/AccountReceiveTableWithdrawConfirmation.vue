@@ -51,7 +51,7 @@
         <div v-else class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
-          <div v-if="loaded">-{{ formattedFee }} {{ symbol }}</div>
+          <div v-if="loaded">-{{ formattedDefaultTxCostEth }} {{ symbol }}</div>
           <q-icon
             v-if="isNativeToken && loaded"
             @click="toggleCustomFee"
@@ -163,7 +163,7 @@ export default defineComponent({
 
     function isValidFeeAmount(val: string) {
       if (!val || !(Number(val) > 0)) return 'Please enter an amount';
-      if (BigNumber.from(amount).lte(customFeeInWei.value)) {
+      if (BigNumber.from(amount).lte(customTxFeeInWei.value)) {
         return 'Gas price is too high';
       }
       return true;
@@ -183,10 +183,10 @@ export default defineComponent({
       const customGasInGwei = formattedCustomTxCost.value ? formattedCustomTxCost.value : 0;
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
-    const customFeeInWei = computed(() => {
+    const customTxFeeInWei = computed(() => {
       return gasLimit.value.mul(customGasPriceInWei.value);
     });
-    const formattedCustomTxCostEth = computed(() => humanizeTokenAmount(customFeeInWei.value, props.activeFee.token));
+    const formattedCustomTxCostEth = computed(() => humanizeTokenAmount(customTxFeeInWei.value, props.activeFee.token));
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
     async function tryGetGasPrice() {
@@ -221,13 +221,18 @@ export default defineComponent({
 
     // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
     // Variables prefixed with `formatted*` are inteded for display in the U)
-    const amountReceived = computed(() => amount.sub(useCustomFee.value ? customFeeInWei.value : fee.value)); // amount user will receive
-    const formattedFee = computed(() => humanizeTokenAmount(props.activeFee.fee, props.activeFee.token)); // relayer fee, rounded
+    const amountReceived = computed(() => amount.sub(useCustomFee.value ? customTxFeeInWei.value : fee.value)); // amount user will receive
+    const formattedDefaultTxCostEth = computed(() => {
+      return humanizeTokenAmount(
+        (isNativeToken ? fee.value : props.activeFee.fee),
+        props.activeFee.token
+      )
+    }); // transaction fee, rounded
     const formattedAmountReceived = computed(() => humanizeTokenAmount(amountReceived.value, props.activeFee.token)); // amount user will receive, rounded
     // prevent withdraw attempts if fee is larger than amount
     const canWithdraw = computed(() => {
       if (!loaded.value) return true; // assume true until finished loading, to prevent resize issue shown here: https://github.com/ScopeLift/umbra-protocol/pull/206#pullrequestreview-718683599
-      const feeInWei = useCustomFee.value ? customFeeInWei.value : fee.value;
+      const feeInWei = useCustomFee.value ? customTxFeeInWei.value : fee.value;
       return BigNumber.from(amount).gt(feeInWei) && BigNumber.from('0').lt(feeInWei);
     });
     const confirmationOptions = computed(() => {
