@@ -179,12 +179,12 @@ export default defineComponent({
     const toggleCustomFee = () => (useCustomFee.value = !useCustomFee.value);
     const formattedCustomFee = ref<BigNumber | string>('0'); // gas price in Gwei
     // the custom gas price; determines what gas price is actually used when withdrawing
-    const customGasInWei = computed(() => {
+    const customGasPriceInWei = computed(() => {
       const customGasInGwei = formattedCustomFee.value ? formattedCustomFee.value : 0;
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
     const customFeeInWei = computed(() => {
-      return gasLimit.value.mul(customGasInWei.value);
+      return gasLimit.value.mul(customGasPriceInWei.value);
     });
     const formattedCustomFeeEth = computed(() => humanizeTokenAmount(customFeeInWei.value, props.activeFee.token));
 
@@ -232,10 +232,11 @@ export default defineComponent({
     });
     const confirmationOptions = computed(() => {
       if (!isNativeToken) return {};
-      return {
+      const gasPrice = useCustomFee.value
+        ? customGasPriceInWei.value
         // fee is the total cost in wei for the gas, so we divide by the tx cost
-        gasPrice: useCustomFee.value ? customGasInWei.value : BigNumber.from(fee.value).div('21000'),
-      };
+        : BigNumber.from(fee.value).div('21000')
+      return { gasPrice };
     });
 
     return {
