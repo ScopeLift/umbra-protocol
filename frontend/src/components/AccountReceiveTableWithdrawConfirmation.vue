@@ -37,7 +37,7 @@
           </div>
           <div class="col-12" :style="{ maxWidth: '200px' }">
             <base-input
-              v-model="formattedCustomTxCost"
+              v-model="formattedCustomTxCostGwei"
               type="number"
               suffix="Gwei"
               :dense="true"
@@ -48,10 +48,11 @@
             </base-input>
           </div>
         </div>
+
         <div v-else class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
-          <div v-if="loaded">-{{ formattedDefaultTxCostEth }} {{ symbol }}</div>
+          <div v-if="loaded">-{{ formattedDefaultTxCost }} {{ symbol }}</div>
           <q-icon
             v-if="isNativeToken && loaded"
             @click="toggleCustomFee"
@@ -176,10 +177,10 @@ export default defineComponent({
 
     const useCustomFee = ref<boolean>(false);
     const toggleCustomFee = () => (useCustomFee.value = !useCustomFee.value);
-    const formattedCustomTxCost = ref<BigNumber | string>('0'); // gas price in Gwei
+    const formattedCustomTxCostGwei = ref<BigNumber | string>('0'); // gas price in Gwei
     // the custom gas price; determines what gas price is actually used when withdrawing
     const customGasPriceInWei = computed(() => {
-      const customGasInGwei = formattedCustomTxCost.value ? formattedCustomTxCost.value : 0;
+      const customGasInGwei = formattedCustomTxCostGwei.value ? formattedCustomTxCostGwei.value : 0;
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
     const customTxFeeInWei = computed(() => {
@@ -211,7 +212,7 @@ export default defineComponent({
 
         fee.value = ethFee;
         // flooring this b/c the string we get back from formatUnits is a decimal
-        formattedCustomTxCost.value = String(Math.floor(Number(formatUnits(gasPrice as BigNumber, 'gwei'))));
+        formattedCustomTxCostGwei.value = String(Math.floor(Number(formatUnits(gasPrice as BigNumber, 'gwei'))));
       } else {
         fee.value = props.activeFee.fee;
       }
@@ -221,7 +222,9 @@ export default defineComponent({
     // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
     // Variables prefixed with `formatted*` are inteded for display in the U)
     const amountReceived = computed(() => amount.sub(useCustomFee.value ? customTxFeeInWei.value : fee.value)); // amount user will receive
-    const formattedDefaultTxCostEth = computed(() => {
+
+    // transaction fee, rounded
+    const formattedDefaultTxCost = computed(() => {
       return humanizeTokenAmount(
         (isNativeToken ? fee.value : props.activeFee.fee),
         props.activeFee.token
@@ -251,8 +254,8 @@ export default defineComponent({
       formatAddress,
       formattedAmount,
       formattedAmountReceived,
-      formattedDefaultTxCostEth,
-      formattedCustomTxCost,
+      formattedDefaultTxCost,
+      formattedCustomTxCostGwei,
       formattedCustomTxCostEth,
       isNativeToken,
       isValidFeeAmount,
