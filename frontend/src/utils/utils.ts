@@ -65,6 +65,7 @@ export const roundReceivableAmountAfterFees = (
   if (formattedAmount <= 1) return formattedAmount.toPrecision(precisionRequired);
   return formattedAmount.toLocaleString(undefined, {
     minimumFractionDigits: precisionRequired,
+    maximumFractionDigits: precisionRequired,
   })
 };
 
