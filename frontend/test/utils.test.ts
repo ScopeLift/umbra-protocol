@@ -69,15 +69,23 @@ describe('Utilities', () => {
     });
   });
   describe('roundReceivableAmountAfterFees', () => {
-    // the decimals of the *fee* should determine the decimals of the return val
     it('should handle very high fees', () => {
-      //   5.0
-      // - 1.1
+      //   50.0
+      // - 11.2
       // ===========
-      //   3.9
-      const fee = parseEther('1.1');
-      const finalAmount = parseEther('3.9');
-      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('3.9');
+      //   38.8
+      const fee = parseEther('11.2');
+      const finalAmount = parseEther('38.8');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('38.8');
+    });
+    it('should handle this case too', () => {
+      //   70.00
+      // - 31.21
+      // ===========
+      //   58.79
+      const fee = parseEther('31.21');
+      const finalAmount = parseEther('58.79');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('58.79');
     });
     it('should not take unnecessary decimals in the fee into account', () => {
       //   1.0
@@ -105,6 +113,25 @@ describe('Utilities', () => {
       const fee = parseEther('0.000021');
       const finalAmount = parseEther('1.999979');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('1.999979');
+    });
+    it('should handle a fee with a lot of precision', () => {
+      //   7.000000000000000000
+      // - 0.001428371937102478
+      // ===========
+      //   6.998571628062897522
+      const fee = parseEther('0.001428371937102478');
+      const finalAmount = parseEther('6.998571628062897522');
+      // display up to two sig figs into the fee
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('6.9986');
+    });
+    it('should handle a fee that is zero', () => {
+      //   7.0
+      // - 0.000000000000000000
+      // ===========
+      //   7.0
+      const fee = '0.00000000000000000';
+      const finalAmount = parseEther('7');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('7.0');
     });
   });
 });
