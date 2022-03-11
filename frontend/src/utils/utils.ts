@@ -49,20 +49,23 @@ export const humanizeTokenAmount = (
 /**
  * @notice Rounds the final amount that will be recieved during withdrawal.
  * For display/UI purposes only -- it doesn't affect the actual amount
- * withdrawn. Assumes that `amount` and `fee` are both denominated in `token`.
+ * withdrawn. Assumes that `amount` and `userFormattedFee` are both denominated in `token`.
  * @param amount
- * @param fee
+ * @param userFormattedFee
  * @returns string
  */
 export const roundReceivableAmountAfterFees = (
-  amount: BigNumber,
-  fee: BigNumber,
+  amount: BigNumberish,
+  userFormattedFee: string,
   token: TokenInfo,
 ): string => {
-  const feeZeroDigits = (fee.toString().match(/0+$/) || [""])[0];
-  const precisionRequired = amount.toString().length - feeZeroDigits.length;
+  const humanizedFeeZeroTrimmed = userFormattedFee.replace(/0+$/, '');
+  const precisionRequired = humanizedFeeZeroTrimmed.split(".")[1]?.length || 0;
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
-  return formattedAmount.toPrecision(precisionRequired);
+  if (formattedAmount <= 1) return formattedAmount.toPrecision(precisionRequired);
+  return formattedAmount.toLocaleString(undefined, {
+    minimumFractionDigits: precisionRequired,
+  })
 };
 
 /**

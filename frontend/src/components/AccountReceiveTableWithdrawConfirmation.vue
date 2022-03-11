@@ -108,7 +108,12 @@ import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import { getEtherscanUrl, getGasPrice, humanizeTokenAmount } from 'src/utils/utils';
+import {
+  getEtherscanUrl,
+  getGasPrice,
+  humanizeTokenAmount,
+  roundReceivableAmountAfterFees,
+} from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -229,8 +234,22 @@ export default defineComponent({
         (isNativeToken ? fee.value : props.activeFee.fee),
         props.activeFee.token
       )
-    }); // transaction fee, rounded
-    const formattedAmountReceived = computed(() => humanizeTokenAmount(amountReceived.value, props.activeFee.token)); // amount user will receive, rounded
+    });
+
+    // amount user will receive, rounded
+    const formattedAmountReceived = computed(() => {
+      // we need to round differently here because we want to make it clear
+      // to the user that a fee has been subtracted from their deposited amount
+      return roundReceivableAmountAfterFees(
+        amountReceived.value,
+        // we want to base this on what the user *sees*, i.e. the formatted
+        // fees, since they are what the user will be checking our calculations
+        // against
+        (useCustomFee.value ? formattedCustomTxCostEth.value : formattedDefaultTxCost.value),
+        props.activeFee.token
+      );
+    });
+
     // prevent withdraw attempts if fee is larger than amount
     const canWithdraw = computed(() => {
       if (!loaded.value) return true; // assume true until finished loading, to prevent resize issue shown here: https://github.com/ScopeLift/umbra-protocol/pull/206#pullrequestreview-718683599
