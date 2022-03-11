@@ -133,5 +133,15 @@ describe('Utilities', () => {
       const finalAmount = parseEther('7');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('7');
     });
+    it('should not display extra figures', () => {
+      //   300.
+      // -   7.95
+      // ===========
+      //   292.05
+      const realFee = parseUnits('7.949', usdc.decimals); // i.e. not rounded
+      const fee = humanizeTokenAmount(realFee, usdc); // i.e what the user sees
+      const finalAmount = parseUnits('292.051');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('292.05');
+    });
   });
 });
