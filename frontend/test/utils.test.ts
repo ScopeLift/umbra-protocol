@@ -74,7 +74,7 @@ describe('Utilities', () => {
       // - 11.2
       // ===========
       //   38.8
-      const fee = parseEther('11.2');
+      const fee = humanizeTokenAmount(parseEther('11.2'), eth);
       const finalAmount = parseEther('38.8');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('38.8');
     });
@@ -83,7 +83,7 @@ describe('Utilities', () => {
       // - 31.21
       // ===========
       //   58.79
-      const fee = parseEther('31.21');
+      const fee = humanizeTokenAmount(parseEther('31.21'), eth);
       const finalAmount = parseEther('58.79');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('58.79');
     });
@@ -92,7 +92,7 @@ describe('Utilities', () => {
       // - 0.1000000
       // ===========
       //   0.9
-      const fee = parseEther('0.100000');
+      const fee = humanizeTokenAmount(parseEther('0.100000'), eth);
       const finalAmount = parseEther('0.9');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('0.9');
     });
@@ -101,7 +101,7 @@ describe('Utilities', () => {
       // - 0.0000099
       // ===========
       //   0.9999900
-      const fee = parseEther('0.0000099');
+      const fee = humanizeTokenAmount(parseEther('0.0000099'), eth);
       const finalAmount = parseEther('0.99999');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('0.9999900');
     });
@@ -110,7 +110,7 @@ describe('Utilities', () => {
       // - 0.000021
       // ===========
       //   1.999979
-      const fee = parseEther('0.000021');
+      const fee = humanizeTokenAmount(parseEther('0.000021'), eth);
       const finalAmount = parseEther('1.999979');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('1.999979');
     });
@@ -119,19 +119,19 @@ describe('Utilities', () => {
       // - 0.001428371937102478
       // ===========
       //   6.998571628062897522
-      const fee = parseEther('0.001428371937102478');
+      const fee = humanizeTokenAmount(parseEther('0.001428371937102478'), eth);
       const finalAmount = parseEther('6.998571628062897522');
       // display up to two sig figs into the fee
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('6.9986');
     });
     it('should handle a fee that is zero', () => {
-      //   7.0
+      //   7
       // - 0.000000000000000000
       // ===========
-      //   7.0
-      const fee = '0.00000000000000000';
+      //   7
+      const fee = humanizeTokenAmount(parseEther('0.00000000000000000'), eth);
       const finalAmount = parseEther('7');
-      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('7.0');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('7');
     });
   });
 });
