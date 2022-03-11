@@ -47,6 +47,25 @@ export const humanizeTokenAmount = (
 };
 
 /**
+ * @notice Rounds the final amount that will be recieved during withdrawal.
+ * For display/UI purposes only -- it doesn't affect the actual amount
+ * withdrawn. Assumes that `amount` and `fee` are both denominated in `token`.
+ * @param amount
+ * @param fee
+ * @returns string
+ */
+export const roundReceivableAmountAfterFees = (
+  amount: BigNumber,
+  fee: BigNumber,
+  token: TokenInfo,
+): string => {
+  const feeZeroDigits = (fee.toString().match(/0+$/) || [""])[0];
+  const precisionRequired = amount.toString().length - feeZeroDigits.length;
+  const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
+  return formattedAmount.toPrecision(precisionRequired);
+};
+
+/**
  * @notice GETs JSON from the provided `url`
  */
 export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
