@@ -224,7 +224,8 @@ export default defineComponent({
 
     // transaction fee, rounded
     const formattedDefaultTxCost = computed(() => {
-      return humanizeTokenAmount(isNativeToken ? fee.value : props.activeFee.fee, props.activeFee.token);
+      const txFee = isNativeToken ? fee.value : props.activeFee.fee;
+      return humanizeTokenAmount(txFee, props.activeFee.token);
     });
 
     // amount user will receive, rounded
