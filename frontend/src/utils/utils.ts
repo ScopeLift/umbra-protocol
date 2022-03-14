@@ -57,7 +57,12 @@ export const roundReceivableAmountAfterFees = (
   userFormattedFee: string,
   token: TokenInfo
 ): string => {
+  // Remove insignificant trailing zeros from the human-formatted fee, e.g.
+  // "0.001400" would become "0.0014". We take this approach instead of
+  // something like `Number(userFormattedFee).toString()` as it avoids
+  // Javascript's overflow bugs with Numbers
   const humanizedFeeZeroTrimmed = userFormattedFee.replace(/0+$/, '');
+
   const precisionRequired = humanizedFeeZeroTrimmed.split('.')[1]?.length || 0;
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
   if (formattedAmount <= 1) return formattedAmount.toPrecision(precisionRequired);
