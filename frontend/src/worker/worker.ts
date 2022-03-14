@@ -67,12 +67,12 @@ export const filterUserAnnouncements = (
       progressRecorder.push(0);
       workers.push(new Worker());
       // Here we add event listener to each worker to handle the case where it sends message to controller (i.e. worker.ts)
-      workers[index].addEventListener('message', function(e: MessageEvent) {
+      workers[index].addEventListener('message', function (e: MessageEvent) {
         const worker_id = e.data.worker_id;
         const done = e.data.done;
 
         if (done) {
-          e.data.data.forEach(function(data: any) {
+          e.data.data.forEach(function (data: any) {
             const { index, randomNumber, token } = data;
             const { amount, from, receiver, timestamp, txHash } = subAnnouncements[worker_id][index];
             const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
@@ -89,7 +89,7 @@ export const filterUserAnnouncements = (
           // sorting based on `timestamp`.
           // in Umbra.ts `fetchAllAnnouncementFromLogs` turns `timestamp` from number to string,
           // and therefore `timestamp` can be cast to number here.
-          userAnnouncements.sort(function(a, b) {
+          userAnnouncements.sort(function (a, b) {
             return parseInt(a.timestamp) - parseInt(b.timestamp);
           });
           completion(userAnnouncements);

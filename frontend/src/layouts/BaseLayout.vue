@@ -245,7 +245,7 @@ export default defineComponent({
       isLoading,
       network,
       userAddress,
-      userDisplayName
+      userDisplayName,
     } = useWalletStore();
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);

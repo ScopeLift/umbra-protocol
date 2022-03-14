@@ -244,7 +244,8 @@ export default function useWalletStore() {
       ]);
       const _isAccountSetup = _stealthKeys !== null;
 
-      if (typeof _userEns === 'string') { // ENS address must exist
+      if (typeof _userEns === 'string') {
+        // ENS address must exist
         avatar.value = await MAINNET_PROVIDER.getAvatar(_userEns);
       }
 

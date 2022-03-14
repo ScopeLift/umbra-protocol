@@ -30,6 +30,7 @@
           />
         </div>
         <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
+
         <div v-if="useCustomFee" class="row justify-start items-center">
           <div class="col-12 row items-center">
             <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
@@ -108,12 +109,7 @@ import { UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import {
-  getEtherscanUrl,
-  getGasPrice,
-  humanizeTokenAmount,
-  roundReceivableAmountAfterFees,
-} from 'src/utils/utils';
+import { getEtherscanUrl, getGasPrice, humanizeTokenAmount, roundReceivableAmountAfterFees } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -164,7 +160,7 @@ export default defineComponent({
     const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdrawal tx hash URL
 
     // amount being withdrawn, rounded
-    const formattedAmount: string  = humanizeTokenAmount(amount, props.activeFee.token);
+    const formattedAmount: string = humanizeTokenAmount(amount, props.activeFee.token);
 
     function isValidFeeAmount(val: string) {
       if (!val || !(Number(val) > 0)) return 'Please enter an amount';
@@ -188,9 +184,7 @@ export default defineComponent({
       const customGasInGwei = formattedCustomTxCostGwei.value ? formattedCustomTxCostGwei.value : 0;
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
-    const customTxFeeInWei = computed(() => {
-      return gasLimit.value.mul(customGasPriceInWei.value);
-    });
+    const customTxFeeInWei = computed(() => gasLimit.value.mul(customGasPriceInWei.value));
     const formattedCustomTxCostEth = computed(() => humanizeTokenAmount(customTxFeeInWei.value, props.activeFee.token));
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
@@ -230,10 +224,7 @@ export default defineComponent({
 
     // transaction fee, rounded
     const formattedDefaultTxCost = computed(() => {
-      return humanizeTokenAmount(
-        (isNativeToken ? fee.value : props.activeFee.fee),
-        props.activeFee.token
-      )
+      return humanizeTokenAmount(isNativeToken ? fee.value : props.activeFee.fee, props.activeFee.token);
     });
 
     // amount user will receive, rounded
@@ -245,7 +236,7 @@ export default defineComponent({
         // we want to base this on what the user *sees*, i.e. the formatted
         // fees, since they are what the user will be checking our calculations
         // against
-        (useCustomFee.value ? formattedCustomTxCostEth.value : formattedDefaultTxCost.value),
+        useCustomFee.value ? formattedCustomTxCostEth.value : formattedDefaultTxCost.value,
         props.activeFee.token
       );
     });
@@ -260,8 +251,8 @@ export default defineComponent({
       if (!isNativeToken) return {};
       const gasPrice = useCustomFee.value
         ? customGasPriceInWei.value
-        // fee is the total cost in wei for the gas, so we divide by the tx cost
-        : BigNumber.from(fee.value).div('21000')
+        : // fee is the total cost in wei for the gas, so we divide by the tx cost
+          BigNumber.from(fee.value).div('21000');
       return { gasPrice };
     });
 
