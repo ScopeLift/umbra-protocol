@@ -30,8 +30,8 @@ export const round = (value: number | string, decimals = 2) => {
 
 /**
  * @notice Rounds to appropriate human readable decimals for the token
- * @param amount
- * @param token
+ * @param amount the amount to be formatted
+ * @param token the token unit of the amount
  * @returns string
  */
 export const humanizeTokenAmount = (
@@ -50,8 +50,9 @@ export const humanizeTokenAmount = (
  * @notice Rounds the final amount that will be recieved during withdrawal.
  * For display/UI purposes only -- it doesn't affect the actual amount
  * withdrawn. Assumes that `amount` and `userFormattedFee` are both denominated in `token`.
- * @param amount
- * @param userFormattedFee
+ * @param amount the receivable amount to be formatted
+ * @param userFormattedFee the fee that has been subtracted from the amount (as
+ * the user sees it in the frontend)
  * @returns string
  */
 export const roundReceivableAmountAfterFees = (
