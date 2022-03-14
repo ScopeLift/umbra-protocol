@@ -10,7 +10,7 @@ const ctx: Worker = self as any;
 // This event listener will be triggered if the controller (i.e. worker.ts) post a message to this worker.
 self.addEventListener(
   'message',
-  function(e) {
+  function (e) {
     const worker_id = e.data.worker_id;
     const announcements = e.data.announcements;
     const spendingPublicKey = e.data.spendingPublicKey;

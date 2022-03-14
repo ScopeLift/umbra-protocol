@@ -7,7 +7,7 @@ const usdc = {
   chainId: 1,
   name: 'USDC',
   symbol: 'USDC',
-}
+};
 
 const weth = {
   decimals: 18,
@@ -15,7 +15,7 @@ const weth = {
   chainId: 137,
   name: 'WETH',
   symbol: 'WETH',
-}
+};
 
 const eth = {
   decimals: 18,
@@ -23,7 +23,7 @@ const eth = {
   chainId: 1,
   name: 'ETH',
   symbol: 'ETH',
-}
+};
 
 describe('Utilities', () => {
   describe('humanizeTokenAmount', () => {

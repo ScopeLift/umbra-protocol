@@ -34,16 +34,13 @@ export const round = (value: number | string, decimals = 2) => {
  * @param token the token unit of the amount
  * @returns string
  */
-export const humanizeTokenAmount = (
-  amount: BigNumberish,
-  token: TokenInfo,
-): string => {
+export const humanizeTokenAmount = (amount: BigNumberish, token: TokenInfo): string => {
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
   if (formattedAmount <= 1) return formattedAmount.toPrecision(2);
   return formattedAmount.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  })
+  });
 };
 
 /**
@@ -58,16 +55,16 @@ export const humanizeTokenAmount = (
 export const roundReceivableAmountAfterFees = (
   amount: BigNumberish,
   userFormattedFee: string,
-  token: TokenInfo,
+  token: TokenInfo
 ): string => {
   const humanizedFeeZeroTrimmed = userFormattedFee.replace(/0+$/, '');
-  const precisionRequired = humanizedFeeZeroTrimmed.split(".")[1]?.length || 0;
+  const precisionRequired = humanizedFeeZeroTrimmed.split('.')[1]?.length || 0;
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
   if (formattedAmount <= 1) return formattedAmount.toPrecision(precisionRequired);
   return formattedAmount.toLocaleString(undefined, {
     minimumFractionDigits: precisionRequired,
     maximumFractionDigits: precisionRequired,
-  })
+  });
 };
 
 /**
