@@ -2,6 +2,10 @@
   <q-page padding class="text-center">
     <h2 class="page-title">Frequently Asked Questions</h2>
 
+      <div class="text-caption chinese-faq"> Languages: EN | 
+        <a href="https://comet-friend-aa9.notion.site/Umbra-073a96aabac44dc185a116efb8f4c138" target="_blank">中文</a>
+      </div>
+
     <q-list class="form-extra-wide" separator>
       <!-- Introduction -->
       <div
