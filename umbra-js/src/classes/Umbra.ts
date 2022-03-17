@@ -16,6 +16,7 @@ import {
   JsonRpcSigner,
   keccak256,
   Overrides,
+  serialize as serializeTransaction,
   sha256,
   splitSignature,
   toUtf8Bytes,
@@ -27,14 +28,6 @@ import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
-
-// When withdrawing ETH from a stealth address, the cost is typically 21000 gas. However,
-// this is not true for networks with different gas metering like Arbitrum One
-const DEFAULT_GAS_LIMIT = '21000';
-const DEFAULT_CUSTOM_GAS_LIMIT: Record<number, string> = {
-  42161: '450000', // TODO this number seems to vary but this may be sufficiently conservative -- confirm what to use here
-};
-const getDefaultGasLimit = (chainId: number) => DEFAULT_CUSTOM_GAS_LIMIT[chainId] || DEFAULT_GAS_LIMIT;
 
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
@@ -240,43 +233,19 @@ export class Umbra {
 
     // Handle ETH and tokens accordingly. The isEth method also serves to validate the token input
     if (isEth(token)) {
-      // Withdraw ETH
-      // Based on gas price, compute how much ETH to transfer to avoid dust
-      const ethBalance = await this.provider.getBalance(stealthWallet.address); // stealthWallet.address is our stealthAddress
+      const { gasPrice, gasLimit, txCost, fromBalance, ethToSend } = await getEthSweepGasInfo(
+        stealthWallet.address, // from
+        destination, // to
+        this.provider,
+        overrides
+      );
 
-      // Estimate gas limit if not provided
-      // For some reason, when estimating gas and the recipient is an EOA, the returned estimate
-      // is 21001 gas instead of 21000 gas. Therefore, we check if the recipient is an EOA and
-      // if so hardcode the gas limit to 21000. If thee recipient is not an EOA, we estimate gas
-      if (!overrides.gasLimit) {
-        try {
-          const isEoa = (await this.provider.getCode(destination)) === '0x';
-          overrides.gasLimit = isEoa
-            ? getDefaultGasLimit(this.provider.network.chainId)
-            : await this.provider.estimateGas({
-                to: destination,
-                from: stealthWallet.address,
-                value: ethBalance,
-                gasPrice: 0,
-              });
-        } catch {
-          overrides.gasLimit = getDefaultGasLimit(this.provider.network.chainId);
-        }
-      }
-
-      const gasPrice = BigNumber.from(overrides.gasPrice || (await this.provider.getGasPrice()));
-      const gasLimit = BigNumber.from(overrides.gasLimit);
-      const txCost = gasPrice.mul(gasLimit);
-      if (txCost.gt(ethBalance)) {
+      if (txCost.gt(fromBalance)) {
         throw new Error('Stealth address ETH balance is not enough to pay for withdrawal gas cost');
       }
-      return txSigner.sendTransaction({
-        to: destination,
-        value: ethBalance.sub(txCost),
-        gasPrice,
-        gasLimit,
-        nonce: overrides.nonce || undefined, // nonce will be determined by ethers if undefined
-      });
+
+      const nonce = overrides.nonce || undefined; // nonce will be determined by ethers if undefined
+      return txSigner.sendTransaction({ to: destination, value: ethToSend, gasPrice, gasLimit, nonce });
     } else {
       // Withdrawing a token
       return await this.umbraContract.connect(txSigner).withdrawToken(destination, token, overrides);
@@ -667,5 +636,52 @@ async function recursiveGraphFetch(
   /* eslint-disable @typescript-eslint/no-unsafe-return */
   if (!json.data[key].length) return [...before];
   else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]]);
+  /* eslint-enable @typescript-eslint/no-unsafe-return */
 }
-/* eslint-enable @typescript-eslint/no-unsafe-return */
+
+/**
+ * @notice Given a from address, to address, and provider, return parameters needed to sweep all ETH
+ * @param from Address sending ETH
+ * @param to Address receiving ETH
+ * @param provider Provider to use for querying data
+ * @param overrides Optional overrides for gasLimit and gasPrice
+ */
+async function getEthSweepGasInfo(from: string, to: string, provider: EthersProvider, overrides: Overrides) {
+  const gasLimitOf21k = [1, 4, 10, 137]; // networks where ETH sends cost 21000 gas
+
+  const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([
+    provider.getCode(to),
+    provider.getNetwork(),
+    provider.getBalance(from),
+    provider.getGasPrice(),
+  ]);
+  const isEoa = toAddressCode === '0x';
+  const { chainId } = network;
+
+  // If a gas limit was provided, use it. Otherwise, if we are sending to an EOA and this is a network where ETH
+  // transfers always to cost 21000 gas, use 21000. Otherwise, estimate the gas limit.
+  const gasLimit = overrides.gasLimit
+    ? BigNumber.from(await overrides.gasLimit)
+    : isEoa && gasLimitOf21k.includes(chainId)
+    ? BigNumber.from('21000')
+    : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
+
+  // Estimate the gas price, defaulting to the given one and asking the node otherwise
+  const gasPrice = BigNumber.from(await overrides.gasPrice) || BigNumber.from(providerGasPrice);
+
+  // On Optimism, we ask the gas price oracle for the L1 data fee that we should add on top of the L2 execution
+  // cost: https://community.optimism.io/docs/developers/build/transaction-fees/
+  // For Arbitrum, this is baked into the gasPrice returned from the provider.
+  let txCost = gasPrice.mul(gasLimit);
+  if (chainId === 10) {
+    const gasOracleAbi = ['function getL1Fee(bytes memory _data) public view returns (uint256)'];
+    const gasPriceOracle = new Contract('0x420000000000000000000000000000000000000F', gasOracleAbi, provider);
+    const l1FeeInWei = await gasPriceOracle.getL1Fee(
+      serializeTransaction({ to, value: 0, data: '0x', gasLimit, gasPrice })
+    );
+    txCost = txCost.add(l1FeeInWei);
+  }
+
+  // Return the gas price, gas limit, and the transaction cost
+  return { gasPrice, gasLimit, txCost, fromBalance, ethToSend: fromBalance.sub(txCost) };
+}
