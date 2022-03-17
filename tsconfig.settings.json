@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+      "skipLibCheck": true,
       "module": "CommonJS",
       "sourceMap": true,
       "target": "ES2018",
