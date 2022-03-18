@@ -67,6 +67,10 @@ describe('Utilities', () => {
       const amount = parseUnits('0.0000', 'ether');
       expect(humanizeTokenAmount(amount, eth)).toEqual('0.0');
     });
+    it('does not show scientific notation for small numbers', () => {
+      const amount = parseUnits('0.00000002', 'ether');
+      expect(humanizeTokenAmount(amount, eth)).toEqual('0.00000002');
+    });
   });
   describe('roundReceivableAmountAfterFees', () => {
     it('should handle very high fees', () => {
