@@ -2,7 +2,7 @@
   <q-page padding class="text-center">
     <h2 class="page-title">Frequently Asked Questions</h2>
 
-      <div class="text-caption chinese-faq"> Languages: EN | 
+      <div class="text-caption chinese-faq"> Languages: <span class="body-bold">EN</span> | 
         <a class="hyperlink" href="https://comet-friend-aa9.notion.site/Umbra-073a96aabac44dc185a116efb8f4c138" target="_blank">中文</a>
       </div>
 
@@ -630,7 +630,7 @@
             computing <span class="code">p_stealth = p * r</span>.
           </p>
           <p>
-            T The first problem to solve is how does the sender get the value <span class="code">r</span> to the
+            The first problem to solve is how does the sender get the value <span class="code">r</span> to the
             receiver? If <span class="code">r</span> was publicly known, observers could determine who funds were sent
             to by computing <span class="code">P * r</span> for various published <span class="code">P</span> values
             until the find the stealth address. So <span class="code">r</span> needs to be encrypted.
