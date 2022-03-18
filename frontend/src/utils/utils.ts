@@ -19,16 +19,6 @@ export const getChainById = (chainId: BigNumberish) => {
 };
 
 /**
- * @notice Rounds `value` to the specified number of `decimals` and returns a string
- */
-export const round = (value: number | string, decimals = 2) => {
-  return Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: decimals,
-  });
-};
-
-/**
  * @notice Rounds to appropriate human readable decimals for the token
  * @param amount the amount to be formatted
  * @param token the token unit of the amount

@@ -169,8 +169,8 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
-import { BigNumber, Contract, formatUnits, getAddress, MaxUint256, parseUnits, Zero } from 'src/utils/ethers';
-import { round } from 'src/utils/utils';
+import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, Zero } from 'src/utils/ethers';
+import { humanizeTokenAmount } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfo } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
@@ -206,7 +206,7 @@ function useSendForm() {
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
-  const humanToll = computed(() => round(formatUnits(toll.value, 18), 4));
+  const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
 
   watch(
     // We watch `shouldUseNormalPubKey` to ensure the "Address 0x123 has not registered stealkth keys" validation

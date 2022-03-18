@@ -326,7 +326,7 @@ import WithdrawForm from 'components/WithdrawForm.vue';
 import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
 import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
-import { getEtherscanUrl, round } from 'src/utils/utils';
+import { getEtherscanUrl } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
@@ -603,7 +603,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     openInEtherscan,
     paginationConfig,
     privacyModalAddressWarnings,
-    round,
     showConfirmationModal,
     showPrivacyModal,
     txHashIfEth,
