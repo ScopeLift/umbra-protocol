@@ -382,11 +382,11 @@ export class Umbra {
     startBlock: string | number,
     endBlock: string | number
   ): Promise<AnnouncementDetail[]> {
-    // Fetching announcements from logs is not possible on Polygon because the network produces too
+    // Fetching announcements from logs is not simple on L2s because the network produces too
     // many blocks too quickly. If this is attempted, we throw an error.
-    if (this.chainConfig.chainId === 137) {
-      throw new Error('Cannot fetch Announcements from logs on Polygon, please try again later');
-    }
+    const errMsg = (network: string) => `Cannot fetch Announcements from logs on ${network}, please try again later`;
+    if (this.chainConfig.chainId === 10) throw new Error(errMsg('Optimism'));
+    if (this.chainConfig.chainId === 137) throw new Error(errMsg('Polygon'));
 
     // Get list of all Announcement events
     const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);

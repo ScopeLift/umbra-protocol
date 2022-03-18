@@ -85,7 +85,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { UserAnnouncement, KeyPair } from '@umbra/umbra-js';
+import { UserAnnouncement, KeyPair, AnnouncementDetail } from '@umbra/umbra-js';
 import { BigNumber, isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
 import useWallet from 'src/store/wallet';
@@ -183,7 +183,13 @@ function useScan() {
 
     // Fetch announcements
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
-    const allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+    let allAnnouncements: AnnouncementDetail[] = [];
+    try {
+      allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+    } catch (e) {
+      scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch anouncements
+      throw e;
+    }
 
     // Scan for funds
     scanStatus.value = 'scanning';
