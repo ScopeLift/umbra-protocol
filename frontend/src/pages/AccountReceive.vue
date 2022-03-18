@@ -152,6 +152,7 @@ function useScan() {
     // Get user's signature if required
     if (needsSignature.value) {
       const success = await getPrivateKeys();
+      if (success === 'denied') return; // if unsuccessful, user denied signature or an error was thrown
 
       // log the spending and viewing public keys to help debug any receiving issues
       // we log them as strings for easy comparison against Etherscan
@@ -161,9 +162,6 @@ function useScan() {
       window.logger.debug('spendingPubKeyX: ', BigNumber.from(spendingPubKeyX).toString());
       window.logger.debug('viewingPrefix:   ', viewingPrefix);
       window.logger.debug('viewingPubKeyX:  ', BigNumber.from(viewingPubKeyX).toString());
-
-      // if unsuccessful, user denied signature or an error was thrown
-      if (!success) return;
     }
 
     // Save off the scanPrivateKeyLocal to memory if it exists, then scan
