@@ -677,7 +677,7 @@ async function getEthSweepGasInfo(from: string, to: string, provider: EthersProv
     const gasOracleAbi = ['function getL1Fee(bytes memory _data) public view returns (uint256)'];
     const gasPriceOracle = new Contract('0x420000000000000000000000000000000000000F', gasOracleAbi, provider);
     const l1FeeInWei = await gasPriceOracle.getL1Fee(
-      serializeTransaction({ to, value: 0, data: '0x', gasLimit, gasPrice })
+      serializeTransaction({ to, value: fromBalance, data: '0x', gasLimit, gasPrice })
     );
     txCost = txCost.add(l1FeeInWei);
   }
