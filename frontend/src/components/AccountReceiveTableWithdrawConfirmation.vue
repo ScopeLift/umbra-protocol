@@ -105,7 +105,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
-import { UserAnnouncement } from '@umbra/umbra-js';
+import { utils as umbraUtils, UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
@@ -199,27 +199,36 @@ export default defineComponent({
 
     onMounted(async () => {
       if (isNativeToken) {
-        gasLimit.value = (await provider.value?.estimateGas({
-          to: toAddress(props.destinationAddress, provider.value),
-          from: props.activeAnnouncement.receiver,
-          value: amount,
-          gasPrice: 0,
-        })) as BigNumber;
+        // Flooring this because the string we get back from formatUnits is a decimal.
+        const formattedCost = (gasPrice: BigNumber) => String(Math.floor(Number(formatUnits(gasPrice, 'gwei'))));
+        const from = props.activeAnnouncement.receiver;
+        const to = await toAddress(props.destinationAddress, provider.value!);
 
-        const gasPrice = network.value?.chainId === 1 ? await tryGetGasPrice() : await provider.value?.getGasPrice(); // use blocknative on mainnet, the node elsewhere
-        const ethFee = gasLimit.value.mul(gasPrice as BigNumber);
-
-        fee.value = ethFee;
-        // flooring this b/c the string we get back from formatUnits is a decimal
-        formattedCustomTxCostGwei.value = String(Math.floor(Number(formatUnits(gasPrice as BigNumber, 'gwei'))));
+        // On Optimism, we use Umbra's getEthSweepGasInfo method to ensure L1 fees are accounted for.
+        // Otherwise we use the standard gasPrice * gasLimit as the default.
+        if (network.value?.chainId === 10) {
+          const { getEthSweepGasInfo } = umbraUtils;
+          const sweepGasInfo = await getEthSweepGasInfo(from, to, provider.value!);
+          gasLimit.value = sweepGasInfo.gasLimit;
+          // The base fee used for the estimate may change by the time the user sends the transaction. As a result
+          // we show a value 20% higher than the current fee estimate to account for fluctuations. In practice, the
+          // transaction fee paid will be lower than this estimate.
+          fee.value = sweepGasInfo.txCost.mul(120).div(100);
+          formattedCustomTxCostGwei.value = formattedCost(sweepGasInfo.gasPrice);
+        } else {
+          gasLimit.value = (await provider.value?.estimateGas({ to, from, value: amount, gasPrice: 0 })) as BigNumber;
+          const gasPrice = network.value?.chainId === 1 ? await tryGetGasPrice() : await provider.value?.getGasPrice(); // use blocknative on mainnet, the node elsewhere
+          fee.value = gasLimit.value.mul(gasPrice!);
+          formattedCustomTxCostGwei.value = formattedCost(gasPrice!);
+        }
       } else {
         fee.value = props.activeFee.fee;
       }
       loaded.value = true;
     });
 
-    // Define computed properties dependent on the fee (must be computed to react to ETH gas price updates by user).
-    // Variables prefixed with `formatted*` are inteded for display in the U)
+    // Define computed properties dependent on the fee. Must be computed to react to gas price updates by user.
+    // Variables prefixed with `formatted*` are intended for display in the UI.
     const amountReceived = computed(() => amount.sub(useCustomFee.value ? customTxFeeInWei.value : fee.value)); // amount user will receive
 
     // transaction fee, rounded

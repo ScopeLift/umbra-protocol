@@ -16,15 +16,15 @@ import {
   JsonRpcSigner,
   keccak256,
   Overrides,
-  serialize as serializeTransaction,
   sha256,
   splitSignature,
   toUtf8Bytes,
+  TransactionResponse,
   Wallet,
 } from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { blockedStealthAddresses, lookupRecipient } from '../utils/utils';
+import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
@@ -233,19 +233,7 @@ export class Umbra {
 
     // Handle ETH and tokens accordingly. The isEth method also serves to validate the token input
     if (isEth(token)) {
-      const { gasPrice, gasLimit, txCost, fromBalance, ethToSend } = await getEthSweepGasInfo(
-        stealthWallet.address, // from
-        destination, // to
-        this.provider,
-        overrides
-      );
-
-      if (txCost.gt(fromBalance)) {
-        throw new Error('Stealth address ETH balance is not enough to pay for withdrawal gas cost');
-      }
-
-      const nonce = overrides.nonce || undefined; // nonce will be determined by ethers if undefined
-      return txSigner.sendTransaction({ to: destination, value: ethToSend, gasPrice, gasLimit, nonce });
+      return await tryEthWithdraw(txSigner, await txSigner.getAddress(), destination, overrides);
     } else {
       // Withdrawing a token
       return await this.umbraContract.connect(txSigner).withdrawToken(destination, token, overrides);
@@ -640,48 +628,39 @@ async function recursiveGraphFetch(
 }
 
 /**
- * @notice Given a from address, to address, and provider, return parameters needed to sweep all ETH
- * @param from Address sending ETH
- * @param to Address receiving ETH
- * @param provider Provider to use for querying data
- * @param overrides Optional overrides for gasLimit and gasPrice
+ * @notice Tries withdrawing ETH from a stealth address on behalf of a user
+ * @dev Attempts multiple retries before returning an error. Retries only occur if there was an
+ * insufficient funds error due to changing L1 gas prices on Optimism. Retry attempts occur quickly.
  */
-async function getEthSweepGasInfo(from: string, to: string, provider: EthersProvider, overrides: Overrides) {
-  const gasLimitOf21k = [1, 4, 10, 137]; // networks where ETH sends cost 21000 gas
+async function tryEthWithdraw(
+  signer: JsonRpcSigner | Wallet,
+  from: string, // signer.getAddress() is async, so pass this to reduce number of calls
+  to: string,
+  overrides: Overrides = {},
+  retryCount = 0
+): Promise<TransactionResponse> {
+  try {
+    if (retryCount === 20) throw new Error("Failed to estimate Optimism's L1 Fee, please try again later");
+    const sweepInfo = await getEthSweepGasInfo(from, to, signer.provider as EthersProvider, overrides);
+    const { gasPrice, gasLimit, txCost, fromBalance, ethToSend, chainId } = sweepInfo;
+    if (txCost.gt(fromBalance)) {
+      throw new Error('Stealth address ETH balance is not enough to pay for withdrawal gas cost');
+    }
 
-  const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([
-    provider.getCode(to),
-    provider.getNetwork(),
-    provider.getBalance(from),
-    provider.getGasPrice(),
-  ]);
-  const isEoa = toAddressCode === '0x';
-  const { chainId } = network;
+    // If on Optimism, reduce the value sent to add margin for the variable L1 gas costs. The margin added is
+    // proportional to the retryCount, i.e. the more retries, the more margin is added, capped at 20% added cost
+    let adjustedValue = ethToSend;
+    if (chainId === 10) {
+      const costWithMargin = txCost.mul(100 + Math.min(retryCount, 20)).div(100);
+      adjustedValue = adjustedValue.sub(costWithMargin);
+    }
 
-  // If a gas limit was provided, use it. Otherwise, if we are sending to an EOA and this is a network where ETH
-  // transfers always to cost 21000 gas, use 21000. Otherwise, estimate the gas limit.
-  const gasLimit = overrides.gasLimit
-    ? BigNumber.from(await overrides.gasLimit)
-    : isEoa && gasLimitOf21k.includes(chainId)
-    ? BigNumber.from('21000')
-    : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
-
-  // Estimate the gas price, defaulting to the given one and asking the node otherwise
-  const gasPrice = BigNumber.from(await overrides.gasPrice) || BigNumber.from(providerGasPrice);
-
-  // On Optimism, we ask the gas price oracle for the L1 data fee that we should add on top of the L2 execution
-  // cost: https://community.optimism.io/docs/developers/build/transaction-fees/
-  // For Arbitrum, this is baked into the gasPrice returned from the provider.
-  let txCost = gasPrice.mul(gasLimit);
-  if (chainId === 10) {
-    const gasOracleAbi = ['function getL1Fee(bytes memory _data) public view returns (uint256)'];
-    const gasPriceOracle = new Contract('0x420000000000000000000000000000000000000F', gasOracleAbi, provider);
-    const l1FeeInWei = await gasPriceOracle.getL1Fee(
-      serializeTransaction({ to, value: fromBalance, data: '0x', gasLimit, gasPrice })
-    );
-    txCost = txCost.add(l1FeeInWei);
+    const tx = await signer.sendTransaction({ to, value: adjustedValue, gasPrice, gasLimit });
+    return tx;
+  } catch (e: any) {
+    if (!e.stack.includes('insufficient funds')) throw e;
+    console.log('e', e);
+    console.warn(`failed with "insufficient funds for gas * price + value", retry attempt ${retryCount}...`);
+    return await tryEthWithdraw(signer, from, to, overrides, retryCount + 1);
   }
-
-  // Return the gas price, gas limit, and the transaction cost
-  return { gasPrice, gasLimit, txCost, fromBalance, ethToSend: fromBalance.sub(txCost) };
 }
