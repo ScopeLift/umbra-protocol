@@ -15,5 +15,6 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/ban-ts-comment': 1,
+    '@typescript-eslint/no-non-null-assertion': 0,
   },
 };
