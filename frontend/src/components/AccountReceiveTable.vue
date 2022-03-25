@@ -440,7 +440,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     const stealthBalancePromises = announcements.map((a) => getStealthBalance(a.token, a.receiver));
     const stealthBalances = await Promise.all(stealthBalancePromises);
     formattedAnnouncements.value.forEach((announcement, index) => {
-      announcement.isWithdrawn = stealthBalances[index].eq(BigNumber.from('0'));
+      announcement.isWithdrawn = stealthBalances[index].lt(announcement.amount);
     });
     isLoading.value = false;
   });
