@@ -55,7 +55,7 @@
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
           <div v-if="loaded">-{{ formattedDefaultTxCost }} {{ symbol }}</div>
           <q-icon
-            v-if="isNativeToken && loaded"
+            v-if="isNativeToken && loaded && ![10, 42161].includes(chainId)"
             @click="toggleCustomFee"
             class="cursor-pointer"
             color="primary"

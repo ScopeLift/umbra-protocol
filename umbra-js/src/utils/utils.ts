@@ -331,6 +331,7 @@ export async function getEthSweepGasInfo(
   overrides: Overrides = {}
 ) {
   const gasLimitOf21k = [1, 4, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
+  const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
   const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([
     provider.getCode(to),
@@ -349,8 +350,10 @@ export async function getEthSweepGasInfo(
     ? BigNumber.from('21000')
     : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
 
-  // Estimate the gas price, defaulting to the given one and asking the node otherwise
-  const gasPrice = BigNumber.from((await overrides.gasPrice) || providerGasPrice);
+  // Estimate the gas price, defaulting to the given one unless on a network where we want to use provider gas price
+  const gasPrice = ignoreGasPriceOverride.includes(chainId)
+    ? providerGasPrice
+    : BigNumber.from((await overrides.gasPrice) || providerGasPrice);
 
   // On Optimism, we ask the gas price oracle for the L1 data fee that we should add on top of the L2 execution
   // cost: https://community.optimism.io/docs/developers/build/transaction-fees/

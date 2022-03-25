@@ -658,6 +658,7 @@ async function tryEthWithdraw(
     const tx = await signer.sendTransaction({ to, value: adjustedValue, gasPrice, gasLimit });
     return tx;
   } catch (e: any) {
+    // Retry if the error was insufficient funds, otherwise throw the error
     if (!e.stack.includes('insufficient funds')) throw e;
     console.log('e', e);
     console.warn(`failed with "insufficient funds for gas * price + value", retry attempt ${retryCount}...`);
