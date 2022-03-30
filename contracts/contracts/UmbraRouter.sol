@@ -58,7 +58,7 @@ contract UmbraRouter {
         );
 
       (bool success, ) = umbra.call{value: _amount}(data);
-      require(success, "call failed");
+      require(success, "sendEth call failed");
     }
   }
 
@@ -66,10 +66,16 @@ contract UmbraRouter {
     for (uint256 i = 0; i < _params.length; i++) {
       uint256 _amount = _params[i].amount;
       address _tokenAddr = _params[i].tokenAddr;
-      IERC20 token = IERC20(_tokenAddr);
-      token.approve(address(this), type(uint256).max);
+      IERC20 token = IERC20(address(_tokenAddr));
 
-      // token.transferFrom(msg.sender, umbra, _amount);
+      //User needs to approve router address as spender first
+      token.transferFrom(msg.sender, address(this), _amount);
+
+      if (token.allowance(address(this), umbra) == 0) {
+        token.approve(umbra, type(uint256).max);
+      }
+
+      // token.transferFrom(address(this), umbra, _amount);
       bytes memory data =
         abi.encodeWithSelector(
           IUmbra.sendToken.selector,
@@ -80,9 +86,17 @@ contract UmbraRouter {
           _params[i].ciphertext
         );
 
-      (bool success, ) = umbra.call{value: _tollCommitment}(data);
+      (bool success, ) = umbra.call(data);
+      require(success, "sendToken call failed");
     }
   }
 
-  function batchSend() external payable {}
+  function batchSend(
+    uint256 _tollCommitment,
+    SendEth[] calldata _ethParams,
+    SendToken[] calldata _tokenParams
+  ) external payable {
+    batchSendEth(_tollCommitment, _ethParams);
+    batchSendTokens(_tollCommitment, _tokenParams);
+  }
 }
