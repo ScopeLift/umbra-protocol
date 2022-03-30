@@ -119,7 +119,15 @@
               </q-card-section>
               <q-separator />
               <q-card-actions class="row justify-center items-center">
-                <div v-if="props.row.isWithdrawn" class="text-positive">
+                <div
+                  v-if="props.row.isWithdrawn"
+                  class="text-positive"
+                  :class="{ 'cursor-pointer': advancedMode }"
+                  @click="
+                    hidePrivateKey();
+                    if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
+                  "
+                >
                   Withdrawn<q-icon name="fas fa-check" class="q-ml-sm" />
                 </div>
                 <base-button
@@ -144,6 +152,7 @@
                     @copyPrivateKey="copyPrivateKey(spendingPrivateKey)"
                     @updateDestinationAddress="destinationAddress = arguments[0]"
                     :destinationAddress="destinationAddress"
+                    :isWithdrawn="props.row.isWithdrawn"
                     :isWithdrawInProgress="isWithdrawInProgress"
                     :isFeeLoading="isFeeLoading"
                     :isNativeToken="isNativeToken(props.row.token)"
@@ -230,7 +239,7 @@
               <div v-else>{{ col.value }}</div>
             </q-td>
 
-            <!-- Expansion button, works accordian-style -->
+            <!-- Expansion button, works accordion-style -->
             <!--
             The click modifier is a bit clunky because it touches state in two independent composition functions,
              so we explain the two things it does here:
@@ -243,7 +252,15 @@
                  only one row is every expanded at a time
           -->
             <q-td auto-width>
-              <div v-if="props.row.isWithdrawn" class="text-positive">
+              <div
+                v-if="props.row.isWithdrawn"
+                class="text-positive"
+                :class="{ 'cursor-pointer': advancedMode }"
+                @click="
+                  hidePrivateKey();
+                  if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
+                "
+              >
                 Withdrawn<q-icon name="fas fa-check" class="q-ml-sm" />
               </div>
               <base-button
@@ -271,6 +288,7 @@
                 @copyPrivateKey="copyPrivateKey(spendingPrivateKey)"
                 @updateDestinationAddress="destinationAddress = arguments[0]"
                 :destinationAddress="destinationAddress"
+                :isWithdrawn="props.row.isWithdrawn"
                 :isWithdrawInProgress="isWithdrawInProgress"
                 :isFeeLoading="isFeeLoading"
                 :isNativeToken="isNativeToken(props.row.token)"
