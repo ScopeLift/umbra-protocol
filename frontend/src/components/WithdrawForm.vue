@@ -1,5 +1,12 @@
 <template>
-  <q-form @submit="emit('initializeWithdraw')" class="form-wide q-pa-md" style="white-space: normal">
+  <q-form
+    @submit="
+      emit('initializeWithdraw');
+      setIsInWithdrawFlow(true);
+    "
+    class="form-wide q-pa-md"
+    style="white-space: normal"
+  >
     <!-- Withdrawal form -->
     <div v-if="!isWithdrawn" class="q-mb-lg">
       <div v-if="!isWithdrawInProgress">
@@ -7,11 +14,14 @@
         <base-input
           v-model="content"
           @input="emit('updateDestinationAddress', content)"
-          @click="emit('initializeWithdraw')"
+          @click="
+            emit('initializeWithdraw');
+            setIsInWithdrawFlow(true);
+          "
           appendButtonLabel="Withdraw"
-          :appendButtonDisable="isWithdrawInProgress || isFeeLoading"
-          :appendButtonLoading="isWithdrawInProgress"
-          :disable="isWithdrawInProgress"
+          :appendButtonDisable="isInWithdrawFlow || isFeeLoading"
+          :appendButtonLoading="isInWithdrawFlow"
+          :disable="isInWithdrawFlow"
           label="Address"
           lazy-rules
           :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
@@ -71,6 +81,7 @@ import { defineComponent, PropType, ref } from '@vue/composition-api';
 import { FeeEstimateResponse } from './models';
 import { formatUnits } from 'src/utils/ethers';
 import { humanizeTokenAmount } from 'src/utils/utils';
+import useStatusesStore from 'src/store/statuses';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -111,9 +122,18 @@ export default defineComponent({
   },
   setup({ destinationAddress }, { emit }) {
     const { NATIVE_TOKEN } = useWalletStore();
+    const { setIsInWithdrawFlow, isInWithdrawFlow } = useStatusesStore();
     const content = ref<string>(destinationAddress || '');
     const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
-    return { formatUnits, humanizeTokenAmount, emit, content, nativeTokenSymbol };
+    return {
+      formatUnits,
+      humanizeTokenAmount,
+      emit,
+      content,
+      nativeTokenSymbol,
+      isInWithdrawFlow,
+      setIsInWithdrawFlow,
+    };
   },
 });
 </script>

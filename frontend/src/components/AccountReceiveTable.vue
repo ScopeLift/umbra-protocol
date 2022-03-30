@@ -1,7 +1,11 @@
 <template>
   <div>
     <!-- Modal to show when warning user of bad privacy hygiene -->
-    <q-dialog v-model="showPrivacyModal">
+    <!--
+      We don't need @show="setIsInWithdrawFlow(true)" because that's set immediately after clicking the
+      withdraw button and therefore is already true by the time this modal opens
+    -->
+    <q-dialog v-model="showPrivacyModal" @hide="setIsInWithdrawFlow(false)">
       <account-receive-table-warning
         @acknowledged="confirmWithdraw"
         :destinationAddress="destinationAddress"
@@ -11,7 +15,7 @@
     </q-dialog>
 
     <!-- Modal to show confirmation of withdraw -->
-    <q-dialog v-model="showConfirmationModal">
+    <q-dialog v-model="showConfirmationModal" @show="setIsInWithdrawFlow(true)" @hide="setIsInWithdrawFlow(false)">
       <account-receive-table-withdraw-confirmation
         class="q-pa-lg"
         @cancel="showConfirmationModal = false"
@@ -317,6 +321,7 @@ import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
+import useStatusesStore from 'src/store/statuses';
 import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
@@ -368,6 +373,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
   const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
+  const { setIsInWithdrawFlow } = useStatusesStore();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
   const showPrivacyModal = ref(false);
@@ -573,6 +579,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       isWithdrawInProgress.value = false;
       showConfirmationModal.value = false;
       activeAnnouncement.value = undefined;
+      setIsInWithdrawFlow(false);
     }
   }
 
@@ -621,6 +628,7 @@ export default defineComponent({
 
   setup(props, context) {
     const { advancedMode, isDark, scanPrivateKey } = useSettingsStore();
+    const { setIsInWithdrawFlow } = useStatusesStore();
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
     const { isAccountSetup, keysMatch, spendingKeyPair: spendingKeyPairFromSig } = useWalletStore();
@@ -640,6 +648,7 @@ export default defineComponent({
       isDark,
       isCustomPrivateKey: scanPrivateKey.value?.length,
       keysMatch,
+      setIsInWithdrawFlow,
       ...useAdvancedFeatures(spendingKeyPair.value),
       ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
     };
