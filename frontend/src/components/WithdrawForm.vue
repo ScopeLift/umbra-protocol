@@ -52,7 +52,7 @@
     <!-- Advanced feature: show private key -->
     <div v-if="advancedMode">
       <div @click="emit('togglePrivateKey')" class="text-caption hyperlink">
-        {{ spendingPrivateKey ? 'Hide' : 'Show' }} withdrawal private key
+        {{ spendingPrivateKey ? 'Hide' : 'Show' }} stealth address private key
       </div>
       <div
         v-if="spendingPrivateKey"
