@@ -4,7 +4,7 @@
       <div class="column all-content-format">
         <!-- Main header -->
         <div class="row justify-between items-center no-wrap">
-          <div class="col-sm-8">
+          <div class="col-sm-auto">
             <div class="row justify-start items-center">
               <!-- LOGO AND TITLE -->
               <div class="row items-center cursor-pointer">
@@ -53,7 +53,7 @@
           <!-- HAMBURGER MENU -->
           <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
           <!-- ADDRESS AND SETTINGS AND NETWORK SELECTOR -->
-          <div v-else class="col-sm-4">
+          <div v-else class="col-sm-auto">
             <div v-if="isLoading" class="row justify-end items-center">
               <q-spinner color="primary" size="1em" />
             </div>
