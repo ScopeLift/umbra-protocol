@@ -472,7 +472,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
     if (!userAddress.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
     activeAnnouncement.value = announcement;
-    const { safe, reasons } = await isAddressSafe(destinationAddress.value, userAddress.value, provider.value);
+    const { safe, reasons } = await isAddressSafe(
+      destinationAddress.value,
+      userAddress.value,
+      announcement.receiver,
+      provider.value
+    );
 
     if (safe) {
       showConfirmationModal.value = true;

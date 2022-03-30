@@ -96,9 +96,10 @@ export const lookupOrFormatAddresses = async (addresses: string[], provider: Pro
 
 // Checks for any potential risks of withdrawing to the provided name or address, returns object containing
 // a true/false judgement about risk, and HTML strings with details about the warnings
-export const isAddressSafe = async (name: string, userAddress: string, provider: Provider) => {
+export const isAddressSafe = async (name: string, userAddress: string, stealthAddress: string, provider: Provider) => {
   const reasons: string[] = [];
   userAddress = getAddress(userAddress);
+  stealthAddress = getAddress(stealthAddress);
 
   // Check if we're withdrawing to an ENS or CNS name
   const isDomain = utils.isDomain(name);
@@ -117,7 +118,10 @@ export const isAddressSafe = async (name: string, userAddress: string, provider:
   }
 
   // Check if address is the wallet user is logged in with
-  if (destinationAddress === userAddress) reasons.push(`It ${isDomain ? 'resolves to' : 'has'} the same address as the connected wallet`); // prettier-ignore
+  if (destinationAddress === userAddress) reasons.push(`It ${isDomain ? 'resolves to' : 'is'} the same address as the connected wallet`); // prettier-ignore
+
+  // Check if the address is the stealth address that was sent funds
+  if (destinationAddress === stealthAddress) reasons.push(`It ${isDomain ? 'resolves to' : 'is'} the same address as the stealth address`); // prettier-ignore
 
   // Check if address owns any POAPs
   if (await hasPOAPs(destinationAddress)) reasons.push(`${isDomain ? 'The address it resolves to' : 'It'} has POAP tokens`); // prettier-ignore
