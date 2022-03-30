@@ -25,6 +25,7 @@
                     </div>
                     <address-settings
                       v-else-if="!isLoading && (userDisplayName || network)"
+                      :avatar="avatar"
                       :userAddress="userAddress"
                       :userDisplayName="userDisplayName"
                       :advancedMode="advancedMode"
