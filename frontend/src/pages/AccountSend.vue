@@ -208,15 +208,24 @@ function useSendForm() {
   const toll = ref<BigNumber>(Zero);
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
-    if (typeof humanAmount.value !== 'string') return '--';
-    const sendAmount = parseUnits(humanAmount.value, NATIVE_TOKEN.value.decimals);
+    if (typeof(humanAmount.value) !== 'string') return '--';
+    const sendAmount = parseUnits(
+      humanAmount.value,
+      NATIVE_TOKEN.value.decimals
+    );
     const totalAmount = sendAmount.add(toll.value);
 
     const tollDecimals = humanToll.value.split('.')[1]?.length || 0;
     const amountDecimals = humanAmount.value.split('.')[1]?.length || 0;
-    const stringToFormatFor = tollDecimals > amountDecimals ? humanToll.value : humanAmount.value;
+    const stringToFormatFor = tollDecimals > amountDecimals
+      ? humanToll.value
+      : humanAmount.value;
 
-    return roundReceivableAmountAfterFees(totalAmount, stringToFormatFor, NATIVE_TOKEN.value);
+    return roundReceivableAmountAfterFees(
+      totalAmount,
+      stringToFormatFor,
+      NATIVE_TOKEN.value
+    )
   });
 
   watch(
