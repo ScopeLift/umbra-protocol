@@ -115,7 +115,7 @@
             <!-- Summary if they're sending native token -->
             <tr v-if="token.address === NATIVE_TOKEN.address">
               <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
-              <td class="min text-right">{{ formatNumber(Number(humanAmount) + Number(humanToll)) }}</td>
+              <td class="min text-right">{{ humanTotalAmount }}</td>
               <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
               <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
               <td><!-- Fills space --></td>
@@ -170,7 +170,7 @@ import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
 import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, Zero } from 'src/utils/ethers';
-import { humanizeTokenAmount } from 'src/utils/utils';
+import { humanizeTokenAmount, roundReceivableAmountAfterFees } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfo } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
@@ -207,6 +207,14 @@ function useSendForm() {
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
+  const humanTotalAmount = computed(() => {
+    const totalAmount = toll.value.add(parseUnits(humanAmount.value, token.decimals))
+    return roundReceivableAmountAfterFees(
+      totalAmount,
+      humanToll.value,
+      token.value
+    )
+  });
 
   watch(
     // We watch `shouldUseNormalPubKey` to ensure the "Address 0x123 has not registered stealkth keys" validation
@@ -392,9 +400,9 @@ function useSendForm() {
   return {
     advancedMode,
     currentChain,
-    formatNumber: (x: number) => parseFloat(x.toFixed(4)), // rounds to 4 decimals, then shows minimum number of digits
     humanAmount,
     humanToll,
+    humanTotalAmount,
     isSending,
     isValidForm,
     isValidId,

@@ -26,11 +26,17 @@ export const getChainById = (chainId: BigNumberish) => {
  */
 export const humanizeTokenAmount = (amount: BigNumberish, token: TokenInfo): string => {
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
-  if (formattedAmount <= 1) return formattedAmount.toPrecision(2);
-  return formattedAmount.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
+  if ( formattedAmount > 1) {
+    return formattedAmount.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }
+  if (amount == 0 ) return formattedAmount.toPrecision(2);
+  if (formattedAmount < 0.000001) { // avoid scientific notation
+    return formatUnits(amount, token.decimals).replace(/0+$/, '');
+  }
+  return formattedAmount.toPrecision(2).replace(/0+$/, '');
 };
 
 /**
