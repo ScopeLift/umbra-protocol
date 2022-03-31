@@ -25,7 +25,7 @@
     <!-- Send form -->
     <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
-      <div>Recipient's ENS name, CNS name, or address</div>
+      <div>Recipient's ENS name or address</div>
       <base-input
         v-model="recipientId"
         :debounce="500"
@@ -208,12 +208,15 @@ function useSendForm() {
   const toll = ref<BigNumber>(Zero);
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
-    const totalAmount = toll.value.add(parseUnits(humanAmount.value, token.decimals))
-    return roundReceivableAmountAfterFees(
-      totalAmount,
-      humanToll.value,
-      token.value
-    )
+    if (typeof humanAmount.value !== 'string') return '--';
+    const sendAmount = parseUnits(humanAmount.value, NATIVE_TOKEN.value.decimals);
+    const totalAmount = sendAmount.add(toll.value);
+
+    const tollDecimals = humanToll.value.split('.')[1]?.length || 0;
+    const amountDecimals = humanAmount.value.split('.')[1]?.length || 0;
+    const stringToFormatFor = tollDecimals > amountDecimals ? humanToll.value : humanAmount.value;
+
+    return roundReceivableAmountAfterFees(totalAmount, stringToFormatFor, NATIVE_TOKEN.value);
   });
 
   watch(

@@ -122,7 +122,7 @@ describe('Utilities', () => {
       const finalAmount = parseEther('1.999979');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('1.999979');
     });
-    it('should handle a fee with a lot of precision', () => {
+    it('should handle a fee with a lot of precision and round it', () => {
       //   7.000000000000000000
       // - 0.001428371937102478
       // ===========
@@ -150,6 +150,53 @@ describe('Utilities', () => {
       const fee = humanizeTokenAmount(realFee, usdc); // i.e what the user sees
       const finalAmount = parseUnits('292.051');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('292.05');
+    });
+    it('should work for native token sends where the fee is added', () => {
+      //     1.
+      // +   0.05
+      // ===========
+      //     1.05
+      const fee = humanizeTokenAmount(parseEther('0.05'), eth);
+      const finalAmount = parseEther('1.05');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('1.05');
+    });
+    it('should work for big native token sends where the fee is added', () => {
+      //   100002.
+      // +      0.05
+      // ==============
+      //   100002.05
+      const fee = humanizeTokenAmount(parseEther('0.05'), eth);
+      const finalAmount = parseEther('100002.05');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('100,002.05');
+    });
+    it('should work for native token sends where nothing is sent', () => {
+      //     0.
+      // +   0.05
+      // ===========
+      //     0.05
+      const fee = humanizeTokenAmount(parseEther('0.05'), eth);
+      const finalAmount = parseEther('0.05');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('0.05');
+    });
+    it('should work for native token sends when the amount is less than the fee', () => {
+      // this is not something the app allows users to do, but the UI has to handle it anyway
+      //     0.01
+      // +   0.05
+      // ===========
+      //     0.06
+      const fee = humanizeTokenAmount(parseEther('0.05'), eth);
+      const finalAmount = parseEther('0.06');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('0.06');
+    });
+    it('should work for native sends when the amount is much less than the fee', () => {
+      // this is not something the app allows users to do, but the UI has to handle it anyway
+      //     0.0001
+      // +   0.05
+      // ===========
+      //     0.0501
+      const fee = humanizeTokenAmount(parseEther('0.05'), eth);
+      const finalAmount = parseEther('0.0501');
+      expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('0.0501');
     });
   });
 });

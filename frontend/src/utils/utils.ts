@@ -58,10 +58,9 @@ export const roundReceivableAmountAfterFees = (
   // something like `Number(userFormattedFee).toString()` as it avoids
   // Javascript's overflow bugs with Numbers
   const humanizedFeeZeroTrimmed = userFormattedFee.replace(/0+$/, '');
-
   const precisionRequired = humanizedFeeZeroTrimmed.split('.')[1]?.length || 0;
+
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
-  if (formattedAmount <= 1) return formattedAmount.toPrecision(precisionRequired);
   return formattedAmount.toLocaleString(undefined, {
     minimumFractionDigits: precisionRequired,
     maximumFractionDigits: precisionRequired,
