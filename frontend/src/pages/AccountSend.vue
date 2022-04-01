@@ -209,6 +209,7 @@ function useSendForm() {
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
     if (typeof(humanAmount.value) !== 'string') return '--'; // appease TS
+    if (isNaN(Number(humanAmount.value))) return '--';
     const sendAmount = parseUnits(humanAmount.value, NATIVE_TOKEN.value.decimals);
     const totalAmount = sendAmount.add(toll.value);
 
