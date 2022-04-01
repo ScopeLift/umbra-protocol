@@ -109,7 +109,7 @@ import { utils as umbraUtils, UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import { getEtherscanUrl, getGasPrice, humanizeTokenAmount, roundReceivableAmountAfterFees } from 'src/utils/utils';
+import { getEtherscanUrl, getGasPrice, humanizeTokenAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -239,14 +239,12 @@ export default defineComponent({
 
     // amount user will receive, rounded
     const formattedAmountReceived = computed(() => {
-      // we need to round differently here because we want to make it clear
-      // to the user that a fee has been subtracted from their deposited amount
-      return roundReceivableAmountAfterFees(
+      const formattedFee = useCustomFee.value ? formattedCustomTxCostEth : formattedDefaultTxCost;
+      return humanizeArithmeticResult(
         amountReceived.value,
-        // we want to base this on what the user *sees*, i.e. the formatted
-        // fees, since they are what the user will be checking our calculations
-        // against
-        useCustomFee.value ? formattedCustomTxCostEth.value : formattedDefaultTxCost.value,
+        // we want to base this on what the user *sees*, i.e. the formatted fees, since
+        // they are what the user will be checking our calculations against
+        [formattedAmount, formattedFee.value],
         props.activeFee.token
       );
     });

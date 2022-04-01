@@ -170,7 +170,7 @@ import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
 import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, Zero } from 'src/utils/ethers';
-import { humanizeTokenAmount, roundReceivableAmountAfterFees } from 'src/utils/utils';
+import { humanizeTokenAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfo } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
@@ -208,22 +208,16 @@ function useSendForm() {
   const toll = ref<BigNumber>(Zero);
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
-    if (typeof(humanAmount.value) !== 'string') return '--';
+    if (typeof(humanAmount.value) !== 'string') return '--'; // appease TS
     const sendAmount = parseUnits(
       humanAmount.value,
       NATIVE_TOKEN.value.decimals
     );
     const totalAmount = sendAmount.add(toll.value);
 
-    const tollDecimals = humanToll.value.split('.')[1]?.length || 0;
-    const amountDecimals = humanAmount.value.split('.')[1]?.length || 0;
-    const stringToFormatFor = tollDecimals > amountDecimals
-      ? humanToll.value
-      : humanAmount.value;
-
-    return roundReceivableAmountAfterFees(
+    return humanizeArithmeticResult(
       totalAmount,
-      stringToFormatFor,
+      [humanAmount.value, humanToll.value], // subtotal and fee
       NATIVE_TOKEN.value
     )
   });
