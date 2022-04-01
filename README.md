@@ -99,7 +99,7 @@ This repository uses [yarn](https://yarnpkg.com/) for package management and [vo
 Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts, and @umbra/umbra-js.
 
 * [frontend](frontend/) — Frontend web3 app for setting up and using Umbra, deployed at [app.umbra.cash](https://app.umbra.cash)
-* [contracts](contracts/) — Solidity contracts used in the Umbra Protocol.
+* [contracts-core](contracts-core/) — Solidity contracts used in the Umbra Protocol.
 * [umbra-js](umbra-js/) — A TypeScript library for building Umbra-enabled web3 apps in node.js or in the browser.
 
 The monorepo structure simplifies the development workflow.
@@ -110,7 +110,7 @@ To get started, clone this repo, then follow these instructions:
 
 ```sh
 # run these commands from workspace root!
-cp contracts/.env.example contracts/.env # please edit the .env with your own environment variable values
+cp contracts-core/.env.example contracts-core/.env # please edit the .env with your own environment variable values
 cp frontend/.env.example frontend/.env # please edit the .env with your own environment variable values
 cp umbra-js/.env.example umbra-js/.env # please edit the .env with your own environment variable values
 yarn install # installs dependencies for each of the 3 packages. Also builds umbra-js.
@@ -127,7 +127,7 @@ yarn test # runs tests for each of the 3 packages
 Note: If you want to be more precise with your command (e.g. just building, cleaning, or testing 1 package), simply run any above command from the package directory. For example, if you were just working on the contract code, you might:
 
 ```sh
-cd contracts # move into the contracts sub directory
+cd contracts-core # move into the contracts-core sub directory
 yarn build # build only the contracts
 yarn clean # remove only the contract build artifacts
 yarn test # run only the contract tests

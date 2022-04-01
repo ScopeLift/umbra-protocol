@@ -3,7 +3,7 @@
   "references": [
     { "path": "frontend" },
     { "path": "umbra-js" },
-    { "path": "contracts" }
+    { "path": "contracts-core" }
   ],
   "exclude": ["node_modules"]
 }
