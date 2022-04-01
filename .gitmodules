@@ -1,0 +1,3 @@
+[submodule "contracts-periphery/lib/ds-test"]
+	path = contracts-periphery/lib/ds-test
+	url = https://github.com/dapphub/ds-test
