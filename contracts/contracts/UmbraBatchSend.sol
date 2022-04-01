@@ -39,11 +39,6 @@ contract UmbraBatchSend {
     bytes32 ciphertext;
   }
 
-  //receiveTokens vars
-  mapping(address => mapping(address => uint256)) internal totalPerToken;
-  mapping(address => mapping(address => bool)) internal tokenInArray;
-  address[] internal tokenAddrs;
-
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) public payable {
     uint256 valAccumulator;
 
@@ -58,40 +53,14 @@ contract UmbraBatchSend {
     require(msg.value == valAccumulator, "value mismatch");
   }
 
-  function receiveTokens(SendToken[] calldata _params) internal {
-    for (uint256 i = 0; i < _params.length; i++) {
-      address tokenAddr = _params[i].tokenAddr;
-
-      if (tokenInArray[msg.sender][tokenAddr] == false) {
-        tokenAddrs.push(tokenAddr);
-        tokenInArray[msg.sender][tokenAddr] = true;
-      }
-      totalPerToken[msg.sender][tokenAddr] += _params[i].amount;
-    }
-
-    for (uint256 i = 0; i < tokenAddrs.length; i++) {
-      if (tokenAddrs[i] != address(0)) {
-        IERC20 token = IERC20(tokenAddrs[i]);
-        //User needs to approve router address as spender first
-        token.transferFrom(msg.sender, address(this), totalPerToken[msg.sender][tokenAddrs[i]]);
-
-        delete tokenInArray[msg.sender][tokenAddrs[i]];
-        delete totalPerToken[msg.sender][tokenAddrs[i]];
-        delete tokenAddrs[i];
-      }
-    }
-  }
-
   function batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) public payable {
-    //Transfer msg.sender tokens to this contract before sending to Umbra.sol
-    receiveTokens(_params);
 
     for (uint256 i = 0; i < _params.length; i++) {
       uint256 _amount = _params[i].amount;
       address _tokenAddr = _params[i].tokenAddr;
       IERC20 token = IERC20(address(_tokenAddr));
 
-      // token.transferFrom(msg.sender, address(this), _amount);
+      token.transferFrom(msg.sender, address(this), _amount);
 
       if (token.allowance(address(this), address(umbra)) == 0) {
         token.approve(address(umbra), type(uint256).max);
