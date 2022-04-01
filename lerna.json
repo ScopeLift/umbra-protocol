@@ -1,5 +1,5 @@
 {
-    "packages": ["frontend", "contracts", "umbra-js"],
+    "packages": ["frontend", "contracts-core", "umbra-js"],
     "npmClient": "yarn",
     "version": "independent",
     "useWorkspaces": true,

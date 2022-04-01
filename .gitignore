@@ -157,4 +157,4 @@ dist
 .pnp.*
 
 # deploy history localhost files
-contracts/deploy-history/*localhost-*
+contracts-core/deploy-history/*localhost-*

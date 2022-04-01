@@ -7,7 +7,7 @@
   "workspaces": {
     "packages": [
       "frontend",
-      "contracts",
+      "contracts-core",
       "umbra-js"
     ],
     "nohoist": [
