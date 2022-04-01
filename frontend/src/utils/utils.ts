@@ -40,34 +40,6 @@ export const humanizeTokenAmount = (amount: BigNumberish, token: TokenInfo): str
 };
 
 /**
- * @notice Rounds the final amount that will be recieved during withdrawal.
- * For display/UI purposes only -- it doesn't affect the actual amount
- * withdrawn. Assumes that `amount` and `userFormattedFee` are both denominated in `token`.
- * @param amount the receivable amount to be formatted
- * @param userFormattedFee the fee that has been subtracted from the amount (as
- * the user sees it in the frontend)
- * @returns string
- */
-export const roundReceivableAmountAfterFees = (
-  amount: BigNumberish,
-  userFormattedFee: string,
-  token: TokenInfo
-): string => {
-  // Remove insignificant trailing zeros from the human-formatted fee, e.g.
-  // "0.001400" would become "0.0014". We take this approach instead of
-  // something like `Number(userFormattedFee).toString()` as it avoids
-  // Javascript's overflow bugs with Numbers
-  const humanizedFeeZeroTrimmed = userFormattedFee.replace(/0+$/, '');
-  const precisionRequired = humanizedFeeZeroTrimmed.split('.')[1]?.length || 0;
-
-  const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
-  return formattedAmount.toLocaleString(undefined, {
-    minimumFractionDigits: precisionRequired,
-    maximumFractionDigits: precisionRequired,
-  });
-};
-
-/**
  * @notice Humanizes the result of an arithmetic equation based on the operands produced
  * it. All operands are expected to be humanized strings (i.e. what the user sees) and
  * denominated in the same decimals as `token` (i.e. `parseUnits(operand, token.decimals)`
