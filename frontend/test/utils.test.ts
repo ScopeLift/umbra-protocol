@@ -1,4 +1,8 @@
-import { humanizeTokenAmount, roundReceivableAmountAfterFees } from '../src/utils/utils';
+import {
+  humanizeTokenAmount,
+  roundReceivableAmountAfterFees,
+  humanizeArithmeticResult,
+} from '../src/utils/utils';
 import { parseUnits, parseEther } from '@ethersproject/units';
 
 const usdc = {
@@ -76,6 +80,7 @@ describe('Utilities', () => {
       expect(humanizeTokenAmount(amount, eth)).toEqual('0.000000023');
     });
   });
+
   describe('roundReceivableAmountAfterFees', () => {
     it('should handle very high fees', () => {
       //   50.0
@@ -197,6 +202,183 @@ describe('Utilities', () => {
       const fee = humanizeTokenAmount(parseEther('0.05'), eth);
       const finalAmount = parseEther('0.0501');
       expect(roundReceivableAmountAfterFees(finalAmount, fee, eth)).toEqual('0.0501');
+    });
+  });
+
+  describe('humanizeArithmeticResult', () => {
+    it('should handle very high fees', () => {
+      //   50.0
+      // - 11.2
+      // ===========
+      //   38.8
+      const subtotal = '50.0';
+      const fee = '11.2';
+      const total = parseEther('38.8');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('38.8');
+    });
+    it('should handle even higher fees with more precision', () => {
+      //   70.00
+      // - 31.21
+      // ===========
+      //   58.79
+      const subtotal = '70.00';
+      const fee = '31.21';
+      const total = parseEther('58.79');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('58.79');
+    });
+    it('should not take unnecessary decimals in the fee into account', () => {
+      //   1.0
+      // - 0.1000000
+      // ===========
+      //   0.9
+      const subtotal = '1.0';
+      const fee = '0.100000';
+      const total = parseEther('0.9');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('0.9');
+    });
+    it('should sometimes add a non-significant figure', () => {
+      //   0.9999999
+      // - 0.0000099
+      // ===========
+      //   0.9999900
+      const subtotal = '0.9999999';
+      const fee = '0.0000099';
+      const total = parseEther('0.99999');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('0.9999900');
+    });
+    it('should not always change the decimals of the final amount', () => {
+      //   2.000000
+      // - 0.000021
+      // ===========
+      //   1.999979
+      const subtotal = '2.000000';
+      const fee = '0.000021';
+      const total = parseEther('1.999979');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('1.999979');
+    });
+    it('should handle a fee with a lot of precision and round it', () => {
+      //   7.000000000000000000
+      // - 0.001428371937102478
+      // ===========
+      //   6.998571628062897522
+      const subtotal = '7.000000000000000000';
+      const fee = humanizeTokenAmount(parseEther('0.001428371937102478'), eth);
+      const total = parseEther('6.998571628062897522');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      // display up to two sig figs into the fee
+      expect(humanizedTotal).toEqual('6.9986');
+    });
+    it('should handle a fee that is zero', () => {
+      //   7
+      // - 0.000000000000000000
+      // ===========
+      //   7
+      const subtotal = '7';
+      const fee = '0.00000000000';
+      const total = parseEther('7');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('7');
+    });
+    it('should not display extra figures', () => {
+      //   300.
+      // -   7.95
+      // ===========
+      //   292.05
+      const subtotal = '300';
+      const realFee = parseUnits('7.949', usdc.decimals); // i.e. not rounded
+      const fee = humanizeTokenAmount(realFee, usdc); // i.e what the user sees
+      const total = parseUnits('292.051', usdc.decimals);
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], usdc)
+      expect(humanizedTotal).toEqual('292.05');
+    });
+    it('should work for native token sends where the fee is added', () => {
+      //     1.
+      // +   0.05
+      // ===========
+      //     1.05
+      const subtotal = '1';
+      const fee = '0.05';
+      const total = parseEther('1.05');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('1.05');
+    });
+    it('should work for big native token sends where the fee is added', () => {
+      //   100002.
+      // +      0.05
+      // ==============
+      //   100002.05
+      const subtotal = '100002';
+      const fee = '0.05';
+      const total = parseEther('100002.05');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('100,002.05');
+    });
+    it('should work for native token sends where nothing is sent', () => {
+      // this is not something the app allows users to do, but the UI has to handle it anyway
+      //     0.
+      // +   0.05
+      // ===========
+      //     0.05
+      const subtotal = '0';
+      const fee = '0.05';
+      const total = parseEther('0.05');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      expect(humanizedTotal).toEqual('0.05');
+    });
+    it('should work for native token sends when the amount is less than the fee', () => {
+      // this is not something the app allows users to do, but the UI has to handle it anyway
+      //     0.01
+      // +   0.05
+      // ===========
+      //     0.06
+      const subtotal = '0.01';
+      const fee = '0.05';
+      const total = parseEther('0.06');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
+      expect(humanizedTotal).toEqual('0.06');
+    });
+    it('should work for native sends when the amount is much less than the fee', () => {
+      // this is not something the app allows users to do, but the UI has to handle it anyway
+      //     0.0001
+      // +   0.05
+      // ===========
+      //     0.0501
+      const subtotal = '0.0001';
+      const fee = '0.05';
+      const total = parseEther('0.0501');
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
+      expect(humanizedTotal).toEqual('0.0501');
+    });
+    it('should work even when there are more than 2 addition operands', () => {
+      // there's no reason why this shouldn't scale to 3 or more operands
+      //   423.4
+      //     0.0001
+      // +   0.05
+      // ===========
+      //     0.0501
+      const operands = ['423.4', '0.0001', '0.05']
+      // assume some precision was left out of the human readible numbers displayed to the user
+      const total = parseEther('423.4501000123');
+      const humanizedTotal = humanizeArithmeticResult(total, operands, eth);
+      expect(humanizedTotal).toEqual('423.4501');
+    });
+    it('should work even when there are more than 2 subtraction operands', () => {
+      // there's no reason why this shouldn't scale to 3 or more operands
+      //   423.4
+      //     0.0001
+      // -   0.05
+      // ===========
+      //     0.0501
+      const operands = ['423.4', '0.0001', '0.05']
+      // assume some precision was left out of the human readible numbers displayed to the user
+      const total = parseEther('423.3498911111111');
+      const humanizedTotal = humanizeArithmeticResult(total, operands, eth);
+      expect(humanizedTotal).toEqual('423.3499');
     });
   });
 });

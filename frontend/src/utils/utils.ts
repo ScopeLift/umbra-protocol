@@ -68,6 +68,43 @@ export const roundReceivableAmountAfterFees = (
 };
 
 /**
+ * @notice Humanizes the result of an arithmetic equation based on the operands produced
+ * it. All operands are expected to be humanized strings (i.e. what the user sees) and
+ * denominated in the same decimals as `token` (i.e. `parseUnits(operand, token.decimals)`
+ * would be in the same units as `total`).  This function is for display/UI purposes only
+ * -- it doesn't affect the actual total, e.g. when doing withdraws.
+ * @param total the amount to be formatted
+ * @param operands an array of humanized strings that were added/subtracted to produce total
+ * @param token TokenInfo
+ * @returns string the humanized total
+ */
+export const humanizeArithmeticResult = (
+  total: BigNumberish,
+  operands: string[],
+  token: TokenInfo
+): string => {
+  const minDisplayDigits = 0;
+  const requiredDisplayDigits = operands.reduce((
+    currentMaxDigits: number,
+    humanString: string
+  ) => {
+    // Remove insignificant trailing zeros from human-formatted strings, e.g. "0.001400"
+    // would become "0.0014". We take this approach instead of something like
+    // `Number(humanString).toString()` as it avoids Javascript's overflow bugs with
+    // Numbers.
+    const zeroTrimmedString = humanString.replace(/0+$/, '');
+    const significantDigits = zeroTrimmedString.split('.')[1]?.length || 0;
+    return Math.max(significantDigits, currentMaxDigits);
+  }, minDisplayDigits)
+
+  const formattedTotal = parseFloat(formatUnits(total, token.decimals));
+  return formattedTotal.toLocaleString(undefined, {
+    minimumFractionDigits: requiredDisplayDigits,
+    maximumFractionDigits: requiredDisplayDigits,
+  });
+};
+
+/**
  * @notice GETs JSON from the provided `url`
  */
 export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
