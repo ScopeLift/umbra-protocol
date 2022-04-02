@@ -131,6 +131,7 @@ export type ApiError = { error: string };
 export interface TokenInfoWithMinSendAmount extends TokenInfo {
   minSendAmount: string;
 }
+// Omit the TokenList.tokens type so we can override it with our own.
 export interface TokenListWithMinSendAmount extends Omit<TokenList, 'tokens'> {
   nativeTokenMinSendAmount: string;
   tokens: TokenInfoWithMinSendAmount[];

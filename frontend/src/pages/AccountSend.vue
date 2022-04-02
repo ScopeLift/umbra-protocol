@@ -188,6 +188,7 @@ function useSendForm() {
     tokens: tokenOptions,
     umbra,
     userAddress,
+    relayer,
   } = useWalletStore();
 
   // Helpers
@@ -304,21 +305,56 @@ function useSendForm() {
   }
 
   const isNativeToken = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
-  const getMinSendAmount = (tokenAddress: string) => {
-    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
-    // Polygon
-    if (chainId === 137) {
-      if (isNativeToken(tokenAddress)) {
-        return 1.0;
-      } else if (tokenAddress === '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619') {
-        return 0.001; // weth token minimum
-      } else {
-        return 3; // stablecoin token minimum
-      }
+
+  const getNativeTokenMinSendAmountFallback = (chainId: number): number => {
+    switch (chainId) {
+      case 137: return 1.0; // Polygon
+      default: return 0.01; // everything else
     }
-    // Mainnet, Rinkeby, and other networks have higher ETH and stablecoin minimums due to higher fees
-    if (isNativeToken(tokenAddress)) return 0.01;
-    else return 100; // stablecoin token minimum
+  }
+
+  const getTokenMinSendAmountFallback = (
+    tokenAddress: string,
+    chainId: number
+  ): number => {
+    switch (chainId) {
+      case 137: // Polygon
+        if (tokenAddress === '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619') {
+          return 0.001; // weth token minimum
+        } else {
+          return 3; // stablecoin token minimum
+        }
+      default:
+        // Mainnet, Rinkeby, and other networks have higher ETH and stablecoin minimums
+        // due to higher fees
+        return 100
+    }
+  }
+
+  const getMinSendAmount = (tokenAddress: string): number => {
+    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+    if (isNativeToken(tokenAddress)) {
+      const defaultNativeMinSend = getNativeTokenMinSendAmountFallback(chainId);
+      const relayerMinSend = relayer.value?.nativeTokenMinSendAmount;
+      const dynamicMinSend = relayerMinSend && Number(formatUnits(relayerMinSend, 18));
+      return dynamicMinSend || defaultNativeMinSend;
+    } else {
+      const relayerTokenInfo = relayer.value?.tokens.filter(
+        (token) => token.address === tokenAddress
+      )[0];
+      const relayerMinSend = relayerTokenInfo?.minSendAmount && Number(
+        formatUnits(
+          parseUnits(relayerTokenInfo?.minSendAmount, 'wei')
+        )
+      );
+      const defaultTokenMinSend = getTokenMinSendAmountFallback(tokenAddress, chainId);
+      // TODO Rather than have a global fallback like this, we should probably just add a
+      // token Enum type so that the TS compiler will ensure we've covered all cases. This
+      // would also have the benefit of making it fairly mechanical to add support for new
+      // tokens.
+      const globalFallbackAmount = 100;
+      return relayerMinSend || defaultTokenMinSend || globalFallbackAmount;
+    }
   };
 
   function isValidTokenAmount(val: string | undefined) {

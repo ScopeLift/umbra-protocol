@@ -2,13 +2,13 @@
  * @notice Class for managing relayed withdrawal transactions
  */
 
-import { JsonRpcProvider, BigNumber } from 'src/utils/ethers';
+import { JsonRpcProvider, BigNumber, parseUnits } from 'src/utils/ethers';
 import {
   ConfirmedITXStatusResponse,
   FeeEstimateResponse,
   ITXStatusResponse,
   Provider,
-  TokenInfo,
+  TokenInfoWithMinSendAmount,
   RelayResponse,
   TokenListResponse,
   WithdrawalInputs,
@@ -17,7 +17,7 @@ import {
 export class ITXRelayer {
   constructor(
     readonly baseUrl: string,
-    readonly tokens: TokenInfo[],
+    readonly tokens: TokenInfoWithMinSendAmount[],
     readonly chainId: number,
     readonly nativeTokenMinSendAmount: BigNumber | undefined,
   ) {}
@@ -34,9 +34,7 @@ export class ITXRelayer {
     if ('error' in data) {
       console.warn(`Could not fetch tokens from relayer: ${data.error}`);
     } else {
-      try {
-        nativeMinSend = BigNumber.from(data.nativeTokenMinSendAmount);
-      } catch (_error) {}
+      nativeMinSend = parseUnits(data.nativeTokenMinSendAmount, 'wei');
     }
 
     // TODO pre-parse token minSendAmounts?
