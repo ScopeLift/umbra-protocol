@@ -2,7 +2,7 @@
  * @notice Class for managing relayed withdrawal transactions
  */
 
-import { JsonRpcProvider } from 'src/utils/ethers';
+import { JsonRpcProvider, BigNumber } from 'src/utils/ethers';
 import {
   ConfirmedITXStatusResponse,
   FeeEstimateResponse,
@@ -15,7 +15,12 @@ import {
 } from 'components/models';
 
 export class ITXRelayer {
-  constructor(readonly baseUrl: string, readonly tokens: TokenInfo[], readonly chainId: number) {}
+  constructor(
+    readonly baseUrl: string,
+    readonly tokens: TokenInfo[],
+    readonly chainId: number,
+    readonly nativeTokenMinSendAmount: BigNumber | undefined,
+  ) {}
 
   static async create(provider: Provider | JsonRpcProvider) {
     // Get API URL based on chain ID
@@ -25,11 +30,25 @@ export class ITXRelayer {
     // Get list of tokens supported on this network
     const response = await fetch(`${baseUrl}/tokens?chainId=${chainId}`);
     const data = (await response.json()) as TokenListResponse;
-    if ('error' in data) console.warn(`Could not fetch tokens from relayer: ${data.error}`);
+    let nativeMinSend;
+    if ('error' in data) {
+      console.warn(`Could not fetch tokens from relayer: ${data.error}`);
+    } else {
+      try {
+        nativeMinSend = BigNumber.from(data.nativeTokenMinSendAmount);
+      } catch (_error) {}
+    }
+
+    // TODO pre-parse token minSendAmounts?
 
     // Return instance, using an empty array of tokens if we could not fetch them from
     // relayer (i.e. only native token will be available to send)
-    return new ITXRelayer(baseUrl, 'error' in data ? [] : data.tokens, chainId);
+    return new ITXRelayer(
+      baseUrl,
+      'error' in data ? [] : data.tokens,
+      chainId,
+      nativeMinSend,
+    );
   }
 
   async getFeeEstimate(tokenAddress: string) {
