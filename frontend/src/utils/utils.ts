@@ -19,6 +19,18 @@ export const getChainById = (chainId: BigNumberish) => {
 };
 
 /**
+ * @notice Rounds the minSend amount so that it is the appropriate level of precision for
+ * UX. This number is shown to the user *and* used in validation.
+ * @param minSend the amount to be rounded
+ * @returns number the number used to validate the user is sending enough
+ */
+export const humanizeMinSendAmount = (minSend: number): number => {
+  let precision = 2;
+  if (minSend < 10 && minSend > 1) precision = 1;
+  return Number(minSend.toPrecision(precision));
+}
+
+/**
  * @notice Rounds to appropriate human readable decimals for the token
  * @param amount the amount to be formatted
  * @param token the token unit of the amount

@@ -1,4 +1,8 @@
-import { humanizeTokenAmount, humanizeArithmeticResult } from '../src/utils/utils';
+import {
+  humanizeTokenAmount,
+  humanizeArithmeticResult,
+  humanizeMinSendAmount,
+} from '../src/utils/utils';
 import { parseUnits, parseEther } from '@ethersproject/units';
 
 const usdc = {
@@ -251,6 +255,24 @@ describe('Utilities', () => {
       const total = parseEther('423.3498911111111');
       const humanizedTotal = humanizeArithmeticResult(total, operands, eth);
       expect(humanizedTotal).toEqual('423.3499');
+    });
+  });
+  describe('humanizeMinSendAmount', () => {
+    const tests = [
+     {input: 123, output: 120},
+     {input: 1235, output: 1200},
+     {input: 1295, output: 1300},
+     {input: 432498, output: 430000},
+     {input: 4.8956, output: 5},
+     {input: 4.1956, output: 4},
+     {input: 0.1956, output: 0.2},
+     {input: 0.0194, output: 0.019},
+    ]
+
+    tests.forEach((test) => {
+      it(`humanizes ${test.input} as ${test.output}`, () => {
+        expect(humanizeMinSendAmount(test.input)).toEqual(test.output);
+      });
     });
   });
 });

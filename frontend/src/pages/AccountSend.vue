@@ -170,7 +170,7 @@ import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
 import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, Zero } from 'src/utils/ethers';
-import { humanizeTokenAmount, humanizeArithmeticResult } from 'src/utils/utils';
+import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfo } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
@@ -333,18 +333,20 @@ function useSendForm() {
 
   const getMinSendAmount = (tokenAddress: string): number => {
     const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+    let minSend;
     if (isNativeToken(tokenAddress)) {
       const defaultNativeMinSend = getNativeTokenMinSendAmountFallback(chainId);
       const relayerMinSend = relayer.value?.nativeTokenMinSendAmount;
       const dynamicMinSend = relayerMinSend && Number(formatUnits(relayerMinSend, 18));
-      return dynamicMinSend || defaultNativeMinSend;
+      minSend = dynamicMinSend || defaultNativeMinSend;
     } else {
       const relayerTokenInfo = relayer.value?.tokens.filter(
         (token) => token.address === tokenAddress
       )[0];
       const relayerMinSend = relayerTokenInfo?.minSendAmount && Number(
         formatUnits(
-          parseUnits(relayerTokenInfo?.minSendAmount, 'wei')
+          parseUnits(relayerTokenInfo?.minSendAmount, 'wei'),
+          relayerTokenInfo.decimals
         )
       );
       const defaultTokenMinSend = getTokenMinSendAmountFallback(tokenAddress, chainId);
@@ -353,8 +355,10 @@ function useSendForm() {
       // would also have the benefit of making it fairly mechanical to add support for new
       // tokens.
       const globalFallbackAmount = 100;
-      return relayerMinSend || defaultTokenMinSend || globalFallbackAmount;
+      minSend = relayerMinSend || defaultTokenMinSend || globalFallbackAmount;
     }
+
+    return humanizeMinSendAmount(minSend);
   };
 
   function isValidTokenAmount(val: string | undefined) {
