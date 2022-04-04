@@ -130,13 +130,28 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
  */
 export async function getSentTransaction(address: string, ethersProvider: EthersProvider) {
   address = getAddress(address); // address input validation
-  const network = await ethersProvider.getNetwork();
-  const txHistoryProvider = new TxHistoryProvider(network.chainId);
+  const { chainId } = await ethersProvider.getNetwork();
+  const txHistoryProvider = new TxHistoryProvider(chainId);
   const history = await txHistoryProvider.getHistory(address);
   let txHash;
+  // Use the first transaction found
+  let txsFound = 0;
   for (let i = 0; i < history.length; i += 1) {
     const tx = history[i];
     if (tx.from === address) {
+      // Skip the first outgoing transaction if we are on Arbitrum. This is because the first one may be a
+      // bridge deposit transaction, which is a "fake" transaction in the sense that it's chain ID, r, s,
+      // and v values are all zero, since it's not an actual signed transaction from the account, and
+      // therefore you cannot recover the public key from it.
+      // NOTE: An alternative approach here is to traverse the history in the reverse order, but this is
+      // a more significant change than just skipping the first transaction and would require testing this
+      // functionality on all supported chains to ensure we did not break anything. This means there's
+      // currently a limitation that accounts must have sent at least two transactions for this to work on
+      // Arbitrum.
+      if (chainId === 42161 && txsFound === 0) {
+        txsFound += 1;
+        continue;
+      }
       txHash = tx.hash;
       break;
     }
