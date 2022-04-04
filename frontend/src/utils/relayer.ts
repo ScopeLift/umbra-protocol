@@ -19,7 +19,7 @@ export class ITXRelayer {
     readonly baseUrl: string,
     readonly tokens: TokenInfoWithMinSendAmount[],
     readonly chainId: number,
-    readonly nativeTokenMinSendAmount: BigNumber | undefined,
+    readonly nativeTokenMinSendAmount: BigNumber | undefined
   ) {}
 
   static async create(provider: Provider | JsonRpcProvider) {
@@ -41,12 +41,7 @@ export class ITXRelayer {
 
     // Return instance, using an empty array of tokens if we could not fetch them from
     // relayer (i.e. only native token will be available to send)
-    return new ITXRelayer(
-      baseUrl,
-      'error' in data ? [] : data.tokens,
-      chainId,
-      nativeMinSend,
-    );
+    return new ITXRelayer(baseUrl, 'error' in data ? [] : data.tokens, chainId, nativeMinSend);
   }
 
   async getFeeEstimate(tokenAddress: string) {

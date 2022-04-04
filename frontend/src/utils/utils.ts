@@ -28,7 +28,7 @@ export const humanizeMinSendAmount = (minSend: number): number => {
   let precision = 2;
   if (minSend < 10 && minSend > 1) precision = 1;
   return Number(minSend.toPrecision(precision));
-}
+};
 
 /**
  * @notice Rounds to appropriate human readable decimals for the token

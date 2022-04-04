@@ -308,15 +308,14 @@ function useSendForm() {
 
   const getNativeTokenMinSendAmountFallback = (chainId: number): number => {
     switch (chainId) {
-      case 137: return 1.0; // Polygon
-      default: return 0.01; // everything else
+      case 137:
+        return 1.0; // Polygon
+      default:
+        return 0.01; // everything else
     }
-  }
+  };
 
-  const getTokenMinSendAmountFallback = (
-    tokenAddress: string,
-    chainId: number
-  ): number => {
+  const getTokenMinSendAmountFallback = (tokenAddress: string, chainId: number): number => {
     switch (chainId) {
       case 137: // Polygon
         if (tokenAddress === '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619') {
@@ -327,9 +326,9 @@ function useSendForm() {
       default:
         // Mainnet, Rinkeby, and other networks have higher ETH and stablecoin minimums
         // due to higher fees
-        return 100
+        return 100;
     }
-  }
+  };
 
   const getMinSendAmount = (tokenAddress: string): number => {
     const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
@@ -340,15 +339,10 @@ function useSendForm() {
       const dynamicMinSend = relayerMinSend && Number(formatUnits(relayerMinSend, 18));
       minSend = dynamicMinSend || defaultNativeMinSend;
     } else {
-      const relayerTokenInfo = relayer.value?.tokens.filter(
-        (token) => token.address === tokenAddress
-      )[0];
-      const relayerMinSend = relayerTokenInfo?.minSendAmount && Number(
-        formatUnits(
-          parseUnits(relayerTokenInfo?.minSendAmount, 'wei'),
-          relayerTokenInfo.decimals
-        )
-      );
+      const relayerTokenInfo = relayer.value?.tokens.filter((token) => token.address === tokenAddress)[0];
+      const relayerMinSend =
+        relayerTokenInfo?.minSendAmount &&
+        Number(formatUnits(parseUnits(relayerTokenInfo?.minSendAmount, 'wei'), relayerTokenInfo.decimals));
       const defaultTokenMinSend = getTokenMinSendAmountFallback(tokenAddress, chainId);
       // TODO Rather than have a global fallback like this, we should probably just add a
       // token Enum type so that the TS compiler will ensure we've covered all cases. This
