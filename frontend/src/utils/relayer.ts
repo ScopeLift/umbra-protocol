@@ -31,17 +31,19 @@ export class ITXRelayer {
     const response = await fetch(`${baseUrl}/tokens?chainId=${chainId}`);
     const data = (await response.json()) as TokenListResponse;
     let nativeMinSend;
+    let tokens: TokenInfoExtended[];
     if ('error' in data) {
+      tokens = [];
       console.warn(`Could not fetch tokens from relayer: ${data.error}`);
     } else {
+      // TODO pre-parse token minSendAmounts?
+      tokens = data.tokens;
       nativeMinSend = parseUnits(data.nativeTokenMinSendAmount, 'wei');
     }
 
-    // TODO pre-parse token minSendAmounts?
-
     // Return instance, using an empty array of tokens if we could not fetch them from
     // relayer (i.e. only native token will be available to send)
-    return new ITXRelayer(baseUrl, 'error' in data ? [] : data.tokens, chainId, nativeMinSend);
+    return new ITXRelayer(baseUrl, tokens, chainId, nativeMinSend);
   }
 
   async getFeeEstimate(tokenAddress: string) {
