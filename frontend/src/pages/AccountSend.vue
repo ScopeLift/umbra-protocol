@@ -208,7 +208,7 @@ function useSendForm() {
   const toll = ref<BigNumber>(Zero);
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
-    if (typeof(humanAmount.value) !== 'string') return '--'; // appease TS
+    if (typeof humanAmount.value !== 'string') return '--'; // appease TS
     if (isNaN(Number(humanAmount.value))) return '--';
     const sendAmount = parseUnits(humanAmount.value, NATIVE_TOKEN.value.decimals);
     const totalAmount = sendAmount.add(toll.value);
@@ -217,11 +217,11 @@ function useSendForm() {
       totalAmount,
       [humanAmount.value, humanToll.value], // subtotal and fee
       NATIVE_TOKEN.value
-    )
+    );
   });
 
   watch(
-    // We watch `shouldUseNormalPubKey` to ensure the "Address 0x123 has not registered stealkth keys" validation
+    // We watch `shouldUseNormalPubKey` to ensure the "Address 0x123 has not registered stealth keys" validation
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
     // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
     // async validation rules
