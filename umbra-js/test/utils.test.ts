@@ -199,7 +199,7 @@ describe('Utilities', () => {
       const mainnetTxHash = '0xce4209b4cf80e249502d770dd7f2b19ceb22bbb2cfb49500fe0a32d95b127e81';
       await expectRejection(
         utils.recoverPublicKeyFromTransaction(mainnetTxHash, ethersProvider),
-        'Transaction not found. Are the provider and transaction hash on the same network?'
+        'Transaction hash not found. Are the provider and transaction hash on the same network?'
       );
     });
 

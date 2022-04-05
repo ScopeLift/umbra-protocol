@@ -393,6 +393,9 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
   // Initial response contains all fields, including non-standard fields.
   const params = { transactionHash: provider.formatter.hash(txHash, true) };
   const fullTx = await provider.perform('getTransaction', params);
+  if (!fullTx) {
+    throw new Error('Transaction hash not found. Are the provider and transaction hash on the same network?'); // prettier-ignore
+  }
   // We use the formatter to parse values into the types ethers normally returns, but this strips non-standard fields.
   const partialTx = <TransactionResponseExtended>provider.formatter.transactionResponse(fullTx);
   // Now we add back the missing fields, with custom typing by field.
