@@ -403,19 +403,17 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
     'arbType',
     'indexInParent',
     'l1BlockNumber',
-    'nonce',
-    'transactionIndex',
     // Optimism.
     'index',
     'l1BlockNumber',
     'l1Timestamp',
     'queueIndex',
-    'transactionIndex',
   ]);
   const tx = <TransactionResponseExtended>{ ...partialTx };
+  const existingFields = new Set(Object.keys(tx));
   Object.keys(fullTx).forEach((key) => {
     // Do nothing if this field already exists (i.e. it was formatted by the ethers formatter).
-    if (tx[key]) return;
+    if (existingFields.has(key)) return;
     // Otherwise, add the field and format it
     if (bigNumberFields.has('key')) {
       tx.gas = fullTx[key] ? BigNumber.from(fullTx[key]) : null;
