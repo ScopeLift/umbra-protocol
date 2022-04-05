@@ -23,7 +23,7 @@ import { ens, cns } from '..';
 import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
-import { EthersProvider } from '../types';
+import { EthersProvider, TransactionResponseExtended } from '../types';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -53,7 +53,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   if (typeof txHash !== 'string' || txHash.length !== lengths.txHash) {
     throw new Error('Invalid transaction hash provided');
   }
-  const tx = await provider.getTransaction(txHash);
+  const tx = await getTransactionByHash(txHash, provider);
   if (!tx) {
     throw new Error('Transaction not found. Are the provider and transaction hash on the same network?');
   }
@@ -135,22 +135,18 @@ export async function getSentTransaction(address: string, ethersProvider: Ethers
   const history = await txHistoryProvider.getHistory(address);
   let txHash;
   // Use the first transaction found
-  let txsFound = 0;
   for (let i = 0; i < history.length; i += 1) {
     const tx = history[i];
     if (tx.from === address) {
-      // Skip the first outgoing transaction if we are on Arbitrum. This is because the first one may be a
-      // bridge deposit transaction, which is a "fake" transaction in the sense that it's chain ID, r, s,
-      // and v values are all zero, since it's not an actual signed transaction from the account, and
-      // therefore you cannot recover the public key from it.
-      // NOTE: An alternative approach here is to traverse the history in the reverse order, but this is
-      // a more significant change than just skipping the first transaction and would require testing this
-      // functionality on all supported chains to ensure we did not break anything. This means there's
-      // currently a limitation that accounts must have sent at least two transactions for this to work on
-      // Arbitrum.
-      if (chainId === 42161 && txsFound === 0) {
-        txsFound += 1;
-        continue;
+      // On Arbitrum, we need to make sure this is actually a signed transaction that we can recover a public key
+      // from, since not all transactions returned by Etherscan are actually signed transactions: some are just
+      // messages. This is a bit inefficient since it's an additional RPC call, and this method just returns the
+      // txHash instead of the full transaction data, so we end up  making the same RPC call again later, but
+      // that's ok for now. Read more at https://developer.offchainlabs.com/docs/arbos_formats
+      if (chainId === 42161) {
+        const txData = await getTransactionByHash(tx.hash, ethersProvider);
+        const isSignedTx = txData.arbType === 3 && txData.arbSubType === 4;
+        if (!isSignedTx) continue;
       }
       txHash = tx.hash;
       break;
@@ -386,4 +382,48 @@ export async function getEthSweepGasInfo(
 
   // Return the gas price, gas limit, and the transaction cost
   return { gasPrice, gasLimit, txCost, fromBalance, ethToSend: fromBalance.sub(txCost), chainId };
+}
+
+/**
+ * @notice Similar to ethers.getTransaction(txHash), but does not filter out non-standard fields
+ * like getTransaction does
+ * @dev Based on https://github.com/ethers-io/ethers.js/blob/ef1b28e958b50cea7ff44da43b3c5ff054e4b483/packages/providers/src.ts/base-provider.ts#L1832
+ */
+async function getTransactionByHash(txHash: string, provider: EthersProvider): Promise<TransactionResponseExtended> {
+  // Initial response contains all fields, including non-standard fields.
+  const params = { transactionHash: provider.formatter.hash(txHash, true) };
+  const fullTx = await provider.perform('getTransaction', params);
+  // We use the formatter to parse values into the types ethers normally returns, but this strips non-standard fields.
+  const partialTx = <TransactionResponseExtended>provider.formatter.transactionResponse(fullTx);
+  // Now we add back the missing fields, with custom typing by field.
+  const bigNumberFields = new Set(['gas']); // ethers renames this to gasLimit, but for completeness we add `gas` back.
+  const numberFields = new Set([
+    // Arbitrum.
+    'arbSubType',
+    'arbType',
+    'indexInParent',
+    'l1BlockNumber',
+    'nonce',
+    'transactionIndex',
+    // Optimism.
+    'index',
+    'l1BlockNumber',
+    'l1Timestamp',
+    'queueIndex',
+    'transactionIndex',
+  ]);
+  const tx = <TransactionResponseExtended>{ ...partialTx };
+  Object.keys(fullTx).forEach((key) => {
+    // Do nothing if this field already exists (i.e. it was formatted by the ethers formatter).
+    if (tx[key]) return;
+    // Otherwise, add the field and format it
+    if (bigNumberFields.has('key')) {
+      tx.gas = fullTx[key] ? BigNumber.from(fullTx[key]) : null;
+    } else if (numberFields.has(key)) {
+      tx[key] = fullTx[key] ? BigNumber.from(fullTx[key]).toNumber() : null;
+    } else {
+      tx[key] = fullTx[key];
+    }
+  });
+  return tx;
 }

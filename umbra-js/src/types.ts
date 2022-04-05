@@ -9,8 +9,30 @@ import {
 
 // ========================================= Ethers types ==========================================
 export { TransactionResponse } from './ethers';
+import { TransactionResponse } from './ethers';
 export type ExternalProvider = EthersExternalProvider | JsonRpcFetchFunc;
 export type EthersProvider = Web3Provider | JsonRpcProvider;
+
+// Transaction responses on L2s and other chains may have more fields than on L1.
+export interface TransactionResponseExtended extends TransactionResponse {
+  // Arbitrum fields.
+  arbSubType?: number;
+  arbType?: number;
+  indexInParent?: number;
+  l1BlockNumber?: number; // Also in Optimism.
+  l1SequenceNumber?: string;
+  parentRequestId?: string; // 32-byte hex string
+  // Optimism fields.
+  index?: number;
+  l1Timestamp?: number;
+  l1TxOrigin?: string | null;
+  queueIndex?: number | null;
+  queueOrigin?: string;
+  rawTransaction?: string;
+  transactionIndex?: number;
+  // Placeholder for anything else
+  [key: string]: any;
+}
 
 // ======================================= Umbra class types =======================================
 // Settings when instantiating an instance of the Umbra class
