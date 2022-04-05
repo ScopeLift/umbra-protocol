@@ -309,9 +309,9 @@ function useSendForm() {
   const getNativeTokenMinSendAmountFallback = (chainId: number): number => {
     switch (chainId) {
       case 137:
-        return 1.0; // Polygon
+        return 0.15; // Polygon
       default:
-        return 0.01; // everything else
+        return 0.02; // everything else
     }
   };
 
@@ -319,14 +319,14 @@ function useSendForm() {
     switch (chainId) {
       case 137: // Polygon
         if (tokenAddress === '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619') {
-          return 0.001; // weth token minimum
+          return 0.0015; // weth token minimum
         } else {
-          return 3; // stablecoin token minimum
+          return 5; // stablecoin token minimum
         }
       default:
         // Mainnet, Rinkeby, and other networks have higher ETH and stablecoin minimums
         // due to higher fees
-        return 100;
+        return 500;
     }
   };
 
