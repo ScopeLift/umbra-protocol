@@ -4,9 +4,9 @@
 
 import { JsonRpcProvider, BigNumber, parseUnits } from 'src/utils/ethers';
 import {
-  ConfirmedITXStatusResponse,
+  ConfirmedRelayerStatusResponse,
   FeeEstimateResponse,
-  ITXStatusResponse,
+  RelayerStatusResponse,
   Provider,
   TokenInfoExtended,
   RelayResponse,
@@ -14,7 +14,7 @@ import {
   WithdrawalInputs,
 } from 'components/models';
 
-export class ITXRelayer {
+export class Relayer {
   constructor(
     readonly baseUrl: string,
     readonly tokens: TokenInfoExtended[],
@@ -43,7 +43,7 @@ export class ITXRelayer {
 
     // Return instance, using an empty array of tokens if we could not fetch them from
     // relayer (i.e. only native token will be available to send)
-    return new ITXRelayer(baseUrl, tokens, chainId, nativeMinSend);
+    return new Relayer(baseUrl, tokens, chainId, nativeMinSend);
   }
 
   async getFeeEstimate(tokenAddress: string) {
@@ -63,18 +63,18 @@ export class ITXRelayer {
     return data;
   }
 
-  // Returns the status of the provided ITX transaction ID
+  // Returns the status of the provided relayer transaction ID
   async getRelayStatus(itxId: string) {
-    // If ChainID is 1 or 4, ITX is supported so fetch the status from the relayer. Otherwise, ITX is
+    // If ChainID is 1 or 4, relaying is supported so fetch the status from the relayer. Otherwise, relaying is
     // not supported on this chain so we throw an error
     if (this.chainId !== 1 && this.chainId !== 4) throw new Error(`Unsupported relayer chain ID ${this.chainId}`);
     const response = await fetch(`${this.baseUrl}/status/${itxId}?chainId=${this.chainId}`);
-    const data = (await response.json()) as ITXStatusResponse;
+    const data = (await response.json()) as RelayerStatusResponse;
     if ('error' in data) throw new Error(`Could not get relay status: ${data.error}`);
     return data;
   }
 
-  // Returns a promise that resolves once the specified ITX transaction has mined
+  // Returns a promise that resolves once the specified relayer transaction has mined
   async waitForId(itxId: string) {
     let result;
     while (!result) {
@@ -82,11 +82,11 @@ export class ITXRelayer {
         // Return response if it contains a receipt (i.e. it was mined)
         const response = await this.getRelayStatus(itxId);
         if ('receipt' in response && response.receipt) {
-          result = response as ConfirmedITXStatusResponse;
+          result = response as ConfirmedRelayerStatusResponse;
         }
       } catch (err) {
         // If there was an error, log it, but keep trying
-        console.warn(`Received the below error when fetching status for ITX ID ${itxId}`);
+        console.warn(`Received the below error when fetching status for relayer ID ${itxId}`);
         console.warn(err);
       } finally {
         // Wait 4 seconds and try again

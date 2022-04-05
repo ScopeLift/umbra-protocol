@@ -328,7 +328,7 @@ import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vu
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
-import { ConfirmedITXStatusResponse, FeeEstimateResponse } from 'components/models';
+import { ConfirmedRelayerStatusResponse, FeeEstimateResponse } from 'components/models';
 import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
@@ -386,7 +386,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const isLoading = ref(false);
   const isFeeLoading = ref(false);
   const isWithdrawInProgress = ref(false);
-  const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have an ITX ID)
+  const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have a relayer tx ID)
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
@@ -554,14 +554,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         };
 
         if (chainId === 137) {
-          // No ITX support on this network, so this is a regular transaction hash
+          // No relayer support on this network, so this is a regular transaction hash
           console.log(`Relayed with transaction hash ${relayTransactionHash}`);
           const receipt = await provider.value.waitForTransaction(relayTransactionHash);
           console.log('Withdraw successful. Receipt:', receipt);
         } else {
-          // Received an ITX relay transaction hash, wait for withdraw transaction to be mined
-          console.log(`Relayed with ITX ID ${relayTransactionHash}`);
-          const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedITXStatusResponse;
+          // Received a relayer transaction hash, wait for withdraw transaction to be mined
+          console.log(`Relayed with relayer ID ${relayTransactionHash}`);
+          const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedRelayerStatusResponse;
           console.log('Withdraw successful. Receipt:', receipt);
         }
       }

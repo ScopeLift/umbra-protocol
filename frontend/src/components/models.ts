@@ -146,8 +146,8 @@ export type WithdrawalInputs = {
   sponsorFee: string;
 };
 export type RelayResponse = { relayTransactionHash: string } | ApiError;
-export type ITXStatusResponse = { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt } | ApiError;
-export type ConfirmedITXStatusResponse = { receivedTime: string; broadcasts: any[]; receipt: TransactionReceipt };
+export type RelayerStatusResponse = { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt } | ApiError;
+export type ConfirmedRelayerStatusResponse = { receivedTime: string; broadcasts: any[]; receipt: TransactionReceipt };
 
 // Logger type added to window
 declare global {
