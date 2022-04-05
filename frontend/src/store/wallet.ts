@@ -3,13 +3,15 @@ import Onboard from 'bnc-onboard';
 import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
 import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 
-import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainIds, TokenInfo } from 'components/models'; // prettier-ignore
+import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainId, TokenInfo } from 'components/models';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { BigNumber, Contract, getAddress, Web3Provider } from 'src/utils/ethers';
 import { Relayer } from 'src/utils/relayer';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
+
+const MAINNET_CHAIN_ID = '1';
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -78,8 +80,8 @@ export default function useWalletStore() {
               await configureProvider();
             }
           },
-          network: async (chainId) => {
-            if (network.value?.chainId && network.value.chainId !== chainId) {
+          network: async (chainIdNum) => {
+            if (chainId.value && chainId.value !== chainIdNum) {
               await configureProvider();
             }
           },
@@ -100,9 +102,7 @@ export default function useWalletStore() {
     // Setup
     if (!provider.value) throw new Error('Provider not connected');
     if (!relayer.value) throw new Error('Relayer instance not found');
-    const network = await provider.value.getNetwork();
-    const chainId = String(network.chainId) as SupportedChainIds;
-    const multicallAddress = MULTICALL_ADDRESSES[chainId];
+    const multicallAddress = MULTICALL_ADDRESSES[String(chainId.value) as SupportedChainId];
     const multicall = new Contract(multicallAddress, MULTICALL_ABI, provider.value);
 
     // Generate balance calls using Multicall contract
@@ -200,14 +200,14 @@ export default function useWalletStore() {
         Relayer.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
       ]);
 
-      // If nothing has changed, no need to continue configuring
-      if (_userAddress === userAddress.value && _network.chainId === network.value?.chainId) {
+      // If nothing has changed, no need to continue configuring.
+      if (_userAddress === userAddress.value && _network.chainId === chainId.value) {
         setLoading(false);
         return;
       }
 
       // Exit if not a valid network
-      const chainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
+      const chainIdNum = provider.value.network.chainId; // must be done after the .getNetwork() calls
       if (!supportedChainIds.includes(_network.chainId)) {
         network.value = _network;
         setLoading(false);
@@ -215,7 +215,7 @@ export default function useWalletStore() {
       }
 
       // Set Umbra and StealthKeyRegistry classes
-      umbra.value = new Umbra(provider.value, chainId);
+      umbra.value = new Umbra(provider.value, chainIdNum);
       stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
 
       // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
@@ -230,7 +230,7 @@ export default function useWalletStore() {
       //      the registry and notify them about funds that may be stuck if the user no longer has the old key
       const argentDetector = {
         // https://docs.argent.xyz/wallet-connect-and-argent#wallet-detection
-        address: chainId === 1 ? '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8' : '0xF230cF8980BaDA094720C01308319eF192F0F311', // prettier-ignore
+        address: chainIdNum === 1 ? '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8' : '0xF230cF8980BaDA094720C01308319eF192F0F311', // prettier-ignore
         abi: ['function isArgentWallet(address) external view returns (bool)'],
       };
       const detector = new Contract(argentDetector.address, argentDetector.abi, provider.value);
@@ -240,7 +240,7 @@ export default function useWalletStore() {
         lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
         lookupCnsName(_userAddress),
         getRegisteredStealthKeys(_userAddress, provider.value),
-        [1, 3].includes(chainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
+        [1, 3].includes(chainIdNum) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
       ]);
       const _isAccountSetup = _stealthKeys !== null;
 
@@ -362,17 +362,16 @@ export default function useWalletStore() {
   // ------------------------------------- Computed parameters -------------------------------------
   // "True" computed properties, i.e. derived from this module's state
 
-  const currentChain = computed(() => {
-    return getChainById(network.value?.chainId || 1);
-  });
+  const chainId = computed(() => network.value?.chainId);
+  const currentChain = computed(() => getChainById(String(chainId.value) || MAINNET_CHAIN_ID));
 
   const isSupportedNetwork = computed(() => {
-    if (!network.value) return true; // assume valid if we have no network information
-    return supportedChainIds.includes(network.value.chainId);
+    if (!network.value || !chainId.value) return true; // assume valid if we have no network information
+    return supportedChainIds.includes(chainId.value);
   });
 
   const NATIVE_TOKEN = computed(() => {
-    return { ...(currentChain.value?.nativeCurrency as TokenInfo), chainId: network.value?.chainId as number };
+    return { ...(currentChain.value?.nativeCurrency as TokenInfo), chainId: chainId.value! };
   });
 
   const tokens = computed((): TokenInfo[] => {
@@ -441,6 +440,7 @@ export default function useWalletStore() {
     userAddress: computed(() => userAddress.value),
     viewingKeyPair: computed(() => viewingKeyPair.value),
     // "True" computed properties, i.e. derived from this module's state
+    chainId,
     currentChain,
     isSupportedNetwork: computed(() => isSupportedNetwork.value),
     keysMatch,
