@@ -8,7 +8,7 @@ import {
   FeeEstimateResponse,
   ITXStatusResponse,
   Provider,
-  TokenInfoWithMinSendAmount,
+  TokenInfoExtended,
   RelayResponse,
   TokenListResponse,
   WithdrawalInputs,
@@ -17,9 +17,9 @@ import {
 export class ITXRelayer {
   constructor(
     readonly baseUrl: string,
-    readonly tokens: TokenInfoWithMinSendAmount[],
+    readonly tokens: TokenInfoExtended[],
     readonly chainId: number,
-    readonly nativeTokenMinSendAmount: BigNumber | undefined
+    readonly nativeTokenMinSendAmount: BigNumber | undefined,
   ) {}
 
   static async create(provider: Provider | JsonRpcProvider) {

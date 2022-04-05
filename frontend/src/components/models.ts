@@ -128,15 +128,15 @@ export interface CnsQueryResponse {
 
 // Relayer types
 export type ApiError = { error: string };
-export interface TokenInfoWithMinSendAmount extends TokenInfo {
+export interface TokenInfoExtended extends TokenInfo {
   minSendAmount: string;
 }
 // Omit the TokenList.tokens type so we can override it with our own.
-export interface TokenListWithMinSendAmount extends Omit<TokenList, 'tokens'> {
+export interface TokenListExtended extends Omit<TokenList, 'tokens'> {
   nativeTokenMinSendAmount: string;
-  tokens: TokenInfoWithMinSendAmount[];
+  tokens: TokenInfoExtended[];
 }
-export type TokenListResponse = TokenListWithMinSendAmount | ApiError;
+export type TokenListResponse = TokenListExtended | ApiError;
 export type FeeEstimate = { fee: string; token: TokenInfo };
 export type FeeEstimateResponse = FeeEstimate | ApiError;
 export type WithdrawalInputs = {
