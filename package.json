@@ -8,6 +8,7 @@
     "packages": [
       "frontend",
       "contracts-core",
+      "contracts-periphery",
       "umbra-js"
     ],
     "nohoist": [
