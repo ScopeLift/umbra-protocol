@@ -2,7 +2,7 @@
  * @notice Class for managing relayed withdrawal transactions
  */
 
-import { JsonRpcProvider, BigNumber, parseUnits } from 'src/utils/ethers';
+import { JsonRpcProvider } from 'src/utils/ethers';
 import {
   ConfirmedRelayerStatusResponse,
   FeeEstimateResponse,
@@ -19,7 +19,7 @@ export class Relayer {
     readonly baseUrl: string,
     readonly tokens: TokenInfoExtended[],
     readonly chainId: number,
-    readonly nativeTokenMinSendAmount: BigNumber | undefined,
+    readonly nativeTokenMinSendAmount: string | undefined,
   ) {}
 
   static async create(provider: Provider | JsonRpcProvider) {
@@ -30,15 +30,14 @@ export class Relayer {
     // Get list of tokens supported on this network
     const response = await fetch(`${baseUrl}/tokens?chainId=${chainId}`);
     const data = (await response.json()) as TokenListResponse;
-    let nativeMinSend;
+    let nativeMinSend: string | undefined;
     let tokens: TokenInfoExtended[];
     if ('error' in data) {
       tokens = [];
       console.warn(`Could not fetch tokens from relayer: ${data.error}`);
     } else {
-      // TODO pre-parse token minSendAmounts?
       tokens = data.tokens;
-      nativeMinSend = parseUnits(data.nativeTokenMinSendAmount, 'wei');
+      nativeMinSend = data.nativeTokenMinSendAmount;
     }
 
     // Return instance, using an empty array of tokens if we could not fetch them from

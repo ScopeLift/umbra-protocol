@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber } from 'src/utils/ethers';
 import { TransactionReceipt, JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
 import type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 import { UmbraLogger } from 'components/logger';
@@ -10,7 +10,7 @@ export type Signer = JsonRpcSigner;
 export type Provider = Web3Provider;
 
 export interface MulticallResponse {
-  blockNumber: ethers.BigNumber;
+  blockNumber: BigNumber;
   returnData: string[];
 }
 
@@ -132,11 +132,11 @@ export interface TokenInfoExtended extends TokenInfo {
   minSendAmount: string;
 }
 // Omit the TokenList.tokens type so we can override it with our own.
-export interface TokenListExtended extends Omit<TokenList, 'tokens'> {
+export interface TokenListSuccessResponse extends Omit<TokenList, 'tokens'> {
   nativeTokenMinSendAmount: string;
   tokens: TokenInfoExtended[];
 }
-export type TokenListResponse = TokenListExtended | ApiError;
+export type TokenListResponse = TokenListSuccessResponse | ApiError;
 export type FeeEstimate = { fee: string; token: TokenInfo };
 export type FeeEstimateResponse = FeeEstimate | ApiError;
 export type WithdrawalInputs = {

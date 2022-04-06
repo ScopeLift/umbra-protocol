@@ -68,7 +68,7 @@
         :disable="isSending"
         filled
         label="Token"
-        :options="tokenOptions"
+        :options="tokenList"
         option-label="symbol"
       />
 
@@ -179,16 +179,16 @@ function useSendForm() {
   const { advancedMode } = useSettingsStore();
   const {
     balances,
+    chainId,
     currentChain,
     getTokenBalances,
     isLoading,
     NATIVE_TOKEN,
     provider,
     signer,
-    tokens: tokenOptions,
+    tokens: tokenList,
     umbra,
     userAddress,
-    relayer,
   } = useWalletStore();
 
   // Helpers
@@ -251,10 +251,10 @@ function useSendForm() {
 
       // Reset token and amount if token is not supported on the network
       if (
-        tokenOptions.value.length &&
-        !tokenOptions.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)
+        tokenList.value.length &&
+        !tokenList.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)
       ) {
-        token.value = tokenOptions.value[0];
+        token.value = tokenList.value[0];
         humanAmount.value = undefined;
       }
 
@@ -283,7 +283,7 @@ function useSendForm() {
 
     // For token, we always default to the chain's native token if none was selected
     if (paymentToken?.symbol) token.value = paymentToken;
-    else token.value = tokenOptions.value[0];
+    else token.value = tokenList.value[0];
   });
 
   // Validators
@@ -306,52 +306,14 @@ function useSendForm() {
 
   const isNativeToken = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
 
-  const getNativeTokenMinSendAmountFallback = (chainId: number): number => {
-    switch (chainId) {
-      case 137:
-        return 0.15; // Polygon
-      default:
-        return 0.02; // everything else
-    }
-  };
-
-  const getTokenMinSendAmountFallback = (tokenAddress: string, chainId: number): number => {
-    switch (chainId) {
-      case 137: // Polygon
-        if (tokenAddress === '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619') {
-          return 0.0015; // weth token minimum
-        } else {
-          return 5; // stablecoin token minimum
-        }
-      default:
-        // Mainnet, Rinkeby, and other networks have higher ETH and stablecoin minimums
-        // due to higher fees
-        return 500;
-    }
-  };
-
   const getMinSendAmount = (tokenAddress: string): number => {
-    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
-    let minSend;
-    if (isNativeToken(tokenAddress)) {
-      const defaultNativeMinSend = getNativeTokenMinSendAmountFallback(chainId);
-      const relayerMinSend = relayer.value?.nativeTokenMinSendAmount;
-      const dynamicMinSend = relayerMinSend && Number(formatUnits(relayerMinSend, 18));
-      minSend = dynamicMinSend || defaultNativeMinSend;
-    } else {
-      const relayerTokenInfo = relayer.value?.tokens.filter((token) => token.address === tokenAddress)[0];
-      const relayerMinSend =
-        relayerTokenInfo?.minSendAmount &&
-        Number(formatUnits(parseUnits(relayerTokenInfo?.minSendAmount, 'wei'), relayerTokenInfo.decimals));
-      const defaultTokenMinSend = getTokenMinSendAmountFallback(tokenAddress, chainId);
-      // TODO Rather than have a global fallback like this, we should probably just add a
-      // token Enum type so that the TS compiler will ensure we've covered all cases. This
-      // would also have the benefit of making it fairly mechanical to add support for new
-      // tokens.
-      const globalFallbackAmount = 100;
-      minSend = relayerMinSend || defaultTokenMinSend || globalFallbackAmount;
-    }
-
+    const tokenInfo = tokenList.value.filter((token) => token.address === tokenAddress)[0];
+    if (!tokenInfo) throw new Error(`token info unavailable for ${tokenAddress}`); // this state should not be possible
+    const tokenMinSendInWei = parseUnits(tokenInfo.minSendAmount, 'wei');
+    // We don't need to worry about fallbacks: native tokens have hardcoded fallbacks
+    // defined in the wallet store. For any other tokens, we wouldn't have info about them
+    // unless we got it from the relayer, which includes minSend amounts for all tokens.
+    const minSend = Number(formatUnits(tokenMinSendInWei, tokenInfo.decimals));
     return humanizeMinSendAmount(minSend);
   };
 
@@ -437,6 +399,7 @@ function useSendForm() {
 
   return {
     advancedMode,
+    chainId,
     currentChain,
     humanAmount,
     humanToll,
@@ -451,7 +414,7 @@ function useSendForm() {
     recipientId,
     sendFormRef,
     token,
-    tokenOptions,
+    tokenList,
     toll,
     useNormalPubKey,
     userAddress,
