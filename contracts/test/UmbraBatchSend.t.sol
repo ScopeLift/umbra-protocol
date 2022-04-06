@@ -13,10 +13,6 @@ contract UmbraBatchSendTest is DSTest, stdCheats {
 
   UmbraBatchSend public router = new UmbraBatchSend();
 
-  string constant umbraArtifact = "artifacts/Umbra.json";
-  string constant testArtifact = "out/UmbraBatchSend.t.sol/UmbraBatchSendTest.json";
-  string constant testArtifact2 = "out/UmbraBatchSend.sol/UmbraBatchSend.json";
-
   address umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   address Dai = 0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735;
 
