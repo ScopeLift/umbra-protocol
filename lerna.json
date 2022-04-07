@@ -1,7 +1,7 @@
 {
-    "packages": ["frontend", "contracts-core", "umbra-js"],
-    "npmClient": "yarn",
-    "version": "independent",
-    "useWorkspaces": true,
-    "stream": true
+  "packages": ["contracts-core", "contracts-periphery", "frontend", "umbra-js"],
+  "npmClient": "yarn",
+  "version": "independent",
+  "useWorkspaces": true,
+  "stream": true
 }

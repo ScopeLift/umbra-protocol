@@ -6,9 +6,9 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "frontend",
       "contracts-core",
       "contracts-periphery",
+      "frontend",
       "umbra-js"
     ],
     "nohoist": [
