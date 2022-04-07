@@ -11,8 +11,6 @@ import { UmbraApi } from 'src/utils/umbra_api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
 
-const MAINNET_CHAIN_ID = '1';
-
 /**
  * State is handled in reusable components, where each component is its own self-contained
  * file consisting of one function defined used the composition API.
@@ -363,7 +361,7 @@ export default function useWalletStore() {
   // "True" computed properties, i.e. derived from this module's state
 
   const chainId = computed(() => network.value?.chainId); // returns a number
-  const currentChain = computed(() => getChainById(String(chainId.value) || MAINNET_CHAIN_ID));
+  const currentChain = computed(() => getChainById(chainId.value || 1));
 
   const isSupportedNetwork = computed(() => {
     if (!network.value || !chainId.value) return true; // assume valid if we have no network information
@@ -383,7 +381,7 @@ export default function useWalletStore() {
     // this value is used if the relayer is down
     const fallbackMinSend = getNativeTokenMinSend(chainId.value!);
     return {
-      ...(currentChain.value?.nativeCurrency as TokenInfoExtended),
+      ...(currentChain.value!.nativeCurrency as TokenInfoExtended),
       minSendAmount: relayer.value?.nativeTokenMinSendAmount || fallbackMinSend,
       chainId: chainId.value!
     };

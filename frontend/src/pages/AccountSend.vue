@@ -308,7 +308,7 @@ function useSendForm() {
 
   const getMinSendAmount = (tokenAddress: string): number => {
     const tokenInfo = tokenList.value.filter((token) => token.address === tokenAddress)[0];
-    if (!tokenInfo) throw new Error(`token info unavailable for ${tokenAddress}`); // this state should not be possible
+    if (!tokenInfo) return 0;
     const tokenMinSendInWei = parseUnits(tokenInfo.minSendAmount, 'wei');
     // We don't need to worry about fallbacks: native tokens have hardcoded fallbacks
     // defined in the wallet store. For any other tokens, we wouldn't have info about them
