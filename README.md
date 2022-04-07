@@ -92,7 +92,7 @@ Check out the [full FAQ](https://app.umbra.cash/faq) to get more details about U
 
 ## Development
 
-This repository uses [yarn](https://yarnpkg.com/) for package management and [volta](https://volta.sh/) for dev tool version management. Both are prerequisites for setting up your development environment.
+This repository uses [yarn](https://yarnpkg.com/) for package management and [volta](https://volta.sh/) for dev tool version management. Both are prerequisites for setting up your development environment. The repository also requires [foundry](https://github.com/gakonst/foundry) for development of periphery smart contracts.
 
 ### Components
 
@@ -114,6 +114,8 @@ To get started, clone this repo, then follow these instructions:
 cp contracts-core/.env.example contracts-core/.env # please edit the .env with your own environment variable values
 cp frontend/.env.example frontend/.env # please edit the .env with your own environment variable values
 cp umbra-js/.env.example umbra-js/.env # please edit the .env with your own environment variable values
+curl -L https://foundry.paradigm.xyz | bash # install foundryup binary
+foundryup # install Foundry
 yarn install # installs dependencies for each of the 3 packages. Also builds umbra-js.
 yarn test # runs the test suite for each package
 
