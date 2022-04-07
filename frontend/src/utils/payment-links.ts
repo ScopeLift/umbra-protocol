@@ -4,7 +4,7 @@ import { utils as umbraUtils } from '@umbra/umbra-js';
 import useWalletStore from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
 import { JsonRpcProvider } from 'src/utils/ethers';
-import { Relayer } from 'src/utils/relayer';
+import { UmbraApi } from 'src/utils/umbra_api';
 
 /**
  * @notice Returns a provider, falling back to a mainnet provider if user's wallet is not connected
@@ -24,7 +24,7 @@ async function getTokens(nativeToken: TokenInfo) {
 
   // Otherwise, get the default list
   const provider = getProvider();
-  const relayerInstance = await Relayer.create(provider);
+  const relayerInstance = await UmbraApi.create(provider);
 
   // Make sure the native token is on the list
   // It's ok if it's there twice because we use the first found instance when parsing links

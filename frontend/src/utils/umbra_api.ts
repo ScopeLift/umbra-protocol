@@ -14,7 +14,7 @@ import {
   WithdrawalInputs,
 } from 'components/models';
 
-export class Relayer {
+export class UmbraApi {
   constructor(
     readonly baseUrl: string,
     readonly tokens: TokenInfoExtended[],
@@ -34,15 +34,15 @@ export class Relayer {
     let tokens: TokenInfoExtended[];
     if ('error' in data) {
       tokens = [];
-      console.warn(`Could not fetch tokens from relayer: ${data.error}`);
+      console.warn(`Could not fetch tokens from backend: ${data.error}`);
     } else {
       tokens = data.tokens;
       nativeMinSend = data.nativeTokenMinSendAmount;
     }
 
     // Return instance, using an empty array of tokens if we could not fetch them from
-    // relayer (i.e. only native token will be available to send)
-    return new Relayer(baseUrl, tokens, chainId, nativeMinSend);
+    // backend (i.e. only native token will be available to send)
+    return new UmbraApi(baseUrl, tokens, chainId, nativeMinSend);
   }
 
   async getFeeEstimate(tokenAddress: string) {

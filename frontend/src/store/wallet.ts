@@ -7,7 +7,7 @@ import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds,
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { BigNumber, Contract, getAddress, Web3Provider, parseUnits } from 'src/utils/ethers';
-import { Relayer } from 'src/utils/relayer';
+import { UmbraApi } from 'src/utils/umbra_api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
 
@@ -39,7 +39,7 @@ const stealthKeyRegistry = ref<StealthKeyRegistry>(); // instance of the Stealth
 const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for spending receiving funds
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
 const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
-const relayer = ref<Relayer>(); // used for managing relay transactions
+const relayer = ref<UmbraApi>(); // used for managing relay transactions
 const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name // LEGACY
 const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name // LEGACY
 const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
@@ -197,7 +197,7 @@ export default function useWalletStore() {
       const [_userAddress, _network, _relayer] = await Promise.all([
         signer.value.getAddress(), // get user's address
         provider.value.getNetwork(), // get information on the connected network
-        Relayer.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
+        UmbraApi.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
       ]);
 
       // If nothing has changed, no need to continue configuring.
