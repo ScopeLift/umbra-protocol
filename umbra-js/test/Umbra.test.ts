@@ -13,7 +13,7 @@ import {
   Umbra as UmbraContract,
   TestTokenFactory as ERC20__factory,
   UmbraFactory as Umbra__factory,
-} from '@umbra/contracts/typechain';
+} from '@umbra/contracts-core/typechain';
 
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;

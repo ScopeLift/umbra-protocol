@@ -3,7 +3,7 @@
  */
 
 import { KeyPair } from '../classes/KeyPair';
-import { StealthKeyRegistry as StealthKeyRegistryContract } from '@umbra/contracts/typechain';
+import { StealthKeyRegistry as StealthKeyRegistryContract } from '@umbra/contracts-core/typechain';
 import { Contract, JsonRpcSigner } from '../ethers';
 import type { EthersProvider } from '../types';
 

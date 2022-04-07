@@ -25,12 +25,12 @@ import {
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient } from '../utils/utils';
-import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts/typechain';
+import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
-const { abi } = require('@umbra/contracts/artifacts/contracts/Umbra.sol/Umbra.json');
+const { abi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
