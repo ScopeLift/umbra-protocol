@@ -14,7 +14,7 @@ clean  :; forge clean
 test   :; forge test -f ${ETH_RPC_URL} --fork-block-number 10465092
 
 # Remove modules
-remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
+remove :; rm -rf ../.gitmodules && rm -rf ../.git/modules/* && rm -rf lib"
 
 # Install the Modules
 install :; 
