@@ -26,14 +26,15 @@ export const getChainById = (chainId: BigNumberish) => {
  */
 export const humanizeTokenAmount = (amount: BigNumberish, token: TokenInfo): string => {
   const formattedAmount = parseFloat(formatUnits(amount, token.decimals));
-  if ( formattedAmount > 1) {
+  if (formattedAmount > 1) {
     return formattedAmount.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     });
   }
-  if (amount == 0 ) return formattedAmount.toPrecision(2);
-  if (formattedAmount < 0.000001) { // avoid scientific notation
+  if (amount == 0) return formattedAmount.toPrecision(2);
+  if (formattedAmount < 0.000001) {
+    // avoid scientific notation
     return formatUnits(amount, token.decimals).replace(/0+$/, '');
   }
   return formattedAmount.toPrecision(2).replace(/0+$/, '');
@@ -50,16 +51,9 @@ export const humanizeTokenAmount = (amount: BigNumberish, token: TokenInfo): str
  * @param token TokenInfo
  * @returns string the humanized total
  */
-export const humanizeArithmeticResult = (
-  total: BigNumberish,
-  operands: string[],
-  token: TokenInfo
-): string => {
+export const humanizeArithmeticResult = (total: BigNumberish, operands: string[], token: TokenInfo): string => {
   const minDisplayDigits = 0;
-  const requiredDisplayDigits = operands.reduce((
-    currentMaxDigits: number,
-    humanString: string
-  ) => {
+  const requiredDisplayDigits = operands.reduce((currentMaxDigits: number, humanString: string) => {
     // Remove insignificant trailing zeros from human-formatted strings, e.g. "0.001400"
     // would become "0.0014". We take this approach instead of something like
     // `Number(humanString).toString()` as it avoids Javascript's overflow bugs with
@@ -67,7 +61,7 @@ export const humanizeArithmeticResult = (
     const zeroTrimmedString = humanString.replace(/0+$/, '');
     const significantDigits = zeroTrimmedString.split('.')[1]?.length || 0;
     return Math.max(significantDigits, currentMaxDigits);
-  }, minDisplayDigits)
+  }, minDisplayDigits);
 
   const formattedTotal = parseFloat(formatUnits(total, token.decimals));
   return formattedTotal.toLocaleString(undefined, {

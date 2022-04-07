@@ -1,7 +1,4 @@
-import {
-  humanizeTokenAmount,
-  humanizeArithmeticResult,
-} from '../src/utils/utils';
+import { humanizeTokenAmount, humanizeArithmeticResult } from '../src/utils/utils';
 import { parseUnits, parseEther } from '@ethersproject/units';
 
 const usdc = {
@@ -89,7 +86,7 @@ describe('Utilities', () => {
       const subtotal = '50.0';
       const fee = '11.2';
       const total = parseEther('38.8');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('38.8');
     });
     it('should handle even higher fees with more precision', () => {
@@ -100,7 +97,7 @@ describe('Utilities', () => {
       const subtotal = '70.00';
       const fee = '31.21';
       const total = parseEther('58.79');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('58.79');
     });
     it('should not take unnecessary decimals in the fee into account', () => {
@@ -111,7 +108,7 @@ describe('Utilities', () => {
       const subtotal = '1.0';
       const fee = '0.100000';
       const total = parseEther('0.9');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('0.9');
     });
     it('should sometimes add a non-significant figure', () => {
@@ -122,7 +119,7 @@ describe('Utilities', () => {
       const subtotal = '0.9999999';
       const fee = '0.0000099';
       const total = parseEther('0.99999');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('0.9999900');
     });
     it('should not always change the decimals of the final amount', () => {
@@ -133,7 +130,7 @@ describe('Utilities', () => {
       const subtotal = '2.000000';
       const fee = '0.000021';
       const total = parseEther('1.999979');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('1.999979');
     });
     it('should handle a fee with a lot of precision and round it', () => {
@@ -144,7 +141,7 @@ describe('Utilities', () => {
       const subtotal = '7.000000000000000000';
       const fee = humanizeTokenAmount(parseEther('0.001428371937102478'), eth);
       const total = parseEther('6.998571628062897522');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       // display up to two sig figs into the fee
       expect(humanizedTotal).toEqual('6.9986');
     });
@@ -156,7 +153,7 @@ describe('Utilities', () => {
       const subtotal = '7';
       const fee = '0.00000000000';
       const total = parseEther('7');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('7');
     });
     it('should not display extra figures', () => {
@@ -168,7 +165,7 @@ describe('Utilities', () => {
       const realFee = parseUnits('7.949', usdc.decimals); // i.e. not rounded
       const fee = humanizeTokenAmount(realFee, usdc); // i.e what the user sees
       const total = parseUnits('292.051', usdc.decimals);
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], usdc)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], usdc);
       expect(humanizedTotal).toEqual('292.05');
     });
     it('should work for native token sends where the fee is added', () => {
@@ -179,7 +176,7 @@ describe('Utilities', () => {
       const subtotal = '1';
       const fee = '0.05';
       const total = parseEther('1.05');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('1.05');
     });
     it('should work for big native token sends where the fee is added', () => {
@@ -190,7 +187,7 @@ describe('Utilities', () => {
       const subtotal = '100002';
       const fee = '0.05';
       const total = parseEther('100002.05');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('100,002.05');
     });
     it('should work for native token sends where nothing is sent', () => {
@@ -202,7 +199,7 @@ describe('Utilities', () => {
       const subtotal = '0';
       const fee = '0.05';
       const total = parseEther('0.05');
-      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth)
+      const humanizedTotal = humanizeArithmeticResult(total, [subtotal, fee], eth);
       expect(humanizedTotal).toEqual('0.05');
     });
     it('should work for native token sends when the amount is less than the fee', () => {
@@ -236,7 +233,7 @@ describe('Utilities', () => {
       // +   0.05
       // ===========
       //     0.0501
-      const operands = ['423.4', '0.0001', '0.05']
+      const operands = ['423.4', '0.0001', '0.05'];
       // assume some precision was left out of the human readible numbers displayed to the user
       const total = parseEther('423.4501000123');
       const humanizedTotal = humanizeArithmeticResult(total, operands, eth);
@@ -249,7 +246,7 @@ describe('Utilities', () => {
       // -   0.05
       // ===========
       //     0.0501
-      const operands = ['423.4', '0.0001', '0.05']
+      const operands = ['423.4', '0.0001', '0.05'];
       // assume some precision was left out of the human readible numbers displayed to the user
       const total = parseEther('423.3498911111111');
       const humanizedTotal = humanizeArithmeticResult(total, operands, eth);

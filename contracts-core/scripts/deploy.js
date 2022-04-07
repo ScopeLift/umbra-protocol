@@ -50,7 +50,7 @@ const doBumpNonceTx = async (wallet) => {
   });
 
   console.log(`Executing nonce bump tx ${tx.hash}`);
-  
+
   await tx.wait();
 };
 
@@ -84,11 +84,7 @@ const doBumpNonceTx = async (wallet) => {
 
     // deploy the Umbra contract
     const Umbra = await ethers.getContractFactory('Umbra', deployerWallet);
-    const umbra = await Umbra.deploy(
-      toll,
-      tollCollector,
-      tollReceiver
-    );
+    const umbra = await Umbra.deploy(toll, tollCollector, tollReceiver);
     await umbra.deployed();
     save(umbra.address, 'contracts', 'Umbra');
     console.log('Umbra contract deployed to address: ', umbra.address);
