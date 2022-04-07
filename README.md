@@ -96,10 +96,11 @@ This repository uses [yarn](https://yarnpkg.com/) for package management and [vo
 
 ### Components
 
-Umbra is a monorepo consisting of 3 packages: @umbra/frontend, @umbra/contracts, and @umbra/umbra-js.
+Umbra is a monorepo consisting of 4 packages:
 
 * [frontend](frontend/) — Frontend web3 app for setting up and using Umbra, deployed at [app.umbra.cash](https://app.umbra.cash)
 * [contracts-core](contracts-core/) — Solidity contracts used in the Umbra Protocol.
+* [contracts-periphery](contracts-periphery/) — Solidity contracts used by the Umbra frontend to add features and improve UX.
 * [umbra-js](umbra-js/) — A TypeScript library for building Umbra-enabled web3 apps in node.js or in the browser.
 
 The monorepo structure simplifies the development workflow.
