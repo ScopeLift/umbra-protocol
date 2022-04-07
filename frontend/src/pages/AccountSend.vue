@@ -169,10 +169,10 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
-import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, Zero } from 'src/utils/ethers';
+import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero } from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
-import { Provider, TokenInfo } from 'components/models';
+import { Provider, TokenInfoExtended } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 
 function useSendForm() {
@@ -200,7 +200,7 @@ function useSendForm() {
   const recipientIdBaseInputRef = ref<Vue>();
   const useNormalPubKey = ref(false);
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
-  const token = ref<TokenInfo | null>();
+  const token = ref<TokenInfoExtended | null>();
   const tokenBaseInputRef = ref<Vue>();
   const humanAmount = ref<string>();
   const humanAmountBaseInputRef = ref<Vue>();
@@ -226,10 +226,11 @@ function useSendForm() {
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
     // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
     // async validation rules
-    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount],
+    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, tokenList],
     async (
-      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue],
-      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue]
+      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue,
+        tokenListValue],
+      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue, prevTokenListValue]
     ) => {
       // Fetch toll
       toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
@@ -249,10 +250,17 @@ function useSendForm() {
         await humanAmountInputRef.validate();
       }
 
+      const currentTokens = (tokenListValue as TokenInfoExtended[]).map(tok => tok.address);
+      const prevTokens = (prevTokenListValue as TokenInfoExtended[]).map(tok => tok.address);
+      if (currentTokens.toString() != prevTokens.toString()) {
+        token.value = tokenList.value[0];
+        humanAmount.value = undefined;
+      }
+
       // Reset token and amount if token is not supported on the network
       if (
         tokenList.value.length &&
-        !tokenList.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfo)?.symbol)
+        !tokenList.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfoExtended)?.symbol)
       ) {
         token.value = tokenList.value[0];
         humanAmount.value = undefined;

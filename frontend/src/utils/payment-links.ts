@@ -1,5 +1,5 @@
 import { copyToClipboard } from 'quasar';
-import { TokenInfo } from 'components/models';
+import { TokenInfoExtended } from 'components/models';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 import useWalletStore from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
@@ -17,7 +17,7 @@ function getProvider() {
 /**
  * @notice Returns a list of supported tokens, falling back to the mainnet token list
  */
-async function getTokens(nativeToken: TokenInfo) {
+async function getTokens(nativeToken: TokenInfoExtended) {
   // If we have a valid relayer instance and associated token list, return it
   const { relayer, tokens } = useWalletStore();
   if (relayer.value && tokens.value) return tokens.value;
@@ -44,7 +44,7 @@ export async function generatePaymentLink({
   amount = undefined,
 }: {
   to: string | undefined;
-  token: TokenInfo | undefined;
+  token: TokenInfoExtended | undefined;
   amount: string | undefined;
 }) {
   // Ensure at least one form field was provided
@@ -66,9 +66,9 @@ export async function generatePaymentLink({
 /**
  * @notice Parses a payment link based on the query parameters of the current page
  */
-export async function parsePaymentLink(nativeToken: TokenInfo) {
+export async function parsePaymentLink(nativeToken: TokenInfoExtended) {
   // Setup output object
-  const paymentData: { to: string | null; token: TokenInfo | null; amount: string | null } = {
+  const paymentData: { to: string | null; token: TokenInfoExtended | null; amount: string | null } = {
     to: null,
     token: null,
     amount: null,
@@ -83,7 +83,7 @@ export async function parsePaymentLink(nativeToken: TokenInfo) {
       continue;
     }
 
-    // Otherwise, parse the token symbol into it's TokenInfo object
+    // Otherwise, parse the token symbol into it's TokenInfoExtended object
     const tokens = await getTokens(nativeToken); // get list of supported tokens
     paymentData['token'] = tokens.filter((token) => token.symbol.toLowerCase() === value.toLowerCase())[0];
   }
