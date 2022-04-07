@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "install": "forge install"
+    "build": "forge build",
+    "install": "forge install",
+    "test": "forge test"
   }
 }
