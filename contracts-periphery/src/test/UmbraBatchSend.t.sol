@@ -5,6 +5,10 @@ import "./utils/DSTestPlus.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../UmbraBatchSend.sol";
 
+interface UmbraToll {
+  function toll() external returns(uint256);
+}
+
 contract UmbraBatchSendTest is DSTestPlus {
 
     Vm vm = Vm(HEVM_ADDRESS);
@@ -37,6 +41,7 @@ contract UmbraBatchSendTest is DSTestPlus {
         vm.label(address(this), "UmbraBatchSendTest");
 
         umbraPrevBal = token.balanceOf(umbra);
+        toll = UmbraToll(umbra).toll();
 
         tip(dai, address(this), type(uint256).max);
         vm.deal(address(this), type(uint256).max);
