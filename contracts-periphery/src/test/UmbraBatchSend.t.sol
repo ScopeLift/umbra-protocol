@@ -47,6 +47,8 @@ contract UmbraBatchSendTest is DSTestPlus {
         vm.deal(address(this), type(uint256).max);
     }
 
+    event Log(address indexed caller, uint256 indexed value, string message);
+
     function testFuzz_BatchSendEth(uint128 amount, uint128 amount2) public {
 
         vm.assume(amount > 0);
@@ -59,6 +61,9 @@ contract UmbraBatchSendTest is DSTestPlus {
         emit log_named_uint("total amount is", totalAmount);
 
         vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendEth.selector, toll, sendEth));
+        vm.expectEmit(true, true, true, true);
+
+        emit Log(address(this),totalAmount, "called batchSendEth");
         router.batchSendEth{value: totalAmount}(toll, sendEth);
 
         assertEq(alice.balance, alicePrevBal + amount);
@@ -75,6 +80,9 @@ contract UmbraBatchSendTest is DSTestPlus {
         token.approve(address(router), totalAmount);
 
         vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendTokens.selector, toll, sendToken));
+        vm.expectEmit(true, true, true, true);
+
+        emit Log(address(this), toll, "called batchSendTokens");
         router.batchSendTokens{value: toll}(toll, sendToken);
 
         assertEq(token.balanceOf(umbra), umbraPrevBal + totalAmount);
@@ -95,7 +103,10 @@ contract UmbraBatchSendTest is DSTestPlus {
         sendToken.push(UmbraBatchSend.SendToken(bob, dai, amount2, pkx, ciphertext));
         token.approve(address(router), totalAmount);
 
-        vm.expectCall(address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendEth, sendToken));
+        vm.expectCall(address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendEth, sendToken));        
+        vm.expectEmit(true, true, true, true);
+
+        emit Log(address(this), totalAmount, "called batchSend");
         router.batchSend{value: totalAmount + toll}(toll, sendEth, sendToken);
 
         assertEq(alice.balance, alicePrevBal + amount);
