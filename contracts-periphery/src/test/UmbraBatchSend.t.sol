@@ -55,12 +55,12 @@ contract UmbraBatchSendTest is DSTestPlus {
 
     }
 
-    function testFuzz_BatchSendEth(uint8 amount, uint8 amount2, bytes32 testBytes) public {
+    function testFuzz_BatchSendEth(uint24 amount, uint24 amount2, bytes32 testBytes) public {
 
         uint256 alicePrevBal = alice.balance;
         uint256 bobPrevBal = bob.balance;
-        vm.assume(amount > 0 && amount < type(uint8).max/2);
-        vm.assume(amount2 > 0 && amount2 < type(uint8).max/2);
+        vm.assume(amount > 0);
+        vm.assume(amount2 > 0);
         
 
         uint256 toll = 0;
