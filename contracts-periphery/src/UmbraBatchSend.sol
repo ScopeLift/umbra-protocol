@@ -38,6 +38,9 @@ contract UmbraBatchSend {
     bytes32 pkx;
     bytes32 ciphertext;
   }
+  
+  error ValueMismatch();
+  event Log(address indexed caller, uint256 indexed value, string message);
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) public payable {
     uint256 valAccumulator;
@@ -50,7 +53,8 @@ contract UmbraBatchSend {
       umbra.sendEth{value: _amount}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
     }
 
-    require(msg.value == valAccumulator, "value mismatch");
+    if(msg.value != valAccumulator) revert ValueMismatch();
+    emit Log(msg.sender, msg.value, "called batchSendEth");
   }
 
   function batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) public payable {
@@ -74,6 +78,7 @@ contract UmbraBatchSend {
         _params[i].ciphertext
       );
     }
+    emit Log(msg.sender, msg.value, "called batchSendTokens");
   }
 
   function batchSend(
@@ -83,5 +88,6 @@ contract UmbraBatchSend {
   ) external payable {
     batchSendEth(_tollCommitment, _ethParams);
     batchSendTokens(_tollCommitment, _tokenParams);
+    emit Log(msg.sender, msg.value, "called batchSend");
   }
 }
