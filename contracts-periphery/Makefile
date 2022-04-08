@@ -11,3 +11,5 @@ install :; forge install
 # Test your contract on a forked network
 test   :; forge test -f ${ETH_RPC_URL} --fork-block-number 10465092
 
+## Create gas snapshots
+snapshot   :; forge snapshot -f ${ETH_RPC_URL} --fork-block-number 10465092
