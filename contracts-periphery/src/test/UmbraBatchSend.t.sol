@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "ds-test/test.sol";
-import "forge-std/Vm.sol";
-import "forge-std/stdlib.sol";
+import "./utils/DSTestPlus.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../UmbraBatchSend.sol";
 
-contract UmbraBatchSendTest is DSTest, stdCheats {
+contract UmbraBatchSendTest is DSTestPlus {
     using stdStorage for StdStorage;
     StdStorage stdstore;
 
