@@ -7,6 +7,8 @@ import "../UmbraBatchSend.sol";
 
 interface UmbraToll {
   function toll() external returns(uint256);
+  function setToll(uint256 _newToll) external;
+  function owner() external view returns (address);
 }
 
 contract UmbraBatchSendTest is DSTestPlus {
@@ -34,7 +36,7 @@ contract UmbraBatchSendTest is DSTestPlus {
     UmbraBatchSend.SendEth[] sendEth;
     UmbraBatchSend.SendToken[] sendToken;
 
-    function setUp() public {
+    function setUp() virtual public {
 
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
@@ -64,7 +66,7 @@ contract UmbraBatchSendTest is DSTestPlus {
         vm.expectEmit(true, true, true, true);
 
         emit Log(address(this),totalAmount, "called batchSendEth");
-        router.batchSendEth{value: totalAmount}(toll, sendEth);
+        router.batchSendEth{value: totalAmount + toll}(toll, sendEth);
 
         assertEq(alice.balance, alicePrevBal + amount);
         assertEq(bob.balance, bobPrevBal + amount2);
