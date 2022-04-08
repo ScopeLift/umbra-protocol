@@ -3,7 +3,16 @@ import Onboard from 'bnc-onboard';
 import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
 import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 
-import { Chain, MulticallResponse, Network, Provider, Signer, supportedChainIds, SupportedChainId, TokenInfoExtended } from 'components/models';
+import {
+  Chain,
+  MulticallResponse,
+  Network,
+  Provider,
+  Signer,
+  supportedChainIds,
+  SupportedChainId,
+  TokenInfoExtended,
+} from 'components/models';
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { BigNumber, Contract, getAddress, Web3Provider, parseUnits } from 'src/utils/ethers';
@@ -369,13 +378,13 @@ export default function useWalletStore() {
   });
 
   const getNativeTokenMinSend = (chainId: number): string => {
-      switch (chainId) {
-        case 137:
-          return parseUnits('0.15', 'ether').toString(); // Polygon
-        default:
-          return parseUnits('0.02', 'ether').toString(); // everything else
-      }
-  }
+    switch (chainId) {
+      case 137:
+        return parseUnits('0.15', 'ether').toString(); // Polygon
+      default:
+        return parseUnits('0.02', 'ether').toString(); // everything else
+    }
+  };
 
   const NATIVE_TOKEN = computed(() => {
     // this value is used if the relayer is down
@@ -383,15 +392,15 @@ export default function useWalletStore() {
     return {
       ...(currentChain.value!.nativeCurrency as TokenInfoExtended),
       minSendAmount: relayer.value?.nativeTokenMinSendAmount || fallbackMinSend,
-      chainId: chainId.value!
+      chainId: chainId.value!,
     };
   });
 
   const tokens = computed((): TokenInfoExtended[] => {
     const supportedTokens = relayer.value?.tokens || [];
-    const isNativeTokenInRelayerTokenList = supportedTokens.map(
-      (token) => token.address
-    ).includes(NATIVE_TOKEN.value.address);
+    const isNativeTokenInRelayerTokenList = supportedTokens
+      .map((token) => token.address)
+      .includes(NATIVE_TOKEN.value.address);
 
     if (isNativeTokenInRelayerTokenList) return supportedTokens;
     // Add ETH as a supported token if not present in relayer response, e.g. if the relayer is down

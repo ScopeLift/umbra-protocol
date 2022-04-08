@@ -228,9 +228,15 @@ function useSendForm() {
     // async validation rules
     [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, tokenList],
     async (
-      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue,
-        tokenListValue],
-      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue, prevTokenListValue]
+      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue, tokenListValue],
+      [
+        prevIsLoadingValue,
+        prevUseNormalPubKey,
+        prevRecipientIdValue,
+        prevTokenValue,
+        prevHumanAmountValue,
+        prevTokenListValue,
+      ]
     ) => {
       // Fetch toll
       toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
@@ -250,8 +256,8 @@ function useSendForm() {
         await humanAmountInputRef.validate();
       }
 
-      const currentTokens = (tokenListValue as TokenInfoExtended[]).map(tok => tok.address);
-      const prevTokens = (prevTokenListValue as TokenInfoExtended[]).map(tok => tok.address);
+      const currentTokens = (tokenListValue as TokenInfoExtended[]).map((tok) => tok.address);
+      const prevTokens = (prevTokenListValue as TokenInfoExtended[]).map((tok) => tok.address);
       if (currentTokens.toString() != prevTokens.toString()) {
         token.value = tokenList.value[0];
         humanAmount.value = undefined;

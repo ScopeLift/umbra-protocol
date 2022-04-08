@@ -19,7 +19,7 @@ export class UmbraApi {
     readonly baseUrl: string,
     readonly tokens: TokenInfoExtended[],
     readonly chainId: number,
-    readonly nativeTokenMinSendAmount: string | undefined,
+    readonly nativeTokenMinSendAmount: string | undefined
   ) {}
 
   static async create(provider: Provider | JsonRpcProvider) {
