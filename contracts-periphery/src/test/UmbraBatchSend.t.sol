@@ -38,24 +38,6 @@ contract UmbraBatchSendTest is DSTestPlus {
         vm.deal(address(this), type(uint256).max);
     }
 
-    function testBatchSendEth() public {
-
-        uint256 alicePrevBal = alice.balance;
-        uint256 bobPrevBal = bob.balance;
-
-        uint256 amount = 1 ether;
-        uint256 amount2 = 2 ether;
-        uint256 toll = 0;        
-
-        sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
-        sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
-        router.batchSendEth{value: amount + amount2}(toll, sendEth);
-
-        assertEq(alice.balance, alicePrevBal + amount);
-        assertEq(bob.balance, bobPrevBal + amount2);
-
-    }
-
     function testFuzz_BatchSendEth(uint128 amount, uint128 amount2) public {
 
         uint256 alicePrevBal = alice.balance;
@@ -79,22 +61,6 @@ contract UmbraBatchSendTest is DSTestPlus {
 
     }
 
-    function testBatchSendTokens() public {
-
-        assertTrue(token.balanceOf(address(this)) > 0, "caller's dai balance is zero");
-
-        uint256 toll = 0;
-        uint256 umbraPrevBal = token.balanceOf(umbra);
-
-        sendToken.push(UmbraBatchSend.SendToken(alice, dai, 1000, pkx, ciphertext));
-        sendToken.push(UmbraBatchSend.SendToken(bob, dai, 500, pkx, ciphertext));
-        token.approve(address(router), 1500);
-
-        router.batchSendTokens{value: toll}(toll, sendToken);
-        assertEq(token.balanceOf(umbra), umbraPrevBal + 1500);
-
-    }
-
     function testFuzz_BatchSendTokens(uint128 amount, uint128 amount2) public {
 
         assertTrue(token.balanceOf(address(this)) > 0, "caller's dai balance is zero");
@@ -109,37 +75,6 @@ contract UmbraBatchSendTest is DSTestPlus {
 
         router.batchSendTokens{value: toll}(toll, sendToken);
         assertEq(token.balanceOf(umbra), umbraPrevBal + totalAmount);
-
-    }
-
-    function testBatchSend() public {
-
-        uint256 alicePrevBal = alice.balance;
-        uint256 bobPrevBal = bob.balance;
-
-        uint256 amount = 1 ether;
-        uint256 amount2 = 2 ether;
-        uint256 total = amount + amount2;
-        uint256 toll = 0;        
-
-        sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
-        sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
-
-        //tokens
-        assertTrue(token.balanceOf(address(this)) > 0, "caller's dai balance is zero");
-
-        uint256 umbraPrevBal = token.balanceOf(umbra);
-
-        sendToken.push(UmbraBatchSend.SendToken(alice, dai, 1000, pkx, ciphertext));
-        sendToken.push(UmbraBatchSend.SendToken(bob, dai, 500, pkx, ciphertext));
-        token.approve(address(router), 1500);
-
-        router.batchSend{value: total + toll}(toll, sendEth, sendToken);
-
-        assertEq(alice.balance, alicePrevBal + amount);
-        assertEq(bob.balance, bobPrevBal + amount2);
-
-        assertEq(token.balanceOf(umbra), umbraPrevBal + 1500);
 
     }
 
