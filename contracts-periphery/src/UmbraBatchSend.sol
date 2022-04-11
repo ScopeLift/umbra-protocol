@@ -66,19 +66,16 @@ contract UmbraBatchSend {
     SendEth[] calldata _ethParams,
     SendToken[] calldata _tokenParams
   ) external payable {
-    //   uint256 valAccumulator;
+    uint256 valAccumulator;
 
-    // for (uint256 i = 0; i < _params.length; i++) {
-    //   //amount to be sent per receiver
-    //   uint256 _amount = _params[i].amount;
-    //   valAccumulator += _amount;
-    //   valAccumulator += _tollCommitment;
-    // }
+    for (uint256 i = 0; i < _ethParams.length; i++) {
+      //amount to be sent per receiver
+      uint256 _amount = _ethParams[i].amount;
+      valAccumulator += _amount;
+      valAccumulator += _tollCommitment;
+    }
 
-    // if(msg.value != valAccumulator) revert ValueMismatch();
-
-    // if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
-
+    if(msg.value != valAccumulator + _tollCommitment * _tokenParams.length) revert ValueMismatch();
 
     _batchSendEth(_tollCommitment, _ethParams);
     _batchSendTokens(_tollCommitment, _tokenParams);
