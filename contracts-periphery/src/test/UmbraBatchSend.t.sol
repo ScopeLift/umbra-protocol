@@ -113,8 +113,9 @@ contract UmbraBatchSendTest is DSTestPlus {
         vm.expectCall(address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendEth, sendToken));        
         vm.expectEmit(true, true, true, true);
 
-        emit Log(address(this), totalAmount, "called batchSend");
         uint256 totalToll = toll * sendEth.length + toll * sendToken.length;
+        emit Log(address(this), totalAmount + totalToll, "called batchSend");
+
 
         router.batchSend{value: totalAmount + totalToll}(toll, sendEth, sendToken);
 

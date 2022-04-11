@@ -11,11 +11,6 @@ contract BatchSendwTollTest is UmbraBatchSendTest {
 
     function setUp() public override {
 
-
-        vm.label(alice, "Alice");
-        vm.label(bob, "Bob");
-        vm.label(address(this), "UmbraBatchSendTest");
-
         umbraPrevBal = token.balanceOf(umbra);
 
         mockOwner = UmbraToll(umbra).owner();

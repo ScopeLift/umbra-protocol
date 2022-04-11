@@ -44,23 +44,55 @@ contract UmbraBatchSend {
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) public payable {
     uint256 valAccumulator;
-    
 
     for (uint256 i = 0; i < _params.length; i++) {
       //amount to be sent per receiver
       uint256 _amount = _params[i].amount;
       valAccumulator += _amount;
       valAccumulator += _tollCommitment;
-
-      umbra.sendEth{value: _amount + _tollCommitment}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
     }
 
     if(msg.value != valAccumulator) revert ValueMismatch();
-    emit Log(msg.sender, msg.value, "called batchSendEth");
+    _batchSendEth(_tollCommitment, _params);
   }
 
   function batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) public payable {
+    if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
+    _batchSendTokens(_tollCommitment, _params);
+  }
 
+  function batchSend(
+    uint256 _tollCommitment,
+    SendEth[] calldata _ethParams,
+    SendToken[] calldata _tokenParams
+  ) external payable {
+    //   uint256 valAccumulator;
+
+    // for (uint256 i = 0; i < _params.length; i++) {
+    //   //amount to be sent per receiver
+    //   uint256 _amount = _params[i].amount;
+    //   valAccumulator += _amount;
+    //   valAccumulator += _tollCommitment;
+    // }
+
+    // if(msg.value != valAccumulator) revert ValueMismatch();
+
+    // if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
+
+
+    _batchSendEth(_tollCommitment, _ethParams);
+    _batchSendTokens(_tollCommitment, _tokenParams);
+    emit Log(msg.sender, msg.value, "called batchSend");
+  }
+
+  function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
+    for (uint256 i = 0; i < _params.length; i++) {
+      umbra.sendEth{value: _params[i].amount + _tollCommitment}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
+    }
+    emit Log(msg.sender, msg.value, "called batchSendEth");
+  }
+
+  function _batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) internal {
     for (uint256 i = 0; i < _params.length; i++) {
       uint256 _amount = _params[i].amount;
       address _tokenAddr = _params[i].tokenAddr;
@@ -81,15 +113,5 @@ contract UmbraBatchSend {
       );
     }
     emit Log(msg.sender, msg.value, "called batchSendTokens");
-  }
-
-  function batchSend(
-    uint256 _tollCommitment,
-    SendEth[] calldata _ethParams,
-    SendToken[] calldata _tokenParams
-  ) external payable {
-    batchSendEth(_tollCommitment, _ethParams);
-    batchSendTokens(_tollCommitment, _tokenParams);
-    emit Log(msg.sender, msg.value, "called batchSend");
   }
 }
