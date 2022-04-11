@@ -6,5 +6,5 @@ import "forge-std/Vm.sol";
 import "forge-std/stdlib.sol";
 
 contract DSTestPlus is DSTest, stdCheats {
-    
+    Vm vm = Vm(HEVM_ADDRESS);
 }

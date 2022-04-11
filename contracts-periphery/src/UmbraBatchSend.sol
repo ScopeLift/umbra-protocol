@@ -44,13 +44,15 @@ contract UmbraBatchSend {
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) public payable {
     uint256 valAccumulator;
+    
 
     for (uint256 i = 0; i < _params.length; i++) {
       //amount to be sent per receiver
       uint256 _amount = _params[i].amount;
       valAccumulator += _amount;
+      valAccumulator += _tollCommitment;
 
-      umbra.sendEth{value: _amount}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
+      umbra.sendEth{value: _amount + _tollCommitment}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
     }
 
     if(msg.value != valAccumulator) revert ValueMismatch();

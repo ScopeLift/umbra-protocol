@@ -13,8 +13,6 @@ interface UmbraToll {
 
 contract UmbraBatchSendTest is DSTestPlus {
 
-    Vm vm = Vm(HEVM_ADDRESS);
-
     UmbraBatchSend public router = new UmbraBatchSend();
     
     address umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
@@ -55,18 +53,19 @@ contract UmbraBatchSendTest is DSTestPlus {
 
         vm.assume(amount > 0);
         vm.assume(amount2 > 0);
+        vm.assume(amount > toll && amount2 > toll);
 
         sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
         sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
 
-        uint256 totalAmount = uint256(amount) + uint256(amount2);
+        uint256 totalAmount = uint256(amount) + uint256(amount2) + (toll * sendEth.length);
         emit log_named_uint("total amount is", totalAmount);
 
         vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendEth.selector, toll, sendEth));
-        vm.expectEmit(true, true, true, true);
+        // vm.expectEmit(true, true, true, true);
 
-        emit Log(address(this),totalAmount, "called batchSendEth");
-        router.batchSendEth{value: totalAmount + toll}(toll, sendEth);
+        // emit Log(address(this),totalAmount, "called batchSendEth");
+        router.batchSendEth{value: totalAmount}(toll, sendEth);
 
         assertEq(alice.balance, alicePrevBal + amount);
         assertEq(bob.balance, bobPrevBal + amount2);
@@ -75,17 +74,23 @@ contract UmbraBatchSendTest is DSTestPlus {
 
     function testFuzz_BatchSendTokens(uint128 amount, uint128 amount2) public {
 
+        //         vm.assume(amount > 0);
+        // vm.assume(amount2 > 0);
+
         uint256 totalAmount = uint256(amount) + uint256(amount2);
+
 
         sendToken.push(UmbraBatchSend.SendToken(alice, dai, amount, pkx, ciphertext));
         sendToken.push(UmbraBatchSend.SendToken(bob, dai, amount2, pkx, ciphertext));
+        uint256 totalToll = toll *  sendToken.length;
+
         token.approve(address(router), totalAmount);
 
         vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendTokens.selector, toll, sendToken));
-        vm.expectEmit(true, true, true, true);
+        // vm.expectEmit(true, true, true, true);
 
-        emit Log(address(this), toll, "called batchSendTokens");
-        router.batchSendTokens{value: toll}(toll, sendToken);
+        // emit Log(address(this), toll, "called batchSendTokens");
+        router.batchSendTokens{value: totalToll}(toll, sendToken);
 
         assertEq(token.balanceOf(umbra), umbraPrevBal + totalAmount);
 
@@ -109,7 +114,9 @@ contract UmbraBatchSendTest is DSTestPlus {
         vm.expectEmit(true, true, true, true);
 
         emit Log(address(this), totalAmount, "called batchSend");
-        router.batchSend{value: totalAmount + toll}(toll, sendEth, sendToken);
+        uint256 totalToll = toll * sendEth.length + toll * sendToken.length;
+
+        router.batchSend{value: totalAmount + totalToll}(toll, sendEth, sendToken);
 
         assertEq(alice.balance, alicePrevBal + amount);
         assertEq(bob.balance, bobPrevBal + amount2);
