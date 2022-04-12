@@ -7,8 +7,6 @@ import "../UmbraBatchSend.sol";
 
 interface UmbraToll {
   function toll() external returns(uint256);
-  function setToll(uint256 _newToll) external;
-  function owner() external view returns (address);
 }
 
 contract UmbraBatchSendTest is DSTestPlus {
@@ -19,13 +17,10 @@ contract UmbraBatchSendTest is DSTestPlus {
     
     address umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
     address dai = 0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735;
-
     address alice = address(0x202204);
     address bob = address(0x202205);
-
     uint256 alicePrevBal = alice.balance;
     uint256 bobPrevBal = bob.balance;
-    uint256 umbraPrevBal;
 
     uint256 toll;
 
@@ -33,20 +28,21 @@ contract UmbraBatchSendTest is DSTestPlus {
     bytes32 ciphertext = "ciphertext";   
 
     IERC20 token = IERC20(address(dai));
+
+    uint256 umbraPrevBal = token.balanceOf(umbra);
     UmbraBatchSend.SendEth[] sendEth;
     UmbraBatchSend.SendToken[] sendToken;
 
     function setUp() virtual public {
-        umbraPrevBal = token.balanceOf(umbra);
         toll = UmbraToll(umbra).toll();
 
-        tip(dai, address(this), type(uint256).max);
-        vm.deal(address(this), type(uint256).max);
+        tip(dai, address(this), 1e7 ether);
+        vm.deal(address(this), 1e5 ether);
     }
 
     event Log(address indexed caller, uint256 indexed value, string message);
 
-    function testFuzz_BatchSendEth(uint128 amount, uint128 amount2) public {
+    function testFuzz_BatchSendEth(uint64 amount, uint64 amount2) public {
 
         vm.assume(amount > 0);
         vm.assume(amount2 > 0);
@@ -69,10 +65,7 @@ contract UmbraBatchSendTest is DSTestPlus {
 
     }
 
-    function testFuzz_BatchSendTokens(uint128 amount, uint128 amount2) public {
-
-        //         vm.assume(amount > 0);
-        // vm.assume(amount2 > 0);
+    function testFuzz_BatchSendTokens(uint72 amount, uint72 amount2) public {
 
         uint256 totalAmount = uint256(amount) + uint256(amount2);
 
@@ -93,7 +86,7 @@ contract UmbraBatchSendTest is DSTestPlus {
 
     }
 
-    function testFuzz_BatchSend(uint128 amount, uint128 amount2) public {
+    function testFuzz_BatchSend(uint72 amount, uint72 amount2) public {
 
         vm.assume(amount > 0);
         vm.assume(amount2 > 0);
@@ -129,15 +122,11 @@ contract BatchSendWithTollTest is UmbraBatchSendTest {
     using stdStorage for StdStorage;
 
     function setUp() public override {
+        tip(dai, address(this), 1e7 ether);
 
-        umbraPrevBal = token.balanceOf(umbra);
-
-        tip(dai, address(this), type(uint256).max);
-        vm.deal(address(this), type(uint256).max);
-
-        stdstore.target(address(umbra)).sig("toll()").checked_write(1 ether);
+        stdstore.target(address(umbra)).sig("toll()").checked_write(0.1 ether);
         toll = UmbraToll(umbra).toll();
-        assertEq(toll, 1 ether);
+        assertEq(toll, 0.1 ether);
     }
 
 }
@@ -146,13 +135,9 @@ contract BatchSendWithoutTollTest is UmbraBatchSendTest {
     using stdStorage for StdStorage;
 
     function setUp() public override {
+        tip(dai, address(this), 1e7 ether);
 
-        umbraPrevBal = token.balanceOf(umbra);
-
-        tip(dai, address(this), type(uint256).max);
-        vm.deal(address(this), type(uint256).max);
-
-        stdstore.target(address(umbra)).sig("toll()").checked_write(uint(0));
+        stdstore.target(address(umbra)).sig("toll()").checked_write(uint256(0));
         toll = UmbraToll(umbra).toll();
         assertEq(toll, 0);
     }
