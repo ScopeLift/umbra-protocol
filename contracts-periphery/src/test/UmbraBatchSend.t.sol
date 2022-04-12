@@ -12,6 +12,8 @@ interface UmbraToll {
 }
 
 contract UmbraBatchSendTest is DSTestPlus {
+    using stdStorage for StdStorage;
+    StdStorage stdstore;
 
     UmbraBatchSend public router = new UmbraBatchSend();
     
@@ -35,11 +37,6 @@ contract UmbraBatchSendTest is DSTestPlus {
     UmbraBatchSend.SendToken[] sendToken;
 
     function setUp() virtual public {
-
-        vm.label(alice, "Alice");
-        vm.label(bob, "Bob");
-        vm.label(address(this), "UmbraBatchSendTest");
-
         umbraPrevBal = token.balanceOf(umbra);
         toll = UmbraToll(umbra).toll();
 
@@ -124,6 +121,40 @@ contract UmbraBatchSendTest is DSTestPlus {
 
         assertEq(token.balanceOf(umbra), umbraPrevBal + totalAmount);
 
+    }
+
+}
+
+contract BatchSendWithTollTest is UmbraBatchSendTest {
+    using stdStorage for StdStorage;
+
+    function setUp() public override {
+
+        umbraPrevBal = token.balanceOf(umbra);
+
+        tip(dai, address(this), type(uint256).max);
+        vm.deal(address(this), type(uint256).max);
+
+        stdstore.target(address(umbra)).sig("toll()").checked_write(1 ether);
+        toll = UmbraToll(umbra).toll();
+        assertEq(toll, 1 ether);
+    }
+
+}
+
+contract BatchSendWithoutTollTest is UmbraBatchSendTest {
+    using stdStorage for StdStorage;
+
+    function setUp() public override {
+
+        umbraPrevBal = token.balanceOf(umbra);
+
+        tip(dai, address(this), type(uint256).max);
+        vm.deal(address(this), type(uint256).max);
+
+        stdstore.target(address(umbra)).sig("toll()").checked_write(uint(0));
+        toll = UmbraToll(umbra).toll();
+        assertEq(toll, 0);
     }
 
 }
