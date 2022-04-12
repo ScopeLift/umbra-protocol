@@ -9,6 +9,8 @@ export { BigNumber, Network, TransactionResponse } from 'src/utils/ethers';
 export type Signer = JsonRpcSigner;
 export type Provider = Web3Provider;
 
+export const NATIVE_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
 export interface MulticallResponse {
   blockNumber: BigNumber;
   returnData: string[];
@@ -21,7 +23,7 @@ export type Chain = {
   nativeCurrency: {
     // The address and logoURI fields are not part of the EIP-3085 spec but are added to make this field
     // compatible with type TokenInfo
-    address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+    address: typeof NATIVE_TOKEN_ADDRESS;
     name: string;
     symbol: string;
     decimals: 18;
@@ -41,7 +43,7 @@ export const supportedChains: Array<Chain> = [
     chainId: '0x1',
     chainName: 'Mainnet',
     nativeCurrency: {
-      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
       symbol: 'ETH',
       decimals: 18,
@@ -56,7 +58,7 @@ export const supportedChains: Array<Chain> = [
     chainId: '0x4',
     chainName: 'Rinkeby',
     nativeCurrency: {
-      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
       symbol: 'ETH',
       decimals: 18,
@@ -71,7 +73,7 @@ export const supportedChains: Array<Chain> = [
     chainId: '0xa', // 10 as hex
     chainName: 'Optimism',
     nativeCurrency: {
-      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
       symbol: 'OETH',
       decimals: 18,
@@ -86,7 +88,7 @@ export const supportedChains: Array<Chain> = [
     chainId: '0x89', // 137 as hex
     chainName: 'Polygon',
     nativeCurrency: {
-      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      address: NATIVE_TOKEN_ADDRESS,
       name: 'Matic',
       symbol: 'MATIC',
       decimals: 18,
@@ -101,7 +103,7 @@ export const supportedChains: Array<Chain> = [
     chainId: '0xa4b1', // 42161 as hex
     chainName: 'Arbitrum One',
     nativeCurrency: {
-      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
       symbol: 'AETH',
       decimals: 18,

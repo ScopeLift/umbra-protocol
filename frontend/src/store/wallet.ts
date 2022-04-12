@@ -6,6 +6,7 @@ import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 import {
   Chain,
   MulticallResponse,
+  NATIVE_TOKEN_ADDRESS,
   Network,
   Provider,
   Signer,
@@ -16,7 +17,7 @@ import {
 import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { BigNumber, Contract, getAddress, Web3Provider, parseUnits } from 'src/utils/ethers';
-import { UmbraApi } from 'src/utils/umbra_api';
+import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
 
@@ -87,8 +88,8 @@ export default function useWalletStore() {
               await configureProvider();
             }
           },
-          network: async (chainIdNum) => {
-            if (chainId.value && chainId.value !== chainIdNum) {
+          network: async (newChainId) => {
+            if (chainId.value && chainId.value !== newChainId) {
               await configureProvider();
             }
           },
@@ -214,7 +215,7 @@ export default function useWalletStore() {
       }
 
       // Exit if not a valid network
-      const chainIdNum = provider.value.network.chainId; // must be done after the .getNetwork() calls
+      const newChainId = provider.value.network.chainId; // must be done after the .getNetwork() calls
       if (!supportedChainIds.includes(_network.chainId)) {
         network.value = _network;
         setLoading(false);
@@ -222,7 +223,7 @@ export default function useWalletStore() {
       }
 
       // Set Umbra and StealthKeyRegistry classes
-      umbra.value = new Umbra(provider.value, chainIdNum);
+      umbra.value = new Umbra(provider.value, newChainId);
       stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
 
       // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
@@ -237,7 +238,7 @@ export default function useWalletStore() {
       //      the registry and notify them about funds that may be stuck if the user no longer has the old key
       const argentDetector = {
         // https://docs.argent.xyz/wallet-connect-and-argent#wallet-detection
-        address: chainIdNum === 1 ? '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8' : '0xF230cF8980BaDA094720C01308319eF192F0F311', // prettier-ignore
+        address: newChainId === 1 ? '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8' : '0xF230cF8980BaDA094720C01308319eF192F0F311', // prettier-ignore
         abi: ['function isArgentWallet(address) external view returns (bool)'],
       };
       const detector = new Contract(argentDetector.address, argentDetector.abi, provider.value);
@@ -247,7 +248,7 @@ export default function useWalletStore() {
         lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
         lookupCnsName(_userAddress),
         getRegisteredStealthKeys(_userAddress, provider.value),
-        [1, 3].includes(chainIdNum) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
+        [1, 3].includes(newChainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
       ]);
       const _isAccountSetup = _stealthKeys !== null;
 
@@ -378,6 +379,8 @@ export default function useWalletStore() {
   });
 
   const getNativeTokenMinSend = (chainId: number): string => {
+    // These were values returned by the backend in April '22. If you're reading this, it
+    // is possible network conditions have changed and these values should be updated.
     switch (chainId) {
       case 137:
         return parseUnits('0.15', 'ether').toString(); // Polygon
@@ -397,14 +400,18 @@ export default function useWalletStore() {
   });
 
   const tokens = computed((): TokenInfoExtended[] => {
-    const supportedTokens = relayer.value?.tokens || [];
-    const isNativeTokenInRelayerTokenList = supportedTokens
-      .map((token) => token.address)
-      .includes(NATIVE_TOKEN.value.address);
-
-    if (isNativeTokenInRelayerTokenList) return supportedTokens;
-    // Add ETH as a supported token if not present in relayer response, e.g. if the relayer is down
-    return [NATIVE_TOKEN.value, ...supportedTokens];
+    const sortedTokens = (relayer.value?.tokens || []).sort(
+      // sort alphabetically
+      (firstToken, secondToken) => firstToken.symbol.localeCompare(secondToken.symbol)
+    );
+    const nativeTokenIndex = sortedTokens.map((token) => token.address).indexOf(NATIVE_TOKEN_ADDRESS);
+    if (nativeTokenIndex > -1) {
+      // native token present
+      return sortedTokens.sort((tok) => Number(tok.address != NATIVE_TOKEN_ADDRESS)); // move native token to front
+    } else {
+      // add native token to the front of the array
+      return [NATIVE_TOKEN.value, ...sortedTokens];
+    }
   });
 
   const userDisplayName = computed(() => {

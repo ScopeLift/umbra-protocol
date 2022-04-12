@@ -228,15 +228,8 @@ function useSendForm() {
     // async validation rules
     [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, tokenList],
     async (
-      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue, tokenListValue],
-      [
-        prevIsLoadingValue,
-        prevUseNormalPubKey,
-        prevRecipientIdValue,
-        prevTokenValue,
-        prevHumanAmountValue,
-        prevTokenListValue,
-      ]
+      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue],
+      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue]
     ) => {
       // Fetch toll
       toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
@@ -254,13 +247,6 @@ function useSendForm() {
       }
       if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
         await humanAmountInputRef.validate();
-      }
-
-      const currentTokens = (tokenListValue as TokenInfoExtended[]).map((tok) => tok.address);
-      const prevTokens = (prevTokenListValue as TokenInfoExtended[]).map((tok) => tok.address);
-      if (currentTokens.toString() != prevTokens.toString()) {
-        token.value = tokenList.value[0];
-        humanAmount.value = undefined;
       }
 
       // Reset token and amount if token is not supported on the network
@@ -322,7 +308,7 @@ function useSendForm() {
 
   const getMinSendAmount = (tokenAddress: string): number => {
     const tokenInfo = tokenList.value.filter((token) => token.address === tokenAddress)[0];
-    if (!tokenInfo) return 0;
+    if (!tokenInfo) throw new Error(`token info unavailable for ${tokenAddress}`); // this state should not be possible
     const tokenMinSendInWei = parseUnits(tokenInfo.minSendAmount, 'wei');
     // We don't need to worry about fallbacks: native tokens have hardcoded fallbacks
     // defined in the wallet store. For any other tokens, we wouldn't have info about them

@@ -4,7 +4,7 @@ import { utils as umbraUtils } from '@umbra/umbra-js';
 import useWalletStore from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
 import { JsonRpcProvider } from 'src/utils/ethers';
-import { UmbraApi } from 'src/utils/umbra_api';
+import { UmbraApi } from 'src/utils/umbra-api';
 
 /**
  * @notice Returns a provider, falling back to a mainnet provider if user's wallet is not connected
