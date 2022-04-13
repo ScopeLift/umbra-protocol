@@ -13,7 +13,7 @@ contract UmbraBatchSendTest is DSTestPlus {
   using stdStorage for StdStorage;
   StdStorage stdstore;
 
-  UmbraBatchSend router = new UmbraBatchSend();
+  UmbraBatchSend router = new UmbraBatchSend(0xFb2dc580Eed955B528407b4d36FfaFe3da685401);
   
 
   address umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;

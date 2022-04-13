@@ -22,7 +22,7 @@ interface IUmbra {
 }
 
 contract UmbraBatchSend {
-  IUmbra internal constant umbra = IUmbra(0xFb2dc580Eed955B528407b4d36FfaFe3da685401);
+  IUmbra internal immutable umbra;
 
   struct SendEth {
     address payable receiver;
@@ -41,6 +41,10 @@ contract UmbraBatchSend {
   
   error ValueMismatch();
   event Log(address indexed caller, uint256 indexed value, string message);
+
+  constructor(address umbraAddr) {
+    umbra = IUmbra(umbraAddr);
+  }
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
     uint256 valAccumulator;
