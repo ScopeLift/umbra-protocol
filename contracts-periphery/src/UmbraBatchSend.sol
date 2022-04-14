@@ -40,27 +40,24 @@ contract UmbraBatchSend {
   }
   
   error ValueMismatch();
-  event Log(address indexed sender, uint256 indexed amount, string message);
+  event BatchSendExecuted(address indexed sender);
 
   constructor(address umbraAddr) {
     umbra = IUmbra(umbraAddr);
   }
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
-    uint256 valAccumulator;
+    uint256 valueSentAccumulator = _valueSentAccumulator(_tollCommitment, _params);
 
-    for (uint256 i = 0; i < _params.length; i++) {
-      //amount to be sent per receiver
-      valAccumulator = valAccumulator + _params[i].amount + _tollCommitment;
-    }
-
-    if(msg.value != valAccumulator) revert ValueMismatch();
+    if(msg.value != valueSentAccumulator) revert ValueMismatch();
     _batchSendEth(_tollCommitment, _params);
+    emit BatchSendExecuted(msg.sender);
   }
 
   function batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) external payable {
     if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
     _batchSendTokens(_tollCommitment, _params);
+    emit BatchSendExecuted(msg.sender);
   }
 
   function batchSend(
@@ -68,34 +65,28 @@ contract UmbraBatchSend {
     SendEth[] calldata _ethParams,
     SendToken[] calldata _tokenParams
   ) external payable {
-    uint256 valAccumulator;
-
-    for (uint256 i = 0; i < _ethParams.length; i++) {
-      //amount to be sent per receiver
-      valAccumulator = valAccumulator + _ethParams[i].amount + _tollCommitment;
-    }
-
-    if(msg.value != valAccumulator + _tollCommitment * _tokenParams.length) revert ValueMismatch();
+    uint256 valueSentAccumulator = _valueSentAccumulator(_tollCommitment, _ethParams);
+    //ethParams sum(amount + toll) + tokenParams' total toll
+    uint totalAmount = valueSentAccumulator + (_tollCommitment * _tokenParams.length);
+    if(msg.value != totalAmount) revert ValueMismatch();
 
     _batchSendEth(_tollCommitment, _ethParams);
     _batchSendTokens(_tollCommitment, _tokenParams);
-    emit Log(msg.sender, msg.value, "called batchSend");
+    emit BatchSendExecuted(msg.sender);
   }
 
   function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
     for (uint256 i = 0; i < _params.length; i++) {
       umbra.sendEth{value: _params[i].amount + _tollCommitment}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
     }
-    emit Log(msg.sender, msg.value, "called batchSendEth");
   }
 
   function _batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) internal {
     for (uint256 i = 0; i < _params.length; i++) {
-      uint256 _amount = _params[i].amount;
       address _tokenAddr = _params[i].tokenAddr;
       IERC20 token = IERC20(address(_tokenAddr));
 
-      SafeERC20.safeTransferFrom(token, msg.sender, address(this), _amount);
+      SafeERC20.safeTransferFrom(token, msg.sender, address(this), _params[i].amount);
 
       if (token.allowance(address(this), address(umbra)) == 0) {
         SafeERC20.safeApprove(token, address(umbra), type(uint256).max);
@@ -104,11 +95,18 @@ contract UmbraBatchSend {
       umbra.sendToken{value: _tollCommitment}(
         _params[i].receiver,
         _params[i].tokenAddr,
-        _amount,
+        _params[i].amount,
         _params[i].pkx,
         _params[i].ciphertext
       );
     }
-    emit Log(msg.sender, msg.value, "called batchSendTokens");
   }
+
+  function _valueSentAccumulator(uint256 _tollCommitment, SendEth[] calldata _params) internal pure returns(uint256 valueSentAccumulator) {
+    for (uint256 i = 0; i < _params.length; i++) {
+      //amount to be sent per receiver
+      valueSentAccumulator = valueSentAccumulator + _params[i].amount + _tollCommitment;
+    }
+  }
+
 }
