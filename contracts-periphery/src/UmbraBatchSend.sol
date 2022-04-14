@@ -40,7 +40,7 @@ contract UmbraBatchSend {
   }
   
   error ValueMismatch();
-  event Log(address indexed caller, uint256 indexed value, string message);
+  event Log(address indexed sender, uint256 indexed amount, string message);
 
   constructor(address umbraAddr) {
     umbra = IUmbra(umbraAddr);
@@ -51,9 +51,7 @@ contract UmbraBatchSend {
 
     for (uint256 i = 0; i < _params.length; i++) {
       //amount to be sent per receiver
-      uint256 _amount = _params[i].amount;
-      valAccumulator += _amount;
-      valAccumulator += _tollCommitment;
+      valAccumulator = valAccumulator + _params[i].amount + _tollCommitment;
     }
 
     if(msg.value != valAccumulator) revert ValueMismatch();
@@ -74,9 +72,7 @@ contract UmbraBatchSend {
 
     for (uint256 i = 0; i < _ethParams.length; i++) {
       //amount to be sent per receiver
-      uint256 _amount = _ethParams[i].amount;
-      valAccumulator += _amount;
-      valAccumulator += _tollCommitment;
+      valAccumulator = valAccumulator + _ethParams[i].amount + _tollCommitment;
     }
 
     if(msg.value != valAccumulator + _tollCommitment * _tokenParams.length) revert ValueMismatch();

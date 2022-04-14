@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import "./utils/DSTestPlus.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../UmbraBatchSend.sol";
 
 interface UmbraToll {
@@ -13,32 +12,34 @@ contract UmbraBatchSendTest is DSTestPlus {
   using stdStorage for StdStorage;
   StdStorage stdstore;
 
-  UmbraBatchSend router = new UmbraBatchSend(0xFb2dc580Eed955B528407b4d36FfaFe3da685401);
-  
+  address umbra;
+  UmbraBatchSend router;
+  MockERC20 token;
 
-  address umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
-  address tokenAddr = 0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735;
+  address tokenAddr;
   address alice = address(0x202204);
   address bob = address(0x202205);
-  uint256 alicePrevBal = alice.balance;
-  uint256 bobPrevBal = bob.balance;
+
+  uint256 alicePrevBal;
+  uint256 bobPrevBal;
+  uint256 umbraPrevBal;
 
   uint256 toll;
-
   bytes32 pkx = "pkx";
   bytes32 ciphertext = "ciphertext";   
 
-  IERC20 token = IERC20(address(tokenAddr));
-
-  uint256 umbraPrevBal = token.balanceOf(umbra);
   UmbraBatchSend.SendEth[] sendEth;
   UmbraBatchSend.SendToken[] sendToken;
 
   error ValueMismatch();
 
   function setUp() virtual public {
+    umbra = deployCode("src/test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))));
+    router = new UmbraBatchSend(address(umbra));
+    token = new MockERC20("Test","TT", 18);
+    tokenAddr = address(token);
     toll = UmbraToll(umbra).toll();
-    tip(tokenAddr, address(this), 1e7 ether);
+    token.mint(address(this), 1e7 ether);
     vm.deal(address(this), 1e5 ether);
   }
 
@@ -75,12 +76,10 @@ contract UmbraBatchSendTest is DSTestPlus {
     sendToken.push(UmbraBatchSend.SendToken(alice, tokenAddr, amount, pkx, ciphertext));
     sendToken.push(UmbraBatchSend.SendToken(bob, tokenAddr, amount2, pkx, ciphertext));
     uint256 totalToll = toll *  sendToken.length;
-
     token.approve(address(router), totalAmount);
 
     vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendTokens.selector, toll, sendToken));
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
-
     router.batchSendTokens{value: totalToll}(toll, sendToken);
 
     assertEq(token.balanceOf(umbra), umbraPrevBal + totalAmount);
