@@ -35,6 +35,8 @@ contract UmbraBatchSendTest is DSTestPlus {
 
   function setUp() virtual public {
     umbra = deployCode("src/test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))));
+    vm.etch(0xFb2dc580Eed955B528407b4d36FfaFe3da685401, umbra.code);
+    umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
     router = new UmbraBatchSend(address(umbra));
     token = new MockERC20("Test","TT", 18);
     tokenAddr = address(token);
