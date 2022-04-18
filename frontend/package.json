@@ -24,7 +24,8 @@
     "bnc-onboard": "^1.13.0",
     "core-js": "^3.6.5",
     "ethers": "^5.5.3",
-    "quasar": "^1.0.0"
+    "quasar": "^1.0.0",
+    "vue-i18n": "v8"
   },
   "devDependencies": {
     "@quasar/app": "^2.0.0",
