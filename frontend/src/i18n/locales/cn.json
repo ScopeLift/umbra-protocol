@@ -1,0 +1,43 @@
+{
+  "Home": {
+    "header": "发送隐形付款",
+    "description": "只有汇款人和收款人知道谁收到了资金",
+    "Tutorial": {
+      "tutorial": "教程",
+      "receiving-funds": "接收资金",
+      "receive-first": "使用<span class=\"text-bold\">注册</span>页配置您的帐户",
+      "receive-second": "要求某人通过 Umbra 应用程序向您的地址、ENS 或 CNS 名称发送资金",
+      "receive-third": "查看<span class=\"text-bold\">接收</span>页面以提取资金",
+      "sending-funds": "发送资金",
+      "send-first": "获取您要向其汇款的人员的地址、ENS 或 CNS 姓名",
+      "send-second": "填写<span class=\"text-bold\">发送</span>页面上的表单"
+    }
+  },
+  "Home-action-card": {
+    "send": "发送",
+    "send-description": "向其他用户发送资金",
+    "receive": "接收",
+    "receive-description": "查看和提取收到的资金",
+    "setup": "注册",
+    "setup-description": "注册您的帐户以接收资金"
+  },
+  "Header-Links": {
+    "home": "主页",
+    "FAQ": "常见问题",
+    "contact": "联系"
+  },
+  "Base-Layout": {
+    "settings": "设置",
+    "dark-mode": "深色模式",
+    "advanced-mode": "高级模式",
+    "advanced-mode-description": "启用高级功能，如私钥导出、其他收件人 ID 选项和事件扫描设置。",
+    "caution": "请谨慎使用！",
+    "on": "开",
+    "off": "关",
+    "about": "简介",
+    "built-by": "<a href=\"https://www.scopelift.co/\" target=\"_blank\" class=\"hyperlink\">ScopeLift</a> 项目",
+    "terms": "用户协议",
+    "privacy": "隐私协议",
+    "links": "更多"
+  }
+}

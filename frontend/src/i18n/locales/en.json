@@ -1,0 +1,43 @@
+{
+  "Home": {
+    "header": "Send Stealth Payments",
+    "description": "Only the sender and recipient know who received funds",
+    "Tutorial": {
+      "tutorial": "Tutorial",
+      "receiving-funds": "Receiving Funds",
+      "receive-first": "Use the <span class=\"text-bold\">Setup</span> page to configure your account",
+      "receive-second": "Ask someone to send funds to your address, ENS, or CNS name through the Umbra app",
+      "receive-third": "Check the <span class=\"text-bold\">Receive</span> page to withdraw funds",
+      "sending-funds": "Sending Funds",
+      "send-first": "Get the address, ENS, or CNS name of the person you're sending funds to",
+      "send-second": "Complete the form on the <span class=\"text-bold\">Send</span> page"
+    }
+  },
+  "Home-action-card": {
+    "send": "Send",
+    "send-description": "Send funds to another user",
+    "receive": "Receive",
+    "receive-description": "View and withdraw received funds",
+    "setup": "Setup",
+    "setup-description": "Setup your account to receive funds"
+  },
+  "Header-Links": {
+    "home": "Home",
+    "FAQ": "FAQ",
+    "contact": "Contact"
+  },
+  "Base-Layout": {
+    "settings": "Settings",
+    "dark-mode": "Dark mode",
+    "advanced-mode": "Advanced mode",
+    "advanced-mode-description": "Enables advanced features such as private key export, additional recipient ID options, and event scanning settings.",
+    "caution": "Use with caution!",
+    "on": "on",
+    "off": "off",
+    "about": "About",
+    "built-by": "Built by <a href=\"https://www.scopelift.co/\" target=\"_blank\" class=\"hyperlink\">ScopeLift</a>",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "links": "Links"
+  }
+}

@@ -139,12 +139,12 @@
       <div class="row self-start justify-between all-content-format">
         <!-- Column 1: User settings -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">Settings</p>
+          <p class="dark-toggle spaced-letters">{{$t('Base-Layout.settings')}}</p>
           <!-- Dark mode toggle -->
           <p class="dark-toggle">
             <q-icon v-if="!$q.dark.isActive" @click="toggleDarkMode" class="cursor-pointer icon" name="fas fa-moon" />
             <q-icon v-else @click="toggleDarkMode" class="dark-toggle cursor-pointer icon" name="fas fa-sun" />
-            <span class="text-caption q-ml-md">Dark mode {{ $q.dark.isActive ? 'on' : 'off' }}</span>
+            <span class="text-caption q-ml-md">{{$t('Base-Layout.dark-mode')}} {{ $q.dark.isActive ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span>
           </p>
 
           <!-- Advanced mode toggle -->
@@ -157,12 +157,11 @@
               dense
               icon="fas fa-cog"
             />
-            <span class="dark-toggle text-caption q-ml-md">Advanced mode {{ advancedMode ? 'on' : 'off' }}</span>
+            <span class="dark-toggle text-caption q-ml-md">{{$t('Base-Layout.advanced-mode')}} {{ advancedMode ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span>
             <span>
               <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
-                Enables advanced features such as private key export, additional recipient ID options, and event
-                scanning settings.
-                <span class="text-bold">Use with caution!</span>
+                {{$t('Base-Layout.advanced-mode-description')}}
+                <span class="text-bold">{{$t('Base-Layout.caution')}}</span>
               </base-tooltip>
             </span>
           </p>
@@ -170,22 +169,19 @@
 
         <!-- Column 2: Built by ScopeLift -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">About</p>
-          <p class="dark-toggle text-caption">
-            Built by
-            <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
+          <p class="dark-toggle spaced-letters">{{$t('Base-Layout.about')}}</p>
+          <p class="dark-toggle text-caption" v-html="$t('Base-Layout.built-by')"></p>
+          <p class="">
+            <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">{{$t('Base-Layout.terms')}}</router-link>
           </p>
           <p class="">
-            <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
-          </p>
-          <p class="">
-            <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">Privacy Policy</router-link>
+            <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">{{$t('Base-Layout.privacy')}}</router-link>
           </p>
         </div>
 
         <!-- Column 3: Links -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">Links</p>
+          <p class="dark-toggle spaced-letters">{{$t('Base-Layout.links')}}</p>
           <p>
             <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
               <q-icon class="dark-toggle q-mr-md" name="fab fa-twitter" size="xs" />
