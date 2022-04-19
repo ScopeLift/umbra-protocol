@@ -19,7 +19,6 @@ export default defineComponent({
       type: String,
       required: true,
     },
-
     expanded: {
       type: Boolean,
       required: true,
