@@ -8,9 +8,7 @@ interface UmbraToll {
   function toll() external returns(uint256);
 }
 
-contract UmbraBatchSendTest is DSTestPlus {
-  using stdStorage for StdStorage;
-  StdStorage stdstore;
+abstract contract UmbraBatchSendTest is DSTestPlus {
 
   address umbra;
   UmbraBatchSend router;
@@ -19,6 +17,7 @@ contract UmbraBatchSendTest is DSTestPlus {
   address tokenAddr;
   address alice = address(0x202204);
   address bob = address(0x202205);
+  address constant umbraAddr = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
 
   uint256 alicePrevBal;
   uint256 bobPrevBal;
@@ -34,13 +33,13 @@ contract UmbraBatchSendTest is DSTestPlus {
   error ValueMismatch();
 
   function setUp() virtual public {
+    // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
     umbra = deployCode("src/test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))));
-    vm.etch(0xFb2dc580Eed955B528407b4d36FfaFe3da685401, umbra.code);
-    umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
-    router = new UmbraBatchSend(address(umbra));
+    vm.etch(umbraAddr, umbra.code);
+    umbra = umbraAddr;
+    router = new UmbraBatchSend(IUmbra(address(umbra)));
     token = new MockERC20("Test","TT", 18);
     tokenAddr = address(token);
-    toll = UmbraToll(umbra).toll();
     token.mint(address(this), 1e7 ether);
     vm.deal(address(this), 1e5 ether);
   }
@@ -53,7 +52,7 @@ contract UmbraBatchSendTest is DSTestPlus {
     sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
     sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
 
-    uint256 totalAmount = uint256(amount) + uint256(amount2) + (toll * sendEth.length);
+    uint256 totalAmount = uint256(amount) + amount2 + (toll * sendEth.length);
 
     vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendEth.selector, toll, sendEth));
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendEth.selector));
@@ -73,7 +72,7 @@ contract UmbraBatchSendTest is DSTestPlus {
   }
 
   function testFuzz_BatchSendTokens(uint72 amount, uint72 amount2) public {
-    uint256 totalAmount = uint256(amount) + uint256(amount2);
+    uint256 totalAmount = uint256(amount) + amount2;
 
     sendToken.push(UmbraBatchSend.SendToken(alice, tokenAddr, amount, pkx, ciphertext));
     sendToken.push(UmbraBatchSend.SendToken(bob, tokenAddr, amount2, pkx, ciphertext));
@@ -100,7 +99,7 @@ contract UmbraBatchSendTest is DSTestPlus {
     vm.assume(amount > 0);
     vm.assume(amount2 > 0);
 
-    uint256 totalAmount = uint256(amount) + uint256(amount2);
+    uint256 totalAmount = uint256(amount) + amount2;
 
     sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
     sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
@@ -138,23 +137,28 @@ contract UmbraBatchSendTest is DSTestPlus {
 }
 
 contract BatchSendWithTollTest is UmbraBatchSendTest {
-  using stdStorage for StdStorage;
-
   function setUp() public override {
     super.setUp();
-    stdstore.target(address(umbra)).sig("toll()").checked_write(0.1 ether);
-    toll = UmbraToll(umbra).toll();
-    assertEq(toll, 0.1 ether);
+    toll = 0.1 ether;
+    setToll(umbra, toll);
+  }
+
+  function testPostSetupState() public {
+    uint currentToll = UmbraToll(umbra).toll();
+    assertEq(toll, currentToll);
   }
 }
 
 contract BatchSendWithoutTollTest is UmbraBatchSendTest {
-  using stdStorage for StdStorage;
-
   function setUp() public override {
     super.setUp();
-    stdstore.target(address(umbra)).sig("toll()").checked_write(uint256(0));
-    toll = UmbraToll(umbra).toll();
-    assertEq(toll, 0);
+    toll = 0;
+    setToll(umbra, toll);
   }
+
+  function testPostSetupState() public {
+    uint currentToll = UmbraToll(umbra).toll();
+    assertEq(toll, currentToll);
+  }
+
 }

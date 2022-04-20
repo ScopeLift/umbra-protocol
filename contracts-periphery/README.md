@@ -1,6 +1,6 @@
 # Umbra periphery contracts
 
-On chain components of the [Umbra protocol](../README.md).
+Smart contracts that integrate with [Umbra](../README.md), but are not part of the [core protocol contracts](../contracts-core/).
 
 ## Development
 

@@ -9,4 +9,10 @@ import "solmate/test/utils/mocks/MockERC20.sol";
 
 contract DSTestPlus is DSTest, stdCheats {
   Vm vm = Vm(HEVM_ADDRESS);
+  StdStorage stdstore;
+  using stdStorage for StdStorage;
+
+  function setToll(address umbraAddr, uint256 newToll) public {
+    stdstore.target(address(umbraAddr)).sig("toll()").checked_write(newToll);
+  }
 }

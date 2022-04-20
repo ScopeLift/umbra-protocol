@@ -42,14 +42,13 @@ contract UmbraBatchSend {
   error ValueMismatch();
   event BatchSendExecuted(address indexed sender);
 
-  constructor(address umbraAddr) {
-    umbra = IUmbra(umbraAddr);
+  constructor(IUmbra umbraInterface) {
+    umbra = umbraInterface;
   }
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
-    uint256 valueSentAccumulator = _valueSentAccumulator(_tollCommitment, _params);
 
-    if(msg.value != valueSentAccumulator) revert ValueMismatch();
+    if(msg.value != _sumValueFromEthSends(_tollCommitment, _params)) revert ValueMismatch();
     _batchSendEth(_tollCommitment, _params);
     emit BatchSendExecuted(msg.sender);
   }
@@ -65,10 +64,8 @@ contract UmbraBatchSend {
     SendEth[] calldata _ethParams,
     SendToken[] calldata _tokenParams
   ) external payable {
-    uint256 valueSentAccumulator = _valueSentAccumulator(_tollCommitment, _ethParams);
-    //ethParams sum(amount + toll) + tokenParams' total toll
-    uint totalAmount = valueSentAccumulator + (_tollCommitment * _tokenParams.length);
-    if(msg.value != totalAmount) revert ValueMismatch();
+    uint256 _totalAmount = _sumValueFromEthSends(_tollCommitment, _ethParams) + (_tollCommitment * _tokenParams.length);
+    if(msg.value != _totalAmount) revert ValueMismatch();
 
     _batchSendEth(_tollCommitment, _ethParams);
     _batchSendTokens(_tollCommitment, _tokenParams);
@@ -83,8 +80,7 @@ contract UmbraBatchSend {
 
   function _batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) internal {
     for (uint256 i = 0; i < _params.length; i++) {
-      address _tokenAddr = _params[i].tokenAddr;
-      IERC20 token = IERC20(address(_tokenAddr));
+      IERC20 token = IERC20(address(_params[i].tokenAddr));
 
       SafeERC20.safeTransferFrom(token, msg.sender, address(this), _params[i].amount);
 
@@ -102,7 +98,7 @@ contract UmbraBatchSend {
     }
   }
 
-  function _valueSentAccumulator(uint256 _tollCommitment, SendEth[] calldata _params) internal pure returns(uint256 valueSentAccumulator) {
+  function _sumValueFromEthSends(uint256 _tollCommitment, SendEth[] calldata _params) internal pure returns(uint256 valueSentAccumulator) {
     for (uint256 i = 0; i < _params.length; i++) {
       //amount to be sent per receiver
       valueSentAccumulator = valueSentAccumulator + _params[i].amount + _tollCommitment;
