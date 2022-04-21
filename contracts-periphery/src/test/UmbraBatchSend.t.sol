@@ -14,13 +14,8 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
   MockERC20 token;
 
   address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
-  address tokenAddr;
   address alice = address(0x202204);
   address bob = address(0x202205);
-
-  uint256 alicePrevBal;
-  uint256 bobPrevBal;
-  uint256 umbraPrevBal;
 
   uint256 toll;
   bytes32 pkx = "pkx";
@@ -36,7 +31,6 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     vm.etch(umbra, (deployCode("src/test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
     router = new UmbraBatchSend(IUmbra(address(umbra)));
     token = new MockERC20("Test","TT", 18);
-    tokenAddr = address(token);
     token.mint(address(this), 1e7 ether);
     vm.deal(address(this), 1e5 ether);
   }
@@ -47,8 +41,6 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
   }
 
   function testFuzz_BatchSendEth(uint64 amount, uint64 amount2) public {
-    vm.assume(amount > 0);
-    vm.assume(amount2 > 0);
     vm.assume(amount > toll && amount2 > toll);
 
     sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
@@ -60,8 +52,8 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendEth.selector));
     router.batchSendEth{value: totalAmount}(toll, sendEth);
 
-    assertEq(alice.balance, alicePrevBal + amount);
-    assertEq(bob.balance, bobPrevBal + amount2);
+    assertEq(alice.balance, amount);
+    assertEq(bob.balance, amount2);
   }
 
   function testExpectRevert_BatchSendEth() public {
@@ -76,8 +68,8 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
   function testFuzz_BatchSendTokens(uint72 amount, uint72 amount2) public {
     uint256 totalAmount = uint256(amount) + amount2;
 
-    sendToken.push(UmbraBatchSend.SendToken(alice, tokenAddr, amount, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, tokenAddr, amount2, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
     uint256 totalToll = toll *  sendToken.length;
     token.approve(address(router), totalAmount);
 
@@ -85,12 +77,12 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
     router.batchSendTokens{value: totalToll}(toll, sendToken);
 
-    assertEq(token.balanceOf(umbra), umbraPrevBal + totalAmount);
+    assertEq(token.balanceOf(umbra), totalAmount);
   }
 
   function testExpectRevert_BatchSendTokens() public {
-    sendToken.push(UmbraBatchSend.SendToken(alice, tokenAddr, 1 ether, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, tokenAddr, 1 ether, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), 1 ether, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), 1 ether, pkx, ciphertext));
 
     token.approve(address(router), 2 ether);
     vm.expectRevert(abi.encodeWithSelector(ValueMismatch.selector));
@@ -98,16 +90,15 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
   }
 
   function testFuzz_BatchSend(uint72 amount, uint72 amount2) public {
-    vm.assume(amount > 0);
-    vm.assume(amount2 > 0);
+    vm.assume(amount > toll && amount2 > toll);
 
     uint256 totalAmount = uint256(amount) + amount2;
 
     sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
     sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
 
-    sendToken.push(UmbraBatchSend.SendToken(alice, tokenAddr, amount, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, tokenAddr, amount2, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
     token.approve(address(router), totalAmount);
 
     vm.expectCall(address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendEth, sendToken));        
@@ -118,17 +109,17 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
 
     router.batchSend{value: totalAmount + totalToll}(toll, sendEth, sendToken);
 
-    assertEq(alice.balance, alicePrevBal + amount);
-    assertEq(bob.balance, bobPrevBal + amount2);
-    assertEq(token.balanceOf(umbra), umbraPrevBal + totalAmount);
+    assertEq(alice.balance, amount);
+    assertEq(bob.balance, amount2);
+    assertEq(token.balanceOf(umbra), totalAmount);
     }
 
   function testExpectRevert_BatchSend() public {
     sendEth.push(UmbraBatchSend.SendEth(payable(alice), 1e16, pkx, ciphertext));
     sendEth.push(UmbraBatchSend.SendEth(payable(bob), 1e16, pkx, ciphertext));
 
-    sendToken.push(UmbraBatchSend.SendToken(alice, tokenAddr, 1e17, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, tokenAddr, 1e17, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), 1e17, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), 1e17, pkx, ciphertext));
     token.approve(address(router), 1e17 * 2);
 
     uint256 totalToll = toll * sendEth.length + toll * sendToken.length;
