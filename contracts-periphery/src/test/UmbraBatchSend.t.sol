@@ -10,14 +10,13 @@ interface UmbraToll {
 
 abstract contract UmbraBatchSendTest is DSTestPlus {
 
-  address umbra;
   UmbraBatchSend router;
   MockERC20 token;
 
+  address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   address tokenAddr;
   address alice = address(0x202204);
   address bob = address(0x202205);
-  address constant umbraAddr = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
 
   uint256 alicePrevBal;
   uint256 bobPrevBal;
@@ -34,14 +33,17 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
 
   function setUp() virtual public {
     // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
-    umbra = deployCode("src/test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))));
-    vm.etch(umbraAddr, umbra.code);
-    umbra = umbraAddr;
+    vm.etch(umbra, (deployCode("src/test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
     router = new UmbraBatchSend(IUmbra(address(umbra)));
     token = new MockERC20("Test","TT", 18);
     tokenAddr = address(token);
     token.mint(address(this), 1e7 ether);
     vm.deal(address(this), 1e5 ether);
+  }
+
+  function testPostSetupState() public {
+    uint256 currentToll = UmbraToll(umbra).toll();
+    assertEq(toll, currentToll);
   }
 
   function testFuzz_BatchSendEth(uint64 amount, uint64 amount2) public {
@@ -143,10 +145,6 @@ contract BatchSendWithTollTest is UmbraBatchSendTest {
     setToll(umbra, toll);
   }
 
-  function testPostSetupState() public {
-    uint currentToll = UmbraToll(umbra).toll();
-    assertEq(toll, currentToll);
-  }
 }
 
 contract BatchSendWithoutTollTest is UmbraBatchSendTest {
@@ -154,11 +152,6 @@ contract BatchSendWithoutTollTest is UmbraBatchSendTest {
     super.setUp();
     toll = 0;
     setToll(umbra, toll);
-  }
-
-  function testPostSetupState() public {
-    uint currentToll = UmbraToll(umbra).toll();
-    assertEq(toll, currentToll);
   }
 
 }
