@@ -17,3 +17,8 @@ export default boot(({ app }) => {
   // Set i18n instance on app
   app.i18n = i18n;
 });
+
+const params = new URLSearchParams(window.location.search);
+if (params.has('locale')) {
+  i18n.locale = params.get('locale')!;
+}
