@@ -165,6 +165,14 @@
               </base-tooltip>
             </span>
           </p>
+          <!-- Language selection -->
+          <p>
+            <select class="text-caption" v-model="$i18n.locale">
+              <option value='en-us'>English</option>
+              <option value='zh-cn'>中文</option>
+             </select>
+             <span class="text-caption q-ml-md">Language</span>
+          </p>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
