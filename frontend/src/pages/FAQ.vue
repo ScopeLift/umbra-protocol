@@ -257,7 +257,7 @@
           :expanded="selectedId === 'what-networks-is-umbra-deployed-on-and-what-are-the-contract-addresses'"
           :question="$t('FAQ.network-addresses')"
         >
-          <div v-html="$t('FAQ.network-addresses-answer')"></div>
+          <div v-html="$t('FAQ.network-addresses-answer', { umbra: deployments.umbra, StealthKeyRegistry: deployments.registry, umbraMainnet: getEtherscanUrl(deployments.umbra, 1), umbraRinkeby: getEtherscanUrl(deployments.umbra, 4), umbraOptimism: getEtherscanUrl(deployments.umbra, 10), umbraPolygon: getEtherscanUrl(deployments.umbra, 137), umbraArbitrum: getEtherscanUrl(deployments.umbra, 42161), registryMainnet: getEtherscanUrl(deployments.registry, 1), registryRinkeby: getEtherscanUrl(deployments.registry, 4), registryOptimism: getEtherscanUrl(deployments.registry, 10), registryPolygon: getEtherscanUrl(deployments.registry, 137), registryArbitrum: getEtherscanUrl(deployments.registry, 42161) })"></div>
         </f-a-q-item>
       </div>
 

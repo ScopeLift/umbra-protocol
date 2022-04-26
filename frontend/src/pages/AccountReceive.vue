@@ -1,13 +1,12 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">Receive</h2>
-
+    <h2 class="page-title">{{$t('Receive.receive')}}</h2>
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <p class="text-center">Connect your wallet to scan for received funds</p>
+      <p class="text-center">{{$t('Receive.connect-your-wallet')}}</p>
       <div class="row justify-center">
         <connect-wallet>
-          <base-button class="text-center" label="Connect Wallet" />
+          <base-button class="text-center" :label="$t('Receive.connect-wallet')" />
         </connect-wallet>
       </div>
     </div>
@@ -16,44 +15,42 @@
       <!-- Waiting for signature -->
       <div v-if="needsSignature || scanStatus === 'waiting'" class="form">
         <div v-if="needsSignature" class="text-center q-mb-md">
-          This app needs your signature to scan for funds you've received
+          {{$t('Receive.need-signature')}}
         </div>
-        <div v-else class="text-center q-mb-md">Click below to scan for funds you've received</div>
-        <base-button @click="getPrivateKeysHandler" class="text-center" :label="needsSignature ? 'Sign' : 'Scan'" />
+        <div v-else class="text-center q-mb-md">{{$t('Receive.scan-funds')}}</div>
+        <base-button @click="getPrivateKeysHandler" class="text-center" :label="needsSignature ? $t('Receive.sign') : $t('Receive.scan')" />
 
         <!-- Advanced mode settings -->
         <q-card v-if="advancedMode" class="q-pt-md q-px-md q-mt-xl">
           <q-card-section class="text-center text-primary text-h6 header-black q-pb-none">
-            Scan Settings
+            {{$t('Receive.scan-settings')}}
           </q-card-section>
           <q-card-section>
             <q-form class="text-left" ref="settingsFormRef">
               <div>
-                Enter the start or end blocks to use when scanning for events. A blank start block will scan from block
-                zero, and a blank end block will scan through the current block.
+                {{$t('Receive.start-end')}}
               </div>
               <div class="row justify-start q-col-gutter-md">
                 <base-input
                   v-model.number="startBlockLocal"
                   @blur="setScanBlocks(startBlockLocal, endBlockLocal)"
                   class="col-xs-12 col-6"
-                  label="Start block"
+                  :label="$t('Receive.start-block')"
                   :rules="isValidStartBlock"
                 />
                 <base-input
                   v-model.number="endBlockLocal"
                   @blur="setScanBlocks(startBlockLocal, endBlockLocal)"
                   class="col-xs-12 col-6"
-                  label="End block"
+                  :label="$t('Receive.end-block')"
                   :rules="isValidEndBlock"
                 />
               </div>
               <div>
-                Enter the private key to use when scanning for events. A blank private key will use the ones generated
-                from your signature.
+                {{$t('Receive.enter-prv-key')}}
               </div>
               <!-- Unlike start blocks, no action on blur because we don't want to save private key to LocalStorage -->
-              <base-input v-model="scanPrivateKeyLocal" label="Private key" :rules="isValidPrivateKey" />
+              <base-input v-model="scanPrivateKeyLocal" :label="$t('Receive.prv-key')" :rules="isValidPrivateKey" />
             </q-form>
           </q-card-section>
         </q-card>
@@ -61,16 +58,14 @@
 
       <div v-else-if="scanStatus === 'fetching'" class="text-center">
         <loading-spinner />
-        <div class="text-center text-italic">Fetching announcements...</div>
+        <div class="text-center text-italic">{{$t('Receive.fetching')}}</div>
       </div>
 
       <!-- Scanning in progress -->
       <div v-else-if="scanStatus === 'scanning'" class="text-center">
         <progress-indicator :percentage="scanPercentage" />
-        <div class="text-center text-italic">Scanning for funds...</div>
-        <div class="text-center text-italic q-mt-lg">
-          This may take a couple of minutes depending on your connection and device. This is normal&mdash; please be
-          patient.
+        <div class="text-center text-italic">{{$t('Receive.scanning')}}</div>
+        <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')">
         </div>
       </div>
 

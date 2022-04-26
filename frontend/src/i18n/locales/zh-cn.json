@@ -40,6 +40,68 @@
     "privacy": "Privacy Policy",
     "links": "更多"
   },
+  "Address-Settings": {
+    "advanced-mode-on": "Advanced mode is on"
+  },
+  "Contact": {
+    "contact": "Contact",
+    "paragraph": "Read the <router-link class=\"hyperlink\" :to=\"{ name: 'FAQ' }\">FAQ</router-link> and still have questions? Feel free to get in touch! You'll likely get the fastest response on Discord.",
+    "discord": "<a class=\"hyperlink\" href=\"https://discord.com/invite/uw4y5J2p7C\" target=\"_blank\">Join us</a> on Discord",
+    "twitter": "<a class=\"hyperlink\" href=\"https://twitter.com/UmbraCash\" target=\"_blank\">Follow</a> Umbra on Twitter",
+    "email": "<div>Email us at <a class=\"hyperlink\" href=\"mailto:support@umbra.cash\">support@umbra.cash</a></div>"
+  },
+  "Send": {
+    "sending-disabled": "Sending via Umbra has been temporarily disabled while we perform system maintenance. Please check back soon!",
+    "send": "Send",
+    "connect-your-wallet": "Connect your wallet to send funds",
+    "connect-wallet": "Connect Wallet",
+    "recipient": "Recipient's ENS name or address",
+    "recipient-pkey": "Send using recipient's standard public key",
+    "question-circle": "When checked, the public key used will be the standard public for the provided Ethereum address. The receiver will have to enter their account's private key into this app to withdrawal the funds.",
+    "question-circle-warning": "Don't use this feature unless you know what you're doing.",
+    "learn-more": "Learn more",
+    "select-token": "Select token to send",
+    "token": "Token",
+    "amount": "Amount to send",
+    "summary": "Summary",
+    "sending": "Sending",
+    "fee": "Umbra Fee",
+    "fee-explain": "Transactions on %{chainName} are very cheap, so a small fee is charged to deter spamming the protocol.",
+    "copy-payment-link": "Copy payment link"
+  },
+  "Receive": {
+    "receive": "Receive",
+    "connect-your-wallet": "Connect your wallet to scan for received funds",
+    "connect-wallet": "Connect Wallet",
+    "need-signature": "This app needs your signature to scan for funds you've received",
+    "scan-funds": "Click below to scan for funds you've received",
+    "sign": "Sign",
+    "scan": "Scan",
+    "scan-settings": "Scan Settings",
+    "start-end": "Enter the start or end blocks to use when scanning for events. A blank start block will scan from block zero, and a blank end block will scan through the current block.",
+    "start-block": "Start block",
+    "end-block": "End block",
+    "enter-prv-key": "Enter the private key to use when scanning for events. A blank private key will use the ones generated from your signature.",
+    "prv-key": "Private key",
+    "fetching": "Fetching announcements...",
+    "scanning": "Scanning for funds...",
+    "wait": "This may take a couple of minutes depending on your connection and device. This is normal&mdash; please be patient."
+
+  },
+  "Setup": {
+    "setup": "Setup",
+    "connect-wallet": "Connect your wallet to setup your account",
+    "generate-stealth": "Generate and Publish Stealth Keys",
+    "paragraph": " Use the button below to complete the setup process. This will result in two prompts from your wallet: <ol> <li> <span class=\"text-bold\">Sign a message</span> used to generate your Umbra-specific pair of private keys. These keys allow you to securely use Umbra without compromising the private keys of your connected wallet. You do not need to save these keys anywhere! </li> <li> <span class=\"text-bold\">Submit a transaction</span> to save the corresponding public keys on-chain, so anyone can use them to send you stealth payments. </li> </ol>",
+    "setup-account": "Setup account",
+    "complete": "Setup Complete!",
+    "return-to-home": " You may now return <a class=\"hyperlink\" href=\"https://app.umbra.cash/\">home</a> to send or receive funds.",
+    "return-to-home-new": " You may now return <router-link class=\"hyperlink\" :to=%{variable}>home</router-link> to send or receive funds."
+  },
+  "Error": {
+    "error": "404",
+    "error-msg": "Oops. Nothing here..."
+  },
   "FAQ": {
     "faq": "常见问题",
     "intro": "介绍",
@@ -93,7 +155,7 @@
     "crypto-js-answer": " <p> 一般来说，JavaScript 执行环境并不适合满足安全要求。它在将秘密数据隐藏在内存中（例如，您的应用程序特定的私钥）和防止该数据写入磁盘方面提出了挑战。使用 JavaScript 还意味着底层加密库可能容易受到诸如 <a class=\"hyperlink\" href=\"https://en.wikipedia.org/wiki/Timing_attack\" target=\"_blank\">定时攻击</a>。 Umbra 使用 <a class=\"hyperlink\" href=\"https://github.com/paulmillr/noble-secp256k1\" target=\"_blank\">noble-secp256k1</a> 进行所有加密，您可以阅读有关其限制和缓解此类漏洞的更多信息，看 <a class=\"hyperlink\" href=\"https://github.com/paulmillr/noble-secp256k1/#security\" target=\"_blank\">这里</a>。 </p> <p> 然而，以太坊生态系统有许多依赖 JavaScript 密码术的钱包和应用程序，到目前为止还没有因此而出现重大问题，因此这种方法对于大多数用户来说可能是一个合适的折衷方案。 </p>",
     "tech-details": "技术细节",
     "network-addresses": "Umbra 部署在哪些网络上以及合约地址是什么？",
-    "network-addresses-answer": " <ul> <li> 核心 <span class=\"code\">Umbra</span> 合约部署在 <span class=\"code\">0xFb2dc580Eed955B528407b4d36FfaFe3da685401</span> 上 <a href=\"https://etherscan.io/address/0xFb2dc580Eed955B528407b4d36FfaFe3da685401\" class=\"hyperlink\" target=\"_blank\"> mainnet </a>, <a href=\"https://rinkeby.etherscan.io/address/0xFb2dc580Eed955B528407b4d36FfaFe3da685401\" class=\"hyperlink\" target=\"_blank\"> Rinkeby </a>, <a href=\"https://optimistic.etherscan.io//address/0xFb2dc580Eed955B528407b4d36FfaFe3da685401\" class=\"hyperlink\" target=\"_blank\"> Optimism </a>, <a href=\"https://polygonscan.com/address/0xFb2dc580Eed955B528407b4d36FfaFe3da685401\" class=\"hyperlink\" target=\"_blank\"> Polygon </a>， 和 <a href=\"https://arbiscan.io//address/0xFb2dc580Eed955B528407b4d36FfaFe3da685401\" class=\"hyperlink\" target=\"_blank\"> Arbitrum </a> </li> <li><span class=\"code\">StealthKeyRegistry</span> 部署在 <span class=\"code\">0x31fe56609C65Cd0C510E7125f051D440424D38f3</span> on <a href=\"https://etherscan.io/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3\" class=\"hyperlink\" target=\"_blank\"> mainnet </a>, <a href=\"https://rinkeby.etherscan.io/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3\" class=\"hyperlink\" target=\"_blank\"> Rinkeby </a>, <a href=\"https://optimistic.etherscan.io//address/0x31fe56609C65Cd0C510E7125f051D440424D38f3\" class=\"hyperlink\" target=\"_blank\"> Optimism </a>, <a href=\"https://polygonscan.com/address/0x31fe56609C65Cd0C510E7125f051D440424D38f3\" class=\"hyperlink\" target=\"_blank\"> Polygon </a>， 和 <a href=\"https://arbiscan.io//address/0x31fe56609C65Cd0C510E7125f051D440424D38f3\" class=\"hyperlink\" target=\"_blank\"> Arbitrum </a> </li> </ul>",
+    "network-addresses-answer": " <ul> <li> 核心 <span class=\"code\">Umbra</span> 合约部署在 <span class=\"code\">%{umbra}</span> 上 <a href=%{umbraMainnet} class=\"hyperlink\" target=\"_blank\"> mainnet </a>, <a href=%{umbraRinkeby} class=\"hyperlink\" target=\"_blank\"> Rinkeby </a>, <a href=%{umbraOptimism} class=\"hyperlink\" target=\"_blank\"> Optimism </a>, <a href=%{umbraPolygon} class=\"hyperlink\" target=\"_blank\"> Polygon </a>, 和 <a href=%{umbraArbitrum} class=\"hyperlink\" target=\"_blank\"> Arbitrum </a> </li> <li> The <span class=\"code\">StealthKeyRegistry</span> 部署在 <span class=\"code\">%{StealthKeyRegistry}</span> on <a href=%{registryMainnet} class=\"hyperlink\" target=\"_blank\"> mainnet </a>, <a href=%{registryRinkeby} class=\"hyperlink\" target=\"_blank\"> Rinkeby </a>, <a href=%{registryOptimism} class=\"hyperlink\" target=\"_blank\"> Optimism </a>, <a href=%{registryPolygon} class=\"hyperlink\" target=\"_blank\"> Polygon </a>, 和 <a href=%{registryArbitrum} class=\"hyperlink\" target=\"_blank\"> Arbitrum </a> </li> </ul>",
     "how-it-works": "它是如何工作的？",
     "how-it-works-answer": "<p class=\"text-bold\">隐形地址概述</p> <p>让我们从 Umbra 协议的工作原理（更一般地说，隐身地址的工作原理）开始：</p> <p> 接收者拥有公钥 <span class=\"code\">P</span> 和私钥 <span class=\"code\">p</span>。 发送者生成一个随机数 <span class=\"code\">r</span>，并使用椭圆曲线乘法计算隐身公钥为  <span class=\"code\">P_stealth = P * r</span> 。 发件人从该公钥中派生出以太坊地址 <span class=\"code\">a_stealth</span> ，并向其发送资金。由于椭圆曲线数学的魔力，接收者可以通过计算 <span class=\"code\">p_stealth</span> 生成访问 <span class=\"code\">a_stealth</span> 资金所需的私钥 <span class=\"code\">p_stealth = p * r</span>. </p> <p> 首先要解决的问题是发送方如何将值 <span class=\"code\">r</span> 传递给接收方？如果 <span class=\"code\">r</span> 是公开的，观察者可以通过计算 <span class=\"code\">P * r</span> 来确定向谁发送了各种已发布的 <span class=\"code\">P</span> 值，直到找到隐身地址。所以 <span class=\"code\">r</span> 需要加密。 </p> <p> 加密完成 <a class=\"hyperlink\" href=\"https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman\" target=\"_blank\" >Elliptic Curve Diffie-Hellman</a > (ECDH)，这意味着发送者使用接收者的公钥来加密随机数。加密的随机数会给我们密文 <span class=\"code\">c</span>。加密的随机数 <span class=\"code\">c</span> 和隐身地址 <span class=\"code\">a_stealth</span> 作为来自 Umbra 合约的公告 <span class=\"code\">Announcement</span> 事件发出。ECDH 要求发送方生成用于加密的临时私钥，因此接收方需要解密的临时公钥 <span class=\"code\">P_ephemeral</span> 也会在此事件中发出。 </p> <p> 现在接收者可以扫描所有的 <span class=\"code\">Announcement</span> 事件并找到他们的资金，如下所示： </p> <ul> <li> 使用他们的私钥 <span class=\"code\">p</span> 和 <span class=\"code\">P_ephemeral</span>，他们可以计算 ECDH 共享密钥并解密随机数。 这总是会解密为 <span class=\"text-italic\">某些东西</span>，但我们还不知道它是否解密为正确的数字。 </li> <li> 所以接收方将解密后的随机数乘以 <span class=\"code\">p</span> 得到 <span class=\"code\">p_stealth</span>，并计算出 <span class=\"code\">p_stealth</span> 控制的地址</li> <li> 如果 <span class=\"code\">p_stealth</span> 控制的地址与公告中包含的  <span class=\"code\">a_stealth</span>  隐身地址匹配，则收件人知道付款是给他们的，并且可以使用 <span class=\"code\">p_stealth</span>取款。 </li> </ul> <p class=\"text-bold\">应用程序私钥</p> <p> 从上面的解释可以看出，该应用程序需要访问您的私钥才能执行所需的数学运算。但是，当您将钱包连接到应用程序时，钱包不会与应用程序共享您的私钥。这很好，因为如果您使用的任何应用程序都可以窃取您的资金！那么 Umbra 如何访问您的密钥呢？我们有几个选项： </p> <ol> <li> 要求用户将其钱包的私钥输入到表单中。从安全性和用户体验的角度来看，这都很糟糕，所以我们不这样做 </li> <li> 生成一个随机私钥并要求您备份它。这可行，但必须备份特定于应用程序的机密并不理想。 </li> <li>要求用户对消息进行签名，对签名进行哈希处理，并从签名中生成密钥。</li> </ol> <p> 选项 3 解决了选项 1 和 2 的问题，是我们的应用程序使用的方法。类似的方法被使用 <a class=\"hyperlink\" href=\"https://loopring.org/#/\" target=\"_blank\">Loopring</a> 和 <a class=\"hyperlink\" href=\"https://zksync.io/\" target=\"_blank\">zkSync</a> 同样，他们是这种方法的灵感来源。</p> <p class=\"text-bold\">扫描资金</p> <p> 最后的考虑与扫描有关。因为需要扫描每一个 <span class=\"code\">Announcement</span> ，所以可能需要很长时间才能找到您的资金。 </p> <p> 一种加快速度的方法（从用户的角度来看）是将扫描委托给第三方服务，并让他们在您收到资金时通知您。但是扫描服务需要你的私钥 <span class=\"code\">p</span> 来确定你是否收到了资金，如果他们有 <span class=\"code\">p</span> 他们可以窃取你的资金！ </p> <p> 我们可以通过生成两个特定于应用程序的私钥来解决这个问题。一个私钥将是查看私钥 <span class=\"code\">p_view</span>，用于加密随机数。另一个是支出私钥  <span class=\"code\">p_spend</span>，用于计算隐形地址和访问这些资金。因此，我们的发送和接收流程现在稍微修改为： </p> <ol> <li> 接收人有两个私钥 <span class=\"code\">p_spend</span>  和 <span class=\"code\">p_view</span>，并发布对应的公钥 <span class=\"code\">P_spend</span> 和 <span class=\"code\">P_view</span>. </li> <li> 发送者生成一个随机数 <span class=\"code\">r</span> 并使用 <span class=\"code\">P_view</span> 和一个临时私钥  <span class=\"code\">p_ephemeral</span> 对其进行加密以生成密文 <span class=\"code\">c</span> </li> <li> 发件人将隐身地址计算为派生自 <span class=\"code\">P_stealth = P_spend * r</span> 的地址，并将资金发送到该地址 </li> <li> Umbra 合约发出 <span class=\"code\">c</span>, <span class=\"code\">P_ephemeral</span>，和隐身地址 <span class=\"code\">a_stealth</span> </li> <li> 对于每个事件，接收者使用 <span class=\"code\">p_view</span> 和 <span class=\"code\">P_ephemeral</span> 解密 <span class=\"code\">r</span>，然后检查 <span class=\"code\">p_stealth = p_spend * r</span> 是否是控制  a_stealth 的私钥</li> </ol> <p> 通过这种方法，收件人可以通过提供第三方 <span class=\"code\">p_view</span> 和 <span class=\"code\">P_spend</span>来接受扫描服务 。该服务现在可以检查收款人是否已收到资金但第三方没有花钱权利。 </p>",
     "spend-view-keys": "什么是消费和查看密钥？",

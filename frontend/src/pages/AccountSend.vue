@@ -5,19 +5,19 @@
       style="border-radius: 15px"
       :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
     >
-      Sending via Umbra has been temporarily disabled while we perform system maintenance. Please check back soon!
+      {{$t('Send.sending-disabled')}}
     </div>
   </q-page>
 
   <q-page v-else padding>
-    <h2 class="page-title">Send</h2>
+    <h2 class="page-title">{{$t('Send.send')}}</h2>
 
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <p class="text-center">Connect your wallet to send funds</p>
+      <p class="text-center">{{$t('Send.connect-your-wallet')}}</p>
       <div class="row justify-center">
         <connect-wallet>
-          <base-button class="text-center" label="Connect Wallet" />
+          <base-button class="text-center" :label="$t('Send.connect-wallet')" />
         </connect-wallet>
       </div>
     </div>
@@ -25,7 +25,7 @@
     <!-- Send form -->
     <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
       <!-- Identifier -->
-      <div>Recipient's ENS name or address</div>
+      <div>{{$t('Send.recipient')}}</div>
       <base-input
         v-model="recipientId"
         :debounce="500"
@@ -42,19 +42,18 @@
         :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
       >
         <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
-          Send using recipient's standard public key
+          {{$t('Send.recipient-pkey')}}
         </q-checkbox>
         <base-tooltip class="col-auto q-ml-sm" icon="fas fa-question-circle">
           <span>
-            When checked, the public key used will be the standard public for the provided Ethereum address. The
-            receiver will have to enter their account's private key into this app to withdrawal the funds.
+            {{$t('Send.question-circle')}}
             <span class="text-bold">
-              Don't use this feature unless you know what you're doing.
+              {{$t('Send.question-circle-warning')}}
               <router-link
                 class="dark-toggle hyperlink"
                 :to="{ name: 'FAQ', hash: '#how-do-i-send-funds-to-a-user-by-their-address-or-public-key' }"
               >
-                Learn more
+                {{$t('Send.learn-more')}}
               </router-link>
             </span>
           </span>
@@ -62,29 +61,29 @@
       </div>
 
       <!-- Token -->
-      <div>Select token to send</div>
+      <div>{{$t('Send.select-token')}}</div>
       <base-select
         v-model="token"
         :disable="isSending"
         filled
-        label="Token"
+        :label="$t('Send.token')"
         :options="tokenList"
         option-label="symbol"
       />
 
       <!-- Amount -->
-      <div>Amount to send</div>
+      <div>{{$t('Send.amount')}}</div>
       <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
 
       <!-- Toll + summary details -->
       <div v-if="toll && toll.gt(0) && humanAmount && token">
-        <div class="text-bold">Summary</div>
+        <div class="text-bold">{{$t('Send.summary')}}</div>
 
         <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color: rgba(0, 0, 0, 0)">
           <tbody>
             <!-- What user is sending -->
             <tr>
-              <td class="min text-left" style="padding: 0 2rem 0 0">Sending</td>
+              <td class="min text-left" style="padding: 0 2rem 0 0">{{$t('Send.sending')}}</td>
               <td class="min text-right">{{ humanAmount }}</td>
               <td class="min text-left">{{ token.symbol }}</td>
               <td class="min text-left"><img :src="token.logoURI" height="15rem" /></td>
@@ -93,16 +92,15 @@
             <!-- Toll -->
             <tr>
               <td class="min text-left" style="padding: 0 2rem 0 0">
-                Umbra Fee
+                {{$t('Send.fee')}}
                 <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
                   <span>
-                    Transactions on {{ currentChain.chainName }} are very cheap, so a small fee is charged to deter
-                    spamming the protocol.
+                    {{$t('Send.fee-explain', { chainName: currentChain.chainName })}}
                     <router-link
                       class="dark-toggle hyperlink"
                       :to="{ name: 'FAQ', hash: '#why-is-there-sometimes-an-umbra-fee' }"
                     >
-                      Learn more
+                      {{$t('Send.learn-more')}}
                     </router-link>
                   </span>
                 </base-tooltip>
@@ -139,7 +137,7 @@
         <base-button
           :disable="!isValidForm || isSending"
           :full-width="true"
-          label="Send"
+          :label="$t('Send.send')"
           :loading="isSending"
           type="submit"
         />
@@ -149,7 +147,7 @@
           :flat="true"
           :full-width="true"
           icon="far fa-copy"
-          label="Copy payment link"
+          :label="$t('Send.copy-payment-link')"
         />
       </div>
     </q-form>

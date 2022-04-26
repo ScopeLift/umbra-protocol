@@ -1,10 +1,8 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">Contact</h2>
+    <h2 class="page-title">{{$t('Contact.contact')}}</h2>
 
-    <p class="horizontal-center q-pb-lg" style="max-width: 400px">
-      Read the <router-link class="hyperlink" :to="{ name: 'FAQ' }">FAQ</router-link> and still have questions? Feel
-      free to get in touch! You'll likely get the fastest response on Discord.
+    <p class="horizontal-center q-pb-lg" style="max-width: 400px" v-html="$t('Contact.paragraph')">
     </p>
     <p class="horizontal-center" style="max-width: 400px">
       <q-list>
@@ -15,8 +13,7 @@
           </q-item-section>
 
           <q-item-section class="text-left">
-            <div>
-              <a class="hyperlink" href="https://discord.com/invite/uw4y5J2p7C" target="_blank">Join us</a> on Discord
+            <div v-html="$t('Contact.discord')">
             </div>
           </q-item-section>
         </q-item>
@@ -28,8 +25,7 @@
           </q-item-section>
 
           <q-item-section class="text-left">
-            <div>
-              <a class="hyperlink" href="https://twitter.com/UmbraCash" target="_blank">Follow</a> Umbra on Twitter
+            <div v-html="$t('Contact.twitter')">
             </div>
           </q-item-section>
         </q-item>
@@ -40,8 +36,7 @@
             <q-icon name="fas fa-envelope" />
           </q-item-section>
 
-          <q-item-section class="text-left">
-            <div>Email us at <a class="hyperlink" href="mailto:support@umbra.cash">support@umbra.cash</a></div>
+          <q-item-section class="text-left" v-html="$t('Contact.email')">
           </q-item-section>
         </q-item>
       </q-list>
