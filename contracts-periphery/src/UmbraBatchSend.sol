@@ -24,6 +24,7 @@ interface IUmbra {
 contract UmbraBatchSend {
   IUmbra internal immutable umbra;
 
+  /// @param amount Amount of ETH to send per address excluding the toll
   struct SendEth {
     address payable receiver;
     uint256 amount;
