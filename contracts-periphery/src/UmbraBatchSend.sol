@@ -42,8 +42,8 @@ contract UmbraBatchSend {
   error ValueMismatch();
   event BatchSendExecuted(address indexed sender);
 
-  constructor(IUmbra umbraInterface) {
-    umbra = umbraInterface;
+  constructor(IUmbra _umbra) {
+    umbra = _umbra;
   }
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
