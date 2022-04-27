@@ -10,7 +10,7 @@
     <!-- Withdrawal form -->
     <div v-if="!isWithdrawn" class="q-mb-lg">
       <div v-if="!isWithdrawInProgress">
-        <div>Enter address to withdraw funds to</div>
+        <div>{{$t('WithdrawForm.withdraw-address')}}</div>
         <base-input
           v-model="content"
           @input="emit('updateDestinationAddress', content)"
@@ -22,7 +22,7 @@
           :appendButtonDisable="isInWithdrawFlow || isFeeLoading"
           :appendButtonLoading="isInWithdrawFlow"
           :disable="isInWithdrawFlow"
-          label="Address"
+          :label="$t('WithdrawForm.address')"
           lazy-rules
           :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
         />
@@ -30,13 +30,13 @@
         <div class="q-mb-lg">
           <div v-if="!isNativeToken && isFeeLoading" class="text-caption text-italic">
             <q-spinner-puff class="q-my-none q-mr-sm" color="primary" size="2rem" />
-            Fetching fee estimate...
+            {{$t('WithdrawForm.fetching-fee-estimate')}}
           </div>
           <div v-else-if="isNativeToken" class="text-caption">
-            Withdrawal fee: <span class="text-bold"> 0 {{ nativeTokenSymbol }} </span>
+            {{$t('WithdrawForm.withdrawal-fee')}} <span class="text-bold"> 0 {{ nativeTokenSymbol }} </span>
           </div>
           <div v-else-if="activeFee" class="text-caption">
-            Estimated withdrawal fee:
+            {{$t('WithdrawForm.estimated-withdrawal-fee')}}
             <span class="text-bold">
               {{ humanizeTokenAmount(activeFee.fee, activeFee.token) }}
               {{ activeFee.token.symbol }}
@@ -46,23 +46,21 @@
       </div>
       <div v-else class="text-center q-mb-lg">
         <q-spinner-puff class="q-mb-md q-mr-sm" color="primary" size="2rem" />
-        <div class="text-center text-italic">Withdraw in progress...</div>
+        <div class="text-center text-italic">{{$t('WithdrawForm.withdraw-in-progress')}}</div>
       </div>
       <!-- Privacy warning -->
       <div class="border q-mb-lg" />
       <div class="text-caption">
         <q-icon name="fas fa-exclamation-triangle" color="warning" left />
-        <span class="text-bold">WARNING</span>: Be sure you understand the security implications before entering a
-        withdrawal address. If you withdraw to an address publicly associated with you, privacy for this transaction
-        will be lost.
-        <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank"> Learn more </router-link>.
+        {{$t('WithdrawForm.warning')}}
+        <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank"> {{$t('WithdrawForm.learn-more')}} </router-link>.
       </div>
     </div>
 
     <!-- Advanced feature: show private key -->
     <div v-if="advancedMode">
       <div @click="emit('togglePrivateKey')" class="text-caption hyperlink">
-        {{ spendingPrivateKey ? 'Hide' : 'Show' }} stealth address private key
+        {{ spendingPrivateKey ? $t('WithdrawForm.hide') : $t('WithdrawForm.show') }} {{$t('WithdrawForm.stealth-prv-key')}}
       </div>
       <div
         v-if="spendingPrivateKey"

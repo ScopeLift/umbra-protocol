@@ -1,7 +1,7 @@
 <template>
   <connect-wallet>
     <div v-if="text" class="text-center q-mb-md">{{ text }}</div>
-    <base-button class="text-center" label="Connect Wallet" />
+    <base-button class="text-center" :label="$t('ConnectWalletCard.connect-wallet')" />
   </connect-wallet>
 </template>
 

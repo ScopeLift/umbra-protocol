@@ -11,16 +11,13 @@
     </q-card-section>
 
     <q-card-section>
-      <p>
-        You are withdrawing to <span class="code">{{ destinationAddress }}</span
-        >, which has the following warnings:
-      </p>
+      <i18n path="AccountRTW.withdrawal-warning" tag="p">
+        <span class="code">{{ destinationAddress }}</span>"  
+      </i18n>"
       <ul>
         <li v-html="warning" v-for="(warning, index) in warnings" :key="index" class="q-my-sm" />
       </ul>
-
-      <span class="text-bold">Continuing with withdrawal is not recommended</span> unless you know what you are doing,
-      as this may reduce or entirely remove the privacy properties provided by Umbra.
+      {{$t('AccountRTW.withdrawal-warning-rest')}}
     </q-card-section>
 
     <q-card-section>
@@ -28,7 +25,7 @@
         <base-button @click="context.emit('acknowledged')" label="I acknowledge the risks" :outline="true" />
         <router-link class="no-text-decoration" target="_blank" to="/faq#receiving-funds">
           <!-- Button does nothing on click, but we wrap with router-link to open the page in a new tab -->
-          <base-button label="Learn More" />
+          <base-button :label="$t('AccountRTW.learn-more')" />
         </router-link>
       </div>
     </q-card-section>

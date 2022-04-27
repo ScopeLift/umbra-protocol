@@ -31,8 +31,9 @@
 
     <div v-else class="form-max-wide shadow-2" :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'">
       <h5 class="q-my-md q-pt-none"><q-icon color="positive" class="q-mr-sm" name="fas fa-check" />{{$t('Setup.complete')}}</h5>
-      <p class="q-mt-md" v-html="$t('Setup.return-to-home')">
-      </p>
+      <i18n path="Setup.return-to-home" tag="p" class="q-mt-md">
+        <router-link class="hyperlink" :to="{ name: 'home' }">{{$t('Setup.return-home')}}</router-link>
+      </i18n>
     </div>
   </q-page>
 </template>

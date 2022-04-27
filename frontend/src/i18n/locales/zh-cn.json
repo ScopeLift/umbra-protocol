@@ -95,8 +95,8 @@
     "paragraph": " Use the button below to complete the setup process. This will result in two prompts from your wallet: <ol> <li> <span class=\"text-bold\">Sign a message</span> used to generate your Umbra-specific pair of private keys. These keys allow you to securely use Umbra without compromising the private keys of your connected wallet. You do not need to save these keys anywhere! </li> <li> <span class=\"text-bold\">Submit a transaction</span> to save the corresponding public keys on-chain, so anyone can use them to send you stealth payments. </li> </ol>",
     "setup-account": "Setup account",
     "complete": "Setup Complete!",
-    "return-to-home": " You may now return <a class=\"hyperlink\" href=\"https://app.umbra.cash/\">home</a> to send or receive funds.",
-    "return-to-home-new": " You may now return <router-link class=\"hyperlink\" :to=%{variable}>home</router-link> to send or receive funds."
+    "return-to-home": "You may now return {0} to send or receive funds",
+    "return-home": "home"
   },
   "Error": {
     "error": "404",

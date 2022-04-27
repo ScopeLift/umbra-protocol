@@ -95,8 +95,8 @@
     "paragraph": " Use the button below to complete the setup process. This will result in two prompts from your wallet: <ol> <li> <span class=\"text-bold\">Sign a message</span> used to generate your Umbra-specific pair of private keys. These keys allow you to securely use Umbra without compromising the private keys of your connected wallet. You do not need to save these keys anywhere! </li> <li> <span class=\"text-bold\">Submit a transaction</span> to save the corresponding public keys on-chain, so anyone can use them to send you stealth payments. </li> </ol>",
     "setup-account": "Setup account",
     "complete": "Setup Complete!",
-    "return-to-home": " You may now return <a class=\"hyperlink\" href=\"https://app.umbra.cash/\">home</a> to send or receive funds.",
-    "return-to-home-new": " You may now return <router-link class=\"hyperlink\" :to=%{name}>home</router-link> to send or receive funds."
+    "return-to-home": "You may now return {0} to send or receive funds",
+    "return-home": "home"
   },
   "Error": {
     "error": "404",
@@ -178,6 +178,64 @@
     "receive-vkey-answer": "<p> Currently, the only way to do this is request a user’s signature using <span class=\"code\">Umbra.generatePrivateKeys()</span>, which will return both their spending key and their viewing key. It’s up to you to discard the spending key and not use it. A sample snippet to do this is below: </p> <div class=\"text-caption bg-muted q-pa-md\"> <div class=\"code code-grey\">// Import the Umbra class</div> <div class=\"code code\"> <span class=\"code-blue\">import </span> <span class=\"text-grey\">{</span> Umbra <span class=\"text-grey\">} </span> <span class=\"code-blue\">from</span> <span class=\"code-green\">'@umbra/umbra-js'</span>; </div> <br /> <div class=\"code code-grey\">// Let `signer` be an ethers JsonRpcSigner generated when the user</div> <div class=\"code code-grey\">// connected their wallet. The below line will request a signature</div> <div class=\"code code-grey\">// from the user, compute both their spending and viewing keys, but</div> <div class=\"code code-grey\">// only return the viewing KeyPair instance to the caller.</div> <div class=\"code code\"> <span class=\"code-blue\">const </span> <span class=\"text-grey\">{</span> viewingKeyPair <span class=\"text-grey\">}</span> = <span class=\"code-blue\">await</span> Umbra.<span class=\"code-pink\" >generatePrivateKeys</span >(signer); </div> </div>",
     "hooks": "What are Hooks and how do I use them?",
     "hooks-answer": "<p> If you’re familiar with <a class=\"hyperlink\" href=\"https://eips.ethereum.org/EIPS/eip-777\" target=\"_blank\">ERC-777</a> or other similar standards, you are already familiar with the concept of hooks. Hooks let the caller perform other actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that contract. </p> <p> Umbra works similarly— when withdrawing funds from the contract— users might want to deposit them straight into Tornado, or swap their DAI for ETH. Hooks let you do this. </p> <p>You’ll notice the Umbra contract exposes multiple withdraw methods. First we have:</p> <ol> <li><span class=\"code\">withdrawToken()</span> for standard withdrawals, i.e. simple transfers</li> <li> <span class=\"code\">withdrawTokenOnBehalf()</span> has the same functionality as <span class=\"code\">withdrawToken()</span>, but lets a relayer submit the withdraw on your behalf to support meta-transactions. </li> </ol> <p>Then we have the two hook methods:</p> <ol> <li> <span class=\"code\">withdrawTokenAndCall()</span> is analogous to <span class=\"code\">withdrawToken()</span>, but lets you pass in the address of a contract and the data to call on that contract. </li> <li> <span class=\"code\">withdrawTokenAndCallOnBehalf()</span> is analogous to <span class=\"code\">withdrawTokenOnBehalf()</span>, but also lets you pass in the address of a contract and the data to call on that contract. </li> </ol> <p> To use hooks, first you need to write and deploy a hook contract conforming to the <span class=\"code\">IUmbraHookReceiver</span> interface. This requires the contract to implement a method calls <span class=\"code\">tokensWithdrawn()</span> that takes a handful of parameters. The address of this contract would be passed as the value for the <span class=\"code\">_hook</span> input in the above methods. </p> <p> Then you need to encode the calldata that the hook contract will receive and can operate on. See the <a class=\"hyperlink\" href=\"https://docs.ethers.io/v5/single-page/#/v5/api/utils/abi/interface/-%23-Interface--encoding\" target=\"_blank\" >Encoding Data</a > section of the ethers.js docs for info on how to encode function data. </p> <p> And that’s all there is to it. With the address of the hook contract and the encoded calldata, you are ready to call one of the two hook-based methods. </p>"
+  },
+  "AccountRT": {
+    "processing-results": "Processing results...",
+    "configure-umbra": "You won't be able to receive funds until you've configured Umbra.",
+    "navigate-to-setup": "Please navigate to the {0} page and do so",
+    "setup": "Setup",
+    "keys-dont-match": "The stealth keys published for this account do not match those generated by it. Please navigate to the {0} page and complete the setup flow to ensure the keys published match this account. Failure to do so may result in payments sent to your account being difficult, or even impossible, to withdraw.",
+    "learn-more": "Learn more",
+    "scan-settings": "Change scan settings",
+    "account-empty": "This account has not received any funds",
+    "received-funds": "Received Funds",
+    "sender": "Sender",
+    "stealth-receiver": "Stealth Receiver",
+    "received": "Received",
+    "withdrawn": "Withdrawn",
+    "hide": "Hide",
+    "withdraw": "withdraw",
+    "receiver": "Receiver",
+    "scanning-complete": "Scanning completed successfully"
+  },
+  "AccountRTW": {
+    "withdrawal-warning": "You are withdrawing to {destinationAddr}, which has the following warnings:",
+    "withdrawal-warning-rest": "<span class=\"text-bold\">Continuing with withdrawal is not recommended</span> unless you know what you are doing, as this may reduce or entirely remove the privacy properties provided by Umbra.",
+    "learn-more": "Learn More"
+  },
+  "AccountRTWC": {
+    "confirm": "Confirm Withdrawal",
+    "to": "Withdrawing to",
+    "amount": "Amount",
+    "tx-fee": "Transaction Fee",
+    "relayer-gas-fee": "Relayer Gas Fee",
+    "you-will-receive": "You'll receive",
+    "cannot-withdraw": "Cannot withdraw, please correct fee error",
+    "withdraw-in-progress": "Withdraw in progress...",
+    "view-transaction": "View transaction"
+  },
+  "Argent": {
+    "warning": "Warning: Argent Compatibility Issues",
+    "warning-paragraph": "<p class=\"text-bold\"> Umbra is not compatible with Argent's standard security model. While you can still use Umbra with Argent, you are at risk of losing funds if you switch devices or have to rely on social recovery without first withdrawing any funds sent to you via Umbra. </p> <p> Umbra works by generating app-specific keys derived from your wallet's private key. Argent is unique in that its security does not rely on your private key. This is good in many ways. </p> <p>When using Umbra, however, you must be aware of the following:</p> <ol> <li> If you recover your Argent wallet onto a new device, the new wallet will have the same address but a different private key. Unless you have access to the old device, funds sent via Umbra that you have not withdrawn will become unrecoverable. </li> <br /> <li> As a result, when you get a new device, you should withdraw all funds first using your old device, then repeat the Umbra account setup and re-publish your keys. Soon, the app will attempt to detect when you need to do this to minimize the chance of lost funds, but for now you must do it manually. </li> <br /> <li> Unlike other applications, the security of funds received by Umbra is not protected by the standard Argent security model, and instead they are just protected by your private key. </li> </ol>",
+    "acknowledge-risks": "I acknowledge the risks"
+  },
+  "ConnectWalletCard": {
+    "connect-wallet": "Connect Wallet"
+  },
+  "WithdrawForm": {
+    "withdraw-address": "Enter address to withdraw funds to",
+    "address": "Address",
+    "fetching-fee-estimate": "Fetching fee estimate...",
+    "withdrawal-fee": "Withdrawal fee:",
+    "estimated-withdrawal-fee": "Estimated withdrawal fee:",
+    "withdraw-in-progress": "Withdraw in progress...",
+    "warning": " <span class=\"text-bold\">WARNING</span>: Be sure you understand the security implications before entering a withdrawal address. If you withdraw to an address publicly associated with you, privacy for this transaction will be lost.",
+    "learn-more": "Learn more",
+    "hide": "Hide",
+    "show": "Show",
+    "stealth-prv-key": "stealth address private key"
+    
+
   }
 
 }
