@@ -25,9 +25,11 @@
     "core-js": "^3.6.5",
     "ethers": "^5.5.3",
     "quasar": "^1.0.0",
-    "vue-i18n": "8.27.1"
+    "vue-i18n": "8.27.1",
+    "yaml-loader": "0.6.0"
   },
   "devDependencies": {
+    "@intlify/vue-i18n-loader": "^4.2.0",
     "@quasar/app": "^2.0.0",
     "@quasar/quasar-app-extension-dotenv": "^1.0.5",
     "@types/jest": "^27.4.1",
