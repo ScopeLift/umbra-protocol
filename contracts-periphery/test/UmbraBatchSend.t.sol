@@ -9,7 +9,6 @@ interface UmbraToll {
 }
 
 abstract contract UmbraBatchSendTest is DSTestPlus {
-
   UmbraBatchSend router;
   MockERC20 token;
 
