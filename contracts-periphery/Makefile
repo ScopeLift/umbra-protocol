@@ -1,10 +1,10 @@
 # Clean the repo
-clean  :; forge clean
+clean :; forge clean
 # Install the Modules
 install :; forge install
 # Compile smart contracts
 build :; forge build
 # Test your contract on a forked network
-test   :; forge test
+test :; forge test
 ## Create gas snapshots
-snapshot   :; forge snapshot
+snapshot :; forge snapshot

@@ -39,7 +39,7 @@ contract UmbraBatchSend {
     bytes32 pkx;
     bytes32 ciphertext;
   }
-  
+
   error ValueMismatch();
   event BatchSendExecuted(address indexed sender);
 
@@ -48,7 +48,6 @@ contract UmbraBatchSend {
   }
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
-
     if(msg.value != _sumValueFromEthSends(_tollCommitment, _params)) revert ValueMismatch();
     _batchSendEth(_tollCommitment, _params);
     emit BatchSendExecuted(msg.sender);
