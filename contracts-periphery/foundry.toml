@@ -6,4 +6,5 @@ remappings = ['ds-test/=lib/ds-test/src/', '@openzeppelin/=lib/openzeppelin-cont
 
 [ci]
 fuzz_runs = 10000
+fuzz_max_global_rejects=150000
 # See more config options https://github.com/gakonst/foundry/tree/master/config
