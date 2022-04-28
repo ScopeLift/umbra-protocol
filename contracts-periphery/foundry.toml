@@ -4,4 +4,6 @@ out = 'out'
 libs = ['lib']
 remappings = ['ds-test/=lib/ds-test/src/', '@openzeppelin/=lib/openzeppelin-contracts']
 
+[ci]
+fuzz_runs = 10000
 # See more config options https://github.com/gakonst/foundry/tree/master/config
