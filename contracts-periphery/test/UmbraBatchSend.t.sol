@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "./utils/DSTestPlus.sol";
-import "../UmbraBatchSend.sol";
+import "src/UmbraBatchSend.sol";
 
 interface UmbraToll {
   function toll() external returns(uint256);
@@ -28,7 +28,7 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
 
   function setUp() virtual public {
     // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
-    vm.etch(umbra, (deployCode("src/test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
+    vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
     router = new UmbraBatchSend(IUmbra(address(umbra)));
     token = new MockERC20("Test","TT", 18);
     token.mint(address(this), 1e7 ether);
