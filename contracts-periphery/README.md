@@ -2,10 +2,13 @@
 
 Smart contracts that integrate with [Umbra](../README.md), but are not part of the [core protocol contracts](../contracts-core/).
 
+## Contracts
+```UmbraBatchSend.sol```: Aggregate multiple ```Umbra.sol``` send transactions into one.
+
 ## Development
 
 This dev toolchain includes:
-- [Foundry](https://github.com/gakonst/foundry): compile and test smart contracts 
+- [Foundry](https://github.com/gakonst/foundry): Compile and test smart contracts 
 
 ## Usage
 
@@ -31,20 +34,4 @@ Run Foundry tests:
 
 ```sh
 $ make test
-```
-
-### Clean
-
-Delete the smart contract artifacts:
-
-```sh
-$ make clean
-```
-
-### Gas-snapshot
-
-Create gas snapshot:
-
-```sh
-$ make snapshot
 ```
