@@ -178,12 +178,14 @@
         <!-- Column 2: Built by ScopeLift -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
           <p class="dark-toggle spaced-letters">{{$t('Base-Layout.about')}}</p>
-          <p class="dark-toggle text-caption" v-html="$t('Base-Layout.built-by')"></p>
+          <i18n path="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
+            <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
+          </i18n>
           <p class="">
-            <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">{{$t('Base-Layout.terms')}}</router-link>
+            <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
           </p>
           <p class="">
-            <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">{{$t('Base-Layout.privacy')}}</router-link>
+            <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">Privacy Policy</router-link>
           </p>
         </div>
 

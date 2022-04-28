@@ -48,6 +48,9 @@
       <div @click="copyUrl" id="how-does-it-work">
         <f-a-q-item :expanded="selectedId === 'how-does-it-work'" :question="$t('FAQ.how-does-it-work')">
           <div v-html="$t('FAQ.how-does-it-work-answer')"></div>
+          <i18n path="FAQ.how-does-it-work-see-the" tag="p">
+            <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')">{{$t('FAQ.how-does-it-work-technical-dtails')}}</span>
+          </i18n>
         </f-a-q-item>
       </div>
 
@@ -96,6 +99,9 @@
           :question="$t('FAQ.why-setup-again')"
         >
           <div v-html="$t('FAQ.why-setup-again-answer')"></div>
+          <i18n path="FAQ.why-setup-again-answer-issue" tag="p">
+            <a href="https://github.com/ScopeLift/umbra-protocol/issues/214" class="hyperlink" target="_blank" >{{$t('FAQ.why-setup-again-answer-this-issue')}}</a >
+          </i18n>
         </f-a-q-item>
       </div>
 
@@ -195,6 +201,14 @@
           :question="$t('FAQ.scan-time')"
         >
           <div v-html="$t('FAQ.scan-time-answer')"></div>
+          <i18n path="FAQ.scan-time-answer-issue" tag="p">
+            <template v-slot:one>
+              <a class="hyperlink" href="https://ethresear.ch/t/open-problem-improving-stealth-addresses/7438" target="_blank" >1</a >, 
+            </template>
+            <template v-slot:two>
+            <a class="hyperlink" href="https://eprint.iacr.org/2021/089.pdf\" target="_blank">2</a>
+            </template>
+          </i18n>  
         </f-a-q-item>
       </div>
 
@@ -221,7 +235,42 @@
 
       <div @click="copyUrl" id="has-umbra-been-audited">
         <f-a-q-item :expanded="selectedId === 'has-umbra-been-audited'" :question="$t('FAQ.audit')">
-          <div v-html="$t('FAQ.audit-answer')"></div>
+
+          <i18n path="FAQ.audit-answer-contract" tag="p">
+            <template v-slot:contracts>
+              <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/tree/master/contracts" target="_blank" >{{$t('FAQ.audit-contracts')}}</a>
+            </template>
+            <template v-slot:here>
+              <a class="hyperlink" href="https://consensys.net/diligence/audits/2021/03/umbra-smart-contracts/" target="_blank">{{$t('FAQ.audit-here')}}</a>            
+            </template>
+          </i18n>
+
+          <i18n path="FAQ.audit-answer-umrba-js" tag="p">
+            <template v-slot:umbra-js>
+              <span class="code">umbra-js</span>&#32;
+            </template>
+            <template v-slot:library>
+              <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/tree/master/umbra-js" target="_blank" >{{$t('FAQ.audit-library')}}</a >&mdash;
+            </template>
+            <template v-slot:here>
+              <a class="hyperlink" href="https://leastauthority.com/static/publications/LeastAuthority_ScopeLift_Umbra-js_Final_Audit_Report.pdf" target="_blank" >{{$t('FAQ.audit-here')}}</a >
+            </template>
+          </i18n>  
+
+          <i18n path="FAQ.audit-answer-umbra-off-chain" tag="p">
+            <template v-slot:PaulMillers>
+              <a class="hyperlink" href="https://paulmillr.com/" target="_blank">Paul Miller</a>
+            </template>
+            <template v-slot:noble-secp256k1>
+              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank">noble-secp256k1</a>
+            </template>
+            <template v-slot:community>
+              <a class="hyperlink" href="https://gitcoin.co/grants/2451/audit-of-noble-secp256k1-cryptographic-library" target="_blank" >{{$t('FAQ.audit-community')}}</a >
+            </template>
+            <template v-slot:here>
+              <a class="hyperlink" href="https://cure53.de/pentest-report_noble-lib.pdf" target="_blank">{{$t('FAQ.audit-here')}}</a>
+            </template>
+          </i18n>  
         </f-a-q-item>
       </div>
 
