@@ -203,12 +203,12 @@
           <div v-html="$t('FAQ.scan-time-answer')"></div>
           <i18n path="FAQ.scan-time-answer-issue" tag="p">
             <template v-slot:one>
-              <a class="hyperlink" href="https://ethresear.ch/t/open-problem-improving-stealth-addresses/7438" target="_blank" >1</a >, 
+              <a class="hyperlink" href="https://ethresear.ch/t/open-problem-improving-stealth-addresses/7438" target="_blank" >1</a >,
             </template>
             <template v-slot:two>
             <a class="hyperlink" href="https://eprint.iacr.org/2021/089.pdf\" target="_blank">2</a>
             </template>
-          </i18n>  
+          </i18n>
         </f-a-q-item>
       </div>
 
@@ -241,7 +241,7 @@
               <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/tree/master/contracts" target="_blank" >{{$t('FAQ.audit-contracts')}}</a>
             </template>
             <template v-slot:here>
-              <a class="hyperlink" href="https://consensys.net/diligence/audits/2021/03/umbra-smart-contracts/" target="_blank">{{$t('FAQ.audit-here')}}</a>            
+              <a class="hyperlink" href="https://consensys.net/diligence/audits/2021/03/umbra-smart-contracts/" target="_blank">{{$t('FAQ.audit-here')}}</a>
             </template>
           </i18n>
 
@@ -255,7 +255,7 @@
             <template v-slot:here>
               <a class="hyperlink" href="https://leastauthority.com/static/publications/LeastAuthority_ScopeLift_Umbra-js_Final_Audit_Report.pdf" target="_blank" >{{$t('FAQ.audit-here')}}</a >
             </template>
-          </i18n>  
+          </i18n>
 
           <i18n path="FAQ.audit-answer-umbra-off-chain" tag="p">
             <template v-slot:PaulMillers>
@@ -270,7 +270,7 @@
             <template v-slot:here>
               <a class="hyperlink" href="https://cure53.de/pentest-report_noble-lib.pdf" target="_blank">{{$t('FAQ.audit-here')}}</a>
             </template>
-          </i18n>  
+          </i18n>
         </f-a-q-item>
       </div>
 
@@ -285,7 +285,18 @@
           :expanded="selectedId === 'is-cryptography-in-javascript-secure'"
           :question="$t('FAQ.crypto-js')"
         >
-          <div v-html="$t('FAQ.crypto-js-answer')"></div>
+          <i18n path="FAQ.crypto-js-answer" tag="p">
+            <template v-slot:timing-attacks>
+              <a class="hyperlink" href="https://en.wikipedia.org/wiki/Timing_attack" target="_blank">{{$t('FAQ.crypto-js-timing-attacks')}}</a>
+            </template>
+            <template v-slot:noble-secp256k1>
+              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank">noble-secp256k1</a>
+            </template>
+            <template v-slot:here>
+              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1/#security" target="_blank">{{$t('FAQ.crypto-js-here')}}</a>
+            </template>
+          </i18n>
+          <div v-html="$t('FAQ.crypto-js-answer-rest')"></div>
         </f-a-q-item>
       </div>
 
@@ -304,15 +315,94 @@
       <div @click="copyUrl" id="what-networks-is-umbra-deployed-on-and-what-are-the-contract-addresses">
         <f-a-q-item
           :expanded="selectedId === 'what-networks-is-umbra-deployed-on-and-what-are-the-contract-addresses'"
-          :question="$t('FAQ.network-addresses')"
+          :question="$t('FAQ.network-addrs')"
         >
-          <div v-html="$t('FAQ.network-addresses-answer', { umbra: deployments.umbra, StealthKeyRegistry: deployments.registry, umbraMainnet: getEtherscanUrl(deployments.umbra, 1), umbraRinkeby: getEtherscanUrl(deployments.umbra, 4), umbraOptimism: getEtherscanUrl(deployments.umbra, 10), umbraPolygon: getEtherscanUrl(deployments.umbra, 137), umbraArbitrum: getEtherscanUrl(deployments.umbra, 42161), registryMainnet: getEtherscanUrl(deployments.registry, 1), registryRinkeby: getEtherscanUrl(deployments.registry, 4), registryOptimism: getEtherscanUrl(deployments.registry, 10), registryPolygon: getEtherscanUrl(deployments.registry, 137), registryArbitrum: getEtherscanUrl(deployments.registry, 42161) })"></div>
+          <ul>
+          <i18n path="FAQ.network-addrs-core" tag="li">
+            <template v-slot:umbra>
+              <span class="code">Umbra</span>
+            </template>
+            <template v-slot:umbra-addr>
+              <span class="code">{{deployments.umbra}}</span>
+            </template>
+            <template v-slot:mainnet>
+              <a :href="getEtherscanUrl(deployments.umbra, 1)" class="hyperlink" target="_blank"> mainnet </a>
+            </template>
+            <template v-slot:rinkeby>
+              <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
+            </template>
+            <template v-slot:optimism>
+              <a :href="getEtherscanUrl(deployments.umbra, 10)" class="hyperlink" target="_blank"> Optimism </a>
+            </template>
+            <template v-slot:polygon>
+              <a :href="getEtherscanUrl(deployments.umbra, 137)" class="hyperlink" target="_blank"> Polygon </a>
+            </template>
+            <template v-slot:arbitrum>
+              <a :href="getEtherscanUrl(deployments.umbra, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
+            </template>
+          </i18n>
+          <i18n path="FAQ.network-addrs-registry" tag="li">
+            <template v-slot:stealthRegistry>
+              <span class="code">StealthKeyRegistry</span>
+            </template>
+            <template v-slot:stealthRegistryAddr>
+              <span class="code">{{deployments.registry}}</span>
+            </template>
+            <template v-slot:mainnet>
+              <a :href="getEtherscanUrl(deployments.registry, 1)" class="hyperlink" target="_blank"> mainnet </a>
+            </template>
+            <template v-slot:rinkeby>
+              <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
+            </template>
+            <template v-slot:optimism>
+              <a :href='getEtherscanUrl(deployments.registry, 10)' class="hyperlink" target="_blank"> Optimism </a>
+            </template>
+            <template v-slot:polygon>
+              <a :href="getEtherscanUrl(deployments.registry, 137)" class="hyperlink" target="_blank"> Polygon </a>
+            </template>
+            <template v-slot:arbitrum>
+              <a :href="getEtherscanUrl(deployments.registry, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
+            </template>
+          </i18n>
+        </ul>
         </f-a-q-item>
       </div>
 
       <div @click="copyUrl" id="how-does-it-work-technical">
         <f-a-q-item :expanded="selectedId === 'how-does-it-work-technical'" :question="$t('FAQ.how-it-works')">
           <div v-html="$t('FAQ.how-it-works-answer')"></div>
+
+          <i18n path="FAQ.how-it-works-answer-ECDH" tag="p">
+            <template v-slot:ECDH>
+              <a class="hyperlink" href="https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman" target="_blank" >Elliptic Curve Diffie-Hellman</a >
+            </template>
+            <template v-slot:c>
+              <span class="code">c</span>
+            </template>
+            <template v-slot:a-stealth>
+              <span class="code">a_stealth</span>
+            </template>
+            <template v-slot:announcement>
+              <span class="code">Announcement</span>
+            </template>
+            <template v-slot:P-ephemeral>
+              <span class="code">P_ephemeral</span>
+            </template>
+          </i18n>
+
+          <div v-html="$t('FAQ.how-it-works-answer-part-2')"></div>
+
+          <i18n path="FAQ.how-it-works-answer-option-3" tag="p">
+            <template v-slot:loopring>
+              <a class="hyperlink" href="https://loopring.org/" target="_blank">Loopring</a>
+            </template>
+            <template v-slot:zksync>
+              <a class="hyperlink" href="https://zksync.io/" target="_blank">zkSync</a>
+            </template>
+          </i18n>
+
+          <div v-html="$t('FAQ.how-it-works-answer-end')"></div>
+
         </f-a-q-item>
       </div>
 
@@ -321,7 +411,13 @@
           :expanded="selectedId === 'what-are-spending-and-viewing-keys'"
           :question="$t('FAQ.spend-view-keys')"
         >
-          <div v-html="$t('FAQ.spend-view-keys-answer')"></div>
+          <i18n path="FAQ.spend-view-keys-answer-1" tag="p">
+              <a class="hyperlink" href="https://electriccoin.co/blog/explaining-viewing-keys/\" target="_blank" >{{$t('FAQ.nomenclature')}}</a >
+          </i18n>
+
+          <i18n path="FAQ.spend-view-keys-answer-2" tag="p">
+              <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')" >{{$t('FAQ.spend-view-keys-technical-details')}}</span >
+          </i18n>
         </f-a-q-item>
       </div>
 
@@ -396,7 +492,7 @@
           :expanded="selectedId === 'how-can-i-build-on-top-of-umbra'"
           :question="$t('FAQ.build-on-umbra')"
         >
-          <div v-html="$t('FAQ.build-on-umbra-answer')"></div>
+          <div v-html="$t('FAQ.build-on-umbra-answer', { link: 'https://tools.ietf.org/html/rfc6979' })"></div>
         </f-a-q-item>
       </div>
 
@@ -414,7 +510,13 @@
           :expanded="selectedId === 'what-are-hooks-and-how-do-i-use-them'"
           :question="$t('FAQ.hooks')"
         >
-          <div v-html="$t('FAQ.hooks-answer')"></div>          
+          <i18n path="FAQ.hooks-answer" tag="p" >
+              <a class="hyperlink" href="https://eips.ethereum.org/EIPS/eip-777" target="_blank">ERC-777</a>
+          </i18n>
+          <div v-html="$t('FAQ.hooks-answer-rest')"></div>
+          <i18n path="FAQ.hooks-answer-encode-data" tag="p" >
+              <a class="hyperlink" href="https://docs.ethers.io/v5/single-page/#/v5/api/utils/abi/interface/-%23-Interface--encoding" target="_blank" >{{$t('FAQ.hooks-answer-encoding-data')}}</a >
+          </i18n>
         </f-a-q-item>
       </div>
     </q-list>
