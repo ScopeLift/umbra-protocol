@@ -517,6 +517,7 @@
           <i18n path="FAQ.hooks-answer-encode-data" tag="p" >
               <a class="hyperlink" href="https://docs.ethers.io/v5/single-page/#/v5/api/utils/abi/interface/-%23-Interface--encoding" target="_blank" >{{$t('FAQ.hooks-answer-encoding-data')}}</a >
           </i18n>
+          <div v-html="$t('FAQ.hooks-answer-end')"></div>
         </f-a-q-item>
       </div>
     </q-list>

@@ -44,7 +44,7 @@
       >
         {{$t('AccountRT.configure-umbra')}}<br />
         <i18n path="AccountRT.navigate-to-setup" tag="span">
-          <router-link class="hyperlink" :to="{ name: 'setup' }">{{$t('AccountRT.setup')}}</router-link>          
+          <router-link class="hyperlink" :to="{ name: 'setup' }">{{$t('AccountRT.setup')}}</router-link>
         </i18n>
       </div>
       <div
@@ -317,7 +317,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
+import { computed, getCurrentInstance, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
@@ -335,19 +335,20 @@ import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
+  const vm = getCurrentInstance();
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
   const spendingPrivateKey = ref<string>(); // used for hiding/showing private key in UI, so not a computed property
 
   // Generate string that explains scan settings that were used
   const scanDescriptionString = computed(() => {
-    const suffix = scanPrivateKey.value ? ' with custom private key' : '';
+    const suffix = scanPrivateKey.value ?  vm?.$i18n.t('AccountRT.custom-prv-key') : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    let msg = `Scanned from block ${Number(startBlock.value)} to ${Number(endBlock.value)}`; // default message
+    let msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t('AccountRT.to')} ${Number(endBlock.value)}`; // default message
 
-    if (!hasStartBlock && !hasEndBlock) msg = 'All blocks have been scanned';
-    if (!hasStartBlock && hasEndBlock) msg = `Scanned all blocks up to ${Number(endBlock.value)}`;
-    if (hasStartBlock && !hasEndBlock) msg = `Scanned from block ${Number(startBlock.value)} to current block`;
+    if (!hasStartBlock && !hasEndBlock) msg = `${vm?.$i18n.t('AccountRT.all-blocks-scanned')}`;
+    if (!hasStartBlock && hasEndBlock) msg = `${vm?.$i18n.t('AccountRT.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
+    if (hasStartBlock && !hasEndBlock) msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t('AccountRT.to-current-block')}`;
     return `${msg}${suffix}`;
   });
 
@@ -365,7 +366,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   // For advanced mode: copyies the provided stealth private key to the clipboard
   const copyPrivateKey = async (privateKey: string) => {
     await copyToClipboard(privateKey);
-    notifyUser('success', 'Private key copied to clipboard');
+    notifyUser('success', vm.$i18n.t('AccountRT.private-key-copied').toString());
     hidePrivateKey();
   };
 
@@ -388,15 +389,17 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const isFeeLoading = ref(false);
   const isWithdrawInProgress = ref(false);
   const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have a relayer tx ID)
+  const vm = getCurrentInstance();
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
   const toString = (val: BigNumber) => val.toString();
+
   const mainTableColumns = [
-    { align: 'left', field: 'timestamp', label: 'Date Received', name: 'date', sortable: true, sort: sortByTime },
-    { align: 'left', field: 'amount', label: 'Amount', name: 'amount', sortable: true, format: toString },
-    { align: 'left', field: 'from', label: 'Sender', name: 'from', sortable: true },
-    { align: 'left', field: 'receiver', label: 'Stealth Receiver', name: 'receiver', sortable: false },
+    { align: 'left', field: 'timestamp', label: vm?.$i18n.t('AccountRT.date-received'), name: 'date', sortable: true, sort: sortByTime },
+    { align: 'left', field: 'amount', label: vm?.$i18n.t('AccountRT.amount'), name: 'amount', sortable: true, format: toString },
+    { align: 'left', field: 'from', label: vm?.$i18n.t('AccountRT.sender'), name: 'from', sortable: true },
+    { align: 'left', field: 'receiver', label: vm?.$i18n.t('AccountRT.stealth-receiver'), name: 'receiver', sortable: false },
   ];
 
   // Relayer helper method
@@ -434,7 +437,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
   onMounted(async () => {
     isLoading.value = true;
-    if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
 
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
@@ -457,14 +460,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
     await copyToClipboard(address);
-    notifyUser('success', `${type} address copied to clipboard`);
+    notifyUser('success', `${type} ${vm.$i18n.t('AccountRT.address-copied')}`);
   }
 
   /**
    * @notice Opens the transaction in etherscan
    */
   function openInEtherscan(row: UserAnnouncement) {
-    if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
     // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     window.open(getEtherscanUrl(row.txHash, chainId));
@@ -476,8 +479,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
     // Check if withdrawal destination is safe
-    if (!provider.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
-    if (!userAddress.value) throw new Error('Wallet not connected. Try refreshing the page and connect your wallet');
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
+    if (!userAddress.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
     activeAnnouncement.value = announcement;
     const { safe, reasons } = await isAddressSafe(
       destinationAddress.value,
@@ -511,9 +514,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @notice Executes the withdraw process
    */
   async function executeWithdraw(options: ExecuteWithdrawalOptions) {
-    if (!umbra.value) throw new Error('Umbra instance not found');
-    if (!provider.value) throw new Error('Provider not found');
-    if (!activeAnnouncement.value) throw new Error('No announcement is selected for withdraw');
+    if (!umbra.value) throw new Error(vm.$i18n.t('AccountRT.umbra-instance-not-found').toString());
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.provider-not-found').toString());
+    if (!activeAnnouncement.value) throw new Error(vm.$i18n.t('AccountRT.no-announcement-selected').toString());
     showPrivacyModal.value = false;
 
     // Get token info, stealth private key, and destination (acceptor) address
@@ -535,10 +538,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         await tx.wait();
       } else {
         // Withdrawing token
-        if (!signer.value || !provider.value) throw new Error('Signer or provider not found');
-        if (!activeFee.value || !('fee' in activeFee.value)) throw new Error('Fee is not set');
+        if (!signer.value || !provider.value) throw new Error(vm.$i18n.t('AccountRT.signer-or-provider-not-found').toString());
+        if (!activeFee.value || !('fee' in activeFee.value)) throw new Error(vm.$i18n.t('AccountRT.fee-not-set').toString());
         const chainId = network.value?.chainId;
-        if (!chainId) throw new Error(`Invalid chainID: ${String(chainId)}`);
+        if (!chainId) throw new Error(`${vm.$i18n.t('AccountRT.invalid-chain-id')} ${String(chainId)}`);
 
         // Get users signature
         const sponsor = '0xb4435399AB53D6136C9AEEBb77a0120620b117F9'; // TODO update this
@@ -556,14 +559,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
         if (chainId === 137) {
           // No relayer support on this network, so this is a regular transaction hash
-          console.log(`Relayed with transaction hash ${relayTransactionHash}`);
+          console.log(`${vm.$i18n.t('AccountRT.relayed-with-tx-hash')} ${relayTransactionHash}`);
           const receipt = await provider.value.waitForTransaction(relayTransactionHash);
-          console.log('Withdraw successful. Receipt:', receipt);
+          console.log(vm.$i18n.t('AccountRT.withdraw-successful-receipt'), receipt);
         } else {
           // Received a relayer transaction hash, wait for withdraw transaction to be mined
-          console.log(`Relayed with relayer ID ${relayTransactionHash}`);
+          console.log(`${vm.$i18n.t('AccountRT.relayed-with-relayer-id')} ${relayTransactionHash}`);
           const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedRelayerStatusResponse;
-          console.log('Withdraw successful. Receipt:', receipt);
+          console.log(vm.$i18n.t('AccountRT.withdraw-successful-receipt'), receipt);
         }
       }
 
@@ -637,9 +640,8 @@ export default defineComponent({
       if (advancedMode.value && scanPrivateKey.value) return new KeyPair(scanPrivateKey.value);
       return spendingKeyPairFromSig.value as KeyPair;
     });
-
-    const receiverTooltipText =
-      "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key.";
+    const vm = getCurrentInstance();
+    const receiverTooltipText = vm.$i18n.t('AccountRT.receiver-tool-tip');
 
     return {
       advancedMode,
@@ -655,6 +657,7 @@ export default defineComponent({
     };
   },
 });
+
 </script>
 
 <style lang="sass" scoped>

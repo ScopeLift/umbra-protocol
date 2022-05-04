@@ -109,7 +109,7 @@
     "what-is-umbra": "What is Umbra?",
     "what-is-umbra-answer": "<p>Umbra is a stealth address protocol for Ethereum. That means it allows a payer to send funds to a fresh address. That address is controlled by the intended receiver, but only the payer and the receiver know that. </p><p> One way to think of Umbra is this: Imagine if, before anyone sent you funds, you sent them a brand new,never before used address. Only the sender would know you control that address, which adds a layer of privacy to your payment. Payments via Umbra work similarly, but are non-interactive—you don’t need to give someone a fresh address, they can just generate one they know only you will be able to access.</p>",
     "an-example": "Can you walk me through an example?",
-    "an-exmaple-answer": "<p>Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work. Bob owns the ENS address <span class=\"code\">bob.eth</span>. If Alice sent the funds each week to <span class=\"code\">bob.eth</span>, anyone looking at the chain could trivially know that Alice is paying Bob 1,000 Dai each week.</p><p>Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets up his account, enabling anyone to privately pay him using his address. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs to know his address or ENS name.</p><p>On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the keys to each of these addresses via Umbra, but nobody except Alice and Bob knows this.</p><p>Bob uses Umbra to withdraw his 1,000 Dai each week. He only needs to provide an address to send it to. It’s best for him to use an address that’s not tied to his identity. He usually chooses to send it straight to an exchange, where he sells it for fiat as needed. Importantly, this means<strong>Bob's exchange now knows this payment went to him</strong>. To the casual chain observer— one without access to proprietary centralized exchange data— the fact that Alice's payment went to Bob is obscured.</p><p> Consider another example: Liza runs a website that asks for donations. If everyone donated by directly sending her funds, everyone would know how much Liza received in donations. If donations were sent with Umbra instead, each donation would be sent to a different address, and only Liza would know the total amount of donations she received.</p>",
+    "an-exmaple-answer": "<p>Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work. Bob owns the ENS address <span class=\"code\">bob.eth</span>. If Alice sent the funds each week to <span class=\"code\">bob.eth</span>, anyone looking at the chain could trivially know that Alice is paying Bob 1,000 Dai each week.</p><p>Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets up his account, enabling anyone to privately pay him using his address. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs to know his address or ENS name.</p><p>On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the keys to each of these addresses via Umbra, but nobody except Alice and Bob knows this.</p><p>Bob uses Umbra to withdraw his 1,000 Dai each week. He only needs to provide an address to send it to. It’s best for him to use an address that’s not tied to his identity. He usually chooses to send it straight to an exchange, where he sells it for fiat as needed. Importantly, this means <strong>Bob's exchange now knows this payment went to him</strong>. To the casual chain observer— one without access to proprietary centralized exchange data— the fact that Alice's payment went to Bob is obscured.</p><p> Consider another example: Liza runs a website that asks for donations. If everyone donated by directly sending her funds, everyone would know how much Liza received in donations. If donations were sent with Umbra instead, each donation would be sent to a different address, and only Liza would know the total amount of donations she received.</p>",
     "wen-token": "Does Umbra have a token?",
     "wen-token-answer": "No.",
     "how-does-it-work": "How does it work?",
@@ -202,7 +202,7 @@
     "hooks": "What are Hooks and how do I use them?",
     "hooks-answer": "If you’re familiar with {0} or other similar standards, you are already familiar with the concept of hooks. Hooks let the caller perform other actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that contract.",
     "hooks-answer-rest": "<p> Umbra works similarly— when withdrawing funds from the contract— users might want to deposit them straight into Tornado, or swap their DAI for ETH. Hooks let you do this. </p> <p>You’ll notice the Umbra contract exposes multiple withdraw methods. First we have:</p> <ol> <li><span class=\"code\">withdrawToken()</span> for standard withdrawals, i.e. simple transfers</li> <li> <span class=\"code\">withdrawTokenOnBehalf()</span> has the same functionality as <span class=\"code\">withdrawToken()</span>, but lets a relayer submit the withdraw on your behalf to support meta-transactions. </li> </ol> <p>Then we have the two hook methods:</p> <ol> <li> <span class=\"code\">withdrawTokenAndCall()</span> is analogous to <span class=\"code\">withdrawToken()</span>, but lets you pass in the address of a contract and the data to call on that contract. </li> <li> <span class=\"code\">withdrawTokenAndCallOnBehalf()</span> is analogous to <span class=\"code\">withdrawTokenOnBehalf()</span>, but also lets you pass in the address of a contract and the data to call on that contract. </li> </ol> <p> To use hooks, first you need to write and deploy a hook contract conforming to the <span class=\"code\">IUmbraHookReceiver</span> interface. This requires the contract to implement a method calls <span class=\"code\">tokensWithdrawn()</span> that takes a handful of parameters. The address of this contract would be passed as the value for the <span class=\"code\">_hook</span> input in the above methods. </p>",
-    "hooks-answer-encode-data": "<p> Then you need to encode the calldata that the hook contract will receive and can operate on. See the {0} section of the ethers.js docs for info on how to encode function data. </p>",
+    "hooks-answer-encode-data": "Then you need to encode the calldata that the hook contract will receive and can operate on. See the {0} section of the ethers.js docs for info on how to encode function data.",
     "hooks-answer-encoding-data": "Encoding Data",
     "hooks-answer-end": "<p> And that’s all there is to it. With the address of the hook contract and the encoded calldata, you are ready to call one of the two hook-based methods. </p>"
   },
@@ -223,7 +223,28 @@
     "hide": "Hide",
     "withdraw": "withdraw",
     "receiver": "Receiver",
-    "scanning-complete": "Scanning completed successfully"
+    "scanning-complete": "Scanning completed successfully",
+    "custom-prv-key": " with custom private key",
+    "scanned-from-block": "Scanned from block",
+    "to": "to",
+    "all-blocks-scanned": "All blocks have been scanned",
+    "scanned-all-blocks-up-to": "Scanned all blocks up to",
+    "to-current-block": "to current block",
+    "private-key-copied": "Private key copied to clipboard",
+    "date-received": "Date Received",
+    "amount": "Amount",
+    "wallet-not-connected": "Wallet not connected. Try refreshing the page and connect your wallet",
+    "address-copied": "address copied to clipboard",
+    "umbra-instance-not-found": "Umbra instance not found",
+    "provider-not-found": "Provider not found",
+    "no-announcement-selected": "No announcement is selected for withdraw",
+    "signer-or-provider-not-found": "Signer or provider not found",
+    "fee-not-set": "Fee is not set",
+    "invalid-chain-id": "Invalid chainID",
+    "relayed-with-tx-hash": "Relayed with transaction hash",
+    "relayed-with-relayer-id": "Relayed with relayer ID",
+    "withdraw-succcessful-receipt": "Withdraw successful. Receipt:",
+    "receiver-tool-tip": "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key."
   },
   "AccountRTW": {
     "withdrawal-warning": "You are withdrawing to {destinationAddr}, which has the following warnings:",
@@ -262,5 +283,4 @@
     "show": "Show",
     "stealth-prv-key": "stealth address private key"
   }
-
 }
