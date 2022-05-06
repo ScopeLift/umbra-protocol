@@ -31,7 +31,7 @@
 
     <div v-if="isLoading" class="text-center">
       <loading-spinner />
-      <div class="text-center text-italic">{{$t('AccountRT.processing-results')}}</div>
+      <div class="text-center text-italic">{{ $t('AccountRT.processing-results') }}</div>
     </div>
 
     <!-- Received funds table -->
@@ -42,9 +42,9 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
       >
-        {{$t('AccountRT.configure-umbra')}}<br />
+        {{ $t('AccountRT.configure-umbra') }}<br />
         <i18n path="AccountRT.navigate-to-setup" tag="span">
-          <router-link class="hyperlink" :to="{ name: 'setup' }">{{$t('AccountRT.setup')}}</router-link>
+          <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountRT.setup') }}</router-link>
         </i18n>
       </div>
       <div
@@ -53,16 +53,21 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
       >
-        <i18n path="AccountRT.keys-dont-match" tag="span">{{$t('AccountRT.keys-dont-match')}}
-          <router-link class="hyperlink" :to="{ name: 'setup' }">{{$t('AccountRT.setup')}}</router-link>
+        <i18n path="AccountRT.keys-dont-match" tag="span"
+          >{{ $t('AccountRT.keys-dont-match') }}
+          <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountRT.setup') }}</router-link>
         </i18n>
-        <router-link class="hyperlink" :to="{ name: 'FAQ', hash: '#account-setup' }">{{$t('AccountRT.learn-more')}}</router-link>.
+        <router-link class="hyperlink" :to="{ name: 'FAQ', hash: '#account-setup' }">{{
+          $t('AccountRT.learn-more')
+        }}</router-link
+        >.
       </div>
 
       <div v-if="advancedMode" class="text-caption q-mb-sm">
         <!-- This scanDescriptionString describes scan settings that were used -->
         {{ scanDescriptionString }}.
-        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">{{$t('AccountRT.scan-settings')}}</span>.
+        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">{{ $t('AccountRT.scan-settings') }}</span
+        >.
       </div>
       <q-table
         :grid="$q.screen.xs"
@@ -87,7 +92,7 @@
               </q-card-section>
               <q-card-section>
                 <div class="row justify-between items-center">
-                  <div>{{$t('AccountRT.sender')}}</div>
+                  <div>{{ $t('AccountRT.sender') }}</div>
                   <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                     <span>{{ props.row.from }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
@@ -95,7 +100,7 @@
                 </div>
                 <div class="row justify-between items-center">
                   <div>
-                    <span class="q-mr-xs">{{$t('AccountRT.stealth-receiver')}}</span>
+                    <span class="q-mr-xs">{{ $t('AccountRT.stealth-receiver') }}</span>
                     <base-tooltip icon="fas fa-question-circle">
                       <span>
                         {{ receiverTooltipText }}
@@ -105,7 +110,7 @@
                         class="hyperlink dark-toggle"
                         :to="{ path: 'faq', hash: '#receiving-funds' }"
                       >
-                        {{$t('AccountRT.learn-more')}}
+                        {{ $t('AccountRT.learn-more') }}
                       </router-link>
                     </base-tooltip>
                   </div>
@@ -115,7 +120,7 @@
                   </div>
                 </div>
                 <div class="row justify-between items-center text-caption text-grey">
-                  <div>{{$t('AccountRT.received')}}</div>
+                  <div>{{ $t('AccountRT.received') }}</div>
                   <div>
                     {{ formatDate(props.row.timestamp * 1000) }}
                     {{ formatTime(props.row.timestamp * 1000) }}
@@ -133,7 +138,7 @@
                     if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
                   "
                 >
-                  {{$t('AccountRT.withdrawn')}}<q-icon name="fas fa-check" class="q-ml-sm" />
+                  {{ $t('AccountRT.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
                 </div>
                 <base-button
                   v-else
@@ -187,7 +192,7 @@
                   class="hyperlink dark-toggle"
                   :to="{ path: 'faq', hash: '#receiving-funds' }"
                 >
-                  {{$t('AccountRT.learn-more')}}
+                  {{ $t('AccountRT.learn-more') }}
                 </router-link>
               </base-tooltip>
             </q-th>
@@ -266,7 +271,7 @@
                   if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
                 "
               >
-                {{$t('AccountRT.withdrawn')}}<q-icon name="fas fa-check" class="q-ml-sm" />
+                {{ $t('AccountRT.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
               </div>
               <base-button
                 v-else
@@ -310,7 +315,7 @@
         class="text-caption text-right q-mt-md"
         style="opacity: 0.5"
       >
-        <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> {{$t('AccountRT.scanning-complete')}}
+        <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> {{ $t('AccountRT.scanning-complete') }}
       </div>
     </div>
   </div>
@@ -341,14 +346,20 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 
   // Generate string that explains scan settings that were used
   const scanDescriptionString = computed(() => {
-    const suffix = scanPrivateKey.value ?  vm?.$i18n.t('AccountRT.custom-prv-key') : '';
+    const suffix = scanPrivateKey.value ? vm?.$i18n.t('AccountRT.custom-prv-key') : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    let msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t('AccountRT.to')} ${Number(endBlock.value)}`; // default message
+    let msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
+      'AccountRT.to'
+    )} ${Number(endBlock.value)}`; // default message
 
     if (!hasStartBlock && !hasEndBlock) msg = `${vm?.$i18n.t('AccountRT.all-blocks-scanned')}`;
-    if (!hasStartBlock && hasEndBlock) msg = `${vm?.$i18n.t('AccountRT.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
-    if (hasStartBlock && !hasEndBlock) msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t('AccountRT.to-current-block')}`;
+    if (!hasStartBlock && hasEndBlock)
+      msg = `${vm?.$i18n.t('AccountRT.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
+    if (hasStartBlock && !hasEndBlock)
+      msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
+        'AccountRT.to-current-block'
+      )}`;
     return `${msg}${suffix}`;
   });
 
@@ -396,10 +407,30 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const toString = (val: BigNumber) => val.toString();
 
   const mainTableColumns = [
-    { align: 'left', field: 'timestamp', label: vm?.$i18n.t('AccountRT.date-received'), name: 'date', sortable: true, sort: sortByTime },
-    { align: 'left', field: 'amount', label: vm?.$i18n.t('AccountRT.amount'), name: 'amount', sortable: true, format: toString },
+    {
+      align: 'left',
+      field: 'timestamp',
+      label: vm?.$i18n.t('AccountRT.date-received'),
+      name: 'date',
+      sortable: true,
+      sort: sortByTime,
+    },
+    {
+      align: 'left',
+      field: 'amount',
+      label: vm?.$i18n.t('AccountRT.amount'),
+      name: 'amount',
+      sortable: true,
+      format: toString,
+    },
     { align: 'left', field: 'from', label: vm?.$i18n.t('AccountRT.sender'), name: 'from', sortable: true },
-    { align: 'left', field: 'receiver', label: vm?.$i18n.t('AccountRT.stealth-receiver'), name: 'receiver', sortable: false },
+    {
+      align: 'left',
+      field: 'receiver',
+      label: vm?.$i18n.t('AccountRT.stealth-receiver'),
+      name: 'receiver',
+      sortable: false,
+    },
   ];
 
   // Relayer helper method
@@ -538,8 +569,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         await tx.wait();
       } else {
         // Withdrawing token
-        if (!signer.value || !provider.value) throw new Error(vm.$i18n.t('AccountRT.signer-or-provider-not-found').toString());
-        if (!activeFee.value || !('fee' in activeFee.value)) throw new Error(vm.$i18n.t('AccountRT.fee-not-set').toString());
+        if (!signer.value || !provider.value)
+          throw new Error(vm.$i18n.t('AccountRT.signer-or-provider-not-found').toString());
+        if (!activeFee.value || !('fee' in activeFee.value))
+          throw new Error(vm.$i18n.t('AccountRT.fee-not-set').toString());
         const chainId = network.value?.chainId;
         if (!chainId) throw new Error(`${vm.$i18n.t('AccountRT.invalid-chain-id')} ${String(chainId)}`);
 
@@ -657,7 +690,6 @@ export default defineComponent({
     };
   },
 });
-
 </script>
 
 <style lang="sass" scoped>

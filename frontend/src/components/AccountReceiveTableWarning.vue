@@ -12,12 +12,13 @@
 
     <q-card-section>
       <i18n path="AccountRTW.withdrawal-warning" tag="p">
-        <span class="code">{{ destinationAddress }}</span>"  
-      </i18n>"
+        <span class="code">{{ destinationAddress }}</span
+        >" </i18n
+      >"
       <ul>
         <li v-html="warning" v-for="(warning, index) in warnings" :key="index" class="q-my-sm" />
       </ul>
-      {{$t('AccountRTW.withdrawal-warning-rest')}}
+      {{ $t('AccountRTW.withdrawal-warning-rest') }}
     </q-card-section>
 
     <q-card-section>

@@ -139,12 +139,15 @@
       <div class="row self-start justify-between all-content-format">
         <!-- Column 1: User settings -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">{{$t('Base-Layout.settings')}}</p>
+          <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.settings') }}</p>
           <!-- Dark mode toggle -->
           <p class="dark-toggle">
             <q-icon v-if="!$q.dark.isActive" @click="toggleDarkMode" class="cursor-pointer icon" name="fas fa-moon" />
             <q-icon v-else @click="toggleDarkMode" class="dark-toggle cursor-pointer icon" name="fas fa-sun" />
-            <span class="text-caption q-ml-md">{{$t('Base-Layout.dark-mode')}} {{ $q.dark.isActive ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span>
+            <span class="text-caption q-ml-md"
+              >{{ $t('Base-Layout.dark-mode') }}
+              {{ $q.dark.isActive ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
+            >
           </p>
 
           <!-- Advanced mode toggle -->
@@ -157,27 +160,30 @@
               dense
               icon="fas fa-cog"
             />
-            <span class="dark-toggle text-caption q-ml-md">{{$t('Base-Layout.advanced-mode')}} {{ advancedMode ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span>
+            <span class="dark-toggle text-caption q-ml-md"
+              >{{ $t('Base-Layout.advanced-mode') }}
+              {{ advancedMode ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
+            >
             <span>
               <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
-                {{$t('Base-Layout.advanced-mode-description')}}
-                <span class="text-bold">{{$t('Base-Layout.caution')}}</span>
+                {{ $t('Base-Layout.advanced-mode-description') }}
+                <span class="text-bold">{{ $t('Base-Layout.caution') }}</span>
               </base-tooltip>
             </span>
           </p>
           <!-- Language selection -->
           <p>
             <select class="text-caption" v-model="$i18n.locale">
-              <option value='en-us'>English</option>
-              <option value='zh-cn'>中文</option>
-             </select>
-             <span class="text-caption q-ml-md">Language</span>
+              <option value="en-us">English</option>
+              <option value="zh-cn">中文</option>
+            </select>
+            <span class="text-caption q-ml-md">Language</span>
           </p>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">{{$t('Base-Layout.about')}}</p>
+          <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.about') }}</p>
           <i18n path="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
             <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
           </i18n>
@@ -191,7 +197,7 @@
 
         <!-- Column 3: Links -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">{{$t('Base-Layout.links')}}</p>
+          <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.links') }}</p>
           <p>
             <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
               <q-icon class="dark-toggle q-mr-md" name="fab fa-twitter" size="xs" />

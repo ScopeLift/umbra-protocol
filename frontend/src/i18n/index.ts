@@ -3,5 +3,5 @@ import Chinese from './locales/zh-cn.json';
 
 export default {
   'en-us': English,
-  'zh-cn': Chinese
+  'zh-cn': Chinese,
 };

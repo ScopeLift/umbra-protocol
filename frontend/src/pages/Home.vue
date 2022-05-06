@@ -1,13 +1,18 @@
 <template>
   <q-page padding class="all-content-format">
     <div class="text-center q-mb-xl">
-      <h2 v-if="!$q.screen.xs" class="header-black">{{$t('Home.header')}}</h2>
-      <h3 v-else class="header-black">{{$t('Home.header')}}</h3>
-      <h4 class="darkgrey q-mt-md">{{$t('Home.description')}}</h4>
+      <h2 v-if="!$q.screen.xs" class="header-black">{{ $t('Home.header') }}</h2>
+      <h3 v-else class="header-black">{{ $t('Home.header') }}</h3>
+      <h4 class="darkgrey q-mt-md">{{ $t('Home.description') }}</h4>
     </div>
 
     <div class="row justify-center q-col-gutter-sm q-pt-xl">
-      <home-action-card class="col-xs-12 col-4" to="send" :text="$t('Home-action-card.send')" :description="$t('Home-action-card.send-description')" />
+      <home-action-card
+        class="col-xs-12 col-4"
+        to="send"
+        :text="$t('Home-action-card.send')"
+        :description="$t('Home-action-card.send-description')"
+      />
       <home-action-card
         class="col-xs-12 col-4"
         to="receive"
@@ -25,19 +30,19 @@
 
     <div class="q-mt-xl row justify-center">
       <div class="tutorial col-auto">
-        <h3 class="header-black text-center q-mt-none">{{$t('Home.Tutorial.tutorial')}}</h3>
+        <h3 class="header-black text-center q-mt-none">{{ $t('Home.Tutorial.tutorial') }}</h3>
         <div class="text-left">
           <!-- To Receive Funds -->
-          <h5 class="text-center q-mt-xl">{{$t('Home.Tutorial.receiving-funds')}}</h5>
+          <h5 class="text-center q-mt-xl">{{ $t('Home.Tutorial.receiving-funds') }}</h5>
           <ol>
             <li v-html="$t('Home.Tutorial.receive-first')"></li>
-            <li>{{$t('Home.Tutorial.receive-second')}}</li>
+            <li>{{ $t('Home.Tutorial.receive-second') }}</li>
             <li v-html="$t('Home.Tutorial.receive-third')"></li>
           </ol>
           <!-- To Send Funds -->
-          <h5 class="text-center q-mt-xl">{{$t('Home.Tutorial.sending-funds')}}</h5>
+          <h5 class="text-center q-mt-xl">{{ $t('Home.Tutorial.sending-funds') }}</h5>
           <ol>
-            <li>{{$t('Home.Tutorial.send-first')}}</li>
+            <li>{{ $t('Home.Tutorial.send-first') }}</li>
             <li v-html="$t('Home.Tutorial.send-second')"></li>
           </ol>
         </div>

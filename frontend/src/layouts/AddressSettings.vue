@@ -1,7 +1,7 @@
 <template>
   <div class="row no-wrap">
     <span v-if="advancedMode" class="q-mr-sm">
-      <base-tooltip label="🧙" size="sm">{{$t('Address-Settings.advanced-mode-on')}}</base-tooltip>
+      <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>
     </span>
     <connect-wallet>
       <div class="row text-caption cursor-pointer dark-toggle">

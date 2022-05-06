@@ -1,9 +1,9 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">{{$t('Receive.receive')}}</h2>
+    <h2 class="page-title">{{ $t('Receive.receive') }}</h2>
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <p class="text-center">{{$t('Receive.connect-your-wallet')}}</p>
+      <p class="text-center">{{ $t('Receive.connect-your-wallet') }}</p>
       <div class="row justify-center">
         <connect-wallet>
           <base-button class="text-center" :label="$t('Receive.connect-wallet')" />
@@ -15,20 +15,24 @@
       <!-- Waiting for signature -->
       <div v-if="needsSignature || scanStatus === 'waiting'" class="form">
         <div v-if="needsSignature" class="text-center q-mb-md">
-          {{$t('Receive.need-signature')}}
+          {{ $t('Receive.need-signature') }}
         </div>
-        <div v-else class="text-center q-mb-md">{{$t('Receive.scan-funds')}}</div>
-        <base-button @click="getPrivateKeysHandler" class="text-center" :label="needsSignature ? $t('Receive.sign') : $t('Receive.scan')" />
+        <div v-else class="text-center q-mb-md">{{ $t('Receive.scan-funds') }}</div>
+        <base-button
+          @click="getPrivateKeysHandler"
+          class="text-center"
+          :label="needsSignature ? $t('Receive.sign') : $t('Receive.scan')"
+        />
 
         <!-- Advanced mode settings -->
         <q-card v-if="advancedMode" class="q-pt-md q-px-md q-mt-xl">
           <q-card-section class="text-center text-primary text-h6 header-black q-pb-none">
-            {{$t('Receive.scan-settings')}}
+            {{ $t('Receive.scan-settings') }}
           </q-card-section>
           <q-card-section>
             <q-form class="text-left" ref="settingsFormRef">
               <div>
-                {{$t('Receive.start-end')}}
+                {{ $t('Receive.start-end') }}
               </div>
               <div class="row justify-start q-col-gutter-md">
                 <base-input
@@ -47,7 +51,7 @@
                 />
               </div>
               <div>
-                {{$t('Receive.enter-prv-key')}}
+                {{ $t('Receive.enter-prv-key') }}
               </div>
               <!-- Unlike start blocks, no action on blur because we don't want to save private key to LocalStorage -->
               <base-input v-model="scanPrivateKeyLocal" :label="$t('Receive.prv-key')" :rules="isValidPrivateKey" />
@@ -58,15 +62,14 @@
 
       <div v-else-if="scanStatus === 'fetching'" class="text-center">
         <loading-spinner />
-        <div class="text-center text-italic">{{$t('Receive.fetching')}}</div>
+        <div class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
       </div>
 
       <!-- Scanning in progress -->
       <div v-else-if="scanStatus === 'scanning'" class="text-center">
         <progress-indicator :percentage="scanPercentage" />
-        <div class="text-center text-italic">{{$t('Receive.scanning')}}</div>
-        <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')">
-        </div>
+        <div class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
+        <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
 
       <!-- Scanning complete -->

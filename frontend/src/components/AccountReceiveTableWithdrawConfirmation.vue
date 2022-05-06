@@ -1,15 +1,15 @@
 <template>
   <q-card class="border-top-thick">
     <q-card-section>
-      <h5 class="text-bold text-center q-mt-none">{{$t('AccountRTWC.confirm')}}</h5>
+      <h5 class="text-bold text-center q-mt-none">{{ $t('AccountRTWC.confirm') }}</h5>
     </q-card-section>
 
     <q-card-section>
-      <div class="text-caption text-grey">{{$t('AccountRTWC.to')}}</div>
+      <div class="text-caption text-grey">{{ $t('AccountRTWC.to') }}</div>
       <div>{{ $q.screen.xs ? formatAddress(destinationAddress) : destinationAddress }}</div>
 
       <div>
-        <div class="text-caption text-grey q-mt-md">{{$t('AccountRTWC.amount')}}</div>
+        <div class="text-caption text-grey q-mt-md">{{ $t('AccountRTWC.amount') }}</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <div>{{ formattedAmount }} {{ symbol }}</div>
@@ -18,7 +18,7 @@
 
       <div>
         <div v-if="isNativeToken" class="text-caption text-grey q-mt-md row items-center">
-          <div>{{ useCustomFee ? 'Custom' : '' }} {{$t('AccountRTWC.tx-fee')}}</div>
+          <div>{{ useCustomFee ? 'Custom' : '' }} {{ $t('AccountRTWC.tx-fee') }}</div>
           <base-button
             v-if="useCustomFee"
             @click="toggleCustomFee"
@@ -29,7 +29,7 @@
             size="1em"
           />
         </div>
-        <div v-else class="text-caption text-grey q-mt-md">{{$t('AccountRTWC.relayer-gas-fee')}}</div>
+        <div v-else class="text-caption text-grey q-mt-md">{{ $t('AccountRTWC.relayer-gas-fee') }}</div>
 
         <div v-if="useCustomFee" class="row justify-start items-center">
           <div class="col-12 row items-center">
@@ -68,7 +68,7 @@
       <div class="separator q-my-lg"></div>
 
       <div>
-        <div class="text-caption text-grey">{{$t('AccountRTWC.you-will-receive')}}</div>
+        <div class="text-caption text-grey">{{ $t('AccountRTWC.you-will-receive') }}</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
@@ -78,7 +78,7 @@
 
       <div v-if="!canWithdraw" class="border-warning q-mt-lg q-pa-md">
         <q-icon name="fas fa-exclamation-triangle" color="warning" left />
-        {{$t('AccountRTWC.cannot-withdraw')}}
+        {{ $t('AccountRTWC.cannot-withdraw') }}
       </div>
     </q-card-section>
 
@@ -94,9 +94,9 @@
       </div>
       <div v-else class="text-center">
         <q-spinner-puff class="q-mb-md" color="primary" size="2rem" />
-        <div class="text-center text-italic">{{$t('AccountRTWC.withdraw-in-progress')}}</div>
+        <div class="text-center text-italic">{{ $t('AccountRTWC.withdraw-in-progress') }}</div>
         <a v-if="txHash.length === 66" class="text-caption hyperlink" :href="etherscanUrl" target="_blank">
-          {{$t('AccountRTWC.view-transaction')}} <q-icon name="fas fa-external-link-alt" right />
+          {{ $t('AccountRTWC.view-transaction') }} <q-icon name="fas fa-external-link-alt" right />
         </a>
       </div>
     </q-card-section>

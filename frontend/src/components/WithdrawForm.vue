@@ -10,7 +10,7 @@
     <!-- Withdrawal form -->
     <div v-if="!isWithdrawn" class="q-mb-lg">
       <div v-if="!isWithdrawInProgress">
-        <div>{{$t('WithdrawForm.withdraw-address')}}</div>
+        <div>{{ $t('WithdrawForm.withdraw-address') }}</div>
         <base-input
           v-model="content"
           @input="emit('updateDestinationAddress', content)"
@@ -30,13 +30,13 @@
         <div class="q-mb-lg">
           <div v-if="!isNativeToken && isFeeLoading" class="text-caption text-italic">
             <q-spinner-puff class="q-my-none q-mr-sm" color="primary" size="2rem" />
-            {{$t('WithdrawForm.fetching-fee-estimate')}}
+            {{ $t('WithdrawForm.fetching-fee-estimate') }}
           </div>
           <div v-else-if="isNativeToken" class="text-caption">
-            {{$t('WithdrawForm.withdrawal-fee')}} <span class="text-bold"> 0 {{ nativeTokenSymbol }} </span>
+            {{ $t('WithdrawForm.withdrawal-fee') }} <span class="text-bold"> 0 {{ nativeTokenSymbol }} </span>
           </div>
           <div v-else-if="activeFee" class="text-caption">
-            {{$t('WithdrawForm.estimated-withdrawal-fee')}}
+            {{ $t('WithdrawForm.estimated-withdrawal-fee') }}
             <span class="text-bold">
               {{ humanizeTokenAmount(activeFee.fee, activeFee.token) }}
               {{ activeFee.token.symbol }}
@@ -46,21 +46,24 @@
       </div>
       <div v-else class="text-center q-mb-lg">
         <q-spinner-puff class="q-mb-md q-mr-sm" color="primary" size="2rem" />
-        <div class="text-center text-italic">{{$t('WithdrawForm.withdraw-in-progress')}}</div>
+        <div class="text-center text-italic">{{ $t('WithdrawForm.withdraw-in-progress') }}</div>
       </div>
       <!-- Privacy warning -->
       <div class="border q-mb-lg" />
       <div class="text-caption">
         <q-icon name="fas fa-exclamation-triangle" color="warning" left />
-        {{$t('WithdrawForm.warning')}}
-        <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank"> {{$t('WithdrawForm.learn-more')}} </router-link>.
+        {{ $t('WithdrawForm.warning') }}
+        <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank">
+          {{ $t('WithdrawForm.learn-more') }} </router-link
+        >.
       </div>
     </div>
 
     <!-- Advanced feature: show private key -->
     <div v-if="advancedMode">
       <div @click="emit('togglePrivateKey')" class="text-caption hyperlink">
-        {{ spendingPrivateKey ? $t('WithdrawForm.hide') : $t('WithdrawForm.show') }} {{$t('WithdrawForm.stealth-prv-key')}}
+        {{ spendingPrivateKey ? $t('WithdrawForm.hide') : $t('WithdrawForm.show') }}
+        {{ $t('WithdrawForm.stealth-prv-key') }}
       </div>
       <div
         v-if="spendingPrivateKey"

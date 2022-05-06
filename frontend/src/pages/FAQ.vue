@@ -1,6 +1,6 @@
 <template>
   <q-page padding class="text-center">
-    <h2 class="page-title">{{$t('FAQ.faq')}}</h2>
+    <h2 class="page-title">{{ $t('FAQ.faq') }}</h2>
     <q-list class="form-extra-wide" separator>
       <!-- Introduction -->
       <div
@@ -9,7 +9,7 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.intro')}}
+        {{ $t('FAQ.intro') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
@@ -20,10 +20,7 @@
       </div>
 
       <div @click="copyUrl" id="can-you-walk-me-through-an-example">
-        <f-a-q-item
-          :expanded="selectedId === 'can-you-walk-me-through-an-example'"
-          :question="$t('FAQ.an-example')"
-        >
+        <f-a-q-item :expanded="selectedId === 'can-you-walk-me-through-an-example'" :question="$t('FAQ.an-example')">
           <div v-html="$t('FAQ.an-exmaple-answer')"></div>
         </f-a-q-item>
       </div>
@@ -38,7 +35,9 @@
         <f-a-q-item :expanded="selectedId === 'how-does-it-work'" :question="$t('FAQ.how-does-it-work')">
           <div v-html="$t('FAQ.how-does-it-work-answer')"></div>
           <i18n path="FAQ.how-does-it-work-see-the" tag="p">
-            <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')">{{$t('FAQ.how-does-it-work-technical-dtails')}}</span>
+            <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')">{{
+              $t('FAQ.how-does-it-work-technical-dtails')
+            }}</span>
           </i18n>
         </f-a-q-item>
       </div>
@@ -66,7 +65,7 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.account-setup')}}
+        {{ $t('FAQ.account-setup') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
@@ -89,7 +88,9 @@
         >
           <div v-html="$t('FAQ.why-setup-again-answer')"></div>
           <i18n path="FAQ.why-setup-again-answer-issue" tag="p">
-            <a href="https://github.com/ScopeLift/umbra-protocol/issues/214" class="hyperlink" target="_blank" >{{$t('FAQ.why-setup-again-answer-this-issue')}}</a >
+            <a href="https://github.com/ScopeLift/umbra-protocol/issues/214" class="hyperlink" target="_blank">{{
+              $t('FAQ.why-setup-again-answer-this-issue')
+            }}</a>
           </i18n>
         </f-a-q-item>
       </div>
@@ -102,7 +103,7 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.sending-funds')}}
+        {{ $t('FAQ.sending-funds') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
@@ -122,19 +123,13 @@
       </div>
 
       <div @click="copyUrl" id="why-is-there-a-minimum-send-amount">
-        <f-a-q-item
-          :expanded="selectedId === 'why-is-there-a-minimum-send-amount'"
-          :question="$t('FAQ.min-amount')"
-        >
+        <f-a-q-item :expanded="selectedId === 'why-is-there-a-minimum-send-amount'" :question="$t('FAQ.min-amount')">
           <div v-html="$t('FAQ.min-amount-answer')"></div>
         </f-a-q-item>
       </div>
 
       <div @click="copyUrl" id="why-is-there-sometimes-an-umbra-fee">
-        <f-a-q-item
-          :expanded="selectedId === 'why-is-there-sometimes-an-umbra-fee'"
-          :question="$t('FAQ.umbra-fee')"
-        >
+        <f-a-q-item :expanded="selectedId === 'why-is-there-sometimes-an-umbra-fee'" :question="$t('FAQ.umbra-fee')">
           <div v-html="$t('FAQ.umbra-fee-answer')"></div>
         </f-a-q-item>
       </div>
@@ -153,7 +148,7 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.receiving-funds')}}
+        {{ $t('FAQ.receiving-funds') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
@@ -192,10 +187,15 @@
           <div v-html="$t('FAQ.scan-time-answer')"></div>
           <i18n path="FAQ.scan-time-answer-issue" tag="p">
             <template v-slot:one>
-              <a class="hyperlink" href="https://ethresear.ch/t/open-problem-improving-stealth-addresses/7438" target="_blank" >1</a >,
+              <a
+                class="hyperlink"
+                href="https://ethresear.ch/t/open-problem-improving-stealth-addresses/7438"
+                target="_blank"
+                >1</a
+              >,
             </template>
             <template v-slot:two>
-            <a class="hyperlink" href="https://eprint.iacr.org/2021/089.pdf\" target="_blank">2</a>
+              <a class="hyperlink" href="https://eprint.iacr.org/2021/089.pdf\" target="_blank">2</a>
             </template>
           </i18n>
         </f-a-q-item>
@@ -218,31 +218,48 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.security')}}
+        {{ $t('FAQ.security') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
       <div @click="copyUrl" id="has-umbra-been-audited">
         <f-a-q-item :expanded="selectedId === 'has-umbra-been-audited'" :question="$t('FAQ.audit')">
-
           <i18n path="FAQ.audit-answer-contract" tag="p">
             <template v-slot:contracts>
-              <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/tree/master/contracts" target="_blank" >{{$t('FAQ.audit-contracts')}}</a>
+              <a
+                class="hyperlink"
+                href="https://github.com/ScopeLift/umbra-protocol/tree/master/contracts"
+                target="_blank"
+                >{{ $t('FAQ.audit-contracts') }}</a
+              >
             </template>
             <template v-slot:here>
-              <a class="hyperlink" href="https://consensys.net/diligence/audits/2021/03/umbra-smart-contracts/" target="_blank">{{$t('FAQ.audit-here')}}</a>
+              <a
+                class="hyperlink"
+                href="https://consensys.net/diligence/audits/2021/03/umbra-smart-contracts/"
+                target="_blank"
+                >{{ $t('FAQ.audit-here') }}</a
+              >
             </template>
           </i18n>
 
           <i18n path="FAQ.audit-answer-umrba-js" tag="p">
-            <template v-slot:umbra-js>
-              <span class="code">umbra-js</span>&#32;
-            </template>
+            <template v-slot:umbra-js> <span class="code">umbra-js</span>&#32; </template>
             <template v-slot:library>
-              <a class="hyperlink" href="https://github.com/ScopeLift/umbra-protocol/tree/master/umbra-js" target="_blank" >{{$t('FAQ.audit-library')}}</a >&mdash;
+              <a
+                class="hyperlink"
+                href="https://github.com/ScopeLift/umbra-protocol/tree/master/umbra-js"
+                target="_blank"
+                >{{ $t('FAQ.audit-library') }}</a
+              >&mdash;
             </template>
             <template v-slot:here>
-              <a class="hyperlink" href="https://leastauthority.com/static/publications/LeastAuthority_ScopeLift_Umbra-js_Final_Audit_Report.pdf" target="_blank" >{{$t('FAQ.audit-here')}}</a >
+              <a
+                class="hyperlink"
+                href="https://leastauthority.com/static/publications/LeastAuthority_ScopeLift_Umbra-js_Final_Audit_Report.pdf"
+                target="_blank"
+                >{{ $t('FAQ.audit-here') }}</a
+              >
             </template>
           </i18n>
 
@@ -251,13 +268,22 @@
               <a class="hyperlink" href="https://paulmillr.com/" target="_blank">Paul Miller</a>
             </template>
             <template v-slot:noble-secp256k1>
-              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank">noble-secp256k1</a>
+              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank"
+                >noble-secp256k1</a
+              >
             </template>
             <template v-slot:community>
-              <a class="hyperlink" href="https://gitcoin.co/grants/2451/audit-of-noble-secp256k1-cryptographic-library" target="_blank" >{{$t('FAQ.audit-community')}}</a >
+              <a
+                class="hyperlink"
+                href="https://gitcoin.co/grants/2451/audit-of-noble-secp256k1-cryptographic-library"
+                target="_blank"
+                >{{ $t('FAQ.audit-community') }}</a
+              >
             </template>
             <template v-slot:here>
-              <a class="hyperlink" href="https://cure53.de/pentest-report_noble-lib.pdf" target="_blank">{{$t('FAQ.audit-here')}}</a>
+              <a class="hyperlink" href="https://cure53.de/pentest-report_noble-lib.pdf" target="_blank">{{
+                $t('FAQ.audit-here')
+              }}</a>
             </template>
           </i18n>
         </f-a-q-item>
@@ -270,19 +296,22 @@
       </div>
 
       <div @click="copyUrl" id="is-cryptography-in-javascript-secure">
-        <f-a-q-item
-          :expanded="selectedId === 'is-cryptography-in-javascript-secure'"
-          :question="$t('FAQ.crypto-js')"
-        >
+        <f-a-q-item :expanded="selectedId === 'is-cryptography-in-javascript-secure'" :question="$t('FAQ.crypto-js')">
           <i18n path="FAQ.crypto-js-answer" tag="p">
             <template v-slot:timing-attacks>
-              <a class="hyperlink" href="https://en.wikipedia.org/wiki/Timing_attack" target="_blank">{{$t('FAQ.crypto-js-timing-attacks')}}</a>
+              <a class="hyperlink" href="https://en.wikipedia.org/wiki/Timing_attack" target="_blank">{{
+                $t('FAQ.crypto-js-timing-attacks')
+              }}</a>
             </template>
             <template v-slot:noble-secp256k1>
-              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank">noble-secp256k1</a>
+              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank"
+                >noble-secp256k1</a
+              >
             </template>
             <template v-slot:here>
-              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1/#security" target="_blank">{{$t('FAQ.crypto-js-here')}}</a>
+              <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1/#security" target="_blank">{{
+                $t('FAQ.crypto-js-here')
+              }}</a>
             </template>
           </i18n>
           <div v-html="$t('FAQ.crypto-js-answer-rest')"></div>
@@ -297,7 +326,7 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.tech-details')}}
+        {{ $t('FAQ.tech-details') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
@@ -307,53 +336,53 @@
           :question="$t('FAQ.network-addrs')"
         >
           <ul>
-          <i18n path="FAQ.network-addrs-core" tag="li">
-            <template v-slot:umbra>
-              <span class="code">Umbra</span>
-            </template>
-            <template v-slot:umbra-addr>
-              <span class="code">{{deployments.umbra}}</span>
-            </template>
-            <template v-slot:mainnet>
-              <a :href="getEtherscanUrl(deployments.umbra, 1)" class="hyperlink" target="_blank"> mainnet </a>
-            </template>
-            <template v-slot:rinkeby>
-              <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
-            </template>
-            <template v-slot:optimism>
-              <a :href="getEtherscanUrl(deployments.umbra, 10)" class="hyperlink" target="_blank"> Optimism </a>
-            </template>
-            <template v-slot:polygon>
-              <a :href="getEtherscanUrl(deployments.umbra, 137)" class="hyperlink" target="_blank"> Polygon </a>
-            </template>
-            <template v-slot:arbitrum>
-              <a :href="getEtherscanUrl(deployments.umbra, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
-            </template>
-          </i18n>
-          <i18n path="FAQ.network-addrs-registry" tag="li">
-            <template v-slot:stealthRegistry>
-              <span class="code">StealthKeyRegistry</span>
-            </template>
-            <template v-slot:stealthRegistryAddr>
-              <span class="code">{{deployments.registry}}</span>
-            </template>
-            <template v-slot:mainnet>
-              <a :href="getEtherscanUrl(deployments.registry, 1)" class="hyperlink" target="_blank"> mainnet </a>
-            </template>
-            <template v-slot:rinkeby>
-              <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
-            </template>
-            <template v-slot:optimism>
-              <a :href='getEtherscanUrl(deployments.registry, 10)' class="hyperlink" target="_blank"> Optimism </a>
-            </template>
-            <template v-slot:polygon>
-              <a :href="getEtherscanUrl(deployments.registry, 137)" class="hyperlink" target="_blank"> Polygon </a>
-            </template>
-            <template v-slot:arbitrum>
-              <a :href="getEtherscanUrl(deployments.registry, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
-            </template>
-          </i18n>
-        </ul>
+            <i18n path="FAQ.network-addrs-core" tag="li">
+              <template v-slot:umbra>
+                <span class="code">Umbra</span>
+              </template>
+              <template v-slot:umbra-addr>
+                <span class="code">{{ deployments.umbra }}</span>
+              </template>
+              <template v-slot:mainnet>
+                <a :href="getEtherscanUrl(deployments.umbra, 1)" class="hyperlink" target="_blank"> mainnet </a>
+              </template>
+              <template v-slot:rinkeby>
+                <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
+              </template>
+              <template v-slot:optimism>
+                <a :href="getEtherscanUrl(deployments.umbra, 10)" class="hyperlink" target="_blank"> Optimism </a>
+              </template>
+              <template v-slot:polygon>
+                <a :href="getEtherscanUrl(deployments.umbra, 137)" class="hyperlink" target="_blank"> Polygon </a>
+              </template>
+              <template v-slot:arbitrum>
+                <a :href="getEtherscanUrl(deployments.umbra, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
+              </template>
+            </i18n>
+            <i18n path="FAQ.network-addrs-registry" tag="li">
+              <template v-slot:stealthRegistry>
+                <span class="code">StealthKeyRegistry</span>
+              </template>
+              <template v-slot:stealthRegistryAddr>
+                <span class="code">{{ deployments.registry }}</span>
+              </template>
+              <template v-slot:mainnet>
+                <a :href="getEtherscanUrl(deployments.registry, 1)" class="hyperlink" target="_blank"> mainnet </a>
+              </template>
+              <template v-slot:rinkeby>
+                <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
+              </template>
+              <template v-slot:optimism>
+                <a :href="getEtherscanUrl(deployments.registry, 10)" class="hyperlink" target="_blank"> Optimism </a>
+              </template>
+              <template v-slot:polygon>
+                <a :href="getEtherscanUrl(deployments.registry, 137)" class="hyperlink" target="_blank"> Polygon </a>
+              </template>
+              <template v-slot:arbitrum>
+                <a :href="getEtherscanUrl(deployments.registry, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
+              </template>
+            </i18n>
+          </ul>
         </f-a-q-item>
       </div>
 
@@ -363,7 +392,12 @@
 
           <i18n path="FAQ.how-it-works-answer-ECDH" tag="p">
             <template v-slot:ECDH>
-              <a class="hyperlink" href="https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman" target="_blank" >Elliptic Curve Diffie-Hellman</a >
+              <a
+                class="hyperlink"
+                href="https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman"
+                target="_blank"
+                >Elliptic Curve Diffie-Hellman</a
+              >
             </template>
             <template v-slot:c>
               <span class="code">c</span>
@@ -391,7 +425,6 @@
           </i18n>
 
           <div v-html="$t('FAQ.how-it-works-answer-end')"></div>
-
         </f-a-q-item>
       </div>
 
@@ -401,11 +434,15 @@
           :question="$t('FAQ.spend-view-keys')"
         >
           <i18n path="FAQ.spend-view-keys-answer-1" tag="p">
-              <a class="hyperlink" href="https://electriccoin.co/blog/explaining-viewing-keys/\" target="_blank" >{{$t('FAQ.nomenclature')}}</a >
+            <a class="hyperlink" href="https://electriccoin.co/blog/explaining-viewing-keys/\" target="_blank">{{
+              $t('FAQ.nomenclature')
+            }}</a>
           </i18n>
 
           <i18n path="FAQ.spend-view-keys-answer-2" tag="p">
-              <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')" >{{$t('FAQ.spend-view-keys-technical-details')}}</span >
+            <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')">{{
+              $t('FAQ.spend-view-keys-technical-details')
+            }}</span>
           </i18n>
         </f-a-q-item>
       </div>
@@ -418,7 +455,7 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.advanced-mode')}}
+        {{ $t('FAQ.advanced-mode') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
@@ -472,15 +509,12 @@
         isHeader="true"
         class="cursor-pointer link-icon-parent text-center text-primary text-h6 header-black q-pb-none"
       >
-        {{$t('FAQ.for-developers')}}
+        {{ $t('FAQ.for-developers') }}
         <q-icon class="link-icon" name="fas fa-link" right />
       </div>
 
       <div @click="copyUrl" id="how-can-i-build-on-top-of-umbra">
-        <f-a-q-item
-          :expanded="selectedId === 'how-can-i-build-on-top-of-umbra'"
-          :question="$t('FAQ.build-on-umbra')"
-        >
+        <f-a-q-item :expanded="selectedId === 'how-can-i-build-on-top-of-umbra'" :question="$t('FAQ.build-on-umbra')">
           <div v-html="$t('FAQ.build-on-umbra-answer', { link: 'https://tools.ietf.org/html/rfc6979' })"></div>
         </f-a-q-item>
       </div>
@@ -495,16 +529,18 @@
       </div>
 
       <div @click="copyUrl" id="what-are-hooks-and-how-do-i-use-them">
-        <f-a-q-item
-          :expanded="selectedId === 'what-are-hooks-and-how-do-i-use-them'"
-          :question="$t('FAQ.hooks')"
-        >
-          <i18n path="FAQ.hooks-answer" tag="p" >
-              <a class="hyperlink" href="https://eips.ethereum.org/EIPS/eip-777" target="_blank">ERC-777</a>
+        <f-a-q-item :expanded="selectedId === 'what-are-hooks-and-how-do-i-use-them'" :question="$t('FAQ.hooks')">
+          <i18n path="FAQ.hooks-answer" tag="p">
+            <a class="hyperlink" href="https://eips.ethereum.org/EIPS/eip-777" target="_blank">ERC-777</a>
           </i18n>
           <div v-html="$t('FAQ.hooks-answer-rest')"></div>
-          <i18n path="FAQ.hooks-answer-encode-data" tag="p" >
-              <a class="hyperlink" href="https://docs.ethers.io/v5/single-page/#/v5/api/utils/abi/interface/-%23-Interface--encoding" target="_blank" >{{$t('FAQ.hooks-answer-encoding-data')}}</a >
+          <i18n path="FAQ.hooks-answer-encode-data" tag="p">
+            <a
+              class="hyperlink"
+              href="https://docs.ethers.io/v5/single-page/#/v5/api/utils/abi/interface/-%23-Interface--encoding"
+              target="_blank"
+              >{{ $t('FAQ.hooks-answer-encoding-data') }}</a
+            >
           </i18n>
           <div v-html="$t('FAQ.hooks-answer-end')"></div>
         </f-a-q-item>

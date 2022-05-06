@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">{{$t('Setup.setup')}}</h2>
+    <h2 class="page-title">{{ $t('Setup.setup') }}</h2>
 
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
@@ -17,9 +17,8 @@
       class="form-max-wide shadow-2"
       :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'"
     >
-      <h5 class="q-my-md q-pt-none">{{$t('Setup.generate-stealth')}}</h5>
-      <div class="q-mt-md" v-html="$t('Setup.paragraph')">
-      </div>
+      <h5 class="q-my-md q-pt-none">{{ $t('Setup.generate-stealth') }}</h5>
+      <div class="q-mt-md" v-html="$t('Setup.paragraph')"></div>
       <base-button
         @click="setupAccount"
         :disable="isLoading"
@@ -30,9 +29,11 @@
     </div>
 
     <div v-else class="form-max-wide shadow-2" :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'">
-      <h5 class="q-my-md q-pt-none"><q-icon color="positive" class="q-mr-sm" name="fas fa-check" />{{$t('Setup.complete')}}</h5>
+      <h5 class="q-my-md q-pt-none">
+        <q-icon color="positive" class="q-mr-sm" name="fas fa-check" />{{ $t('Setup.complete') }}
+      </h5>
       <i18n path="Setup.return-to-home" tag="p" class="q-mt-md">
-        <router-link class="hyperlink" :to="{ name: 'home' }">{{$t('Setup.return-home')}}</router-link>
+        <router-link class="hyperlink" :to="{ name: 'home' }">{{ $t('Setup.return-home') }}</router-link>
       </i18n>
     </div>
   </q-page>
