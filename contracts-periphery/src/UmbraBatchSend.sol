@@ -39,7 +39,7 @@ contract UmbraBatchSend {
     bytes32 pkx;
     bytes32 ciphertext;
   }
-  
+
   error ValueMismatch();
   event BatchSendExecuted(address indexed sender);
 

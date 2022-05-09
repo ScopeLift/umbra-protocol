@@ -19,7 +19,7 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
 
   uint256 toll;
   bytes32 pkx = "pkx";
-  bytes32 ciphertext = "ciphertext";   
+  bytes32 ciphertext = "ciphertext";
 
   UmbraBatchSend.SendEth[] sendEth;
   UmbraBatchSend.SendToken[] sendToken;
@@ -101,7 +101,7 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
     token.approve(address(router), totalAmount);
 
-    vm.expectCall(address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendEth, sendToken));        
+    vm.expectCall(address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendEth, sendToken));
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendEth.selector));
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
 
