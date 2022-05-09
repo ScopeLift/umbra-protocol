@@ -177,6 +177,29 @@
               <option value="en-us">English</option>
               <option value="zh-cn">中文</option>
             </select>
+              <base-select
+                v-model="language"
+                @input="setLanguage(language)"
+                dense
+                :filled="false"
+                :hideBottomSpace="true"
+                outlined
+                :options="supportedLanguages"
+                option-label="label"
+                rounded
+              ></base-select>
+              <base-select
+                v-model="test"
+                dense
+                :filled="false"
+                :hideBottomSpace="true"
+                outlined
+                :options="[ { label: 'English', value: 'en-us' } , { label: '中文', value: 'zh-cn' }]"
+                option-label="label"
+                option-value="value"
+                rounded
+              ></base-select>
+              <p>test is {{ test.value }}</p>
             <span class="text-caption q-ml-md">Language</span>
           </p>
         </div>
@@ -249,7 +272,8 @@ export default defineComponent({
   name: 'BaseLayout',
   components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
-    const { advancedMode, isDark, toggleAdvancedMode, toggleDarkMode } = useSettingsStore();
+    const test = 'test'
+    const { advancedMode, isDark, language, supportedLanguages, toggleAdvancedMode, setLanguage, toggleDarkMode } = useSettingsStore();
     const {
       avatar,
       isAccountSetup,
@@ -263,6 +287,7 @@ export default defineComponent({
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
     return {
+      test,
       avatar,
       advancedMode,
       argentModalDismissed,
@@ -270,10 +295,13 @@ export default defineComponent({
       isAccountSetup,
       isAccountSetupLegacy,
       isDark,
+      language,
+      supportedLanguages,
       isLoading,
       network,
       showArgentModal,
       toggleAdvancedMode,
+      setLanguage,
       toggleDarkMode,
       userAddress,
       userDisplayName,

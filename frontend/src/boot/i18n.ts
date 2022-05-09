@@ -5,7 +5,7 @@ import VueI18n from 'vue-i18n';
 import Quasar from 'quasar';
 
 Vue.use(VueI18n);
-console.log(Quasar.lang.getLocale());
+window.logger.info(Quasar.lang.getLocale());
 
 export const i18n = new VueI18n({
   locale: Quasar.lang.getLocale(),
