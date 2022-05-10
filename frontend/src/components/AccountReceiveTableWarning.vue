@@ -11,14 +11,14 @@
     </q-card-section>
 
     <q-card-section>
-      <i18n path="AccountRTW.withdrawal-warning" tag="p">
+      <i18n path="AccountReceiveTableWarning.withdrawal-warning" tag="p">
         <span class="code">{{ destinationAddress }}</span
         >" </i18n
       >"
       <ul>
         <li v-html="warning" v-for="(warning, index) in warnings" :key="index" class="q-my-sm" />
       </ul>
-      {{ $t('AccountRTW.withdrawal-warning-rest') }}
+      {{ $t('AccountReceiveTableWarning.withdrawal-warning-rest') }}
     </q-card-section>
 
     <q-card-section>
@@ -26,7 +26,7 @@
         <base-button @click="context.emit('acknowledged')" label="I acknowledge the risks" :outline="true" />
         <router-link class="no-text-decoration" target="_blank" to="/faq#receiving-funds">
           <!-- Button does nothing on click, but we wrap with router-link to open the page in a new tab -->
-          <base-button :label="$t('AccountRTW.learn-more')" />
+          <base-button :label="$t('AccountReceiveTableWarning.learn-more')" />
         </router-link>
       </div>
     </q-card-section>

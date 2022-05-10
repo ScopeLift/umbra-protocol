@@ -31,7 +31,7 @@
 
     <div v-if="isLoading" class="text-center">
       <loading-spinner />
-      <div class="text-center text-italic">{{ $t('AccountRT.processing-results') }}</div>
+      <div class="text-center text-italic">{{ $t('AccountReceiveTable.processing-results') }}</div>
     </div>
 
     <!-- Received funds table -->
@@ -42,9 +42,9 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
       >
-        {{ $t('AccountRT.configure-umbra') }}<br />
-        <i18n path="AccountRT.navigate-to-setup" tag="span">
-          <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountRT.setup') }}</router-link>
+        {{ $t('AccountReceiveTable.configure-umbra') }}<br />
+        <i18n path="AccountReceiveTable.navigate-to-setup" tag="span">
+          <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountReceiveTable.setup') }}</router-link>
         </i18n>
       </div>
       <div
@@ -53,12 +53,12 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
       >
-        <i18n path="AccountRT.keys-dont-match" tag="span"
-          >{{ $t('AccountRT.keys-dont-match') }}
-          <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountRT.setup') }}</router-link>
+        <i18n path="AccountReceiveTable.keys-dont-match" tag="span"
+          >{{ $t('AccountReceiveTable.keys-dont-match') }}
+          <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountReceiveTable.setup') }}</router-link>
         </i18n>
         <router-link class="hyperlink" :to="{ name: 'FAQ', hash: '#account-setup' }">{{
-          $t('AccountRT.learn-more')
+          $t('AccountReceiveTable.learn-more')
         }}</router-link
         >.
       </div>
@@ -66,7 +66,7 @@
       <div v-if="advancedMode" class="text-caption q-mb-sm">
         <!-- This scanDescriptionString describes scan settings that were used -->
         {{ scanDescriptionString }}.
-        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">{{ $t('AccountRT.scan-settings') }}</span
+        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">{{ $t('AccountReceiveTable.scan-settings') }}</span
         >.
       </div>
       <q-table
@@ -75,10 +75,10 @@
         :columns="mainTableColumns"
         :data="formattedAnnouncements"
         :expanded.sync="expanded"
-        :no-data-label="$t('AccountRT.account-empty')"
+        :no-data-label="$t('AccountReceiveTable.account-empty')"
         :pagination="paginationConfig"
         row-key="randomNumber"
-        :title="$t('AccountRT.received-funds')"
+        :title="$t('AccountReceiveTable.received-funds')"
       >
         <!-- Card Layout for grid option -->
         <template v-slot:item="props">
@@ -92,7 +92,7 @@
               </q-card-section>
               <q-card-section>
                 <div class="row justify-between items-center">
-                  <div>{{ $t('AccountRT.sender') }}</div>
+                  <div>{{ $t('AccountReceiveTable.sender') }}</div>
                   <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                     <span>{{ props.row.from }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
@@ -100,7 +100,7 @@
                 </div>
                 <div class="row justify-between items-center">
                   <div>
-                    <span class="q-mr-xs">{{ $t('AccountRT.stealth-receiver') }}</span>
+                    <span class="q-mr-xs">{{ $t('AccountReceiveTable.stealth-receiver') }}</span>
                     <base-tooltip icon="fas fa-question-circle">
                       <span>
                         {{ receiverTooltipText }}
@@ -110,7 +110,7 @@
                         class="hyperlink dark-toggle"
                         :to="{ path: 'faq', hash: '#receiving-funds' }"
                       >
-                        {{ $t('AccountRT.learn-more') }}
+                        {{ $t('AccountReceiveTable.learn-more') }}
                       </router-link>
                     </base-tooltip>
                   </div>
@@ -120,7 +120,7 @@
                   </div>
                 </div>
                 <div class="row justify-between items-center text-caption text-grey">
-                  <div>{{ $t('AccountRT.received') }}</div>
+                  <div>{{ $t('AccountReceiveTable.received') }}</div>
                   <div>
                     {{ formatDate(props.row.timestamp * 1000) }}
                     {{ formatTime(props.row.timestamp * 1000) }}
@@ -138,7 +138,7 @@
                     if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
                   "
                 >
-                  {{ $t('AccountRT.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
+                  {{ $t('AccountReceiveTable.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
                 </div>
                 <base-button
                   v-else
@@ -151,7 +151,7 @@
                   :dense="true"
                   :disable="isWithdrawInProgress"
                   :flat="true"
-                  :label="props.expand ? $t('AccountRT.hide') : $t('AccountRT.withdraw')"
+                  :label="props.expand ? $t('AccountReceiveTable.hide') : $t('AccountReceiveTable.withdraw')"
                 />
               </q-card-actions>
               <q-slide-transition>
@@ -192,7 +192,7 @@
                   class="hyperlink dark-toggle"
                   :to="{ path: 'faq', hash: '#receiving-funds' }"
                 >
-                  {{ $t('AccountRT.learn-more') }}
+                  {{ $t('AccountReceiveTable.learn-more') }}
                 </router-link>
               </base-tooltip>
             </q-th>
@@ -271,7 +271,7 @@
                   if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
                 "
               >
-                {{ $t('AccountRT.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
+                {{ $t('AccountReceiveTable.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
               </div>
               <base-button
                 v-else
@@ -284,7 +284,7 @@
                 :dense="true"
                 :disable="isWithdrawInProgress"
                 :flat="true"
-                :label="props.expand ? $t('AccountRT.hide') : $t('AccountRT.withdraw')"
+                :label="props.expand ? $t('AccountReceiveTable.hide') : $t('AccountReceiveTable.withdraw')"
               />
             </q-td>
           </q-tr>
@@ -315,7 +315,7 @@
         class="text-caption text-right q-mt-md"
         style="opacity: 0.5"
       >
-        <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> {{ $t('AccountRT.scanning-complete') }}
+        <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> {{ $t('AccountReceiveTable.scanning-complete') }}
       </div>
     </div>
   </div>
@@ -340,25 +340,25 @@ import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
-  const vm = getCurrentInstance();
+  const vm = getCurrentInstance()!;
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
   const spendingPrivateKey = ref<string>(); // used for hiding/showing private key in UI, so not a computed property
 
   // Generate string that explains scan settings that were used
   const scanDescriptionString = computed(() => {
-    const suffix = scanPrivateKey.value ? vm?.$i18n.t('AccountRT.custom-prv-key') : '';
+    const suffix = scanPrivateKey.value ? vm?.$i18n.t('AccountReceiveTable.custom-prv-key') : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    let msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
-      'AccountRT.to'
+    let msg = `${vm?.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
+      'AccountReceiveTable.to'
     )} ${Number(endBlock.value)}`; // default message
 
-    if (!hasStartBlock && !hasEndBlock) msg = `${vm?.$i18n.t('AccountRT.all-blocks-scanned')}`;
+    if (!hasStartBlock && !hasEndBlock) msg = `${vm?.$i18n.t('AccountReceiveTable.all-blocks-scanned')}`;
     if (!hasStartBlock && hasEndBlock)
-      msg = `${vm?.$i18n.t('AccountRT.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
+      msg = `${vm?.$i18n.t('AccountReceiveTable.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
     if (hasStartBlock && !hasEndBlock)
-      msg = `${vm?.$i18n.t('AccountRT.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
-        'AccountRT.to-current-block'
+      msg = `${vm?.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
+        'AccountReceiveTable.to-current-block'
       )}`;
     return `${msg}${suffix}`;
   });
@@ -377,7 +377,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   // For advanced mode: copyies the provided stealth private key to the clipboard
   const copyPrivateKey = async (privateKey: string) => {
     await copyToClipboard(privateKey);
-    notifyUser('success', vm.$i18n.t('AccountRT.private-key-copied').toString());
+    notifyUser('success', vm.$i18n.t('AccountReceiveTable.private-key-copied').toString());
     hidePrivateKey();
   };
 
@@ -400,7 +400,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const isFeeLoading = ref(false);
   const isWithdrawInProgress = ref(false);
   const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have a relayer tx ID)
-  const vm = getCurrentInstance();
+  const vm = getCurrentInstance()!;
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
@@ -410,7 +410,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'timestamp',
-      label: vm?.$i18n.t('AccountRT.date-received'),
+      label: vm?.$i18n.t('AccountReceiveTable.date-received'),
       name: 'date',
       sortable: true,
       sort: sortByTime,
@@ -418,16 +418,16 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'amount',
-      label: vm?.$i18n.t('AccountRT.amount'),
+      label: vm?.$i18n.t('AccountReceiveTable.amount'),
       name: 'amount',
       sortable: true,
       format: toString,
     },
-    { align: 'left', field: 'from', label: vm?.$i18n.t('AccountRT.sender'), name: 'from', sortable: true },
+    { align: 'left', field: 'from', label: vm?.$i18n.t('AccountReceiveTable.sender'), name: 'from', sortable: true },
     {
       align: 'left',
       field: 'receiver',
-      label: vm?.$i18n.t('AccountRT.stealth-receiver'),
+      label: vm?.$i18n.t('AccountReceiveTable.stealth-receiver'),
       name: 'receiver',
       sortable: false,
     },
@@ -468,7 +468,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
   onMounted(async () => {
     isLoading.value = true;
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
 
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
@@ -491,14 +491,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
     await copyToClipboard(address);
-    notifyUser('success', `${type} ${vm.$i18n.t('AccountRT.address-copied')}`);
+    notifyUser('success', `${type} ${vm.$i18n.t('AccountReceiveTable.address-copied')}`);
   }
 
   /**
    * @notice Opens the transaction in etherscan
    */
   function openInEtherscan(row: UserAnnouncement) {
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
     // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     window.open(getEtherscanUrl(row.txHash, chainId));
@@ -510,8 +510,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
     // Check if withdrawal destination is safe
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
-    if (!userAddress.value) throw new Error(vm.$i18n.t('AccountRT.wallet-not-connected').toString());
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
+    if (!userAddress.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
     activeAnnouncement.value = announcement;
     const { safe, reasons } = await isAddressSafe(
       destinationAddress.value,
@@ -545,9 +545,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @notice Executes the withdraw process
    */
   async function executeWithdraw(options: ExecuteWithdrawalOptions) {
-    if (!umbra.value) throw new Error(vm.$i18n.t('AccountRT.umbra-instance-not-found').toString());
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountRT.provider-not-found').toString());
-    if (!activeAnnouncement.value) throw new Error(vm.$i18n.t('AccountRT.no-announcement-selected').toString());
+    if (!umbra.value) throw new Error(vm.$i18n.t('AccountReceiveTable.umbra-instance-not-found').toString());
+    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.provider-not-found').toString());
+    if (!activeAnnouncement.value) throw new Error(vm.$i18n.t('AccountReceiveTable.no-announcement-selected').toString());
     showPrivacyModal.value = false;
 
     // Get token info, stealth private key, and destination (acceptor) address
@@ -570,11 +570,11 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value)
-          throw new Error(vm.$i18n.t('AccountRT.signer-or-provider-not-found').toString());
+          throw new Error(vm.$i18n.t('AccountReceiveTable.signer-or-provider-not-found').toString());
         if (!activeFee.value || !('fee' in activeFee.value))
-          throw new Error(vm.$i18n.t('AccountRT.fee-not-set').toString());
+          throw new Error(vm.$i18n.t('AccountReceiveTable.fee-not-set').toString());
         const chainId = network.value?.chainId;
-        if (!chainId) throw new Error(`${vm.$i18n.t('AccountRT.invalid-chain-id')} ${String(chainId)}`);
+        if (!chainId) throw new Error(`${vm.$i18n.t('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
 
         // Get users signature
         const sponsor = '0xb4435399AB53D6136C9AEEBb77a0120620b117F9'; // TODO update this
@@ -592,14 +592,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
         if (chainId === 137) {
           // No relayer support on this network, so this is a regular transaction hash
-          console.log(`${vm.$i18n.t('AccountRT.relayed-with-tx-hash')} ${relayTransactionHash}`);
+          console.log(`${vm.$i18n.t('AccountReceiveTable.relayed-with-tx-hash')} ${relayTransactionHash}`);
           const receipt = await provider.value.waitForTransaction(relayTransactionHash);
-          console.log(vm.$i18n.t('AccountRT.withdraw-successful-receipt'), receipt);
+          console.log(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
         } else {
           // Received a relayer transaction hash, wait for withdraw transaction to be mined
-          console.log(`${vm.$i18n.t('AccountRT.relayed-with-relayer-id')} ${relayTransactionHash}`);
+          console.log(`${vm.$i18n.t('AccountReceiveTable.relayed-with-relayer-id')} ${relayTransactionHash}`);
           const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedRelayerStatusResponse;
-          console.log(vm.$i18n.t('AccountRT.withdraw-successful-receipt'), receipt);
+          console.log(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
         }
       }
 
@@ -673,8 +673,8 @@ export default defineComponent({
       if (advancedMode.value && scanPrivateKey.value) return new KeyPair(scanPrivateKey.value);
       return spendingKeyPairFromSig.value as KeyPair;
     });
-    const vm = getCurrentInstance();
-    const receiverTooltipText = vm.$i18n.t('AccountRT.receiver-tool-tip');
+    const vm = getCurrentInstance()!;
+    const receiverTooltipText = vm.$i18n.t('AccountReceiveTable.receiver-tool-tip');
 
     return {
       advancedMode,

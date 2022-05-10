@@ -205,7 +205,7 @@
     "hooks-answer-encoding-data": "Encoding Data",
     "hooks-answer-end": "<p> And that’s all there is to it. With the address of the hook contract and the encoded calldata, you are ready to call one of the two hook-based methods. </p>"
   },
-  "AccountRT": {
+  "AccountReceiveTable": {
     "processing-results": "Processing results...",
     "configure-umbra": "You won't be able to receive funds until you've configured Umbra.",
     "navigate-to-setup": "Please navigate to the {0} page and do so",
@@ -245,12 +245,12 @@
     "withdraw-succcessful-receipt": "Withdraw successful. Receipt:",
     "receiver-tool-tip": "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key."
   },
-  "AccountRTW": {
+  "AccountReceiveTableWarning": {
     "withdrawal-warning": "You are withdrawing to {destinationAddr}, which has the following warnings:",
     "withdrawal-warning-rest": "<span class=\"text-bold\">Continuing with withdrawal is not recommended</span> unless you know what you are doing, as this may reduce or entirely remove the privacy properties provided by Umbra.",
     "learn-more": "Learn More"
   },
-  "AccountRTWC": {
+  "AccountReceiveTableWithdrawConfirmation": {
     "confirm": "Confirm Withdrawal",
     "to": "Withdrawing to",
     "amount": "Amount",
