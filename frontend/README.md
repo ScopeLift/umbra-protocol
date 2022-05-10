@@ -47,12 +47,12 @@ The app is currently available in English and Simplified Chinese.
 
 Basic usauge is as follows:
 
-1. In the corresponding /i18n/locales/<locale>.json file add a new key and corresponding text or translation like so:
+1. In the corresponding /i18n/locales/`<locale>`.json file add a new key and corresponding text or translation like so:
 `"key-name" : "Sample text"`
 2. Use the following templates to embed the message on the frontend:
 - Inside templates: `{{ $t('key-name') }}`
 - Inside attributes: `:label="$t('key-name')"`
-- Inside scripts, create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm?.$i18n.t('AccountReceiveTable.date-received')`
+- Inside scripts, create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.t('AccountReceiveTable.date-received')`
 
 While embedding longer texts with styles and link, there are a few options:
 
@@ -66,9 +66,9 @@ While embedding longer texts with styles and link, there are a few options:
 - Key pairs stored as : `"key-with-variables": "This is a %{varName}"`
 - Inside templates use, `{{ $t('key-with-variables'), { varName: JSVariableName }) }}`
 
-3. For links or another way for texts with html tags use `<i18n>` tags:
+3. For links or another way for texts with html tags using `<i18n>` tags:
 - Store key pairs like:
-`"return-to-home": "You may now return {UnusedButReadableName} to send or receive funds"`,
+`"return-to-home": "You may now return {0} to send or receive funds"`,
 `"return-home": "home"`
 - Links:
 ```
@@ -86,7 +86,7 @@ While embedding longer texts with styles and link, there are a few options:
 4. Texts with multiple links or html tags:
 - Stored key pairs like:
 `"key-with-multiple-var": "This has multiple {{links}} or {{vars}}."`
-- Inside template:
+- Inside the template:
 ```
 <i18n path="key-with-multiple-var" tag="p">
 

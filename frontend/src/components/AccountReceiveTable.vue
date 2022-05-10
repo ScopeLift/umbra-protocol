@@ -346,18 +346,18 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 
   // Generate string that explains scan settings that were used
   const scanDescriptionString = computed(() => {
-    const suffix = scanPrivateKey.value ? vm?.$i18n.t('AccountReceiveTable.custom-prv-key') : '';
+    const suffix = scanPrivateKey.value ? vm.$i18n.t('AccountReceiveTable.custom-prv-key') : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    let msg = `${vm?.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
+    let msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.t(
       'AccountReceiveTable.to'
     )} ${Number(endBlock.value)}`; // default message
 
-    if (!hasStartBlock && !hasEndBlock) msg = `${vm?.$i18n.t('AccountReceiveTable.all-blocks-scanned')}`;
+    if (!hasStartBlock && !hasEndBlock) msg = `${vm.$i18n.t('AccountReceiveTable.all-blocks-scanned')}`;
     if (!hasStartBlock && hasEndBlock)
-      msg = `${vm?.$i18n.t('AccountReceiveTable.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
+      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
     if (hasStartBlock && !hasEndBlock)
-      msg = `${vm?.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm?.$i18n.t(
+      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.t(
         'AccountReceiveTable.to-current-block'
       )}`;
     return `${msg}${suffix}`;
@@ -410,7 +410,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'timestamp',
-      label: vm?.$i18n.t('AccountReceiveTable.date-received'),
+      label: vm.$i18n.t('AccountReceiveTable.date-received'),
       name: 'date',
       sortable: true,
       sort: sortByTime,
@@ -418,16 +418,16 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'amount',
-      label: vm?.$i18n.t('AccountReceiveTable.amount'),
+      label: vm.$i18n.t('AccountReceiveTable.amount'),
       name: 'amount',
       sortable: true,
       format: toString,
     },
-    { align: 'left', field: 'from', label: vm?.$i18n.t('AccountReceiveTable.sender'), name: 'from', sortable: true },
+    { align: 'left', field: 'from', label: vm.$i18n.t('AccountReceiveTable.sender'), name: 'from', sortable: true },
     {
       align: 'left',
       field: 'receiver',
-      label: vm?.$i18n.t('AccountReceiveTable.stealth-receiver'),
+      label: vm.$i18n.t('AccountReceiveTable.stealth-receiver'),
       name: 'receiver',
       sortable: false,
     },
