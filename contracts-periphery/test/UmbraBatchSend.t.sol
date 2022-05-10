@@ -22,6 +22,7 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
 
   UmbraBatchSend.SendEth[] sendEth;
   UmbraBatchSend.SendToken[] sendToken;
+  UmbraBatchSend.TransferSummary[] transferSummary;
 
   error ValueMismatch();
 
@@ -67,6 +68,23 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
 
   function testFuzz_BatchSendTokens(uint72 amount, uint72 amount2) public {
     uint256 totalAmount = uint256(amount) + amount2;
+
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
+    uint256 totalToll = toll *  sendToken.length;
+    token.approve(address(router), totalAmount);
+
+    vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendTokens.selector, toll, sendToken));
+    vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
+    router.batchSendTokens{value: totalToll}(toll, sendToken);
+
+    assertEq(token.balanceOf(umbra), totalAmount);
+  }
+
+  function test_BatchSendTokens() public {
+    uint256 amount = 1000;
+    uint256 amount2 = 2000;
+    uint256 totalAmount = amount + amount2;
 
     sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
     sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
@@ -126,6 +144,32 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     uint256 totalToll = toll * sendEth.length + toll * sendToken.length;
     vm.expectRevert(abi.encodeWithSelector(ValueMismatch.selector));
     router.batchSend{value: 1e16*2 + totalToll + 42}(toll, sendEth, sendToken);
+  }
+
+  function testFuzz_NewBatchSendTokens(uint72 amount, uint72 amount2) public {
+    uint256 totalAmount = uint256(amount) + amount2;
+
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
+
+    transferSummary.push(UmbraBatchSend.TransferSummary(address(token), totalAmount));
+
+    token.approve(address(router), totalAmount);
+    router.newBatchSendTokens{value: toll * sendToken.length}(toll, sendToken, transferSummary);
+  }
+
+  function test_NewBatchSendTokens() public {
+    uint256 amount = 1000;
+    uint256 amount2 = 2000;
+    uint256 totalAmount = amount + amount2;
+
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
+
+    transferSummary.push(UmbraBatchSend.TransferSummary(address(token), totalAmount));
+
+    token.approve(address(router), totalAmount);
+    router.newBatchSendTokens{value: toll * sendToken.length}(toll, sendToken, transferSummary);
   }
 
 }
