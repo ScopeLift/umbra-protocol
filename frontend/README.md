@@ -47,6 +47,56 @@ The app is currently available in English and Simplified Chinese.
 
 Basic usauge is as follows:
 
-1. In /i18n/locales/*.json files add a new key and corresponding translation.
-2. Use '{{ $t('KeyName') }}` to place your message inside the template. ':label="$t('KeyName')'
-3. `const vm = getCurrentInstance()!;` then `vm?.$i18n.t('AccountReceiveTable.date-received')` to use inside scripts.
+1. In the corresponding /i18n/locales/<locale>.json file add a new key and corresponding text or translation like so:
+`"key-name" : "Sample text"`
+2. Use the following templates to embed the message on the frontend:
+- Inside templates: `{{ $t('key-name') }}`
+- Inside attributes: `:label="$t('key-name')"`
+- Inside scripts, create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm?.$i18n.t('AccountReceiveTable.date-received')`
+
+While embedding longer texts with styles and link, there are a few options:
+
+1. For texts with html tags and styles:
+- Store json file key value pairs like so, adding \ in front of ":
+`"key-with-html-tags": "<p>New paragraph with<span class=\"text-bold\">bold</span> text</p>"`
+- Inside templates use v-html="$t('key-name')` to maintain style and html tags
+
+2. For texts that contain variables:
+
+- Key pairs stored as : `"key-with-variables": "This is a %{varName}"`
+- Inside templates use, `{{ $t('key-with-variables'), { varName: JSVariableName }) }}`
+
+3. For links or another way for texts with html tags use `<i18n>` tags:
+- Store key pairs like:
+`"return-to-home": "You may now return {UnusedButReadableName} to send or receive funds"`,
+`"return-home": "home"`
+- Links:
+```
+<i18n path="return-to-home" tag="p" class="q-mt-md">
+  <router-link class="hyperlink" :to="{ name: 'home' }">{{$t('return-home')}}</router-link>
+</i18n>
+```
+- Texts with html tags:
+```
+<i18n path="return-to-home" tag="p">
+  <span class="code">Text or {{ Variable }}</span>
+</i18n>
+```
+
+4. Texts with multiple links or html tags:
+- Stored key pairs like:
+`"key-with-multiple-var": "This has multiple {{links}} or {{vars}}."`
+- Inside template:
+```
+<i18n path="key-with-multiple-var" tag="p">
+
+  <template v-slot:links>
+    <a class="hyperlink" href="https://app.umbra.cash" target="_blank" >1</a >
+  </template>
+
+  <template v-slot:vars>
+    <span class="code">Text or {{ Variable }}</span>
+  </template>
+
+</i18n>
+```
