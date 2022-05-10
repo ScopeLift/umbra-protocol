@@ -12,9 +12,10 @@ const settings = {
 };
 
 // Shared state between instances
+type Language = { label: string, value: string };
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
-const language = ref({label: '', value: ''}); //language code
+const language = ref<Language>({ label: '', value: '' }); //language code
 const supportedLanguages = [ { label: 'English', value: 'en-us' } , { label: '中文', value: 'zh-cn' }];
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
@@ -28,11 +29,13 @@ export default function useSettingsStore() {
     // Load settings
     setDarkMode(Boolean(LocalStorage.getItem(settings.isDark)));
     advancedMode.value = Boolean(LocalStorage.getItem(settings.advancedMode));
-    language.value.value = (Quasar.lang.getLocale() || 'en-us');
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
   });
+
+  language.value.value = (Quasar.lang.getLocale() || 'en-us');
+  language.value.label = getLanguageLabel()!;
 
   function setDarkMode(status: boolean) {
     // In addition to Quasars `Dark` param, we use the isDark state value with this setter, so we can reactively track
@@ -51,16 +54,18 @@ export default function useSettingsStore() {
     LocalStorage.set(settings.advancedMode, advancedMode.value);
   }
 
-  type Language = { label: string, value: string };
-
   function setLanguage(newLanguage: Language) {
-    console.log(newLanguage)
     language.value = newLanguage;
-
-    console.log('new set language value is', language.value.value)
-    // i18n.locale = language.value.value;
     i18n.locale = language.value.value;
     LocalStorage.set(settings.language, language.value);
+  }
+
+  function getLanguageLabel() {
+    for(let i = 0; i < supportedLanguages.length; i++) {
+      if(supportedLanguages[i].value === language.value.value) {
+        return supportedLanguages[i].label;
+      }
+    } return '';
   }
 
   function setScanBlocks(startBlock_: number, endBlock_: number) {

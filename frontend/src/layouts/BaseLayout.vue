@@ -172,36 +172,20 @@
             </span>
           </p>
           <!-- Language selection -->
-          <p>
-            <select class="text-caption" v-model="$i18n.locale">
-              <option value="en-us">English</option>
-              <option value="zh-cn">中文</option>
-            </select>
-              <base-select
-                v-model="language"
-                @input="setLanguage(language)"
-                dense
-                :filled="false"
-                :hideBottomSpace="true"
-                outlined
-                :options="supportedLanguages"
-                option-label="label"
-                rounded
-              ></base-select>
-              <base-select
-                v-model="test"
-                dense
-                :filled="false"
-                :hideBottomSpace="true"
-                outlined
-                :options="[ { label: 'English', value: 'en-us' } , { label: '中文', value: 'zh-cn' }]"
-                option-label="label"
-                option-value="value"
-                rounded
-              ></base-select>
-              <p>test is {{ test.value }}</p>
-            <span class="text-caption q-ml-md">Language</span>
-          </p>
+            <base-select
+              class="language-selector"
+              v-model="currentLanguage"
+              @input="setLanguage(currentLanguage)"
+              dense
+              options-dense="true"
+              :filled="false"
+              :hideBottomSpace="true"
+              outlined
+              label="Language"
+              :options="supportedLanguages"
+              option-label="label"
+              square
+            ></base-select>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
@@ -284,6 +268,7 @@ export default defineComponent({
       userAddress,
       userDisplayName,
     } = useWalletStore();
+    const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
     return {
@@ -296,6 +281,7 @@ export default defineComponent({
       isAccountSetupLegacy,
       isDark,
       language,
+      currentLanguage,
       supportedLanguages,
       isLoading,
       network,

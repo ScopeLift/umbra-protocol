@@ -5,10 +5,10 @@ import VueI18n from 'vue-i18n';
 import Quasar from 'quasar';
 
 Vue.use(VueI18n);
-window.logger.info(Quasar.lang.getLocale());
+const locale = Quasar.lang.getLocale();
 
 export const i18n = new VueI18n({
-  locale: Quasar.lang.getLocale(),
+  locale: locale,
   fallbackLocale: 'en-us',
   messages,
 });
