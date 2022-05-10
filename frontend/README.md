@@ -40,3 +40,13 @@ yarn clean # clear previous build artifacts
 2. Fill in the `.env` file with your Infura ID. You only need the Portis and Fortmatic API keys if you plan on using those wallets
 3. Install dependencies with `yarn`
 4. Build for development with `yarn run dev`
+
+## Internationalization
+
+The app is currently available in English and Simplified Chinese.
+
+Basic usauge is as follows:
+
+1. In /i18n/locales/*.json files add a new key and corresponding translation.
+2. Use '{{ $t('KeyName') }}` to place your message inside the template. ':label="$t('KeyName')'
+3. `const vm = getCurrentInstance()!;` then `vm?.$i18n.t('AccountReceiveTable.date-received')` to use inside scripts.
