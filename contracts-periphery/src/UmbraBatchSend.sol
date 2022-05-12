@@ -24,15 +24,18 @@ interface IUmbra {
 contract UmbraBatchSend {
   IUmbra internal immutable umbra;
 
-
+  /// Option 3: dgrant way
   /// @dev Used for verifying transferSummary parameters
   mapping(IERC20 => uint256) internal transferOutputs;
-
  /// @dev Used for saving off contribution ratios for verifying input parameters
   mapping(address => uint256) internal transferTotal;
-
   /// @dev Scale factor on percentages when constructing `Donation` objects. One WAD represents 100%
   uint256 internal constant WAD = 1e18;
+
+  /// Option 1: Original attempt
+  mapping(address => uint256) internal totalPerToken;
+  mapping(address => bool) internal tokenInArray;
+  address[] internal tokenAddrs;
 
   /// @param amount Amount of ETH to send per address excluding the toll
   struct SendEth {
@@ -61,7 +64,56 @@ contract UmbraBatchSend {
   constructor(IUmbra _umbra) {
     umbra = _umbra;
   }
+  /// Option 1: Original attempt
+    function receiveTokens(SendToken[] calldata _params) internal {
+    for (uint256 i = 0; i < _params.length; i++) {
+      address tokenAddr = _params[i].tokenAddr;
 
+      if (tokenInArray[tokenAddr] == false) {
+        tokenAddrs.push(tokenAddr);
+        tokenInArray[tokenAddr] = true;
+      }
+      totalPerToken[tokenAddr] += _params[i].amount;
+    }
+
+    for (uint256 i = 0; i < tokenAddrs.length; i++) {
+      if (tokenAddrs[i] != address(0)) {
+        IERC20 token = IERC20(tokenAddrs[i]);
+        //User needs to approve router address as spender first
+        token.transferFrom(msg.sender, address(this), totalPerToken[tokenAddrs[i]]);
+
+        delete tokenInArray[tokenAddrs[i]];
+        delete totalPerToken[tokenAddrs[i]];
+        delete tokenAddrs[i];
+      }
+    }
+  }
+
+  function batchSendTokensOption1(uint256 _tollCommitment, SendToken[] calldata _params) public payable {
+    //Transfer msg.sender tokens to this contract before sending to Umbra.sol
+    receiveTokens(_params);
+
+    for (uint256 i = 0; i < _params.length; i++) {
+      uint256 _amount = _params[i].amount;
+      address _tokenAddr = _params[i].tokenAddr;
+      IERC20 token = IERC20(address(_tokenAddr));
+
+      if (token.allowance(address(this), address(umbra)) == 0) {
+        token.approve(address(umbra), type(uint256).max);
+      }
+
+      umbra.sendToken{value: _tollCommitment}(
+        _params[i].receiver,
+        _params[i].tokenAddr,
+        _amount,
+        _params[i].pkx,
+        _params[i].ciphertext
+      );
+    }
+  }
+
+
+  /// Option 3: dgrant way
   function newBatchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params, TransferSummary[] calldata _summary) external payable {
 
     if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();

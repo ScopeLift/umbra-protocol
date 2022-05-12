@@ -159,8 +159,8 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
   }
 
   function test_NewBatchSendTokens() public {
-    uint256 amount = 1000;
-    uint256 amount2 = 2000;
+    uint256 amount = 1000 ether;
+    uint256 amount2 = 2000 ether;
     uint256 totalAmount = amount + amount2;
 
     sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
