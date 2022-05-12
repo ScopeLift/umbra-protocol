@@ -54,7 +54,7 @@ Basic usauge is as follows:
 - Inside attributes: `:label="$t('key-name')"`
 - Inside scripts, create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.t('AccountReceiveTable.date-received')`
 
-While embedding longer texts with styles and link, there are a few options:
+While embedding longer texts with styles and links, there are a few options:
 
 1. For texts with html tags and styles:
 - Store json file key value pairs like so, adding \ in front of ":

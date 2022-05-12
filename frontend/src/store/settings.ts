@@ -34,8 +34,12 @@ export default function useSettingsStore() {
       : undefined;
   });
 
-  language.value.value = (Quasar.lang.getLocale() || 'en-us');
-  language.value.label = getLanguageLabel()!;
+  if(language.value.value===''){
+    language.value.value = (i18n.locale || 'en-us');
+  }
+  if(language.value.label === ''){
+    language.value.label = getLanguageLabel()!;
+  }
 
   function setDarkMode(status: boolean) {
     // In addition to Quasars `Dark` param, we use the isDark state value with this setter, so we can reactively track
