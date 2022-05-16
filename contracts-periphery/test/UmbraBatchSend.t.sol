@@ -146,6 +146,18 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     router.batchSend{value: 1e16*2 + totalToll + 42}(toll, sendEth, sendToken);
   }
 
+  function test_BatchSendTokensOption1() public {
+    uint256 amount = 1000 ether;
+    uint256 amount2 = 2000 ether;
+    uint256 totalAmount = amount + amount2;
+
+    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
+    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
+
+    token.approve(address(router), totalAmount);
+    router.batchSendTokensOption1{value: toll * sendToken.length}(toll, sendToken);
+  }
+
   function testFuzz_NewBatchSendTokens(uint72 amount, uint72 amount2) public {
     uint256 totalAmount = uint256(amount) + amount2;
 
