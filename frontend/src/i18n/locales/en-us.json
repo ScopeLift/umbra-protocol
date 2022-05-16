@@ -246,7 +246,7 @@
     "receiver-tool-tip": "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key."
   },
   "AccountReceiveTableWarning": {
-    "withdrawal-warning": "You are withdrawing to {destinationAddr}, which has the following warnings:",
+    "withdrawal-warning": "You are withdrawing to {0}, which has the following warnings:",
     "withdrawal-warning-rest": "<span class=\"text-bold\">Continuing with withdrawal is not recommended</span> unless you know what you are doing, as this may reduce or entirely remove the privacy properties provided by Umbra.",
     "learn-more": "Learn More"
   },
