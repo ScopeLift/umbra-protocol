@@ -1,13 +1,8 @@
-.PHONY: test
+-include .env
 
-ifeq (${SKIP_FORGE}, true)
-  INSTALL_CMD := echo skip forge install
-else
-  INSTALL_CMD := forge install
-endif
+forkBlock = 14800081
 
-build :; forge build
-clean :; forge clean
-install :; $(INSTALL_CMD)
-snapshot :; forge snapshot --match-path test/UmbraBatchSend.gas.t.sol
-test :; forge test
+build :; FOUNDRY_PROFILE=hook forge build
+install :; forge install
+Test :; FOUNDRY_PROFILE=hook forge test -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-contract WithdrawData -vv
+Testv :; Test :; FOUNDRY_PROFILE=hook forge test -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-contract WithdrawData -vvvv
