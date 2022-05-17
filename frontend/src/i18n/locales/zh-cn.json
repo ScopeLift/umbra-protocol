@@ -270,7 +270,7 @@
     "connect-wallet": "连接钱包"
   },
   "WithdrawForm": {
-    "withdraw-address": "输入提取资金的地址",
+    "withdraw-address": "输入提款地址",
     "address": "地址",
     "fetching-fee-estimate": "在接收费用估计...",
     "withdrawal-fee": "提款费：",
