@@ -349,18 +349,18 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
     const suffix = scanPrivateKey.value ? vm.$i18n.t('AccountReceiveTable.custom-prv-key') : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    let msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.t(
+    let msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block').toString()} ${Number(startBlock.value)} ${vm.$i18n.t(
       'AccountReceiveTable.to'
-    )} ${Number(endBlock.value)}`; // default message
+    ).toString()} ${Number(endBlock.value)}`; // default message
 
-    if (!hasStartBlock && !hasEndBlock) msg = `${vm.$i18n.t('AccountReceiveTable.all-blocks-scanned')}`;
+    if (!hasStartBlock && !hasEndBlock) msg = `${vm.$i18n.t('AccountReceiveTable.all-blocks-scanned').toString()}`;
     if (!hasStartBlock && hasEndBlock)
-      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
+      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-all-blocks-up-to').toString()} ${Number(endBlock.value)}`;
     if (hasStartBlock && !hasEndBlock)
-      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.t(
+      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block').toString()} ${Number(startBlock.value)} ${vm.$i18n.t(
         'AccountReceiveTable.to-current-block'
-      )}`;
-    return `${msg}${suffix}`;
+      ).toString()}`;
+    return `${msg}${suffix.toString()}`;
   });
 
   // For advanced mode: compute the stealth private key for a given random number
@@ -491,7 +491,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
     await copyToClipboard(address);
-    notifyUser('success', `${type} ${vm.$i18n.t('AccountReceiveTable.address-copied')}`);
+    notifyUser('success', `${type} ${vm.$i18n.t('AccountReceiveTable.address-copied').toString()}`);
   }
 
   /**
@@ -574,7 +574,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         if (!activeFee.value || !('fee' in activeFee.value))
           throw new Error(vm.$i18n.t('AccountReceiveTable.fee-not-set').toString());
         const chainId = network.value?.chainId;
-        if (!chainId) throw new Error(`${vm.$i18n.t('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
+        if (!chainId) throw new Error(`${vm.$i18n.t('AccountReceiveTable.invalid-chain-id').toString()} ${String(chainId)}`);
 
         // Get users signature
         const sponsor = '0xb4435399AB53D6136C9AEEBb77a0120620b117F9'; // TODO update this
@@ -592,12 +592,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
         if (chainId === 137) {
           // No relayer support on this network, so this is a regular transaction hash
-          console.log(`${vm.$i18n.t('AccountReceiveTable.relayed-with-tx-hash')} ${relayTransactionHash}`);
+          console.log(`${vm.$i18n.t('AccountReceiveTable.relayed-with-tx-hash').toString()} ${relayTransactionHash}`);
           const receipt = await provider.value.waitForTransaction(relayTransactionHash);
           console.log(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
         } else {
           // Received a relayer transaction hash, wait for withdraw transaction to be mined
-          console.log(`${vm.$i18n.t('AccountReceiveTable.relayed-with-relayer-id')} ${relayTransactionHash}`);
+          console.log(`${vm.$i18n.t('AccountReceiveTable.relayed-with-relayer-id').toString()} ${relayTransactionHash}`);
           const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedRelayerStatusResponse;
           console.log(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
         }
