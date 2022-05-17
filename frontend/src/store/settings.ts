@@ -11,16 +11,18 @@ const settings = {
 };
 
 // Shared state between instances
-type Language = { label: string, value: string };
+type Language = { label: string; value: string };
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
 const language = ref<Language>({ label: '', value: '' }); //language code
-const supportedLanguages = [ { label: 'English', value: 'en-us' } , { label: '中文', value: 'zh-cn' }];
+const supportedLanguages = [
+  { label: 'English', value: 'en-us' },
+  { label: '中文', value: 'zh-cn' },
+];
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
 const scanPrivateKey = ref<string>(); // private key entered when scanning
 const lastWallet = ref<string>(); // name of last wallet used
-
 
 // Composition function for managing state
 export default function useSettingsStore() {
@@ -33,10 +35,10 @@ export default function useSettingsStore() {
       : undefined;
   });
 
-  if(language.value.value===''){
-    language.value.value = (i18n.locale || 'en-us');
+  if (language.value.value === '') {
+    language.value.value = i18n.locale || 'en-us';
   }
-  if(language.value.label === ''){
+  if (language.value.label === '') {
     language.value.label = getLanguageLabel()!;
   }
 
@@ -64,11 +66,12 @@ export default function useSettingsStore() {
   }
 
   function getLanguageLabel() {
-    for(let i = 0; i < supportedLanguages.length; i++) {
-      if(supportedLanguages[i].value === language.value.value) {
+    for (let i = 0; i < supportedLanguages.length; i++) {
+      if (supportedLanguages[i].value === language.value.value) {
         return supportedLanguages[i].label;
       }
-    } return '';
+    }
+    return '';
   }
 
   function setScanBlocks(startBlock_: number, endBlock_: number) {

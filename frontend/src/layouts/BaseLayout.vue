@@ -172,20 +172,20 @@
             </span>
           </p>
           <!-- Language selection -->
-            <base-select
-              class="language-selector"
-              v-model="currentLanguage"
-              @input="setLanguage(currentLanguage)"
-              dense
-              options-dense="true"
-              :filled="false"
-              :hideBottomSpace="true"
-              outlined
-              label="Language"
-              :options="supportedLanguages"
-              option-label="label"
-              square
-            ></base-select>
+          <base-select
+            class="language-selector"
+            v-model="currentLanguage"
+            @input="setLanguage(currentLanguage)"
+            dense
+            options-dense="true"
+            :filled="false"
+            :hideBottomSpace="true"
+            outlined
+            label="Language"
+            :options="supportedLanguages"
+            option-label="label"
+            square
+          ></base-select>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
@@ -256,7 +256,15 @@ export default defineComponent({
   name: 'BaseLayout',
   components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
-    const { advancedMode, isDark, language, supportedLanguages, toggleAdvancedMode, setLanguage, toggleDarkMode } = useSettingsStore();
+    const {
+      advancedMode,
+      isDark,
+      language,
+      supportedLanguages,
+      toggleAdvancedMode,
+      setLanguage,
+      toggleDarkMode,
+    } = useSettingsStore();
     const {
       avatar,
       isAccountSetup,

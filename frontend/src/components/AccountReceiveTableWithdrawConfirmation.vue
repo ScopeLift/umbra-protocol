@@ -29,7 +29,9 @@
             size="1em"
           />
         </div>
-        <div v-else class="text-caption text-grey q-mt-md">{{ $t('AccountReceiveTableWithdrawConfirmation.relayer-gas-fee') }}</div>
+        <div v-else class="text-caption text-grey q-mt-md">
+          {{ $t('AccountReceiveTableWithdrawConfirmation.relayer-gas-fee') }}
+        </div>
 
         <div v-if="useCustomFee" class="row justify-start items-center">
           <div class="col-12 row items-center">
@@ -94,9 +96,12 @@
       </div>
       <div v-else class="text-center">
         <q-spinner-puff class="q-mb-md" color="primary" size="2rem" />
-        <div class="text-center text-italic">{{ $t('AccountReceiveTableWithdrawConfirmation.withdraw-in-progress') }}</div>
+        <div class="text-center text-italic">
+          {{ $t('AccountReceiveTableWithdrawConfirmation.withdraw-in-progress') }}
+        </div>
         <a v-if="txHash.length === 66" class="text-caption hyperlink" :href="etherscanUrl" target="_blank">
-          {{ $t('AccountReceiveTableWithdrawConfirmation.view-transaction') }} <q-icon name="fas fa-external-link-alt" right />
+          {{ $t('AccountReceiveTableWithdrawConfirmation.view-transaction') }}
+          <q-icon name="fas fa-external-link-alt" right />
         </a>
       </div>
     </q-card-section>

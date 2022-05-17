@@ -21,5 +21,5 @@ export default boot(({ app }) => {
 const params = new URLSearchParams(window.location.search);
 if (params.has('locale')) {
   i18n.locale = params.get('locale')!;
-  console.log('locale changed through params to', params.get('locale'))
+  console.log('locale changed through params to', params.get('locale'));
 }
