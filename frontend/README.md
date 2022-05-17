@@ -60,7 +60,7 @@ For more details on the internationalization approach and usage see [Quasar I18n
 
 While embedding longer texts with styles and links inside template section of Vue components, there are a few options:
 
-1. For texts with html tags and styles:
+1. **For texts with html tags and styles:**
    Use `Vue-i18n`'s [HTML formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#html-formatting) style. E.g.,
 
 - Store json file key value pairs like so, adding `\` in front of `"` to escape quotes:
@@ -68,13 +68,13 @@ While embedding longer texts with styles and links inside template section of Vu
 - Inside templates use `v-html="$t('key-name')` to maintain style and html tags
 - You can also use `<i18n>` tags as shown in step 3.
 
-2. For texts that contain variables:
+2. **For texts that contain variables:**
    Use [named formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#named-formatting) style. E.g.,
 
 - Key pairs stored as : `"key-with-variables": "This is a %{varName}"`
 - Inside templates use, `{{ $t('key-with-variables'), { varName: JSVariableName }) }}`
 
-3. For links or texts with html tags use `<i18n>` tags:
+3. **For links or texts with html tags use `<i18n>` tags:**
    Use [component interpolation](https://kazupon.github.io/vue-i18n/guide/interpolation.html#basic-usage) following `Vue-i18n`'s [list formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#list-formatting) style. E.g.,
 
 - Store key pairs like:
@@ -96,7 +96,7 @@ While embedding longer texts with styles and links inside template section of Vu
 </i18n>
 ```
 
-4. Texts with multiple links or html tags:
+4. **Texts with multiple links or html tags:**
    Use [slot syntax](https://kazupon.github.io/vue-i18n/guide/interpolation.html#slots-syntax-usage). E.g.,
 
 - Stored key pairs like:
