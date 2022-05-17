@@ -256,7 +256,6 @@ export default defineComponent({
   name: 'BaseLayout',
   components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
-    const test = 'test'
     const { advancedMode, isDark, language, supportedLanguages, toggleAdvancedMode, setLanguage, toggleDarkMode } = useSettingsStore();
     const {
       avatar,
@@ -272,7 +271,6 @@ export default defineComponent({
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
     return {
-      test,
       avatar,
       advancedMode,
       argentModalDismissed,

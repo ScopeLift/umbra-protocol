@@ -1,6 +1,5 @@
 import { computed, onMounted, ref } from '@vue/composition-api';
 import { Dark, LocalStorage } from 'quasar';
-import Quasar from 'quasar'
 import { i18n } from '../boot/i18n';
 
 // Local storage key names

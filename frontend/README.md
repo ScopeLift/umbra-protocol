@@ -42,31 +42,35 @@ yarn clean # clear previous build artifacts
 4. Build for development with `yarn run dev`
 
 ## Internationalization
+### Usage
 
 The app is currently available in English and Simplified Chinese.
 
-Basic usauge is as follows:
+[Basic usage](https://v1.quasar.dev/options/app-internationalization#how-to-use) is as follows:
 
-1. In the corresponding /i18n/locales/`<locale>`.json file add a new key and corresponding text or translation like so:
+1. In the corresponding `/i18n/locales/<locale>.json` file add a new key and corresponding text or translation like so:
 `"key-name" : "Sample text"`
 2. Use the following templates to embed the message on the frontend:
 - Inside templates: `{{ $t('key-name') }}`
 - Inside attributes: `:label="$t('key-name')"`
 - Inside scripts, create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.t('AccountReceiveTable.date-received')`
 
-While embedding longer texts with styles and links, there are a few options:
+While embedding longer texts with styles and links inside template section of Vue components, there are a few options:
 
 1. For texts with html tags and styles:
-- Store json file key value pairs like so, adding \ in front of ":
+Use `Vue-i18n`'s [HTML formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#html-formatting) style. E.g.,
+- Store json file key value pairs like so, adding `\` in front of `"` to escape quotes:
 `"key-with-html-tags": "<p>New paragraph with<span class=\"text-bold\">bold</span> text</p>"`
-- Inside templates use v-html="$t('key-name')` to maintain style and html tags
+- Inside templates use `v-html="$t('key-name')` to maintain style and html tags
+- You can also use `<i18n>` tags as shown in step 3.
 
 2. For texts that contain variables:
-
+Use [named formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#named-formatting) style. E.g.,
 - Key pairs stored as : `"key-with-variables": "This is a %{varName}"`
 - Inside templates use, `{{ $t('key-with-variables'), { varName: JSVariableName }) }}`
 
-3. For links or another way for texts with html tags using `<i18n>` tags:
+3. For links or texts with html tags use `<i18n>` tags:
+Use [component interpolation](https://kazupon.github.io/vue-i18n/guide/interpolation.html#basic-usage) following `Vue-i18n`'s [list formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#list-formatting) style. E.g.,
 - Store key pairs like:
 `"return-to-home": "You may now return {0} to send or receive funds"`,
 `"return-home": "home"`
@@ -84,6 +88,7 @@ While embedding longer texts with styles and links, there are a few options:
 ```
 
 4. Texts with multiple links or html tags:
+Use [slot syntax](https://kazupon.github.io/vue-i18n/guide/interpolation.html#slots-syntax-usage). E.g.,
 - Stored key pairs like:
 `"key-with-multiple-var": "This has multiple {{links}} or {{vars}}."`
 - Inside the template:
@@ -100,3 +105,10 @@ While embedding longer texts with styles and links, there are a few options:
 
 </i18n>
 ```
+
+### Adding a new language
+If you want to add a new langauge e.g. French, you need to:
+1. Create a new json file in `/i18n/locales/` and name it according to the language code listed [here](https://www.roseindia.net/tutorials/I18N/locales-list.shtml) i.e., `fr.json`. You can also change your browser language in settings and `console.log(locale)` in the `src/boot/i18n.ts` file to see the language code.
+2. Copy the contents of `en-us.json` to your newly created `<language-code>.json` file and translate key values to the corresponding language of your choice.
+3. Import the `json` file into the `src/i18n/index.ts` file and export it to be used.
+4. Add the language name and language code to `supportedLanguages` in `src/store/settings.ts`.
