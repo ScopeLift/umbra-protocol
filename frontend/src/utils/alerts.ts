@@ -63,7 +63,7 @@ export async function txNotify(txHash: string, provider: Provider) {
   const { update } = bNotify.notification({
     autoDismiss: 0,
     eventCode: 'txPending',
-    message: i18n.t('Utils.Alerts.transaction-pending').toString(),
+    message: i18n.tc('Utils.Alerts.transaction-pending'),
     onclick,
     type: 'pending',
   });
@@ -73,9 +73,7 @@ export async function txNotify(txHash: string, provider: Provider) {
   update({
     autoDismiss: defaultTimeout,
     eventCode: status ? 'txSuccess' : 'txFail',
-    message: status
-      ? i18n.t('Utils.Alerts.transaction-succeeded').toString()
-      : i18n.t('Utils.Alerts.transaction-failed').toString(),
+    message: status ? i18n.tc('Utils.Alerts.transaction-succeeded') : i18n.tc('Utils.Alerts.transaction-failed'),
     onclick,
     type: status ? 'success' : 'error',
   });

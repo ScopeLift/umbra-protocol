@@ -318,17 +318,17 @@ function useSendForm() {
 
   function isValidTokenAmount(val: string | undefined) {
     if (val === undefined) return true; // don't show error on empty field
-    if (!val || !(Number(val) > 0)) return vm.$i18n.t('Send.enter-an-amount');
-    if (!token.value) return vm.$i18n.t('Send.select-a-token');
+    if (!val || !(Number(val) > 0)) return vm.$i18n.tc('Send.enter-an-amount');
+    if (!token.value) return vm.$i18n.tc('Send.select-a-token');
 
     const { address: tokenAddress, decimals } = token.value;
     const minAmt = getMinSendAmount(tokenAddress);
-    if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `${vm.$i18n.t('Send.send-at-least').toString()} ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
-    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${vm.$i18n.t('Send.send-at-least').toString()} ${minAmt} ${token.value.symbol}`; // prettier-ignore
+    if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `${vm.$i18n.tc('Send.send-at-least')} ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
+    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${vm.$i18n.tc('Send.send-at-least')} ${minAmt} ${token.value.symbol}`; // prettier-ignore
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
-    if (amount.gt(balances.value[tokenAddress])) return `${vm.$i18n.t('Send.amount-exceeds-balance').toString()}`;
+    if (amount.gt(balances.value[tokenAddress])) return `${vm.$i18n.tc('Send.amount-exceeds-balance')}`;
     return true;
   }
 
@@ -337,8 +337,8 @@ function useSendForm() {
     try {
       // Form validation
       if (!recipientId.value || !token.value || !humanAmount.value)
-        throw new Error(vm.$i18n.t('Send.please-complete-form').toString());
-      if (!signer.value) throw new Error(vm.$i18n.t('Send.wallet-not-connected').toString());
+        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
+      if (!signer.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
@@ -356,15 +356,12 @@ function useSendForm() {
         // Sending the native token, so check that user has balance of: amount being sent + toll
         const requiredAmount = tokenAmount.add(toll.value);
         if (requiredAmount.gt(balances.value[tokenAddress]))
-          throw new Error(`${vm.$i18n.t('Send.amount-exceeds-balance').toString()}`);
+          throw new Error(`${vm.$i18n.tc('Send.amount-exceeds-balance')}`);
       } else {
         // Sending other tokens, so we need to check both separately
-        const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${vm.$i18n
-          .t('Send.umbra-fee-exceeds-balance')
-          .toString()}`;
+        const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${vm.$i18n.tc('Send.umbra-fee-exceeds-balance')}`;
         if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
-        if (tokenAmount.gt(balances.value[tokenAddress]))
-          throw new Error(vm.$i18n.t('Send.amount-exceeds-balance').toString());
+        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(vm.$i18n.tc('Send.amount-exceeds-balance'));
       }
 
       // If token, get approval when required

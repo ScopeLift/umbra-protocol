@@ -56,8 +56,8 @@ For more details on the internationalization approach and usage see [Quasar I18n
 
 - Inside templates: `{{ $t('key-name') }}`
 - Inside attributes: `:label="$t('key-name')"`
-- Inside scripts, import `getCurrentInstance()` from `@vue/composition-api` and create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.t('AccountReceiveTable.date-received').toString()`
-- Inside `.ts` files, `import { i18n } from "../boot/i18n";` and use `i18n.t('key-name').toString()`.
+- Inside scripts, import `getCurrentInstance()` from `@vue/composition-api` and create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.tc('AccountReceiveTable.date-received')`
+- Inside `.ts` files, `import { i18n } from "../boot/i18n";` and use `i18n.tc('key-name')`.
 
 While embedding longer texts with styles and links inside template section of Vue components, there are a few options:
 
