@@ -7,7 +7,7 @@ import { utils } from '@umbra/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getAddress, Web3Provider } from 'src/utils/ethers';
 import { getChainById } from 'src/utils/utils';
-
+import { i18n } from '../boot/i18n';
 // ================================================== Address Helpers ==================================================
 
 // Returns an address with the following format: 0x1234...abcd
@@ -103,7 +103,7 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
 
   // Check if we're withdrawing to an ENS or CNS name
   const isDomain = utils.isDomain(name);
-  if (isDomain) reasons.push('This name is publicly viewable');
+  if (isDomain) reasons.push(i18n.t('Utils.Address.name-publicly-viewable').toString());
 
   // Get the address the provided name/address resolves to
   const destinationAddress = isDomain ? await utils.toAddress(name, provider) : getAddress(name);
@@ -111,20 +111,20 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
   // If input was an address, check if address resolves to an ENS or CNS name
   if (!isDomain) {
     const ensName = await lookupEnsName(destinationAddress, MAINNET_PROVIDER as Web3Provider);
-    if (ensName) reasons.push(`This name resolves to the publicly viewable ENS name ${ensName}`);
+    if (ensName) reasons.push(`${i18n.t('Utils.Address.name-resolves-to-ens').toString()} ${ensName}`);
 
     const cnsName = await lookupCnsName(destinationAddress);
-    if (cnsName) reasons.push(`This name resolves to the publicly viewable CNS name ${cnsName}`);
+    if (cnsName) reasons.push(`${i18n.t('Utils.Address.name-resolves-to-cns').toString()} ${cnsName}`);
   }
 
   // Check if address is the wallet user is logged in with
-  if (destinationAddress === userAddress) reasons.push(`It ${isDomain ? 'resolves to' : 'is'} the same address as the connected wallet`); // prettier-ignore
+  if (destinationAddress === userAddress) reasons.push(`${i18n.t('Utils.Address.it').toString()} ${isDomain ? i18n.t('Utils.Address.resolves-to').toString() : i18n.t('Utils.Address.is').toString()} ${i18n.t('Utils.Address.same-addr-as-wallet').toString()}`); // prettier-ignore
 
   // Check if the address is the stealth address that was sent funds
-  if (destinationAddress === stealthAddress) reasons.push(`It ${isDomain ? 'resolves to' : 'is'} the same address as the stealth address`); // prettier-ignore
+  if (destinationAddress === stealthAddress) reasons.push(`${i18n.t('Utils.Address.it').toString()} ${isDomain ? i18n.t('Utils.Address.resolves-to').toString() : i18n.t('Utils.Address.is').toString()} ${i18n.t('Utils.Address.same-addr-as-stealth').toString()}`); // prettier-ignore
 
   // Check if address owns any POAPs
-  if (await hasPOAPs(destinationAddress)) reasons.push(`${isDomain ? 'The address it resolves to' : 'It'} has POAP tokens`); // prettier-ignore
+  if (await hasPOAPs(destinationAddress)) reasons.push(`${isDomain ? i18n.t('Utils.Address.address-it-resolves-to').toString() : i18n.t('Utils.Address.it').toString()} ${i18n.t('Utils.Address.has-poap-tokens').toString()}`); // prettier-ignore
 
   // Check if address has contributed to Gitcoin Grants
   // TODO

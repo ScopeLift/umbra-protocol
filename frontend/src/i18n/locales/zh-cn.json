@@ -68,7 +68,14 @@
     "sending": "发送中",
     "fee": "Umbra 费",
     "fee-explain": "在 %{chainName} 上交易非常便宜，因此会收取少量费用以阻止垃圾信息。",
-    "copy-payment-link": "复制付款链接"
+    "copy-payment-link": "复制付款链接",
+    "enter-an-amount": "请输入金额",
+    "select-a-token": "请选择代币",
+    "send-at-least": "请最少发送",
+    "amount-exceeds-balance": "钱包金额不足",
+    "please-complete-form": "请填写表格",
+    "wallet-not-connected": "钱包未连接",
+    "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额"
   },
   "Receive": {
     "receive": "接收",
@@ -248,10 +255,13 @@
   "AccountReceiveTableWarning": {
     "withdrawal-warning": "您正在提款到 {0} ，其中包含以下警告：",
     "withdrawal-warning-rest": "<span class=\"text-bold\">程序不建议您继续提款</span>，除非您知道自己在做什么。因为这可能会减少或完全删除 Umbra 提供的隐私属性。",
-    "learn-more": "了解更多"
+    "learn-more": "了解更多",
+    "acknowledge-risks": "我承认此操作有风险"
   },
   "AccountReceiveTableWithdrawConfirmation": {
-    "confirm": "确认提款",
+    "confirm": "确认",
+    "cancel": "取消",
+    "confirm-withdrawal": "确认提款",
     "to": "提取到",
     "amount": "金额",
     "tx-fee": "交易费",
@@ -280,6 +290,27 @@
     "learn-more": "了解更多",
     "hide": "隐藏",
     "show": "显示",
-    "stealth-prv-key": "隐形地址私钥"
+    "stealth-prv-key": "隐形地址私钥",
+    "withdraw": "取款",
+    "enter-valid-address": "请输入有效地址"
+  },
+  "Utils": {
+    "Alerts": {
+      "transaction-pending": "正在处理您的交易",
+      "transaction-succeeded": "您的交易已成功",
+      "transaction-failed": "您的交易已失败"
+    },
+    "Address": {
+      "name-publicly-viewable": "此名称可公开查看",
+      "name-resolves-to-ens": "此名称解析为可公开查看的 ENS 名称 ",
+      "name-resolves-to-cns": "此名称解析为可公开查看的 CNS 名称 ",
+      "it": "它",
+      "resolves-to": "解析为",
+      "is": "是",
+      "same-addr-as-wallet": "与连接的钱包地址相同",
+      "same-addr-as-stealth": "与隐形地址相同",
+      "address-it-resolves-to": "它解析为的地址",
+      "has-poap-tokens": "具有 POAP 令牌"
+    }
   }
 }

@@ -18,13 +18,13 @@
             emit('initializeWithdraw');
             setIsInWithdrawFlow(true);
           "
-          appendButtonLabel="Withdraw"
+          :appendButtonLabel="$t('WithdrawForm.withdraw')"
           :appendButtonDisable="isInWithdrawFlow || isFeeLoading"
           :appendButtonLoading="isInWithdrawFlow"
           :disable="isInWithdrawFlow"
           :label="$t('WithdrawForm.address')"
           lazy-rules
-          :rules="(val) => (val && val.length > 4) || 'Please enter valid address'"
+          :rules="(val) => (val && val.length > 4) || $t('WithdrawForm.enter-valid-address')"
         />
         <!-- Fee estimate -->
         <div class="q-mb-lg">
@@ -52,7 +52,7 @@
       <div class="border q-mb-lg" />
       <div class="text-caption">
         <q-icon name="fas fa-exclamation-triangle" color="warning" left />
-        {{ $t('WithdrawForm.warning') }}
+        <span v-html="$t('WithdrawForm.warning')"></span>
         <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank">
           {{ $t('WithdrawForm.learn-more') }} </router-link
         >.

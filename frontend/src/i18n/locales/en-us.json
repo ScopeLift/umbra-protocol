@@ -68,7 +68,14 @@
     "sending": "Sending",
     "fee": "Umbra Fee",
     "fee-explain": "Transactions on %{chainName} are very cheap, so a small fee is charged to deter spamming the protocol.",
-    "copy-payment-link": "Copy payment link"
+    "copy-payment-link": "Copy payment link",
+    "enter-an-amount": "Please enter an amount",
+    "select-a-token": "Please select a token",
+    "send-at-least": "Please send at least",
+    "amount-exceeds-balance": "Amount exceeds wallet balance",
+    "please-complete-form": "Please complete the form",
+    "wallet-not-connected": "Wallet not connected",
+    "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance"
   },
   "Receive": {
     "receive": "Receive",
@@ -248,10 +255,13 @@
   "AccountReceiveTableWarning": {
     "withdrawal-warning": "You are withdrawing to {0}, which has the following warnings:",
     "withdrawal-warning-rest": "<span class=\"text-bold\">Continuing with withdrawal is not recommended</span> unless you know what you are doing, as this may reduce or entirely remove the privacy properties provided by Umbra.",
-    "learn-more": "Learn More"
+    "learn-more": "Learn More",
+    "acknowledge-risks": "I acknowledge the risks"
   },
   "AccountReceiveTableWithdrawConfirmation": {
-    "confirm": "Confirm Withdrawal",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "confirm-withdrawal": "Confirm Withdrawal",
     "to": "Withdrawing to",
     "amount": "Amount",
     "tx-fee": "Transaction Fee",
@@ -280,6 +290,27 @@
     "learn-more": "Learn more",
     "hide": "Hide",
     "show": "Show",
-    "stealth-prv-key": "stealth address private key"
+    "stealth-prv-key": "stealth address private key",
+    "withdraw": "Withdraw",
+    "enter-valid-address": "Please enter valid address"
+  },
+  "Utils": {
+    "Alerts": {
+      "transaction-pending": "Your transaction is pending",
+      "transaction-succeeded": "Your transaction has succeeded",
+      "transaction-failed": "Your transaction has failed"
+    },
+    "Address": {
+      "name-publicly-viewable": "This name is publicly viewable",
+      "name-resolves-to-ens": "This name resolves to the publicly viewable ENS name ",
+      "name-resolves-to-cns": "This name resolves to the publicly viewable CNS name ",
+      "it": "It",
+      "resolves-to": "resolves to",
+      "is": "is",
+      "same-addr-as-wallet": "the same address as the connected wallet",
+      "same-addr-as-stealth": "the same address as the stealth address",
+      "address-it-resolves-to": "The address it resolves to",
+      "has-poap-tokens": "has POAP tokens"
+    }
   }
 }

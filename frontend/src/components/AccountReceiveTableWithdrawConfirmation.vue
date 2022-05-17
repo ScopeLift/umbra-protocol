@@ -1,7 +1,9 @@
 <template>
   <q-card class="border-top-thick">
     <q-card-section>
-      <h5 class="text-bold text-center q-mt-none">{{ $t('AccountReceiveTableWithdrawConfirmation.confirm') }}</h5>
+      <h5 class="text-bold text-center q-mt-none">
+        {{ $t('AccountReceiveTableWithdrawConfirmation.confirm-withdrawal') }}
+      </h5>
     </q-card-section>
 
     <q-card-section>
@@ -25,7 +27,7 @@
             class="q-ml-xs"
             :dense="true"
             :flat="true"
-            label="Cancel"
+            :label="$t('AccountReceiveTableWithdrawConfirmation.confirm')"
             size="1em"
           />
         </div>
@@ -86,12 +88,16 @@
 
     <q-card-section>
       <div v-if="!isWithdrawInProgress" class="row justify-end">
-        <base-button @click="context.emit('cancel')" label="Cancel" :flat="true" />
+        <base-button
+          @click="context.emit('cancel')"
+          :label="$t('AccountReceiveTableWithdrawConfirmation.cancel')"
+          :flat="true"
+        />
         <base-button
           @click="context.emit('confirmed', confirmationOptions)"
           class="q-ml-lg"
           :disable="!canWithdraw"
-          label="Confirm"
+          :label="$t('AccountReceiveTableWithdrawConfirmation.confirm')"
         />
       </div>
       <div v-else class="text-center">

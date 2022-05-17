@@ -156,7 +156,7 @@
 
 <script lang="ts">
 // --- External imports ---
-import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, defineComponent, getCurrentInstance, onMounted, ref, watch } from '@vue/composition-api';
 import { QForm, QInput } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
@@ -192,6 +192,7 @@ function useSendForm() {
   // Helpers
   const sendFormRef = ref<QForm>();
   const isSending = ref(false);
+  const vm = getCurrentInstance()!;
 
   // Form parameters
   const recipientId = ref<string>();
@@ -317,17 +318,17 @@ function useSendForm() {
 
   function isValidTokenAmount(val: string | undefined) {
     if (val === undefined) return true; // don't show error on empty field
-    if (!val || !(Number(val) > 0)) return 'Please enter an amount';
-    if (!token.value) return 'Please select a token';
+    if (!val || !(Number(val) > 0)) return vm.$i18n.t('Send.enter-an-amount');
+    if (!token.value) return vm.$i18n.t('Send.select-a-token');
 
     const { address: tokenAddress, decimals } = token.value;
     const minAmt = getMinSendAmount(tokenAddress);
-    if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `Please send at least ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
-    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `Please send at least ${minAmt} ${token.value.symbol}`; // prettier-ignore
+    if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `${vm.$i18n.t('Send.send-at-least').toString()} ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
+    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${vm.$i18n.t('Send.send-at-least').toString()} ${minAmt} ${token.value.symbol}`; // prettier-ignore
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
-    if (amount.gt(balances.value[tokenAddress])) return 'Amount exceeds wallet balance';
+    if (amount.gt(balances.value[tokenAddress])) return `${vm.$i18n.t('Send.amount-exceeds-balance').toString()}`;
     return true;
   }
 
@@ -335,8 +336,9 @@ function useSendForm() {
   async function onFormSubmit() {
     try {
       // Form validation
-      if (!recipientId.value || !token.value || !humanAmount.value) throw new Error('Please complete the form');
-      if (!signer.value) throw new Error('Wallet not connected');
+      if (!recipientId.value || !token.value || !humanAmount.value)
+        throw new Error(vm.$i18n.t('Send.please-complete-form').toString());
+      if (!signer.value) throw new Error(vm.$i18n.t('Send.wallet-not-connected').toString());
       if (!umbra.value) throw new Error('Umbra instance not configured');
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
@@ -353,12 +355,16 @@ function useSendForm() {
       if (tokenAddress === NATIVE_TOKEN.value.address) {
         // Sending the native token, so check that user has balance of: amount being sent + toll
         const requiredAmount = tokenAmount.add(toll.value);
-        if (requiredAmount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
+        if (requiredAmount.gt(balances.value[tokenAddress]))
+          throw new Error(`${vm.$i18n.t('Send.amount-exceeds-balance').toString()}`);
       } else {
         // Sending other tokens, so we need to check both separately
-        const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} required for Umbra fee exceeds wallet balance`;
+        const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${vm.$i18n
+          .t('Send.umbra-fee-exceeds-balance')
+          .toString()}`;
         if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
-        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error('Amount exceeds wallet balance');
+        if (tokenAmount.gt(balances.value[tokenAddress]))
+          throw new Error(vm.$i18n.t('Send.amount-exceeds-balance').toString());
       }
 
       // If token, get approval when required
