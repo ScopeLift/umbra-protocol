@@ -46,6 +46,7 @@ yarn clean # clear previous build artifacts
 ### Usage
 
 The app is currently available in English and Simplified Chinese.
+For more details on the internationalization approach and usage see [Quasar I18n doc v.1.18.10](https://v1.quasar.dev/options/app-internationalization#introduction) and [Vue I18n v8.x doc for Vue2](https://kazupon.github.io/vue-i18n/introduction.html).
 
 [Basic usage](https://v1.quasar.dev/options/app-internationalization#how-to-use) is as follows:
 
