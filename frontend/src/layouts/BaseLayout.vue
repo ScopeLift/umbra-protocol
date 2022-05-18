@@ -184,7 +184,7 @@
             label="Language"
             :options="supportedLanguages"
             option-label="label"
-            square
+            rounded
           ></base-select>
         </div>
 

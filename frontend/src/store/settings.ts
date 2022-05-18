@@ -33,13 +33,16 @@ export default function useSettingsStore() {
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
+    setLanguage(
+      (LocalStorage.getItem(settings.language) as Language) || { label: getLanguageLabel(), value: i18n.locale }
+    );
   });
 
-  if (language.value.value === '') {
-    language.value.value = i18n.locale || 'en-us';
-  }
   if (language.value.label === '') {
-    language.value.label = getLanguageLabel()!;
+    language.value.value = LocalStorage.getItem(settings.language)
+      ? (LocalStorage.getItem(settings.language) as Language).value
+      : i18n.locale;
+    language.value.label = getLanguageLabel();
   }
 
   function setDarkMode(status: boolean) {
