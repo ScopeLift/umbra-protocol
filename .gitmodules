@@ -10,3 +10,6 @@
 [submodule "contracts-periphery/lib/solmate"]
 	path = contracts-periphery/lib/solmate
 	url = https://github.com/Rari-capital/solmate
+[submodule "contracts-periphery/lib/v3-periphery"]
+	path = contracts-periphery/lib/v3-periphery
+	url = https://github.com/Uniswap/v3-periphery
