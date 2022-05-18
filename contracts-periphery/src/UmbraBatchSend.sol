@@ -24,18 +24,14 @@ interface IUmbra {
 contract UmbraBatchSend {
   IUmbra internal immutable umbra;
 
-  /// Option 3: dgrant way
-  /// @dev Used for verifying transferSummary parameters
-  mapping(IERC20 => uint256) internal transferOutputs;
- /// @dev Used for saving off contribution ratios for verifying input parameters
-  mapping(address => uint256) internal transferTotal;
-  /// @dev Scale factor on percentages when constructing `Donation` objects. One WAD represents 100%
-  uint256 internal constant WAD = 1e18;
-
-  /// Option 1: Original attempt
+  /// Attemp 1 vars
   mapping(address => uint256) internal totalPerToken;
   mapping(address => bool) internal tokenInArray;
   address[] internal tokenAddrs;
+
+  /// Attempt 2 vars
+  mapping(IERC20 => uint256) internal transferOutputs;
+  mapping(address => uint256) internal transferTotal;
 
   /// @param amount Amount of ETH to send per address excluding the toll
   struct SendEth {
@@ -64,31 +60,10 @@ contract UmbraBatchSend {
   constructor(IUmbra _umbra) {
     umbra = _umbra;
   }
-  /// Option 1: Original attempt
-    function receiveTokens(SendToken[] calldata _params) internal {
-    for (uint256 i = 0; i < _params.length; i++) {
-      address tokenAddr = _params[i].tokenAddr;
 
-      if (tokenInArray[tokenAddr] == false) {
-        tokenAddrs.push(tokenAddr);
-        tokenInArray[tokenAddr] = true;
-      }
-      totalPerToken[tokenAddr] += _params[i].amount;
-    }
-
-    for (uint256 i = 0; i < tokenAddrs.length; i++) {
-      if (tokenAddrs[i] != address(0)) {
-        IERC20 token = IERC20(tokenAddrs[i]);
-        //User needs to approve router address as spender first
-        token.transferFrom(msg.sender, address(this), totalPerToken[tokenAddrs[i]]);
-
-        delete tokenInArray[tokenAddrs[i]];
-        delete totalPerToken[tokenAddrs[i]];
-        delete tokenAddrs[i];
-      }
-    }
-  }
-
+  /// Gas improvement attempts at replacing the batchSendTokens function
+  ///--------------------------------------------------------------
+  /// Attempt 1:
   function batchSendTokensOption1(uint256 _tollCommitment, SendToken[] calldata _params) public payable {
     //Transfer msg.sender tokens to this contract before sending to Umbra.sol
     receiveTokens(_params);
@@ -112,9 +87,33 @@ contract UmbraBatchSend {
     }
   }
 
+  function receiveTokens(SendToken[] calldata _params) internal {
+    for (uint256 i = 0; i < _params.length; i++) {
+      address tokenAddr = _params[i].tokenAddr;
 
-  /// Option 3: dgrant way
-  function newBatchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params, TransferSummary[] calldata _summary) external payable {
+      if (tokenInArray[tokenAddr] == false) {
+        tokenAddrs.push(tokenAddr);
+        tokenInArray[tokenAddr] = true;
+      }
+      totalPerToken[tokenAddr] += _params[i].amount;
+    }
+
+    for (uint256 i = 0; i < tokenAddrs.length; i++) {
+      if (tokenAddrs[i] != address(0)) {
+        IERC20 token = IERC20(tokenAddrs[i]);
+        //User needs to approve router address as spender first
+        token.transferFrom(msg.sender, address(this), totalPerToken[tokenAddrs[i]]);
+
+        delete tokenInArray[tokenAddrs[i]];
+        delete totalPerToken[tokenAddrs[i]];
+        delete tokenAddrs[i];
+      }
+    }
+  }
+
+
+  /// Attempt 2: dgrants way
+  function batchSendTokensOption2(uint256 _tollCommitment, SendToken[] calldata _params, TransferSummary[] calldata _summary) external payable {
 
     if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
     _sumBatchSendTokens(_params);
@@ -165,12 +164,15 @@ contract UmbraBatchSend {
     }
   }
 
+  ///--------------------------------------------------------------------------------------
+
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
     if(msg.value != _sumValueFromEthSends(_tollCommitment, _params)) revert ValueMismatch();
     _batchSendEth(_tollCommitment, _params);
     emit BatchSendExecuted(msg.sender);
   }
 
+  /// function we're trying to improve gas efficiency of, including _batchSendTokens function.
   function batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) external payable {
     if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
     _batchSendTokens(_tollCommitment, _params);

@@ -146,6 +146,7 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     router.batchSend{value: 1e16*2 + totalToll + 42}(toll, sendEth, sendToken);
   }
 
+// Test Attempt 1
   function test_BatchSendTokensOption1() public {
     uint256 amount = 1000 ether;
     uint256 amount2 = 2000 ether;
@@ -158,19 +159,8 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     router.batchSendTokensOption1{value: toll * sendToken.length}(toll, sendToken);
   }
 
-  function testFuzz_NewBatchSendTokens(uint72 amount, uint72 amount2) public {
-    uint256 totalAmount = uint256(amount) + amount2;
-
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
-
-    transferSummary.push(UmbraBatchSend.TransferSummary(address(token), totalAmount));
-
-    token.approve(address(router), totalAmount);
-    router.newBatchSendTokens{value: toll * sendToken.length}(toll, sendToken, transferSummary);
-  }
-
-  function test_NewBatchSendTokens() public {
+// Test Attempt 2
+  function test_BatchSendTokensOption2() public {
     uint256 amount = 1000 ether;
     uint256 amount2 = 2000 ether;
     uint256 totalAmount = amount + amount2;
@@ -181,7 +171,7 @@ abstract contract UmbraBatchSendTest is DSTestPlus {
     transferSummary.push(UmbraBatchSend.TransferSummary(address(token), totalAmount));
 
     token.approve(address(router), totalAmount);
-    router.newBatchSendTokens{value: toll * sendToken.length}(toll, sendToken, transferSummary);
+    router.batchSendTokensOption2{value: toll * sendToken.length}(toll, sendToken, transferSummary);
   }
 
 }
