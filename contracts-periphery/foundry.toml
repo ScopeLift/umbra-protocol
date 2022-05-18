@@ -1,5 +1,5 @@
 [default]
-remappings = ['ds-test/=lib/ds-test/src/']
+remappings = ['test/=test/']
 [ci]
 fuzz_runs = 10000
 # See more config options https://github.com/gakonst/foundry/tree/master/config
