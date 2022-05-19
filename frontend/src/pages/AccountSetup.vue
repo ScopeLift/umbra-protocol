@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">Setup</h2>
+    <h2 class="page-title">{{ $t('Setup.setup') }}</h2>
 
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
@@ -17,36 +17,24 @@
       class="form-max-wide shadow-2"
       :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'"
     >
-      <h5 class="q-my-md q-pt-none">Generate and Publish Stealth Keys</h5>
-      <div class="q-mt-md">
-        Use the button below to complete the setup process. This will result in two prompts from your wallet:
-        <ol>
-          <li>
-            <span class="text-bold">Sign a message</span> used to generate your Umbra-specific pair of private keys.
-            These keys allow you to securely use Umbra without compromising the private keys of your connected wallet.
-            You do not need to save these keys anywhere!
-          </li>
-          <li>
-            <span class="text-bold">Submit a transaction</span> to save the corresponding public keys on-chain, so
-            anyone can use them to send you stealth payments.
-          </li>
-        </ol>
-      </div>
+      <h5 class="q-my-md q-pt-none">{{ $t('Setup.generate-stealth') }}</h5>
+      <div class="q-mt-md" v-html="$t('Setup.paragraph')"></div>
       <base-button
         @click="setupAccount"
         :disable="isLoading"
         :loading="isLoading"
         :fullWidth="$q.screen.xs"
-        label="Setup account"
+        :label="$t('Setup.setup-account')"
       />
     </div>
 
     <div v-else class="form-max-wide shadow-2" :class="$q.screen.xs ? 'q-pa-lg' : 'q-pa-xl'">
-      <h5 class="q-my-md q-pt-none"><q-icon color="positive" class="q-mr-sm" name="fas fa-check" />Setup Complete!</h5>
-      <p class="q-mt-md">
-        You may now return
-        <router-link class="hyperlink" :to="{ name: 'home' }">home</router-link> to send or receive funds.
-      </p>
+      <h5 class="q-my-md q-pt-none">
+        <q-icon color="positive" class="q-mr-sm" name="fas fa-check" />{{ $t('Setup.complete') }}
+      </h5>
+      <i18n path="Setup.return-to-home" tag="p" class="q-mt-md">
+        <router-link class="hyperlink" :to="{ name: 'home' }">{{ $t('Setup.return-home') }}</router-link>
+      </i18n>
     </div>
   </q-page>
 </template>

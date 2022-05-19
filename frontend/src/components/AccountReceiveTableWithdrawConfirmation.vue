@@ -1,15 +1,17 @@
 <template>
   <q-card class="border-top-thick">
     <q-card-section>
-      <h5 class="text-bold text-center q-mt-none">Confirm Withdrawal</h5>
+      <h5 class="text-bold text-center q-mt-none">
+        {{ $t('AccountReceiveTableWithdrawConfirmation.confirm-withdrawal') }}
+      </h5>
     </q-card-section>
 
     <q-card-section>
-      <div class="text-caption text-grey">Withdrawing to</div>
+      <div class="text-caption text-grey">{{ $t('AccountReceiveTableWithdrawConfirmation.to') }}</div>
       <div>{{ $q.screen.xs ? formatAddress(destinationAddress) : destinationAddress }}</div>
 
       <div>
-        <div class="text-caption text-grey q-mt-md">Amount</div>
+        <div class="text-caption text-grey q-mt-md">{{ $t('AccountReceiveTableWithdrawConfirmation.amount') }}</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <div>{{ formattedAmount }} {{ symbol }}</div>
@@ -18,18 +20,20 @@
 
       <div>
         <div v-if="isNativeToken" class="text-caption text-grey q-mt-md row items-center">
-          <div>{{ useCustomFee ? 'Custom' : '' }} Transaction Fee</div>
+          <div>{{ useCustomFee ? 'Custom' : '' }} {{ $t('AccountReceiveTableWithdrawConfirmation.tx-fee') }}</div>
           <base-button
             v-if="useCustomFee"
             @click="toggleCustomFee"
             class="q-ml-xs"
             :dense="true"
             :flat="true"
-            label="Cancel"
+            :label="$t('AccountReceiveTableWithdrawConfirmation.confirm')"
             size="1em"
           />
         </div>
-        <div v-else class="text-caption text-grey q-mt-md">Relayer Gas Fee</div>
+        <div v-else class="text-caption text-grey q-mt-md">
+          {{ $t('AccountReceiveTableWithdrawConfirmation.relayer-gas-fee') }}
+        </div>
 
         <div v-if="useCustomFee" class="row justify-start items-center">
           <div class="col-12 row items-center">
@@ -68,7 +72,7 @@
       <div class="separator q-my-lg"></div>
 
       <div>
-        <div class="text-caption text-grey">You'll receive</div>
+        <div class="text-caption text-grey">{{ $t('AccountReceiveTableWithdrawConfirmation.you-will-receive') }}</div>
         <div class="row justify-start items-center">
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
@@ -78,25 +82,32 @@
 
       <div v-if="!canWithdraw" class="border-warning q-mt-lg q-pa-md">
         <q-icon name="fas fa-exclamation-triangle" color="warning" left />
-        Cannot withdraw, please correct fee error
+        {{ $t('AccountReceiveTableWithdrawConfirmation.cannot-withdraw') }}
       </div>
     </q-card-section>
 
     <q-card-section>
       <div v-if="!isWithdrawInProgress" class="row justify-end">
-        <base-button @click="context.emit('cancel')" label="Cancel" :flat="true" />
+        <base-button
+          @click="context.emit('cancel')"
+          :label="$t('AccountReceiveTableWithdrawConfirmation.cancel')"
+          :flat="true"
+        />
         <base-button
           @click="context.emit('confirmed', confirmationOptions)"
           class="q-ml-lg"
           :disable="!canWithdraw"
-          label="Confirm"
+          :label="$t('AccountReceiveTableWithdrawConfirmation.confirm')"
         />
       </div>
       <div v-else class="text-center">
         <q-spinner-puff class="q-mb-md" color="primary" size="2rem" />
-        <div class="text-center text-italic">Withdraw in progress...</div>
+        <div class="text-center text-italic">
+          {{ $t('AccountReceiveTableWithdrawConfirmation.withdraw-in-progress') }}
+        </div>
         <a v-if="txHash.length === 66" class="text-caption hyperlink" :href="etherscanUrl" target="_blank">
-          View transaction <q-icon name="fas fa-external-link-alt" right />
+          {{ $t('AccountReceiveTableWithdrawConfirmation.view-transaction') }}
+          <q-icon name="fas fa-external-link-alt" right />
         </a>
       </div>
     </q-card-section>

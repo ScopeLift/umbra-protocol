@@ -24,7 +24,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/boot-files
-    boot: ['composition-api', 'components', 'error-handler', 'logger'],
+    boot: ['composition-api', 'components', 'error-handler', 'logger', 'i18n'],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: ['app.sass'],
@@ -74,6 +74,13 @@ module.exports = configure(function (ctx) {
             exclude: /node_modules/,
           });
         }
+      },
+      extendWebpack(cfg) {
+        cfg.module.rules.push({
+          resourceQuery: /blockType=i18n/,
+          type: 'javascript/auto',
+          use: [{ loader: '@kazupon/vue-i18n-loader' }, { loader: 'yaml-loader' }],
+        });
       },
     },
 

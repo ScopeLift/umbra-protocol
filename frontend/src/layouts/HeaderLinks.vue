@@ -6,7 +6,7 @@
       exact
       :to="{ name: 'home' }"
     >
-      Home
+      {{ $t('Header-Links.home') }}
     </router-link>
     <router-link
       active-class="text-bold"
@@ -14,7 +14,7 @@
       exact
       :to="{ name: 'FAQ' }"
     >
-      FAQ
+      {{ $t('Header-Links.FAQ') }}
     </router-link>
     <router-link
       active-class="text-bold"
@@ -22,7 +22,7 @@
       exact
       :to="{ name: 'contact' }"
     >
-      Contact
+      {{ $t('Header-Links.contact') }}
     </router-link>
   </div>
 </template>
