@@ -4,7 +4,7 @@
   "description": "Contracts for the Umbra Protocol",
   "dependencies": {
     "@opengsn/gsn": "^2.1.0",
-    "@openzeppelin/contracts": "^3.4.1"
+    "@openzeppelin/contracts": "3.4.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^9.1.2",
