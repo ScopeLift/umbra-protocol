@@ -2,4 +2,6 @@
 remappings = ['test/=test/']
 [ci]
 fuzz_runs = 10000
+[hook]
+remappings = ['@openzeppelin/=lib/openzeppelin-contracts', '@uniswap/=lib/']
 # See more config options https://github.com/gakonst/foundry/tree/master/config

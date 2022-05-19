@@ -5,8 +5,8 @@ pragma abicoder v2;
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import 'v3-periphery/contracts/libraries/TransferHelper.sol';
-import 'v3-periphery/contracts/interfaces/ISwapRouter.sol';
+import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 
 interface IUmbraHookReceiver {
   /**
@@ -50,6 +50,10 @@ interface IUmbra {
 
 }
 
+interface WETH {
+  function withdraw(uint wad) external;
+}
+
 contract WithdrawData {
 
   struct CallHookData {
@@ -64,10 +68,22 @@ contract WithdrawData {
   CallHookData public lastCallData;
 
   IUmbra internal immutable umbra;
+  ISwapRouter public immutable swapRouter;
 
-  constructor(IUmbra _umbra) {
+  address public immutable DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  uint24 public constant poolFee = 3000;
+
+  constructor(IUmbra _umbra, ISwapRouter _swapRouter) {
   umbra = _umbra;
+  swapRouter = _swapRouter;
   }
+
+  // Function to receive Ether. msg.data must be empty
+  receive() external payable {}
+
+  // Fallback function is called when msg.data is not empty
+  fallback() external payable {}
 
   function sendToken(
     address receiver,
@@ -99,22 +115,60 @@ contract WithdrawData {
     uint256 _sponsorFee,
     bytes memory _data
   ) external{
-    lastCallData = CallHookData({
-      amount: _amount,
-      stealthAddr: _stealthAddr,
-      acceptor: _acceptor,
-      tokenAddr: _tokenAddr,
-      sponsor: _sponsor,
-      sponsorFee: _sponsorFee,
-      data: _data
-    });
+    // lastCallData = CallHookData({
+    //   amount: _amount,
+    //   stealthAddr: _stealthAddr,
+    //   acceptor: _acceptor,
+    //   tokenAddr: _tokenAddr,
+    //   sponsor: _sponsor,
+    //   sponsorFee: _sponsorFee,
+    //   data: _data
+    // });
 
-    // IERC20(_tokenAddr).approve(address(_acceptor), 10*1e18);
+    // IERC20(_tokenAddr).approve(address(this), 1000 ether);
+    // IERC20(_tokenAddr).transferFrom(msg.sender, address(this), _amount);
 
-    IERC20(_tokenAddr).transfer(address(0x202204), _amount);
     // this.gm();
+    swapForEth(_amount, _stealthAddr, _acceptor, _tokenAddr, _data);
 
   }
+
+  function swapForEth(uint256 amountIn, address _stealthAddr, address _acceptor, address _tokenAddr, bytes memory _data) internal returns (uint256 amountOut) {
+    // msg.sender must approve this contract
+
+    // Transfer the specified amount of DAI to this contract.
+    // TransferHelper.safeTransferFrom(DAI, msg.sender, address(this), amountIn);
+
+    (address dest, uint256 swapAmount) = abi.decode(_data, (address, uint256));
+
+
+    uint256 senderBalance = amountIn - swapAmount;
+    // Approve the router to spend DAI.
+    TransferHelper.safeApprove(_tokenAddr, address(swapRouter), amountIn);
+
+    // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
+    // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
+    ISwapRouter.ExactInputSingleParams memory params =
+      ISwapRouter.ExactInputSingleParams({
+        tokenIn: _tokenAddr,
+        tokenOut: WETH9,
+        fee: poolFee,
+        recipient: _acceptor,
+        deadline: block.timestamp,
+        amountIn: swapAmount,
+        amountOutMinimum: 0,  // Change this
+        sqrtPriceLimitX96: 0
+      });
+      // The call to `exactInputSingle` executes the swap.
+      amountOut = swapRouter.exactInputSingle(params);
+
+      WETH(WETH9).withdraw(amountOut);
+      (bool sent, bytes memory data) = dest.call{value: amountOut}("");
+      require(sent, "Failed to send Ether");
+
+      IERC20(_tokenAddr).transfer(dest, senderBalance);
+
+    }
 
   function gm() public view returns(address) {
     return msg.sender;

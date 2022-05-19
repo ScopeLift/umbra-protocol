@@ -13,3 +13,6 @@
 [submodule "contracts-periphery/lib/v3-periphery"]
 	path = contracts-periphery/lib/v3-periphery
 	url = https://github.com/Uniswap/v3-periphery
+[submodule "contracts-periphery/lib/v3-core"]
+	path = contracts-periphery/lib/v3-core
+	url = https://github.com/uniswap/v3-core
