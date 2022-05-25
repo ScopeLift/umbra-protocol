@@ -17,11 +17,7 @@ abstract contract UmbraBatchSendGasTest is DSTestPlus {
   address alice = address(0x202204);
   address bob = address(0x202205);
 
-  uint256 etherAmount;
-  uint256 tokenAmount;
-  uint256 addressAmount;
   uint256 ethBalance;
-  uint256 ethBalanceAfterGas;
   uint256 tokenBalance;
 
   uint256 toll;
@@ -29,16 +25,16 @@ abstract contract UmbraBatchSendGasTest is DSTestPlus {
   bytes32 ciphertext = "ciphertext";
 
   UmbraBatchSend.SendEth[] sendEth;
-  UmbraBatchSend.SendEth[] sendEthMax;
-  UmbraBatchSend.SendEth[] sendEthMaxWithTokens;
-  UmbraBatchSend.SendEth[] sendEth100;
-  UmbraBatchSend.SendEth[] sendEth100Max;
-  UmbraBatchSend.SendEth[] sendEth100MaxWithTokens;
-
   UmbraBatchSend.SendToken[] sendToken;
-  UmbraBatchSend.SendToken[] sendTokenMax;
-  UmbraBatchSend.SendToken[] sendToken100;
-  UmbraBatchSend.SendToken[] sendToken100Max;
+
+
+  // Setup params for each function
+  enum Send {ETH, TOKEN, BOTH}
+  address payable[] addrs;
+  uint256 valueAmount; // {value: valueAmount} when calling Umbra
+  uint256 numOfAddrs;
+  uint256 etherAmount; // Ether amount to be sent per address
+  uint256 tokenAmount; // Token amount to be sent per address
 
   function setUp() virtual public {
     // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
@@ -50,11 +46,6 @@ abstract contract UmbraBatchSendGasTest is DSTestPlus {
 
     ethBalance = address(this).balance;
     tokenBalance = token.balanceOf(address(this));
-
-    // Set test parameters
-    etherAmount = 10 ether;
-    tokenAmount = 10000 ether;
-    addressAmount = 10;
   }
 
   function testPostSetupState() public {
@@ -62,71 +53,337 @@ abstract contract UmbraBatchSendGasTest is DSTestPlus {
     assertEq(toll, currentToll);
   }
 
-  function addParams(uint256 etherAmount, uint256 tokenAmount) public {
-    sendEth.push(UmbraBatchSend.SendEth(payable(alice), etherAmount, pkx, ciphertext));
-    sendEthMax.push(UmbraBatchSend.SendEth(payable(alice), (ethBalance - toll), pkx, ciphertext));
-    sendEthMaxWithTokens.push(UmbraBatchSend.SendEth(payable(alice), (ethBalance - toll * 2), pkx, ciphertext));
+  function addParams(Send _type, uint256 numOfAddrs, uint256 etherAmount, uint256 tokenAmount) public {
+    token.approve(address(router), tokenBalance);
+    // Create a list of addresses
+    for(uint256 i = 0; i < numOfAddrs; i++) {
+      addrs.push(payable(address(uint160(uint(keccak256(abi.encode(i)))))));
+    }
 
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), tokenAmount, pkx, ciphertext));
-    sendTokenMax.push(UmbraBatchSend.SendToken(alice, address(token), (tokenBalance), pkx, ciphertext));
+    if (_type == Send.ETH) {
+      for (uint256 i = 0; i < numOfAddrs; i ++) {
+        valueAmount += etherAmount + toll;
+        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
+      }
+
+    } else if (_type == Send.TOKEN) {
+      for (uint256 i = 0; i < numOfAddrs; i ++) {
+        valueAmount += toll;
+        sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
+      }
+
+    } else {
+        for (uint256 i = 0; i < numOfAddrs; i ++) {
+        valueAmount += etherAmount + toll * 2;
+        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
+        sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
+        }
+      }
+  }
+
+  // Send MAX balance
+  function addParams(Send _type, uint256 numOfAddrs) public {
     token.approve(address(router), tokenBalance);
 
-    for (uint256 i = 0; i < addressAmount; i ++) {
-      address payable addr = payable(address(uint160(uint(keccak256(abi.encode(i))))));
-      sendEth100.push(UmbraBatchSend.SendEth(addr, etherAmount, pkx, ciphertext));
-      sendEth100Max.push(UmbraBatchSend.SendEth(addr, (ethBalance/addressAmount) - toll, pkx, ciphertext));
-      sendEth100MaxWithTokens.push(UmbraBatchSend.SendEth(addr, (ethBalance/addressAmount) - toll * 2, pkx, ciphertext));
-      sendToken100.push(UmbraBatchSend.SendToken(addr, address(token), tokenAmount, pkx, ciphertext));
-      sendToken100Max.push(UmbraBatchSend.SendToken(addr, address(token), (tokenBalance/addressAmount), pkx, ciphertext));
+    for(uint256 i = 0; i < numOfAddrs; i++) {
+      addrs.push(payable(address(uint160(uint(keccak256(abi.encode(i)))))));
     }
+
+    if (_type == Send.ETH) {
+      for (uint256 i = 0; i < numOfAddrs; i ++) {
+        sendEth.push(UmbraBatchSend.SendEth(addrs[i], (ethBalance/numOfAddrs) - toll, pkx, ciphertext));
+      }
+      valueAmount = ethBalance;
+
+    } else if (_type == Send.TOKEN) {
+      for (uint256 i = 0; i < numOfAddrs; i ++) {
+        valueAmount += toll;
+        sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), (tokenBalance/numOfAddrs), pkx, ciphertext));
+      }
+
+    } else {
+        for (uint256 i = 0; i < numOfAddrs; i ++) {
+        sendEth.push(UmbraBatchSend.SendEth(addrs[i], (ethBalance/numOfAddrs) - toll * 2, pkx, ciphertext));
+        sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), (tokenBalance/numOfAddrs), pkx, ciphertext));
+        }
+        valueAmount = ethBalance;
+      }
   }
 
   function test_BatchSendEth() public {
-    router.batchSendEth{value: etherAmount + toll}(toll, sendEth);
+    numOfAddrs = 1;
+    etherAmount = 10 ether;
+    addParams(Send.ETH, numOfAddrs, etherAmount, 0);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
   }
 
-  function test_BatchSendEth_MAX() public {
-    router.batchSendEth{value: ethBalance}(toll, sendEthMax);
+  function test_BatchSendEth_MaxBalance() public {
+    numOfAddrs = 1;
+    addParams(Send.ETH, numOfAddrs);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
   }
 
-  function test_BatchSendEth_100() public {
-    router.batchSendEth{value: (etherAmount + toll) * addressAmount}(toll, sendEth100);
+  function test_BatchSendEth_To2Addrs() public {
+    numOfAddrs = 2;
+    etherAmount = 10 ether;
+    addParams(Send.ETH, numOfAddrs, etherAmount, 0);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
   }
 
-  function test_BatchSendEth_100MAX() public {
-    router.batchSendEth{value: ethBalance}(toll, sendEth100Max);
+  function test_BatchSendEth_To5Addrs() public {
+    numOfAddrs = 5;
+    etherAmount = 10 ether;
+    addParams(Send.ETH, numOfAddrs, etherAmount, 0);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_To10Addrs() public {
+    numOfAddrs = 10;
+    etherAmount = 10 ether;
+    addParams(Send.ETH, numOfAddrs, etherAmount, 0);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_To25Addrs() public {
+    numOfAddrs = 25;
+    etherAmount = 10 ether;
+    addParams(Send.ETH, numOfAddrs, etherAmount, 0);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_To100Addrs() public {
+    numOfAddrs = 100;
+    etherAmount = 10 ether;
+    addParams(Send.ETH, numOfAddrs, etherAmount, 0);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_MaxBalanceTo2Addrs() public {
+    numOfAddrs = 2;
+    addParams(Send.ETH, numOfAddrs);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_MaxBalanceTo5Addrs() public {
+    numOfAddrs = 5;
+    addParams(Send.ETH, numOfAddrs);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_MaxBalanceTo10Addrs() public {
+    numOfAddrs = 10;
+    addParams(Send.ETH, numOfAddrs);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_MaxBalanceTo25Addrs() public {
+    numOfAddrs = 25;
+    addParams(Send.ETH, numOfAddrs);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
+  }
+
+  function test_BatchSendEth_MaxBalanceTo100Addrs() public {
+    numOfAddrs = 100;
+    addParams(Send.ETH, numOfAddrs);
+
+    router.batchSendEth{value: valueAmount}(toll, sendEth);
   }
 
   function test_BatchSendTokens() public {
-    router.batchSendTokens{value: toll}(toll, sendToken);
+    numOfAddrs = 1;
+    tokenAmount = 10000 ether;
+    addParams(Send.TOKEN, numOfAddrs, 0 , tokenAmount);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
   }
 
-  function test_BatchSendTokens_MAX() public {
-    router.batchSendTokens{value: toll}(toll, sendTokenMax);
+  function test_BatchSendTokens_MaxBalance() public {
+    numOfAddrs = 1;
+    addParams(Send.TOKEN, numOfAddrs);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
   }
 
-  function test_BatchSendTokens_100() public {
-    router.batchSendTokens{value: toll * addressAmount}(toll, sendToken100);
+  function test_BatchSendTokens_To100Addrs() public {
+    numOfAddrs = 100;
+    tokenAmount = 10000 ether;
+    addParams(Send.TOKEN, numOfAddrs, 0, tokenAmount);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
   }
 
-  function test_BatchSendTokens_100MAX() public {
-    router.batchSendTokens{value: toll * addressAmount}(toll, sendToken100Max);
+  function test_BatchSendTokens_To2Addrs() public {
+    numOfAddrs = 2;
+    tokenAmount = 10000 ether;
+    addParams(Send.TOKEN, numOfAddrs, 0, tokenAmount);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_To5Addrs() public {
+    numOfAddrs = 5;
+    tokenAmount = 10000 ether;
+    addParams(Send.TOKEN, numOfAddrs, 0, tokenAmount);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_To10Addrs() public {
+    numOfAddrs = 10;
+    tokenAmount = 10000 ether;
+    addParams(Send.TOKEN, numOfAddrs, 0, tokenAmount);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_To25Addrs() public {
+    numOfAddrs = 25;
+    tokenAmount = 10000 ether;
+    addParams(Send.TOKEN, numOfAddrs, 0, tokenAmount);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_MaxBalanceTo2Addrs() public {
+    numOfAddrs = 2;
+    addParams(Send.TOKEN, numOfAddrs);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_MaxBalanceTo5Addrs() public {
+    numOfAddrs = 5;
+    addParams(Send.TOKEN, numOfAddrs);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_MaxBalanceTo10Addrs() public {
+    numOfAddrs = 10;
+    addParams(Send.TOKEN, numOfAddrs);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_MaxBalanceTo25Addrs() public {
+    numOfAddrs = 25;
+    addParams(Send.TOKEN, numOfAddrs);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
+  }
+
+  function test_BatchSendTokens_MaxBalanceTo100Addrs() public {
+    numOfAddrs = 100;
+    addParams(Send.TOKEN, numOfAddrs);
+
+    router.batchSendTokens{value: valueAmount}(toll, sendToken);
   }
 
   function test_BatchSend() public {
-    router.batchSend{value: etherAmount + toll * 2}(toll, sendEth, sendToken);
+    numOfAddrs = 100;
+    etherAmount = 10 ether;
+    tokenAmount = 10000 ether;
+    addParams(Send.BOTH, numOfAddrs, etherAmount, tokenAmount);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
   }
 
-  function test_BatchSend_MAX() public {
-    router.batchSend{value: ethBalance}(toll, sendEthMaxWithTokens, sendTokenMax);
+  function test_BatchSend_MaxBalance() public {
+    numOfAddrs = 1;
+    addParams(Send.BOTH, numOfAddrs);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
   }
 
-  function test_BatchSend_100() public {
-    router.batchSend{value: (etherAmount + toll * 2) * addressAmount}(toll, sendEth100, sendToken100);
+  function test_BatchSend_To2Addrs() public {
+    numOfAddrs = 2;
+    etherAmount = 10 ether;
+    tokenAmount = 10000 ether;
+    addParams(Send.BOTH, numOfAddrs, etherAmount, tokenAmount);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
   }
 
-  function test_BatchSend_100MAX() public {
-    router.batchSend{value: ethBalance }(toll, sendEth100MaxWithTokens, sendToken100Max);
+  function test_BatchSend_To5Addrs() public {
+    numOfAddrs = 5;
+    etherAmount = 10 ether;
+    tokenAmount = 10000 ether;
+    addParams(Send.BOTH, numOfAddrs, etherAmount, tokenAmount);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_To10Addrs() public {
+    numOfAddrs = 10;
+    etherAmount = 10 ether;
+    tokenAmount = 10000 ether;
+    addParams(Send.BOTH, numOfAddrs, etherAmount, tokenAmount);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_To25Addrs() public {
+    numOfAddrs = 25;
+    etherAmount = 10 ether;
+    tokenAmount = 10000 ether;
+    addParams(Send.BOTH, numOfAddrs, etherAmount, tokenAmount);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_To100Addrs() public {
+    numOfAddrs = 100;
+    etherAmount = 10 ether;
+    tokenAmount = 10000 ether;
+    addParams(Send.BOTH, numOfAddrs, etherAmount, tokenAmount);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_MaxBalanceTo2Addrs() public {
+    numOfAddrs = 2;
+    addParams(Send.BOTH, numOfAddrs);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_MaxBalanceTo5Addrs() public {
+    numOfAddrs = 5;
+    addParams(Send.BOTH, numOfAddrs);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_MaxBalanceTo10Addrs() public {
+    numOfAddrs = 10;
+    addParams(Send.BOTH, numOfAddrs);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_MaxBalanceTo25Addrs() public {
+    numOfAddrs = 25;
+    addParams(Send.BOTH, numOfAddrs);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+  }
+
+  function test_BatchSend_MaxBalanceTo100Addrs() public {
+    numOfAddrs = 100;
+    addParams(Send.BOTH, numOfAddrs);
+
+    router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
   }
 
 }
@@ -136,9 +393,7 @@ contract BatchSendWithTollGasTest is UmbraBatchSendGasTest {
     super.setUp();
     toll = 1e17;
     setToll(umbra, toll);
-    addParams(etherAmount, tokenAmount);
   }
-
 }
 
 contract BatchSendWithoutTollGasTest is UmbraBatchSendGasTest {
@@ -146,26 +401,23 @@ contract BatchSendWithoutTollGasTest is UmbraBatchSendGasTest {
     super.setUp();
     toll = 0;
     setToll(umbra, toll);
-    addParams(etherAmount, tokenAmount);
   }
 }
 
-contract BatchSendWithTollAndBalanceGasTest is UmbraBatchSendGasTest {
+contract BatchSendWithTollAndWithTokenBalanceGasTest is UmbraBatchSendGasTest {
   function setUp() public override {
     super.setUp();
     toll = 1e17;
     setToll(umbra, toll);
-    addParams(etherAmount, tokenAmount);
     token.mint(address(umbra), 1e7 ether); // Umbra has non-zero token balance
   }
 }
 
-contract BatchSendWithoutTollAndBalanceGasTest is UmbraBatchSendGasTest {
+contract BatchSendWithoutTollAndWithTokenBalanceGasTest is UmbraBatchSendGasTest {
   function setUp() public override {
     super.setUp();
     toll = 0;
     setToll(umbra, toll);
-    addParams(etherAmount, tokenAmount);
     token.mint(address(umbra), 1e7 ether); // Umbra has non-zero token balance
   }
 }
