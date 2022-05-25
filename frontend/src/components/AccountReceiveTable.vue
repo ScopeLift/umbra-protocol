@@ -336,7 +336,7 @@ import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vu
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
-import { ConfirmedRelayerStatusResponse, FeeEstimateResponse } from 'components/models';
+import { FeeEstimateResponse } from 'components/models';
 import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
@@ -594,19 +594,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
           relayTransactionHash: string;
         };
 
-        if (chainId === 137) {
-          // No relayer support on this network, so this is a regular transaction hash
-          console.log(`${vm.$i18n.t('AccountReceiveTable.relayed-with-tx-hash').toString()} ${relayTransactionHash}`);
-          const receipt = await provider.value.waitForTransaction(relayTransactionHash);
-          console.log(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
-        } else {
-          // Received a relayer transaction hash, wait for withdraw transaction to be mined
-          console.log(
-            `${vm.$i18n.t('AccountReceiveTable.relayed-with-relayer-id').toString()} ${relayTransactionHash}`
-          );
-          const { receipt } = (await relayer.value?.waitForId(relayTransactionHash)) as ConfirmedRelayerStatusResponse;
-          console.log(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
-        }
+        // This is a regular transaction hash, though it's possible OZ Defender will replace it to ensure it gets
+        // included quickly, in which case the frontend would not automatically reflect when the relay was successful.
+        // Because we relay with the "fast" setting, this is unlikely to be the case.
+        window.logger.info(
+          `${vm.$i18n.t('AccountReceiveTable.relayed-with-tx-hash').toString()} ${relayTransactionHash}`
+        );
+        const receipt = await provider.value.waitForTransaction(relayTransactionHash);
+        window.logger.info(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
       }
 
       // Send complete, cleanup state
