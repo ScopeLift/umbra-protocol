@@ -1,7 +1,8 @@
 [default]
-remappings = ['test/=test/']
+remappings = ['test/=test/', '@uniswap/=lib/']
 [ci]
 fuzz_runs = 10000
+remappings = ['test/=test/', '@uniswap/=lib/']
 [hook]
-remappings = ['test/=test/', '@openzeppelin/=lib/openzeppelin-contracts', '@uniswap/=lib/']
+remappings = ['test/=test/', '@uniswap/=lib/']
 # See more config options https://github.com/gakonst/foundry/tree/master/config
