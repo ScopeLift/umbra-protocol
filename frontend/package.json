@@ -6,14 +6,15 @@
   "author": "Matt Solomon <matt@mattsolomon.dev>",
   "private": true,
   "scripts": {
-    "lint": "eslint --ext .js,.ts,.vue ./",
+    "lint": "yarn lint:eslint && yarn lint:i18n",
+    "lint:eslint": "eslint --ext .js,.ts,.vue ./",
+    "lint:i18n": "vue-i18n-extract report --vueFiles './src/**/*.?(js|vue|ts)' --languageFiles './src/i18n/locales/*.?(json|yml|yaml|js)'",
     "prettier": "prettier --write .",
     "test": "jest",
     "dev": "quasar dev",
     "build": "quasar build && cp _redirects dist/spa/",
     "clean": "rimraf dist",
-    "precommit": "lint-staged",
-    "scan-locale": "vue-i18n-extract report --vueFiles './src/**/*.?(js|vue|ts)' --languageFiles './src/i18n/locales/*.?(json|yml|yaml|js)'"
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "@metamask/jazzicon": "^2.0.0",
