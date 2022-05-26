@@ -1,5 +1,7 @@
+.PHONY: test
+
 build :; forge build
+clean :; forge clean
 install :; forge install
-Test :; forge test
-testGas :; forge test --match-path test/Gas.t.sol
-snapshot :; forge snapshot
+snapshot :; forge snapshot --match-path test/Gas.t.sol
+test :; forge test
