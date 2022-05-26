@@ -7,11 +7,6 @@ import "src/UmbraBatchSend.sol";
 abstract contract UmbraBatchSendTest is DeployUmbraTest {
   UmbraBatchSend router;
 
-  address constant alice = address(0x202204);
-  address constant bob = address(0x202205);
-  bytes32 constant pkx = "pkx";
-  bytes32 constant ciphertext = "ciphertext";
-
   uint256 toll;
 
   UmbraBatchSend.SendEth[] sendEth;
@@ -19,11 +14,9 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
 
   error ValueMismatch();
 
-  function setUp() virtual public {
-    deployUmbra();
-    createMockERC20AndMint(address(this), 1e7 ether);
+  function setUp() virtual override public {
+    super.setUp();
     router = new UmbraBatchSend(IUmbra(address(umbra)));
-    vm.deal(address(this), 1e5 ether);
   }
 
   function testPostSetupState() public {

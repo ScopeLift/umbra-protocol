@@ -7,6 +7,16 @@ import "test/utils/DSTestPlus.sol";
 contract DeployUmbraTest is DSTestPlus {
   address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   MockERC20 token;
+  address constant alice = address(0x202204);
+  address constant bob = address(0x202205);
+  bytes32 constant pkx = "pkx";
+  bytes32 constant ciphertext = "ciphertext";
+
+  function setUp() virtual public {
+    deployUmbra();
+    createMockERC20AndMint(address(this), 1e7 ether);
+    vm.deal(address(this), 1e5 ether);
+  }
 
   function deployUmbra() virtual public {
     // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
