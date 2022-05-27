@@ -28,11 +28,11 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
   function testPostSetupState() public {
     uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
+    assert(ethBalance > 0 && tokenBalance > 0);
   }
 
   function executeParams(Send _type, uint256 numOfAddrs, uint256 etherAmount, uint256 tokenAmount) public {
-    require(ethBalance > 0 && tokenBalance > 0, "No funds to send");
-    require(numOfAddrs > 0 && etherAmount >= 0 && tokenAmount >= 0, "numOfAddrs can't be zero and send amounts can't be negative");
+    assert(numOfAddrs > 0);
 
     uint256 valueAmount;
     // Create a list of addresses
@@ -64,8 +64,7 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
 
   // Send max balance
   function executeParams(Send _type, uint256 numOfAddrs) public {
-    require(ethBalance > 0 && tokenBalance > 0, "No funds to send");
-    require(numOfAddrs > 0, "numOfAddrs can't be zero");
+    assert(numOfAddrs > 0);
 
     if (_type == Send.ETH) {
       executeParams(Send.ETH, numOfAddrs, (ethBalance/numOfAddrs) - toll, 0);
