@@ -4,7 +4,6 @@
 
 import { JsonRpcProvider } from 'src/utils/ethers';
 import {
-  ConfirmedRelayerStatusResponse,
   FeeEstimateResponse,
   RelayerStatusResponse,
   Provider,
@@ -72,28 +71,4 @@ export class UmbraApi {
     if ('error' in data) throw new Error(`Could not get relay status: ${data.error}`);
     return data;
   }
-
-  // Returns a promise that resolves once the specified relayer transaction has mined
-  async waitForId(itxId: string) {
-    let result;
-    while (!result) {
-      try {
-        // Return response if it contains a receipt (i.e. it was mined)
-        const response = await this.getRelayStatus(itxId);
-        if ('receipt' in response && response.receipt) {
-          result = response as ConfirmedRelayerStatusResponse;
-        }
-      } catch (err) {
-        // If there was an error, log it, but keep trying
-        console.warn(`Received the below error when fetching status for relayer ID ${itxId}`);
-        console.warn(err);
-      } finally {
-        // Wait 4 seconds and try again
-        await sleep(4000);
-      }
-    }
-    return result;
-  }
 }
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
