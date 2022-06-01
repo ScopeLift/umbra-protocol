@@ -594,11 +594,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         // This is a regular transaction hash, though it's possible OZ Defender will replace it to ensure it gets
         // included quickly, in which case the frontend would not automatically reflect when the relay was successful.
         // Because we relay with the "fast" setting, this is unlikely to be the case.
-        window.logger.info(
-          `${vm.$i18n.t('AccountReceiveTable.relayed-with-tx-hash').toString()} ${relayTransactionHash}`
-        );
+        window.logger.info(`Relayed with transaction hash ${relayTransactionHash}`);
         const receipt = await provider.value.waitForTransaction(relayTransactionHash);
-        window.logger.info(vm.$i18n.t('AccountReceiveTable.withdraw-successful-receipt'), receipt);
+        window.logger.info('Withdraw successful. Receipt:', receipt);
       }
 
       // Send complete, cleanup state
