@@ -112,7 +112,7 @@
             </tr>
             <!-- Summary if they're sending native token -->
             <tr v-if="token.address === NATIVE_TOKEN.address">
-              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
+              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">{{ $t('Send.total') }}</td>
               <td class="min text-right">{{ humanTotalAmount }}</td>
               <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
               <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>

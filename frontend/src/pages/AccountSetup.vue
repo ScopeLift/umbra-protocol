@@ -4,7 +4,7 @@
 
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <p class="text-center">Connect your wallet to setup your account</p>
+      <p class="text-center">{{ $t('Setup.connect-wallet') }}</p>
       <div class="row justify-center">
         <connect-wallet>
           <base-button class="text-center" label="Connect Wallet" />

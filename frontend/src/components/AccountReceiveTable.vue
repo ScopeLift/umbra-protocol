@@ -53,8 +53,7 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
       >
-        <i18n path="AccountReceiveTable.keys-dont-match" tag="span"
-          >{{ $t('AccountReceiveTable.keys-dont-match') }}
+        <i18n path="AccountReceiveTable.keys-dont-match" tag="span">
           <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountReceiveTable.setup') }}</router-link>
         </i18n>
         <router-link class="hyperlink" :to="{ name: 'FAQ', hash: '#account-setup' }">{{
@@ -348,21 +347,21 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
 
   // Generate string that explains scan settings that were used
   const scanDescriptionString = computed(() => {
-    const suffix = scanPrivateKey.value ? vm.$i18n.t('AccountReceiveTable.custom-prv-key') : '';
+    const suffix = scanPrivateKey.value ? vm.$i18n.tc('AccountReceiveTable.custom-prv-key') : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    let msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block').toString()} ${Number(
-      startBlock.value
-    )} ${vm.$i18n.t('AccountReceiveTable.to').toString()} ${Number(endBlock.value)}`; // default message
+    let msg = `${vm.$i18n.tc('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.tc(
+      'AccountReceiveTable.to'
+    )} ${Number(endBlock.value)}`; // default message
 
-    if (!hasStartBlock && !hasEndBlock) msg = `${vm.$i18n.t('AccountReceiveTable.all-blocks-scanned').toString()}`;
+    if (!hasStartBlock && !hasEndBlock) msg = `${vm.$i18n.tc('AccountReceiveTable.all-blocks-scanned')}`;
     if (!hasStartBlock && hasEndBlock)
-      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-all-blocks-up-to').toString()} ${Number(endBlock.value)}`;
+      msg = `${vm.$i18n.tc('AccountReceiveTable.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
     if (hasStartBlock && !hasEndBlock)
-      msg = `${vm.$i18n.t('AccountReceiveTable.scanned-from-block').toString()} ${Number(
-        startBlock.value
-      )} ${vm.$i18n.t('AccountReceiveTable.to-current-block').toString()}`;
-    return `${msg}${suffix.toString()}`;
+      msg = `${vm.$i18n.tc('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.tc(
+        'AccountReceiveTable.to-current-block'
+      )}`;
+    return `${msg}${suffix}`;
   });
 
   // For advanced mode: compute the stealth private key for a given random number
@@ -379,7 +378,7 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   // For advanced mode: copyies the provided stealth private key to the clipboard
   const copyPrivateKey = async (privateKey: string) => {
     await copyToClipboard(privateKey);
-    notifyUser('success', vm.$i18n.t('AccountReceiveTable.private-key-copied').toString());
+    notifyUser('success', vm.$i18n.tc('AccountReceiveTable.private-key-copied'));
     hidePrivateKey();
   };
 
@@ -412,7 +411,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'timestamp',
-      label: vm.$i18n.t('AccountReceiveTable.date-received'),
+      label: vm.$i18n.tc('AccountReceiveTable.date-received'),
       name: 'date',
       sortable: true,
       sort: sortByTime,
@@ -420,16 +419,16 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'amount',
-      label: vm.$i18n.t('AccountReceiveTable.amount'),
+      label: vm.$i18n.tc('AccountReceiveTable.amount'),
       name: 'amount',
       sortable: true,
       format: toString,
     },
-    { align: 'left', field: 'from', label: vm.$i18n.t('AccountReceiveTable.sender'), name: 'from', sortable: true },
+    { align: 'left', field: 'from', label: vm.$i18n.tc('AccountReceiveTable.sender'), name: 'from', sortable: true },
     {
       align: 'left',
       field: 'receiver',
-      label: vm.$i18n.t('AccountReceiveTable.stealth-receiver'),
+      label: vm.$i18n.tc('AccountReceiveTable.stealth-receiver'),
       name: 'receiver',
       sortable: false,
     },
@@ -470,7 +469,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
   onMounted(async () => {
     isLoading.value = true;
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
+    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
 
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
@@ -493,14 +492,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
     await copyToClipboard(address);
-    notifyUser('success', `${type} ${vm.$i18n.t('AccountReceiveTable.address-copied').toString()}`);
+    notifyUser('success', `${type} ${vm.$i18n.tc('AccountReceiveTable.address-copied')}`);
   }
 
   /**
    * @notice Opens the transaction in etherscan
    */
   function openInEtherscan(row: UserAnnouncement) {
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
+    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
     // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     window.open(getEtherscanUrl(row.txHash, chainId));
@@ -512,8 +511,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
     // Check if withdrawal destination is safe
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
-    if (!userAddress.value) throw new Error(vm.$i18n.t('AccountReceiveTable.wallet-not-connected').toString());
+    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    if (!userAddress.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
     activeAnnouncement.value = announcement;
     const { safe, reasons } = await isAddressSafe(
       destinationAddress.value,
@@ -547,10 +546,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @notice Executes the withdraw process
    */
   async function executeWithdraw(options: ExecuteWithdrawalOptions) {
-    if (!umbra.value) throw new Error(vm.$i18n.t('AccountReceiveTable.umbra-instance-not-found').toString());
-    if (!provider.value) throw new Error(vm.$i18n.t('AccountReceiveTable.provider-not-found').toString());
-    if (!activeAnnouncement.value)
-      throw new Error(vm.$i18n.t('AccountReceiveTable.no-announcement-selected').toString());
+    if (!umbra.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.umbra-instance-not-found'));
+    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.provider-not-found'));
+    if (!activeAnnouncement.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.no-announcement-selected'));
     showPrivacyModal.value = false;
 
     // Get token info, stealth private key, and destination (acceptor) address
@@ -573,12 +571,11 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value)
-          throw new Error(vm.$i18n.t('AccountReceiveTable.signer-or-provider-not-found').toString());
+          throw new Error(vm.$i18n.tc('AccountReceiveTable.signer-or-provider-not-found'));
         if (!activeFee.value || !('fee' in activeFee.value))
-          throw new Error(vm.$i18n.t('AccountReceiveTable.fee-not-set').toString());
+          throw new Error(vm.$i18n.tc('AccountReceiveTable.fee-not-set'));
         const chainId = network.value?.chainId;
-        if (!chainId)
-          throw new Error(`${vm.$i18n.t('AccountReceiveTable.invalid-chain-id').toString()} ${String(chainId)}`);
+        if (!chainId) throw new Error(`${vm.$i18n.tc('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
 
         // Get users signature
         const sponsor = '0xb4435399AB53D6136C9AEEBb77a0120620b117F9'; // TODO update this
@@ -675,7 +672,7 @@ export default defineComponent({
       return spendingKeyPairFromSig.value as KeyPair;
     });
     const vm = getCurrentInstance()!;
-    const receiverTooltipText = vm.$i18n.t('AccountReceiveTable.receiver-tool-tip');
+    const receiverTooltipText = vm.$i18n.tc('AccountReceiveTable.receiver-tool-tip');
 
     return {
       advancedMode,

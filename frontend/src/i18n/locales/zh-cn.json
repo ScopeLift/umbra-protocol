@@ -68,6 +68,7 @@
     "sending": "发送中",
     "fee": "Umbra 费",
     "fee-explain": "在 %{chainName} 上交易非常便宜，因此会收取少量费用以阻止垃圾信息。",
+    "total": "总额",
     "copy-payment-link": "复制付款链接",
     "enter-an-amount": "请输入金额",
     "select-a-token": "请选择代币",
@@ -106,8 +107,7 @@
     "return-home": "主页"
   },
   "Error": {
-    "error": "404",
-    "error-msg": "哎呀。这里什么都没有......"
+    "error": "哎呀。这里什么都没有......"
   },
   "FAQ": {
     "faq": "常见问题",
@@ -180,7 +180,7 @@
     "network-addrs-registry": "{stealthRegistry} 部署在 {stealthRegistryAddr} {mainnet}, {rinkeby}, {optimism}, {polygon}, 和 {arbitrum}",
     "how-it-works": "它是如何工作的？",
     "how-it-works-answer": "<p class=\"text-bold\">隐形地址概述</p> <p>让我们从 Umbra 协议的工作原理（更一般地说，隐身地址的工作原理）开始：</p> <p> 接收者拥有公钥 <span class=\"code\">P</span> 和私钥 <span class=\"code\">p</span>。 发送者生成一个随机数 <span class=\"code\">r</span>，并使用椭圆曲线乘法计算隐身公钥为  <span class=\"code\">P_stealth = P * r</span> 。 发件人从该公钥中派生出以太坊地址 <span class=\"code\">a_stealth</span> ，并向其发送资金。由于椭圆曲线数学的魔力，接收者可以通过计算 <span class=\"code\">p_stealth</span> 生成访问 <span class=\"code\">a_stealth</span> 资金所需的私钥 <span class=\"code\">p_stealth = p * r</span>. </p> <p> 首先要解决的问题是发送方如何将值 <span class=\"code\">r</span> 传递给接收方？如果 <span class=\"code\">r</span> 是公开的，观察者可以通过计算 <span class=\"code\">P * r</span> 来确定向谁发送了各种已发布的 <span class=\"code\">P</span> 值，直到找到隐身地址。所以 <span class=\"code\">r</span> 需要加密。 </p>",
-    "how-it-works-answer-ECDH": "<p> 加密完成 {ECDH} (ECDH)，这意味着发送者使用接收者的公钥来加密随机数。加密的随机数会给我们密文 {c}。加密的随机数 {c} 和隐身地址 {a-stealth} {announcement} 发出。ECDH 要求发送方生成用于加密的临时私钥，因此接收方需要解密的临时公钥 {P-ephemeral} 也会在此事件中发出。 </p>",
+    "how-it-works-answer-ECDH": "加密完成 {ECDH} (ECDH)，这意味着发送者使用接收者的公钥来加密随机数。加密的随机数会给我们密文 {c}。加密的随机数 {c} 和隐身地址 {a-stealth} {announcement} 发出。ECDH 要求发送方生成用于加密的临时私钥，因此接收方需要解密的临时公钥 {P-ephemeral} 也会在此事件中发出。",
     "how-it-works-answer-part-2": "<p> 现在接收者可以扫描所有的 <span class=\"code\">Announcement</span> 事件并找到他们的资金，如下所示： </p> <ul> <li> 使用他们的私钥 <span class=\"code\">p</span> 和 <span class=\"code\">P_ephemeral</span>，他们可以计算 ECDH 共享密钥并解密随机数。 这总是会解密为 <span class=\"text-italic\">某些东西</span>，但我们还不知道它是否解密为正确的数字。 </li> <li> 所以接收方将解密后的随机数乘以 <span class=\"code\">p</span> 得到 <span class=\"code\">p_stealth</span>，并计算出 <span class=\"code\">p_stealth</span> 控制的地址</li> <li> 如果 <span class=\"code\">p_stealth</span> 控制的地址与公告中包含的  <span class=\"code\">a_stealth</span>  隐身地址匹配，则收件人知道付款是给他们的，并且可以使用 <span class=\"code\">p_stealth</span>取款。 </li> </ul> <p class=\"text-bold\">应用程序私钥</p> <p> 从上面的解释可以看出，该应用程序需要访问您的私钥才能执行所需的数学运算。但是，当您将钱包连接到应用程序时，钱包不会与应用程序共享您的私钥。这很好，因为如果您使用的任何应用程序都可以窃取您的资金！那么 Umbra 如何访问您的密钥呢？我们有几个选项： </p> <ol> <li> 要求用户将其钱包的私钥输入到表单中。从安全性和用户体验的角度来看，这都很糟糕，所以我们不这样做 </li> <li> 生成一个随机私钥并要求您备份它。这可行，但必须备份特定于应用程序的机密并不理想。 </li> <li>要求用户对消息进行签名，对签名进行哈希处理，并从签名中生成密钥。</li> </ol>",
     "how-it-works-answer-option-3": "选项 3 解决了选项 1 和 2 的问题，是我们的应用程序使用的方法。类似的方法被使用 {loopring} 和 {zksync} 同样，他们是这种方法的灵感来源。",
     "how-it-works-answer-end": "<p class=\"text-bold\">扫描资金</p> <p> 最后的考虑与扫描有关。因为需要扫描每一个 <span class=\"code\">Announcement</span> ，所以可能需要很长时间才能找到您的资金。 </p> <p> 一种加快速度的方法（从用户的角度来看）是将扫描委托给第三方服务，并让他们在您收到资金时通知您。但是扫描服务需要你的私钥 <span class=\"code\">p</span> 来确定你是否收到了资金，如果他们有 <span class=\"code\">p</span> 他们可以窃取你的资金！ </p> <p> 我们可以通过生成两个特定于应用程序的私钥来解决这个问题。一个私钥将是查看私钥 <span class=\"code\">p_view</span>，用于加密随机数。另一个是支出私钥  <span class=\"code\">p_spend</span>，用于计算隐形地址和访问这些资金。因此，我们的发送和接收流程现在稍微修改为： </p> <ol> <li> 接收人有两个私钥 <span class=\"code\">p_spend</span>  和 <span class=\"code\">p_view</span>，并发布对应的公钥 <span class=\"code\">P_spend</span> 和 <span class=\"code\">P_view</span>. </li> <li> 发送者生成一个随机数 <span class=\"code\">r</span> 并使用 <span class=\"code\">P_view</span> 和一个临时私钥  <span class=\"code\">p_ephemeral</span> 对其进行加密以生成密文 <span class=\"code\">c</span> </li> <li> 发件人将隐身地址计算为派生自 <span class=\"code\">P_stealth = P_spend * r</span> 的地址，并将资金发送到该地址 </li> <li> Umbra 合约发出 <span class=\"code\">c</span>, <span class=\"code\">P_ephemeral</span>，和隐身地址 <span class=\"code\">a_stealth</span> </li> <li> 对于每个事件，接收者使用 <span class=\"code\">p_view</span> 和 <span class=\"code\">P_ephemeral</span> 解密 <span class=\"code\">r</span>，然后检查 <span class=\"code\">p_stealth = p_spend * r</span> 是否是控制  a_stealth 的私钥</li> </ol> <p> 通过这种方法，收件人可以通过提供第三方 <span class=\"code\">p_view</span> 和 <span class=\"code\">P_spend</span>来接受扫描服务 。该服务现在可以检查收款人是否已收到资金但第三方没有花钱权利。 </p>",
@@ -228,7 +228,6 @@
     "withdrawn": "已提取",
     "hide": "隐藏",
     "withdraw": "提取",
-    "receiver": "接受者",
     "scanning-complete": "扫描已成功完成",
     "custom-prv-key": "使用自定义私钥",
     "scanned-from-block": "从此块扫描",
@@ -247,9 +246,6 @@
     "signer-or-provider-not-found": "未找到签名者或提供程序：Signer or provider not found",
     "fee-not-set": "费用未设置：Fee is not set",
     "invalid-chain-id": "无效的链 ID：Invalid chainID",
-    "relayed-with-tx-hash": "使用事务哈希中继：Relayed with transaction hash",
-    "relayed-with-relayer-id": "使用中继器 ID 中继：Relayed with relayer ID",
-    "withdraw-succcessful-receipt": "取款成功。收据：",
     "receiver-tool-tip": "收到这些资金的隐形地址看起来像是一个空地址。它不能被追随到您的帐户，但只有您有能力生成其私钥。"
   },
   "AccountReceiveTableWarning": {

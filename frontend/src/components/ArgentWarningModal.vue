@@ -6,7 +6,7 @@
 
     <q-card-section>
       <h5 class="text-bold text-center q-mt-none">
-        <q-icon name="fas fa-exclamation-triangle" color="warning" left />Warning: Argent Compatibility Issues
+        <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Argent.warning') }}
       </h5>
     </q-card-section>
 
