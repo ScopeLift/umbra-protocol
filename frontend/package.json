@@ -25,7 +25,7 @@
     "bnc-notify": "^1.5.1",
     "bnc-onboard": "^1.13.0",
     "core-js": "^3.6.5",
-    "ethers": "^5.5.3",
+    "ethers": "^5.6.8",
     "quasar": "^1.0.0",
     "vue-i18n": "8.27.1",
     "yaml-loader": "0.6.0"
