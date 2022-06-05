@@ -7,17 +7,18 @@ import 'src/interfaces/IUniswapV3SwapCallback.sol';
 /// @title Router token swapping functionality
 /// @notice Functions for swapping tokens via Uniswap V3
 interface ISwapRouter is IUniswapV3SwapCallback {
-  struct ExactInputSingleParams {
-    address tokenIn;
-    address tokenOut;
-    uint24 fee;
+  struct ExactInputParams {
+    bytes path;
     address recipient;
     uint256 amountIn;
     uint256 amountOutMinimum;
-    uint160 sqrtPriceLimitX96;
   }
-
-  function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
+  function exactInput(ExactInputParams calldata params) external payable returns (uint256 amountOut);
   function multicall(bytes[] calldata data) external payable returns (bytes[] memory results);
-  function unwrapWETH9(uint256 amountMinimum, address recipient) external payable;
+  function unwrapWETH9WithFee(
+    uint256 amountMinimum,
+    address recipient,
+    uint256 feeBips,
+    address feeRecipient
+  ) external payable;
 }

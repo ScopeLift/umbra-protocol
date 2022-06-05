@@ -44,6 +44,7 @@ interface IUmbraHookReceiver {
 }
 
 contract UniswapWithdrawHookTest is DSTestPlus {
+  using SafeERC20 for IERC20;
   UniswapWithdrawHook withdrawHook;
 
   IUmbra umbraContract;
@@ -56,6 +57,7 @@ contract UniswapWithdrawHookTest is DSTestPlus {
 
   address alice = address(0x202204);
   address bob = address(0x202205);
+  address feeReceiver = address(0x202206);
   address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
 
   address public constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
@@ -67,14 +69,15 @@ contract UniswapWithdrawHookTest is DSTestPlus {
     vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
     umbraContract = IUmbra(address(umbra));
     swapRouter = ISwapRouter(Router);
-    withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter));
+    withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter), 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 1, payable(address(feeReceiver)));
     dai = IERC20(DAI);
+    withdrawHook.approveToken(dai);
     deal(address(DAI), address(this), 1e7 ether);
   }
 
-  function testFuzz_HookTest(uint256 amount, uint256 amount2) public {
+  function testFuzz_HookTest(uint256 amount, uint256 swapAmount) public {
     amount=bound(amount, 10 ether, 10e20);
-    amount2=bound(amount2, 10 ether, amount);
+    swapAmount=bound(swapAmount, 10 ether, amount);
     dai.approve(address(umbraContract), amount);
 
 
@@ -91,14 +94,26 @@ contract UniswapWithdrawHookTest is DSTestPlus {
     uint256 minOut;
     poolFee = 3000;
     IUmbraHookReceiver receiver = IUmbraHookReceiver(address(withdrawHook));
-    bytes memory data = abi.encode(destinationAddr, amount2, minOut, poolFee);
+
+    bytes memory _path = abi.encodePacked(address(DAI), poolFee, WETH9);
+
+    ISwapRouter.ExactInputParams[] memory params = new ISwapRouter.ExactInputParams[](1);
+    params[0] =
+      ISwapRouter.ExactInputParams({
+        path: _path,
+        recipient : address(swapRouter),
+        amountIn : swapAmount,
+        amountOutMinimum: minOut
+      });
+
+    bytes memory data = abi.encode(true, destinationAddr, params);
 
     vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector));
     vm.expectCall(address(withdrawHook), abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector));
 
     umbraContract.withdrawTokenAndCall(address(withdrawHook), address(DAI), receiver, data);
 
-    assertEq(IERC20(DAI).balanceOf(address(bob)), amount-amount2);
+    assertEq(IERC20(DAI).balanceOf(address(bob)), amount-swapAmount);
     assertTrue(address(destinationAddr).balance > minOut);
   }
 
