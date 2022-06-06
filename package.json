@@ -31,6 +31,7 @@
   },
   "scripts": {
     "build": "lerna run build",
+    "build-frontend": "yarn lerna run --ignore \"@umbra/contracts-*\" build",
     "clean": "lerna run clean",
     "lint": "lerna run lint",
     "prettier": "lerna run prettier",
