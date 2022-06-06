@@ -28,11 +28,11 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
   function testPostSetupState() public {
     uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
-    assert(ethBalance > 0 && tokenBalance > 0);
+    assertTrue(ethBalance > 0 && tokenBalance > 0);
   }
 
   function executeParams(Send _type, uint256 numOfAddrs, uint256 etherAmount, uint256 tokenAmount) public {
-    assert(numOfAddrs > 0);
+    assertTrue(numOfAddrs > 0);
 
     uint256 valueAmount;
     // Create a list of addresses
@@ -41,7 +41,7 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
     }
 
     if (_type == Send.ETH) {
-      assert(etherAmount > 0);
+      assertTrue(etherAmount > 0);
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += etherAmount + toll;
         sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
@@ -49,14 +49,14 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
       router.batchSendEth{value: valueAmount}(toll, sendEth);
 
     } else if (_type == Send.TOKEN) {
-      assert(tokenAmount > 0);
+      assertTrue(tokenAmount > 0);
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += toll;
         sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
       }
 
     } else {
-        assert(etherAmount > 0 && tokenAmount >0);
+        assertTrue(etherAmount > 0 && tokenAmount >0);
         for (uint256 i = 0; i < numOfAddrs; i++) {
           valueAmount += etherAmount + toll * 2;
           sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
@@ -67,7 +67,7 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
 
   // Send max balance
   function executeParams(Send _type, uint256 numOfAddrs) public {
-    assert(numOfAddrs > 0);
+    assertTrue(numOfAddrs > 0);
 
     if (_type == Send.ETH) {
       executeParams(Send.ETH, numOfAddrs, (ethBalance/numOfAddrs) - toll, 0);
