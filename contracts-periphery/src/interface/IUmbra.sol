@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "src/interfaces/IUmbraHookReceiver.sol";
+import "src/interface/IUmbraHookReceiver.sol";
 
 interface IUmbra {
   /**
