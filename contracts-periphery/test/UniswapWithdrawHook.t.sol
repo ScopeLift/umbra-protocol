@@ -69,7 +69,7 @@ contract UniswapWithdrawHookTest is DSTestPlus {
     vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
     umbraContract = IUmbra(address(umbra));
     swapRouter = ISwapRouter(Router);
-    withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter), 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, 1, payable(address(feeReceiver)));
+    withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter), 1, payable(address(feeReceiver)));
     dai = IERC20(DAI);
     withdrawHook.approveToken(dai);
     deal(address(DAI), address(this), 1e7 ether);

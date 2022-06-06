@@ -1,26 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
-pragma abicoder v2;
 
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import "src/interfaces/ISwapRouter.sol";
+import "src/interface/ISwapRouter.sol";
 
 contract UniswapWithdrawHook is Ownable {
   using SafeERC20 for IERC20;
 
   ISwapRouter internal immutable swapRouter;
-  address internal WETH9;
 
   uint256 public feeBips;
   address public feeCollector;
   address payable public feeReceiver;
 
-  constructor(ISwapRouter _swapRouter, address _WETH9, uint256 _feeBips, address payable _feeReceiver) {
-  swapRouter = _swapRouter;
-  WETH9 = _WETH9;
-  feeBips = _feeBips;
-  feeReceiver = _feeReceiver;
+  constructor(ISwapRouter _swapRouter, uint256 _feeBips, address payable _feeReceiver) {
+    swapRouter = _swapRouter;
+    feeBips = _feeBips;
+    feeReceiver = _feeReceiver;
   }
 
   function tokensWithdrawn(
