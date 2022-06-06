@@ -46,7 +46,8 @@ contract UniswapWithdrawHook is Ownable {
     address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
-    bytes memory _data) internal {
+    bytes memory _data
+    ) internal {
     uint256 senderBalance = _amount;
     ( , address _recipient, ISwapRouter.ExactInputParams[] memory params) = abi.decode(_data, (bool, address, ISwapRouter.ExactInputParams[]));
     senderBalance -= params[0].amountIn;
@@ -69,7 +70,8 @@ contract UniswapWithdrawHook is Ownable {
     address _tokenAddr,
     address _sponsor,
     uint256 _sponsorFee,
-    bytes memory _data) internal {
+    bytes memory _data
+    ) internal {
     uint256 senderBalance = _amount;
     (, address _recipient, ISwapRouter.ExactInputParams[] memory swapParams) = abi.decode(_data, (bool, address, ISwapRouter.ExactInputParams[]));
 
