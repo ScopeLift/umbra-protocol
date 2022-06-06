@@ -4,7 +4,6 @@
   "license": "MIT",
   "scripts": {
     "build": "forge build",
-    "install": "forge install",
     "test": "forge test"
   }
 }
