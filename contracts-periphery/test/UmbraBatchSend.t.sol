@@ -1,42 +1,26 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "solmate/test/utils/mocks/MockERC20.sol";
-import "test/utils/DSTestPlus.sol";
+import "test/utils/DeployUmbraTest.sol";
 import "src/UmbraBatchSend.sol";
 
-interface UmbraToll {
-  function toll() external returns(uint256);
-}
-
-abstract contract UmbraBatchSendTest is DSTestPlus {
+abstract contract UmbraBatchSendTest is DeployUmbraTest {
   UmbraBatchSend router;
-  MockERC20 token;
-
-  address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
-  address alice = address(0x202204);
-  address bob = address(0x202205);
 
   uint256 toll;
-  bytes32 pkx = "pkx";
-  bytes32 ciphertext = "ciphertext";
 
   UmbraBatchSend.SendEth[] sendEth;
   UmbraBatchSend.SendToken[] sendToken;
 
   error ValueMismatch();
 
-  function setUp() virtual public {
-    // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
-    vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
+  function setUp() virtual override public {
+    super.setUp();
     router = new UmbraBatchSend(IUmbra(address(umbra)));
-    token = new MockERC20("Test","TT", 18);
-    token.mint(address(this), 1e7 ether);
-    vm.deal(address(this), 1e5 ether);
   }
 
   function testPostSetupState() public {
-    uint256 currentToll = UmbraToll(umbra).toll();
+    uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
   }
 

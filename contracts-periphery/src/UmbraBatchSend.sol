@@ -3,23 +3,7 @@ pragma solidity ^0.8.13;
 
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-
-interface IUmbra {
-  function sendEth(
-    address payable receiver,
-    uint256 tollCommitment,
-    bytes32 pkx,
-    bytes32 ciphertext
-  ) external payable;
-
-  function sendToken(
-    address receiver,
-    address tokenAddr,
-    uint256 amount,
-    bytes32 pkx,
-    bytes32 ciphertext
-  ) external payable;
-}
+import "src/interface/IUmbra.sol";
 
 contract UmbraBatchSend {
   IUmbra internal immutable umbra;
