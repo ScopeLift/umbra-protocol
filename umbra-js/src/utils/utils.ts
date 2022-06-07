@@ -20,7 +20,7 @@ import {
 } from '../ethers';
 import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
 import { ens, cns } from '..';
-import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
+import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider, TransactionResponseExtended } from '../types';
@@ -283,9 +283,9 @@ function getResolutionInstance(provider: EthersProvider) {
   const networkName = provider.network.name === 'homestead' ? 'mainnet' : provider.network.name;
   return new Resolution({
     sourceConfig: {
-      cns: {
-        provider: Eip1993Factories.fromEthersProvider(provider),
-        network: networkName as 'mainnet' | 'rinkeby',
+      uns: {
+        api: true,
+        network: networkName === 'mainnet' ? 1 : 4,
       },
     },
   });
@@ -414,7 +414,7 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
   ]);
   const tx = <TransactionResponseExtended>{ ...partialTx };
   const existingFields = new Set(Object.keys(tx));
-  Object.keys(fullTx).forEach((key) => {
+  Object.keys(fullTx).forEach(key => {
     // Do nothing if this field already exists (i.e. it was formatted by the ethers formatter).
     if (existingFields.has(key)) return;
     // Otherwise, add the field and format it

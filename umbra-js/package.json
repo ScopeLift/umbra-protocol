@@ -23,7 +23,7 @@
   "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",
   "license": "ISC",
   "dependencies": {
-    "@unstoppabledomains/resolution": "3.0.0",
+    "@unstoppabledomains/resolution": "^7.1.4",
     "ethers": "^5.5.3",
     "noble-secp256k1": "^1.2.5"
   },
