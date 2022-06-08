@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
     defaults:
       run:
         working-directory: contracts-periphery/
