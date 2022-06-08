@@ -14,6 +14,10 @@ contract UniswapWithdrawHook is Ownable {
     swapRouter = _swapRouter;
   }
 
+  /**
+   * @param _acceptor Address of this contract where withdrawn funds are sent
+   * @param _data The encoded bytes of recipient address and calldata for Uniswap SwapRouter02's multicall
+   */
   function tokensWithdrawn(
     uint256 _amount,
     address _stealthAddr,
