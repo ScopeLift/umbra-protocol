@@ -108,9 +108,11 @@ contract UniswapWithdrawHookTest is DSTestPlus {
       });
 
     bytes[] memory multicallData = new bytes[](2);
-    multicallData[0] = abi.encodeWithSelector(swapRouter.exactInput.selector, params);
+    // multicallData[0] = abi.encodeWithSelector(swapRouter.exactInput.selector, params);
+    multicallData[0] = abi.encodeCall(swapRouter.exactInput, params);
+
     // params.amountOutMinimum might need to be a different value
-    multicallData[1] = abi.encodeWithSelector(swapRouter.unwrapWETH9WithFee.selector, params.amountOutMinimum, destinationAddr, 1, feeReceiver);
+    multicallData[1] = abi.encodeCall(swapRouter.unwrapWETH9WithFee, (params.amountOutMinimum, destinationAddr, 1, feeReceiver));
 
     bytes memory data = abi.encode(destinationAddr, multicallData);
 
