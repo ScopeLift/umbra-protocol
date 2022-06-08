@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "test/utils/DSTestPlus.sol";
-import "src/WithdrawHook.sol";
+import "src/UniswapWithdrawHook.sol";
 
 interface IUmbra {
     function sendToken(
@@ -43,8 +43,8 @@ interface IUmbraHookReceiver {
   ) external;
 }
 
-contract WithdrawDataTest is DSTestPlus {
-  WithdrawHook withdrawHook;
+contract UniswapWithdrawHookTest is DSTestPlus {
+  UniswapWithdrawHook withdrawHook;
 
   IUmbra umbraContract;
   ISwapRouter swapRouter;
@@ -67,7 +67,7 @@ contract WithdrawDataTest is DSTestPlus {
     vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
     umbraContract = IUmbra(address(umbra));
     swapRouter = ISwapRouter(Router);
-    withdrawHook = new WithdrawHook(ISwapRouter(swapRouter));
+    withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter));
     dai = IERC20(DAI);
     deal(address(DAI), address(this), 1e7 ether);
   }

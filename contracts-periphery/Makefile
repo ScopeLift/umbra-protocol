@@ -1,8 +1,10 @@
 -include .env
+.PHONY: test
 
 forkBlock = 14800081
 
 build :; FOUNDRY_PROFILE=hook forge build
 install :; forge install
-Test :; FOUNDRY_PROFILE=hook forge test -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-contract WithdrawData -vv
-Testv :; Test :; FOUNDRY_PROFILE=hook forge test -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-contract WithdrawData -vvvv
+snapshot :; forge snapshot --match-path test/Gas.sol
+test :; forge test --no-match-path test/UniswapWithdrawHook.t.sol && make test-hook
+test-hook :; forge test -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-path test/UniswapWithdrawHook.t.sol

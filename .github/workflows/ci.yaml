@@ -41,4 +41,4 @@ jobs:
           version: nightly
 
       - name: Run tests
-        run: FOUNDRY_PROFILE=ci forge test --match-path test/UmbraBatchSend.t.sol
+        run: make test

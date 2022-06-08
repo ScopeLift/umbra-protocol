@@ -4,9 +4,9 @@ pragma abicoder v2;
 
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import "src/utils/ISwapRouter.sol";
+import "src/interfaces/ISwapRouter.sol";
 
-contract WithdrawHook {
+contract UniswapWithdrawHook {
 
   ISwapRouter internal immutable swapRouter;
   address internal constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;

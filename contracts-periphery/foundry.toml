@@ -1,8 +1,6 @@
 [default]
-remappings = ['test/=test/', '@uniswap/=lib/']
+remappings = ['test/=test/']
 [ci]
 fuzz_runs = 10000
-remappings = ['test/=test/', '@uniswap/=lib/']
-[hook]
-remappings = ['test/=test/', '@uniswap/=lib/']
+remappings = ['test/=test/']
 # See more config options https://github.com/gakonst/foundry/tree/master/config
