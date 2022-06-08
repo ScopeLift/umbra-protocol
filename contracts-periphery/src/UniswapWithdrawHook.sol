@@ -10,14 +10,8 @@ contract UniswapWithdrawHook is Ownable {
 
   ISwapRouter internal immutable swapRouter;
 
-  uint256 public feeBips;
-  address public feeCollector;
-  address payable public feeReceiver;
-
-  constructor(ISwapRouter _swapRouter, uint256 _feeBips, address payable _feeReceiver) {
+  constructor(ISwapRouter _swapRouter) {
     swapRouter = _swapRouter;
-    feeBips = _feeBips;
-    feeReceiver = _feeReceiver;
   }
 
   function tokensWithdrawn(
@@ -29,88 +23,15 @@ contract UniswapWithdrawHook is Ownable {
     uint256 _sponsorFee,
     bytes memory _data
   ) external{
+    (address _recipient, bytes[] memory _multicallData) = abi.decode(_data, (address, bytes[]));
+    swapRouter.multicall(_multicallData);
 
-    (bool _singleTrade, , ) = abi.decode(_data, (bool, address, ISwapRouter.ExactInputParams[]));
-    if(_singleTrade) {
-      _swapPartForEth(_amount, _stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _data);
-    } else {
-      _swapPartForTokenPartForEth(_amount, _stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, _data);
-    }
-
-  }
-
-  function _swapPartForEth(
-    uint256 _amount,
-    address _stealthAddr,
-    address _acceptor,
-    address _tokenAddr,
-    address _sponsor,
-    uint256 _sponsorFee,
-    bytes memory _data
-    ) internal {
-    uint256 senderBalance = _amount;
-    ( , address _recipient, ISwapRouter.ExactInputParams[] memory params) = abi.decode(_data, (bool, address, ISwapRouter.ExactInputParams[]));
-    senderBalance -= params[0].amountIn;
-
-    bytes[] memory data = new bytes[](2);
-    data[0] = abi.encodeWithSelector(swapRouter.exactInput.selector, params[0]);
-    // Need to rethink usage of params[0].amountOutMinimum below
-    data[1] = abi.encodeWithSelector(swapRouter.unwrapWETH9WithFee.selector, params[0].amountOutMinimum, _recipient, feeBips, feeReceiver);
-
-    swapRouter.multicall(data);
-    if(senderBalance > 0) {
-      IERC20(_tokenAddr).safeTransferFrom(address(this), _recipient, senderBalance);
+    if((IERC20(_tokenAddr).balanceOf(address(this)) > 0)) {
+      IERC20(_tokenAddr).safeTransferFrom(address(this), _recipient, IERC20(_tokenAddr).balanceOf(address(this)));
     }
   }
 
-  function _swapPartForTokenPartForEth(
-    uint256 _amount,
-    address _stealthAddr,
-    address _acceptor,
-    address _tokenAddr,
-    address _sponsor,
-    uint256 _sponsorFee,
-    bytes memory _data
-    ) internal {
-    uint256 senderBalance = _amount;
-    (, address _recipient, ISwapRouter.ExactInputParams[] memory swapParams) = abi.decode(_data, (bool, address, ISwapRouter.ExactInputParams[]));
-
-    bytes[] memory data = new bytes[](swapParams.length);
-
-    for(uint i = 0; i < swapParams.length; i++) {
-
-      // Recipient address is pointed to the swapRouter when the user wants to unwrap WETH
-      if(swapParams[i].recipient == address(swapRouter)) {
-
-        senderBalance -= swapParams[i].amountIn;
-        ISwapRouter.ExactInputParams[] memory swapPartForEthParams = new ISwapRouter.ExactInputParams[](1);
-        swapPartForEthParams[0] = swapParams[i];
-        bytes memory newData = abi.encode(true, _recipient, swapPartForEthParams);
-
-        _swapPartForEth(swapParams[i].amountIn, _stealthAddr, _acceptor, _tokenAddr, _sponsor, _sponsorFee, newData);
-
-      } else {
-        senderBalance -= swapParams[i].amountIn;
-        data[i] = abi.encodeWithSelector(swapRouter.exactInput.selector, swapParams[i]);
-      }
-    }
-
-    swapRouter.multicall(data);
-    if(senderBalance > 0) {
-      IERC20(_tokenAddr).safeTransferFrom(address(this), _recipient, senderBalance);
-    }
-  }
-
-  function approveToken(IERC20 _token) external {
+  function approveToken(IERC20 _token) external onlyOwner {
     _token.safeApprove(address(swapRouter), type(uint256).max);
   }
-
-  function setFee(uint256 _newFeeBips) external onlyOwner {
-    feeBips = _newFeeBips;
-  }
-
-  function setFeeReceiver(address payable _newTollReceiver) external onlyOwner {
-    feeReceiver = _newTollReceiver;
-  }
-
 }

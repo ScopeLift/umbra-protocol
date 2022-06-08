@@ -69,8 +69,9 @@ contract UniswapWithdrawHookTest is DSTestPlus {
     vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
     umbraContract = IUmbra(address(umbra));
     swapRouter = ISwapRouter(Router);
-    withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter), 1, payable(address(feeReceiver)));
+    withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter));
     dai = IERC20(DAI);
+    //Owner approves tokens
     withdrawHook.approveToken(dai);
     deal(address(DAI), address(this), 1e7 ether);
   }
@@ -97,8 +98,8 @@ contract UniswapWithdrawHookTest is DSTestPlus {
 
     bytes memory _path = abi.encodePacked(address(DAI), poolFee, WETH9);
 
-    ISwapRouter.ExactInputParams[] memory params = new ISwapRouter.ExactInputParams[](1);
-    params[0] =
+    ISwapRouter.ExactInputParams memory params;
+    params =
       ISwapRouter.ExactInputParams({
         path: _path,
         recipient : address(swapRouter),
@@ -106,7 +107,12 @@ contract UniswapWithdrawHookTest is DSTestPlus {
         amountOutMinimum: minOut
       });
 
-    bytes memory data = abi.encode(true, destinationAddr, params);
+    bytes[] memory multicallData = new bytes[](2);
+    multicallData[0] = abi.encodeWithSelector(swapRouter.exactInput.selector, params);
+    // params.amountOutMinimum might need to be a different value
+    multicallData[1] = abi.encodeWithSelector(swapRouter.unwrapWETH9WithFee.selector, params.amountOutMinimum, destinationAddr, 1, feeReceiver);
+
+    bytes memory data = abi.encode(destinationAddr, multicallData);
 
     vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector));
     vm.expectCall(address(withdrawHook), abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector));
