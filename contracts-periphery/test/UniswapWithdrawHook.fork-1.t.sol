@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "test/utils/DSTestPlus.sol";
+import "test/utils/DeployUmbraTest.sol";
 import "src/UniswapWithdrawHook.sol";
 
 interface IUmbra {
@@ -43,7 +44,7 @@ interface IUmbraHookReceiver {
   ) external;
 }
 
-contract UniswapWithdrawHookTest is DSTestPlus {
+contract UniswapWithdrawHookTest is DeployUmbraTest {
   using SafeERC20 for IERC20;
   UniswapWithdrawHook withdrawHook;
 
@@ -52,48 +53,36 @@ contract UniswapWithdrawHookTest is DSTestPlus {
   IERC20 dai;
 
   uint256 toll;
-  bytes32 pkx = "pkx";
-  bytes32 ciphertext = "ciphertext";
-
-  address alice = address(0x202204);
-  address bob = address(0x202205);
   address feeReceiver = address(0x202206);
-  address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
 
+  // Mainnet Addresses
   address public constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
   address public constant Router = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
   uint24 poolFee = 3000;
 
-  function setUp() public {
-    vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
+  function setUp() override public {
+    super.setUp();
     umbraContract = IUmbra(address(umbra));
     swapRouter = ISwapRouter(Router);
     withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter));
     dai = IERC20(DAI);
-    //Owner approves tokens
+    // Owner approves tokens
     withdrawHook.approveToken(dai);
     deal(address(DAI), address(this), 1e7 ether);
   }
 
   function testFuzz_HookTest(uint256 amount, uint256 swapAmount) public {
-    amount=bound(amount, 10 ether, 10e20);
-    swapAmount=bound(swapAmount, 10 ether, amount);
+    amount = bound(amount, 0.01 ether, 10e21);
+    swapAmount = bound(swapAmount, 0.01 ether, amount);
     dai.approve(address(umbraContract), amount);
 
 
-    umbraContract.sendToken{value: toll}(
-    address(alice),
-    address(DAI),
-    amount,
-    pkx,
-    ciphertext
-    );
+    umbraContract.sendToken{value: toll}(address(alice), address(DAI), amount, pkx, ciphertext);
 
     vm.startPrank(alice); // Withdraw as Alice
     address destinationAddr = bob;
     uint256 minOut;
-    poolFee = 3000;
     IUmbraHookReceiver receiver = IUmbraHookReceiver(address(withdrawHook));
 
     bytes memory _path = abi.encodePacked(address(DAI), poolFee, WETH9);
@@ -108,9 +97,7 @@ contract UniswapWithdrawHookTest is DSTestPlus {
       });
 
     bytes[] memory multicallData = new bytes[](2);
-    // multicallData[0] = abi.encodeWithSelector(swapRouter.exactInput.selector, params);
     multicallData[0] = abi.encodeCall(swapRouter.exactInput, params);
-
     // params.amountOutMinimum might need to be a different value
     multicallData[1] = abi.encodeCall(swapRouter.unwrapWETH9WithFee, (params.amountOutMinimum, destinationAddr, 1, feeReceiver));
 

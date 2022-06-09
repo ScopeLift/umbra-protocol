@@ -31,7 +31,7 @@ contract UniswapWithdrawHook is Ownable {
     swapRouter.multicall(_multicallData);
 
     if((IERC20(_tokenAddr).balanceOf(address(this)) > 0)) {
-      IERC20(_tokenAddr).safeTransferFrom(address(this), _recipient, IERC20(_tokenAddr).balanceOf(address(this)));
+      IERC20(_tokenAddr).safeTransfer(_recipient, IERC20(_tokenAddr).balanceOf(address(this)));
     }
   }
 
