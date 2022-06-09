@@ -109,10 +109,7 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     umbraContract.withdrawTokenAndCall(address(withdrawHook), address(DAI), receiver, data);
 
     assertEq(IERC20(DAI).balanceOf(address(bob)), amount-swapAmount);
+    assertTrue(feeReceiver.balance > 0);
     assertTrue(address(destinationAddr).balance > minOut);
-  }
-
-  function testExpectRevert_HookTest() public {
-
   }
 }
