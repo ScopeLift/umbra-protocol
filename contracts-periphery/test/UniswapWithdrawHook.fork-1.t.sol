@@ -53,7 +53,7 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
   IERC20 dai;
 
   uint256 toll;
-  address feeReceiver = address(0x202206);
+  // address feeReceiver = address(0x202206);
 
   // Mainnet Addresses
   address public constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
@@ -72,9 +72,10 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     deal(address(DAI), address(this), 1e7 ether);
   }
 
-  function testFuzz_HookTest(uint256 amount, uint256 swapAmount) public {
+  function testFuzz_HookTest(uint256 amount, uint256 swapAmount, uint256 feeBips, address feeReceiver) public {
     amount = bound(amount, 0.01 ether, 10e21);
     swapAmount = bound(swapAmount, 0.01 ether, amount);
+    feeBips = bound(feeBips, 1, 100);
     dai.approve(address(umbraContract), amount);
 
 
@@ -99,7 +100,7 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     bytes[] memory multicallData = new bytes[](2);
     multicallData[0] = abi.encodeCall(swapRouter.exactInput, params);
     // params.amountOutMinimum might need to be a different value
-    multicallData[1] = abi.encodeCall(swapRouter.unwrapWETH9WithFee, (params.amountOutMinimum, destinationAddr, 1, feeReceiver));
+    multicallData[1] = abi.encodeCall(swapRouter.unwrapWETH9WithFee, (params.amountOutMinimum, destinationAddr, feeBips, feeReceiver));
 
     bytes memory data = abi.encode(destinationAddr, multicallData);
 
