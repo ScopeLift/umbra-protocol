@@ -3,6 +3,9 @@ pragma solidity ^0.8.13;
 
 import "solmate/test/utils/mocks/MockERC20.sol";
 import "test/utils/DSTestPlus.sol";
+import "src/interface/IUmbra.sol";
+import "src/interface/IUmbraHookReceiver.sol";
+import "src/interface/IQuoter.sol";
 
 contract DeployUmbraTest is DSTestPlus {
   address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;

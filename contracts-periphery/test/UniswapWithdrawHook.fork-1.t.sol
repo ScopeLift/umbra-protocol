@@ -5,49 +5,6 @@ import "test/utils/DSTestPlus.sol";
 import "test/utils/DeployUmbraTest.sol";
 import "src/UniswapWithdrawHook.sol";
 
-interface IUmbra {
-    function sendToken(
-    address receiver,
-    address tokenAddr,
-    uint256 amount,
-    bytes32 pkx,
-    bytes32 ciphertext
-  ) external payable;
-
-    function withdrawTokenAndCall(
-    address _acceptor,
-    address _tokenAddr,
-    IUmbraHookReceiver _hook,
-    bytes memory _data
-  ) external;
-}
-
-interface IUmbraHookReceiver {
-  /**
-   * @notice Method called after a user completes an Umbra token withdrawal
-   * @param _amount The amount of the token withdrawn _after_ subtracting the sponsor fee
-   * @param _stealthAddr The stealth address whose token balance was withdrawn
-   * @param _acceptor Address where withdrawn funds were sent; can be this contract
-   * @param _tokenAddr Address of the ERC20 token that was withdrawn
-   * @param _sponsor Address which was compensated for submitting the withdrawal tx
-   * @param _sponsorFee Amount of the token that was paid to the sponsor
-   * @param _data Arbitrary data passed to this hook by the withdrawer
-   */
-  function tokensWithdrawn(
-    uint256 _amount,
-    address _stealthAddr,
-    address _acceptor,
-    address _tokenAddr,
-    address _sponsor,
-    uint256 _sponsorFee,
-    bytes memory _data
-  ) external;
-}
-
-interface IQuoter {
-  function quoteExactInput(bytes memory path, uint256 amountIn) external returns (uint256 amountOut);
-}
-
 contract UniswapWithdrawHookTest is DeployUmbraTest {
   using SafeERC20 for IERC20;
   UniswapWithdrawHook withdrawHook;
