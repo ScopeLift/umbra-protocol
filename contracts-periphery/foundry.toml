@@ -1,5 +1,6 @@
 [default]
 verbosity = 3
+DAPP_TESTSS=5
 
 [ci]
 fuzz_runs = 10000
