@@ -23,7 +23,7 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
   address public constant Quoter = 0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6;
   uint24 poolFee = 3000;
 
-  function setUp() override public {
+  function setUp() public override {
     super.setUp();
     umbraContract = IUmbra(address(umbra));
     swapRouter = ISwapRouter(Router);
@@ -35,27 +35,27 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     deal(address(DAI), address(this), 10e23);
   }
 
-  function testFuzz_HookTest_10Addrs(uint256 amount, uint256 swapAmount, uint256 feeBips) public {
+  function testFuzz_HookTest_10Addrs(
+    uint256 amount,
+    uint256 swapAmount,
+    uint256 feeBips
+  ) public {
     address feeRecipient;
     address recipient;
-    for(uint256 i = 0; i < 1; i ++) {
+    for (uint256 i = 0; i < 10; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
-      recipient = address(uint160(uint256(keccak256(abi.encode(i+1)))));
+      recipient = address(uint160(uint256(keccak256(abi.encode(i + 1)))));
       _testFuzz_HookTest(recipient, amount, swapAmount, feeBips, feeRecipient);
     }
   }
 
-  function testFuzz_HookTest_50Addrs(uint256 amount, uint256 swapAmount, uint256 feeBips) public {
-    address feeRecipient;
-    address finalDestination;
-    for(uint256 i = 0; i < 50; i ++) {
-      feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
-      finalDestination = address(uint160(uint256(keccak256(abi.encode(i+1)))));
-      _testFuzz_HookTest(finalDestination, amount, swapAmount, feeBips, feeRecipient);
-    }
-  }
-
-  function _testFuzz_HookTest(address destinationAddr, uint256 amount, uint256 swapAmount, uint256 feeBips, address feeReceiver) public {
+  function _testFuzz_HookTest(
+    address destinationAddr,
+    uint256 amount,
+    uint256 swapAmount,
+    uint256 feeBips,
+    address feeReceiver
+  ) public {
     amount = bound(amount, 0.01 ether, 10e21);
     swapAmount = bound(swapAmount, 0.01 ether, amount);
     feeBips = bound(feeBips, 1, 100);
@@ -70,21 +70,23 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
 
     uint256 feeReceiverPrevBalance = feeReceiver.balance;
     uint256 minOut = quoter.quoteExactInput(_path, swapAmount);
-    uint256 feeAmount = minOut * feeBips / 10_000;
+    uint256 feeAmount = (minOut * feeBips) / 10_000;
     minOut -= feeAmount;
 
     ISwapRouter.ExactInputParams memory params;
-    params =
-      ISwapRouter.ExactInputParams({
-        path: _path,
-        recipient : address(swapRouter),
-        amountIn : swapAmount,
-        amountOutMinimum: minOut
-      });
+    params = ISwapRouter.ExactInputParams({
+      path: _path,
+      recipient: address(swapRouter),
+      amountIn: swapAmount,
+      amountOutMinimum: minOut
+    });
 
     bytes[] memory multicallData = new bytes[](2);
     multicallData[0] = abi.encodeCall(swapRouter.exactInput, params);
-    multicallData[1] = abi.encodeCall(swapRouter.unwrapWETH9WithFee, (params.amountOutMinimum, destinationAddr, feeBips, feeReceiver));
+    multicallData[1] = abi.encodeCall(
+      swapRouter.unwrapWETH9WithFee,
+      (params.amountOutMinimum, destinationAddr, feeBips, feeReceiver)
+    );
 
     bytes memory data = abi.encode(destinationAddr, multicallData);
 
@@ -95,8 +97,8 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
 
     vm.stopPrank();
     uint256 destinationAddrBalance = IERC20(DAI).balanceOf(destinationAddr);
-    assertEq(destinationAddrBalance, amount-swapAmount);
-    assertTrue(address(destinationAddr).balance >= minOut);
+    assertEq(destinationAddrBalance, amount - swapAmount);
+    assertGe(address(destinationAddr).balance, minOut);
     assertEq(feeReceiver.balance - feeReceiverPrevBalance, feeAmount);
   }
 }
