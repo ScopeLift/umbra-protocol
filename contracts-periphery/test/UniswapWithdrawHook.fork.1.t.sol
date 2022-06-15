@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "test/utils/DSTestPlus.sol";
 import "test/utils/DeployUmbraTest.sol";
 import "src/UniswapWithdrawHook.sol";
 
@@ -11,28 +10,29 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
 
   IUmbra umbraContract;
   ISwapRouter swapRouter;
-  IQuoter quoter;
-  IERC20 dai;
+  IQuoter quoterContract;
+  IERC20 daiToken;
 
   uint256 toll;
 
   // Mainnet Addresses
-  address public constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-  address public constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-  address public constant Router = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
-  address public constant Quoter = 0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6;
+  address public constant dai = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address public constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  address public constant router = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
+  address public constant quoter = 0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6;
+  // 0.3% pool fee is unique to this DAI-WETH pool
   uint24 poolFee = 3000;
 
   function setUp() public override {
     super.setUp();
     umbraContract = IUmbra(address(umbra));
-    swapRouter = ISwapRouter(Router);
-    quoter = IQuoter(Quoter);
+    swapRouter = ISwapRouter(router);
+    quoterContract = IQuoter(quoter);
     withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter));
-    dai = IERC20(DAI);
+    daiToken = IERC20(dai);
     // Owner approves tokens
-    withdrawHook.approveToken(dai);
-    deal(address(DAI), address(this), 10e23);
+    withdrawHook.approveToken(daiToken);
+    deal(dai, address(this), 10e23);
   }
 
   function testFuzz_HookTest(
@@ -47,7 +47,7 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     // from network RPC node every time a fuzz test is run
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
-      recipient = address(uint160(uint256(keccak256(abi.encode(i + 1)))));
+      recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
       _testFuzz_HookTest(recipient, amount, swapAmount, feeBips, feeRecipient);
     }
   }
@@ -59,29 +59,27 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     uint256 feeBips,
     address feeReceiver
   ) public {
-    amount = bound(amount, 0.01 ether, 10e21);
-    swapAmount = bound(swapAmount, 0.01 ether, amount);
+    amount = bound(amount, 10e8, 100000 ether);
+    swapAmount = bound(swapAmount, 10e8, amount);
     feeBips = bound(feeBips, 1, 100);
-    dai.approve(address(umbraContract), amount);
+    daiToken.approve(address(umbraContract), amount);
 
-    umbraContract.sendToken{value: toll}(address(alice), address(DAI), amount, pkx, ciphertext);
+    umbraContract.sendToken{value: toll}(alice, dai, amount, pkx, ciphertext);
 
-    vm.startPrank(alice); // Withdraw as Alice
     IUmbraHookReceiver receiver = IUmbraHookReceiver(address(withdrawHook));
 
-    bytes memory _path = abi.encodePacked(address(DAI), poolFee, WETH9);
+    bytes memory _path = abi.encodePacked(dai, poolFee, weth);
 
-    uint256 feeReceiverPrevBalance = feeReceiver.balance;
-    uint256 minOut = quoter.quoteExactInput(_path, swapAmount);
+    uint256 minOut = quoterContract.quoteExactInput(_path, swapAmount);
     uint256 feeAmount = (minOut * feeBips) / 10_000;
-    minOut -= feeAmount;
+    uint256 recipientAmountReceived = minOut - feeAmount;
 
     ISwapRouter.ExactInputParams memory params;
     params = ISwapRouter.ExactInputParams({
       path: _path,
       recipient: address(swapRouter),
       amountIn: swapAmount,
-      amountOutMinimum: minOut
+      amountOutMinimum: recipientAmountReceived
     });
 
     bytes[] memory multicallData = new bytes[](2);
@@ -96,12 +94,12 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector));
     vm.expectCall(address(withdrawHook), abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector));
 
-    umbraContract.withdrawTokenAndCall(address(withdrawHook), address(DAI), receiver, data);
+    vm.prank(alice); // Withdraw as Alice
+    umbraContract.withdrawTokenAndCall(address(withdrawHook), dai, receiver, data);
 
-    vm.stopPrank();
-    uint256 destinationAddrBalance = IERC20(DAI).balanceOf(destinationAddr);
+    uint256 destinationAddrBalance = daiToken.balanceOf(destinationAddr);
     assertEq(destinationAddrBalance, amount - swapAmount);
-    assertGe(address(destinationAddr).balance, minOut);
-    assertEq(feeReceiver.balance - feeReceiverPrevBalance, feeAmount);
+    assertGe(destinationAddr.balance, recipientAmountReceived);
+    assertEq(feeReceiver.balance, feeAmount);
   }
 }

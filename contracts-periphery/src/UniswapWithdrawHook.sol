@@ -15,26 +15,29 @@ contract UniswapWithdrawHook is Ownable {
   }
 
   /**
-   * @param _acceptor Address of this contract where withdrawn funds are sent
+   * @notice _acceptor should be the address of this contract where withdrawn funds are sent
    * @param _data The encoded bytes of recipient address and calldata for Uniswap SwapRouter02's multicall
+   * @dev The SwapRouter02 source code can be found here: https://github.com/Uniswap/swap-router-contracts/blob/main/contracts/SwapRouter02.sol
    */
   function tokensWithdrawn(
-    uint256 _amount,
-    address _stealthAddr,
-    address _acceptor,
+    uint256, /* _amount */
+    address, /* _stealthAddr */
+    address, /* _acceptor */
     address _tokenAddr,
-    address _sponsor,
-    uint256 _sponsorFee,
+    address, /* _sponsor */
+    uint256, /* _sponsorFee */
     bytes memory _data
-  ) external{
+  ) external {
     (address _recipient, bytes[] memory _multicallData) = abi.decode(_data, (address, bytes[]));
     swapRouter.multicall(_multicallData);
 
-    if((IERC20(_tokenAddr).balanceOf(address(this)) > 0)) {
+    if (IERC20(_tokenAddr).balanceOf(address(this)) > 0) {
       IERC20(_tokenAddr).safeTransfer(_recipient, IERC20(_tokenAddr).balanceOf(address(this)));
     }
   }
 
+  /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
+  /// that token in this contract.
   function approveToken(IERC20 _token) external onlyOwner {
     _token.safeApprove(address(swapRouter), type(uint256).max);
   }
