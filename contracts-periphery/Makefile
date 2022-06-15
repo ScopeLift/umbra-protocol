@@ -13,7 +13,7 @@ build :; forge build
 clean :; forge clean
 install :; $(INSTALL_CMD)
 snapshot :; forge snapshot -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-path *.gas.t.sol
-test :; make test-batch-send test-batch-send-gas test-uniswap-hook test-uniswap-hook-gas
+test :; make test-contracts test-gas
 test-contracts :; make test-batch-send test-uniswap-hook
 test-gas :; make test-batch-send-gas test-uniswap-hook-gas
 test-batch-send :; forge test --match-path test/UmbraBatchSend.t.sol
