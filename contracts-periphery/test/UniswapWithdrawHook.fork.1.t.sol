@@ -42,7 +42,10 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
   ) public {
     address feeRecipient;
     address recipient;
-    for (uint256 i = 0; i < vm.envUint("HOOK_TEST_ADDRS_LOOP"); i++) {
+    uint256 NumOfAddrs = 10;
+    // Using for loop here to generate deterministic addresses instead of fetching random address state
+    // from network RPC node every time a fuzz test is run
+    for (uint256 i = 0; i < NumOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(i + 1)))));
       _testFuzz_HookTest(recipient, amount, swapAmount, feeBips, feeRecipient);
