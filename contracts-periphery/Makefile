@@ -13,5 +13,5 @@ build :; forge build
 clean :; forge clean
 install :; $(INSTALL_CMD)
 snapshot :; forge snapshot -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-path \*.gas.t.sol
-test :; forge test --match-path test/UmbraBatchSend.t.sol && make test-hook
+test :; forge test --match-path test/UmbraBatchSend.t.sol && make test-hook && forge test --match-path test/gas/UmbraBatchSend.gas.t.sol
 test-hook :; forge test -f ${ETH_RPC_URL} --fork-block-number ${forkBlock} --match-path test/UniswapWithdrawHook.fork.1.t.sol
