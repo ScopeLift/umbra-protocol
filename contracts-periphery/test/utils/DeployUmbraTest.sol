@@ -10,24 +10,57 @@ import "src/interface/IQuoter.sol";
 contract DeployUmbraTest is DSTestPlus {
   address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   MockERC20 token;
-  address constant alice = address(0x202204);
-  address constant bob = address(0x202205);
+  address alice = address(0x202204);
+  address bob = address(0x202205);
   bytes32 constant pkx = "pkx";
   bytes32 constant ciphertext = "ciphertext";
 
-  function setUp() virtual public {
+  function setUp() public virtual {
     deployUmbra();
     createMockERC20AndMint(address(this), 1e7 ether);
     vm.deal(address(this), 1e5 ether);
   }
 
-  function deployUmbra() virtual public {
+  function deployUmbra() public virtual {
     // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
     vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
   }
 
   function createMockERC20AndMint(address addr, uint256 amount) public {
-    token = new MockERC20("Test","TT", 18);
+    token = new MockERC20("Test", "TT", 18);
     token.mint(addr, amount);
+  }
+
+  function _createDigestAndSign(
+    address _acceptor,
+    address _tokenAddr,
+    address _sponsor,
+    uint256 _sponsorFee,
+    IUmbraHookReceiver _hook,
+    bytes memory _data,
+    uint256 _privateKey
+  )
+    public
+    returns (
+      uint8,
+      bytes32,
+      bytes32
+    )
+  {
+    uint256 _chainId;
+    assembly {
+      _chainId := chainid()
+    }
+    bytes32 _digest =
+      keccak256(
+        abi.encodePacked(
+          "\x19Ethereum Signed Message:\n32",
+          keccak256(
+            abi.encode(_chainId, address(umbra), _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data)
+          )
+        )
+      );
+
+    return vm.sign(_privateKey, _digest);
   }
 }

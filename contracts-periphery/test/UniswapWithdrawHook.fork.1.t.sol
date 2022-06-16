@@ -14,6 +14,12 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
   IERC20 daiToken;
 
   uint256 toll;
+  address recipient;
+  address feeRecipient = address(0x20220613);
+  uint256 numOfAddrs = 10;
+  address sponsor;
+  uint256 quote;
+  uint256 feeAmount;
 
   // Mainnet Addresses
   address public constant dai = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
@@ -23,32 +29,66 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
   // 0.3% pool fee is unique to this DAI-WETH pool
   uint24 poolFee = 3000;
 
+  // Umbra functions that we'll be calling
+  enum UmbraFns {withdrawTokenAndCall, withdrawTokenAndCallOnBehalf}
+
   function setUp() public override {
     super.setUp();
-    umbraContract = IUmbra(address(umbra));
+    umbraContract = IUmbra(umbra);
     swapRouter = ISwapRouter(router);
     quoterContract = IQuoter(quoter);
     withdrawHook = new UniswapWithdrawHook(ISwapRouter(swapRouter));
     daiToken = IERC20(dai);
+    // Alice's address is derived from the private key of 1.
+    alice = vm.addr(1);
     // Owner approves tokens
     withdrawHook.approveToken(daiToken);
-    deal(dai, address(this), 10e23);
+    deal(dai, address(this), 10e29);
   }
 
-  function testFuzz_HookTest(
+  function testFuzz_HookTest_withdrawTokenAndCall(
     uint256 amount,
     uint256 swapAmount,
-    uint256 feeBips
+    uint256 feeBips,
+    uint256 sponsorFee
   ) public {
-    address feeRecipient;
-    address recipient;
-    uint256 numOfAddrs = 10;
     // Using for loop here to generate deterministic addresses instead of fetching random address state
     // from network RPC node every time a fuzz test is run
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
-      _testFuzz_HookTest(recipient, amount, swapAmount, feeBips, feeRecipient);
+      _testFuzz_HookTest(
+        recipient,
+        amount,
+        swapAmount,
+        feeBips,
+        feeRecipient,
+        sponsorFee,
+        UmbraFns.withdrawTokenAndCall
+      );
+    }
+  }
+
+  function testFuzz_HookTest_withdrawTokenAndCallOnBehalf(
+    uint256 amount,
+    uint256 swapAmount,
+    uint256 feeBips,
+    uint256 sponsorFee
+  ) public {
+    // Using for loop here to generate deterministic addresses instead of fetching random address state
+    // from network RPC node every time a fuzz test is run
+    for (uint256 i = 0; i < numOfAddrs; i++) {
+      feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
+      recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
+      _testFuzz_HookTest(
+        recipient,
+        amount,
+        swapAmount,
+        feeBips,
+        feeRecipient,
+        sponsorFee,
+        UmbraFns.withdrawTokenAndCallOnBehalf
+      );
     }
   }
 
@@ -57,22 +97,23 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     uint256 amount,
     uint256 swapAmount,
     uint256 feeBips,
-    address feeReceiver
+    address feeReceiver,
+    uint256 sponsorFee,
+    UmbraFns fn
   ) public {
-    amount = bound(amount, 10e8, 100000 ether);
+    amount = bound(amount, 10e10, 100000 ether);
     swapAmount = bound(swapAmount, 10e8, amount);
     feeBips = bound(feeBips, 1, 100);
-    daiToken.approve(address(umbraContract), amount);
+    sponsorFee = bound(sponsorFee, 1, 1000);
 
+    daiToken.approve(address(umbraContract), amount);
     umbraContract.sendToken{value: toll}(alice, dai, amount, pkx, ciphertext);
 
-    IUmbraHookReceiver receiver = IUmbraHookReceiver(address(withdrawHook));
-
     bytes memory _path = abi.encodePacked(dai, poolFee, weth);
-
-    uint256 minOut = quoterContract.quoteExactInput(_path, swapAmount);
-    uint256 feeAmount = (minOut * feeBips) / 10_000;
-    uint256 recipientAmountReceived = minOut - feeAmount;
+    // Get quotes based on the _path and swapAmount
+    quote = quoterContract.quoteExactInput(_path, swapAmount);
+    feeAmount = (quote * feeBips) / 10_000;
+    uint256 recipientAmountReceived = quote - feeAmount;
 
     ISwapRouter.ExactInputParams memory params;
     params = ISwapRouter.ExactInputParams({
@@ -88,18 +129,45 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
       swapRouter.unwrapWETH9WithFee,
       (params.amountOutMinimum, destinationAddr, feeBips, feeReceiver)
     );
-
     bytes memory data = abi.encode(destinationAddr, multicallData);
 
-    vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector));
-    vm.expectCall(address(withdrawHook), abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector));
+    IUmbraHookReceiver receiver = IUmbraHookReceiver(address(withdrawHook));
 
     vm.prank(alice); // Withdraw as Alice
-    umbraContract.withdrawTokenAndCall(address(withdrawHook), dai, receiver, data);
+    vm.expectCall(address(withdrawHook), abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector));
 
-    uint256 destinationAddrBalance = daiToken.balanceOf(destinationAddr);
-    assertEq(destinationAddrBalance, amount - swapAmount);
+    if (fn == UmbraFns.withdrawTokenAndCall) {
+      vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector));
+      umbraContract.withdrawTokenAndCall(address(withdrawHook), dai, receiver, data);
+      assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount);
+    } else {
+      vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCallOnBehalf.selector));
+      _umbraContract_withdrawTokenAndCallOnBehalf(receiver, data, sponsorFee);
+      assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount - sponsorFee);
+    }
     assertGe(destinationAddr.balance, recipientAmountReceived);
     assertEq(feeReceiver.balance, feeAmount);
+  }
+
+  function _umbraContract_withdrawTokenAndCallOnBehalf(
+    IUmbraHookReceiver receiver,
+    bytes memory data,
+    uint256 sponsorFee
+  ) public {
+    (uint8 v, bytes32 r, bytes32 s) =
+      _createDigestAndSign(address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, 1);
+
+    umbraContract.withdrawTokenAndCallOnBehalf(
+      alice,
+      address(withdrawHook),
+      dai,
+      sponsor,
+      sponsorFee,
+      receiver,
+      data,
+      v,
+      r,
+      s
+    );
   }
 }
