@@ -6,11 +6,22 @@ import * as cns from '../src/utils/cns';
 import { expectRejection } from './utils';
 
 const ethersProvider = ethers.provider;
+const eip1993Provider = Eip1993Factories.fromEthersProvider(ethersProvider);
 const resolution = new Resolution({
   sourceConfig: {
-    cns: {
-      provider: Eip1993Factories.fromEthersProvider(ethersProvider),
-      network: 'rinkeby',
+    uns: {
+      locations: {
+        Layer1: {
+          network: 'mainnet',
+          provider: eip1993Provider,
+          proxyReaderAddress: '0x1BDc0fD4fbABeed3E611fd6195fCd5d41dcEF393',
+        },
+        Layer2: {
+          network: 'polygon',
+          provider: eip1993Provider,
+          proxyReaderAddress: '0x3E67b8c702a1292d1CEb025494C84367fcb12b45',
+        },
+      },
     },
   },
 });

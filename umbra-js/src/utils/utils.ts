@@ -20,7 +20,7 @@ import {
 } from '../ethers';
 import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
 import { ens, cns } from '..';
-import { default as Resolution } from '@unstoppabledomains/resolution';
+import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider, TransactionResponseExtended } from '../types';
@@ -279,13 +279,22 @@ export function isDomain(name: string) {
  * @param provider ethers provider instance
  */
 function getResolutionInstance(provider: EthersProvider) {
-  // If network name is homestead, use 'mainnet' as the network name
-  const networkName = provider.network.name === 'homestead' ? 'mainnet' : provider.network.name;
+  const eip1993Provider = Eip1993Factories.fromEthersProvider(provider);
   return new Resolution({
     sourceConfig: {
       uns: {
-        api: true,
-        network: networkName === 'mainnet' ? 1 : 4,
+        locations: {
+          Layer1: {
+            network: 'mainnet',
+            provider: eip1993Provider,
+            proxyReaderAddress: '0x58034A288D2E56B661c9056A0C27273E5460B63c',
+          },
+          Layer2: {
+            network: 'polygon',
+            provider: eip1993Provider,
+            proxyReaderAddress: '0x423F2531bd5d3C3D4EF7C318c2D1d9BEDE67c680',
+          },
+        },
       },
     },
   });
