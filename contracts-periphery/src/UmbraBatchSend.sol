@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "src/interface/IUmbra.sol";
 
-contract UmbraBatchSend {
+contract UmbraBatchSend is Ownable {
   IUmbra internal immutable umbra;
 
   /// @param amount Amount of ETH to send per address excluding the toll
@@ -57,20 +58,19 @@ contract UmbraBatchSend {
   }
 
   function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
-    for (uint256 i = 0; i < _params.length; i++) {
+    uint256 length = _params.length;
+    for (uint256 i = 0; i < length;) {
       umbra.sendEth{value: _params[i].amount + _tollCommitment}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
+      unchecked { i++; }
     }
   }
 
   function _batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) internal {
-    for (uint256 i = 0; i < _params.length; i++) {
+    uint256 length = _params.length;
+    for (uint256 i = 0; i < length;) {
       IERC20 token = IERC20(address(_params[i].tokenAddr));
 
       SafeERC20.safeTransferFrom(token, msg.sender, address(this), _params[i].amount);
-
-      if (token.allowance(address(this), address(umbra)) == 0) {
-        SafeERC20.safeApprove(token, address(umbra), type(uint256).max);
-      }
 
       umbra.sendToken{value: _tollCommitment}(
         _params[i].receiver,
@@ -79,14 +79,22 @@ contract UmbraBatchSend {
         _params[i].pkx,
         _params[i].ciphertext
       );
+      unchecked { i++; }
     }
   }
 
   function _sumValueFromEthSends(uint256 _tollCommitment, SendEth[] calldata _params) internal pure returns(uint256 valueSentAccumulator) {
-    for (uint256 i = 0; i < _params.length; i++) {
+    uint256 length = _params.length;
+    for (uint256 i = 0; i < length;) {
       //amount to be sent per receiver
       valueSentAccumulator = valueSentAccumulator + _params[i].amount + _tollCommitment;
+      unchecked { i++; }
     }
   }
 
+  /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
+  /// that token in this contract.
+  function approveToken(IERC20 _token) external onlyOwner {
+    SafeERC20.safeApprove(_token, address(umbra), type(uint256).max);
+  }
 }

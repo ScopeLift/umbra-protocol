@@ -17,6 +17,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
   function setUp() virtual override public {
     super.setUp();
     router = new UmbraBatchSend(IUmbra(address(umbra)));
+    router.approveToken(IERC20(address(token)));
   }
 
   function testPostSetupState() public {
