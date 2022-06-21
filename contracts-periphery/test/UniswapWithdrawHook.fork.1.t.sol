@@ -57,15 +57,7 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
-      _testFuzz_HookTest(
-        recipient,
-        amount,
-        swapAmount,
-        feeBips,
-        feeRecipient,
-        sponsorFee,
-        UmbraFns.withdrawTokenAndCall
-      );
+      hookTest(recipient, amount, swapAmount, feeBips, feeRecipient, sponsorFee, UmbraFns.withdrawTokenAndCall);
     }
   }
 
@@ -80,19 +72,11 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
-      _testFuzz_HookTest(
-        recipient,
-        amount,
-        swapAmount,
-        feeBips,
-        feeRecipient,
-        sponsorFee,
-        UmbraFns.withdrawTokenAndCallOnBehalf
-      );
+      hookTest(recipient, amount, swapAmount, feeBips, feeRecipient, sponsorFee, UmbraFns.withdrawTokenAndCallOnBehalf);
     }
   }
 
-  function _testFuzz_HookTest(
+  function hookTest(
     address destinationAddr,
     uint256 amount,
     uint256 swapAmount,
@@ -100,11 +84,11 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     address feeReceiver,
     uint256 sponsorFee,
     UmbraFns fn
-  ) public {
+  ) internal {
     amount = bound(amount, 10e10, 100000 ether);
     swapAmount = bound(swapAmount, 10e8, amount);
     feeBips = bound(feeBips, 1, 100);
-    sponsorFee = bound(sponsorFee, 1, 1000);
+    sponsorFee = bound(sponsorFee, 1, amount - swapAmount);
 
     daiToken.approve(address(umbraContract), amount);
     umbraContract.sendToken{value: toll}(alice, dai, amount, pkx, ciphertext);
@@ -142,20 +126,20 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
       assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount);
     } else {
       vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCallOnBehalf.selector));
-      _umbraContract_withdrawTokenAndCallOnBehalf(receiver, data, sponsorFee);
+      umbraContract_withdrawTokenAndCallOnBehalf(receiver, data, sponsorFee);
       assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount - sponsorFee);
     }
     assertGe(destinationAddr.balance, recipientAmountReceived);
     assertEq(feeReceiver.balance, feeAmount);
   }
 
-  function _umbraContract_withdrawTokenAndCallOnBehalf(
+  function umbraContract_withdrawTokenAndCallOnBehalf(
     IUmbraHookReceiver receiver,
     bytes memory data,
     uint256 sponsorFee
-  ) public {
+  ) internal {
     (uint8 v, bytes32 r, bytes32 s) =
-      _createDigestAndSign(address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, 1);
+      createDigestAndSign(address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, 1);
 
     umbraContract.withdrawTokenAndCallOnBehalf(
       alice,

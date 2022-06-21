@@ -31,7 +31,7 @@ contract DeployUmbraTest is DSTestPlus {
     token.mint(addr, amount);
   }
 
-  function _createDigestAndSign(
+  function createDigestAndSign(
     address _acceptor,
     address _tokenAddr,
     address _sponsor,
@@ -40,23 +40,28 @@ contract DeployUmbraTest is DSTestPlus {
     bytes memory _data,
     uint256 _privateKey
   )
-    public
+    internal
     returns (
-      uint8,
-      bytes32,
-      bytes32
+      uint8 v,
+      bytes32 r,
+      bytes32 s
     )
   {
-    uint256 _chainId;
-    assembly {
-      _chainId := chainid()
-    }
     bytes32 _digest =
       keccak256(
         abi.encodePacked(
           "\x19Ethereum Signed Message:\n32",
           keccak256(
-            abi.encode(_chainId, address(umbra), _acceptor, _tokenAddr, _sponsor, _sponsorFee, address(_hook), _data)
+            abi.encode(
+              block.chainid,
+              address(umbra),
+              _acceptor,
+              _tokenAddr,
+              _sponsor,
+              _sponsorFee,
+              address(_hook),
+              _data
+            )
           )
         )
       );
