@@ -13,6 +13,7 @@ import {
   getAddress,
   hexlify,
   isHexString,
+  JsonRpcProvider,
   JsonRpcSigner,
   keccak256,
   Overrides,
@@ -97,9 +98,27 @@ const isEth = (token: string) => {
   return getAddress(token) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'; // throws if `token` is not a valid address
 };
 
+/**
+ * @notice Returns the Infura RPC URL for the provided chainId and Infura ID
+ */
+const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
+  chainId = BigNumber.from(chainId).toNumber();
+  // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
+  if (chainId === 1 || chainId === 1337) return `https://mainnet.infura.io/v3/${infuraId}`;
+  if (chainId === 4) return `https://rinkeby.infura.io/v3/${infuraId}`;
+  if (chainId === 10) return `https://optimism-mainnet.infura.io/v3/${infuraId}`;
+  if (chainId === 137) return `https://polygon-mainnet.infura.io/v3/${infuraId}`;
+  if (chainId === 42161) return `https://arbitrum-mainnet.infura.io/v3/${infuraId}`;
+  throw new Error(`No Infura URL for chainId ${chainId}.`);
+};
+
 export class Umbra {
   readonly chainConfig: ChainConfig;
   readonly umbraContract: UmbraContract;
+  // Fallback provider, used when a user's provider rejects the transaction. This may happen if the provider from
+  // the user's wallet rejects transactions from accounts not associated with that user's wallet (in this case, that
+  // means transactions from stealth addresses would be rejected). More info: https://github.com/coinbase/coinbase-wallet-sdk/issues/580
+  readonly fallbackProvider: JsonRpcProvider;
 
   // ========================================= CONSTRUCTOR =========================================
   /**
@@ -110,6 +129,7 @@ export class Umbra {
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
     this.umbraContract = new Contract(this.chainConfig.umbraAddress, abi, provider) as UmbraContract;
+    this.fallbackProvider = new JsonRpcProvider(infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID)));
   }
 
   // ==================================== CONTRACT INTERACTION =====================================
@@ -233,7 +253,16 @@ export class Umbra {
 
     // Handle ETH and tokens accordingly. The isEth method also serves to validate the token input
     if (isEth(token)) {
-      return await tryEthWithdraw(txSigner, await txSigner.getAddress(), destination, overrides);
+      try {
+        // First we attempt to execute the withdrawal using the signer from the user's wallet.
+        return await tryEthWithdraw(txSigner, await txSigner.getAddress(), destination, overrides);
+      } catch (e) {
+        // If that fails, we try again using the fallback provider.
+        console.error("Withdrawal with wallet's provider failed, see error below. Retrying with a fallback provider.");
+        console.error(e);
+        const fallbackSigner = stealthWallet.connect(this.fallbackProvider);
+        return await tryEthWithdraw(fallbackSigner, await txSigner.getAddress(), destination, overrides);
+      }
     } else {
       // Withdrawing a token
       return await this.umbraContract.connect(txSigner).withdrawToken(destination, token, overrides);
@@ -609,7 +638,7 @@ async function recursiveGraphFetch(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       query: query(`
-        first: 1000, 
+        first: 1000,
         where: {
           ${fromId ? `id_gt: "${fromId}",` : ''}
         }
