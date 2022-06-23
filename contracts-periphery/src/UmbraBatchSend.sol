@@ -7,6 +7,7 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "src/interface/IUmbra.sol";
 
 contract UmbraBatchSend is Ownable {
+  using SafeERC20 for IERC20;
   IUmbra internal immutable umbra;
 
   /// @param amount Amount of ETH to send per address excluding the toll
@@ -95,6 +96,6 @@ contract UmbraBatchSend is Ownable {
   /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
   /// that token in this contract.
   function approveToken(IERC20 _token) external onlyOwner {
-    SafeERC20.safeApprove(_token, address(umbra), type(uint256).max);
+    _token.safeApprove(address(umbra), type(uint256).max);
   }
 }
