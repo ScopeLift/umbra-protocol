@@ -28,6 +28,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     env:
+      FOUNDRY_PROFILE: ci
       ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
     defaults:
       run:
