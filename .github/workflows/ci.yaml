@@ -44,4 +44,4 @@ jobs:
           version: nightly
 
       - name: Run tests
-        run: make test-ci
+        run: make test
