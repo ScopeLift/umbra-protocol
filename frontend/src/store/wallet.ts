@@ -51,7 +51,7 @@ const relayer = ref<UmbraApi>(); // used for managing relay transactions
 const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name // LEGACY
 const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name // LEGACY
 const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
-const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instafnce
+const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
 const isArgent = ref<boolean>(false); // true if user connected an argent wallet
 const stealthKeys = ref<{ spendingPublicKey: string; viewingPublicKey: string } | null>();
 const avatar = ref<string | null>('');
@@ -341,17 +341,23 @@ export default function useWalletStore() {
   // ------------------------------------------ Mutations ------------------------------------------
   // Helper method to clear state. Useful when user switches wallets.
   function resetState() {
+    provider.value = undefined;
+    signer.value = undefined;
     userAddress.value = undefined;
     userEns.value = undefined;
     userCns.value = undefined;
     network.value = undefined;
     umbra.value = undefined;
+    stealthKeyRegistry.value = undefined;
     spendingKeyPair.value = undefined;
     viewingKeyPair.value = undefined;
     balances.value = {};
     relayer.value = undefined;
     hasEnsKeys.value = false;
     hasCnsKeys.value = false;
+    isAccountSetup.value = false;
+    isArgent.value = false;
+    stealthKeys.value = undefined;
   }
 
   // Mark account setup complete after a user first registers their stealth keys
