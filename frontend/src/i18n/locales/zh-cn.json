@@ -222,12 +222,17 @@
     "scan-settings": "更改扫描设置",
     "account-empty": "此帐户尚未收到任何资金",
     "received-funds": "收到的资金",
-    "sender": "发送者",
-    "stealth-receiver": "隐形接收者",
-    "received": "已收到",
-    "withdrawn": "已提取",
+    "sender": "发送者(Sender)",
+    "stealth-receiver": "隐形接收者(Stealth Receiver)",
+    "received": "已收到(Received)",
+    "withdrawn": "已提取(Withdrawn)",
     "hide": "隐藏",
+<<<<<<< HEAD
     "withdraw": "提取",
+=======
+    "withdraw": "提取(Withdraw)",
+    "receiver": "接受者",
+>>>>>>> 9fd6437 (Add English to certain Chinese error messages)
     "scanning-complete": "扫描已成功完成",
     "custom-prv-key": "使用自定义私钥",
     "scanned-from-block": "从此块扫描",
@@ -292,9 +297,9 @@
   },
   "Utils": {
     "Alerts": {
-      "transaction-pending": "正在处理您的交易",
-      "transaction-succeeded": "您的交易已成功",
-      "transaction-failed": "您的交易已失败"
+      "transaction-pending": "正在处理您的交易(Your transaction is pending)",
+      "transaction-succeeded": "您的交易已成功(Your transaction has succeeded)",
+      "transaction-failed": "您的交易已失败(Your transaction has failed)"
     },
     "Address": {
       "name-publicly-viewable": "此名称可公开查看",
