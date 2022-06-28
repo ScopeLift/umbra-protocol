@@ -227,12 +227,8 @@
     "received": "已收到(Received)",
     "withdrawn": "已提取(Withdrawn)",
     "hide": "隐藏",
-<<<<<<< HEAD
-    "withdraw": "提取",
-=======
     "withdraw": "提取(Withdraw)",
     "receiver": "接受者",
->>>>>>> 9fd6437 (Add English to certain Chinese error messages)
     "scanning-complete": "扫描已成功完成",
     "custom-prv-key": "使用自定义私钥",
     "scanned-from-block": "从此块扫描",

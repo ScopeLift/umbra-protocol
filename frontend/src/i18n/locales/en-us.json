@@ -228,10 +228,7 @@
     "withdrawn": "Withdrawn",
     "hide": "Hide",
     "withdraw": "Withdraw",
-<<<<<<< HEAD
-=======
     "receiver": "Receiver",
->>>>>>> 9fd6437 (Add English to certain Chinese error messages)
     "scanning-complete": "Scanning completed successfully",
     "custom-prv-key": " with custom private key",
     "scanned-from-block": "Scanned from block",
