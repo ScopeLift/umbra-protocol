@@ -4,13 +4,11 @@ module.exports = {
   },
 
   extends: [
-    'eslint:recommended',
+    // 'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:vue/essential',
+    // 'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:vue/vue3-essential',
     'prettier',
-    'prettier/@typescript-eslint',
-    'prettier/vue',
   ],
 
   plugins: ['@typescript-eslint', 'vue'],

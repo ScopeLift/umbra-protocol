@@ -12,6 +12,7 @@
       "src/*": ["src/*"],
       "app/*": ["*"],
       "components/*": ["src/components/*"],
+      "crypto": ["../node_modules/crypto-js"],
       "layouts/*": ["src/layouts/*"],
       "pages/*": ["src/pages/*"],
       "assets/*": ["src/assets/*"],

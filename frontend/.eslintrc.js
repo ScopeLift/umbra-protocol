@@ -2,7 +2,7 @@ module.exports = {
   extends: '../.eslintrc.js',
   parserOptions: {
     project: 'tsconfig.json',
-    parser: '@typescript-eslint/parser',
+    parser: require.resolve('@typescript-eslint/parser'),
     extraFileExtensions: ['.vue'],
   },
   globals: {

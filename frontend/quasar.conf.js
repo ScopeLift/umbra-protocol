@@ -14,7 +14,10 @@ module.exports = configure(function (ctx) {
     // https://quasar.dev/quasar-cli/supporting-ts
     supportTS: {
       tsCheckerConfig: {
-        eslint: true,
+        eslint: {
+          enabled: true,
+          files: './src/**/*.{ts,tsx,js,jsx,vue}',
+        },
       },
     },
 
@@ -82,6 +85,20 @@ module.exports = configure(function (ctx) {
           use: [{ loader: '@kazupon/vue-i18n-loader' }, { loader: 'yaml-loader' }],
         });
       },
+
+      chainWebpack(chain) {
+        const nodePolyfillWebpackPlugin = require('node-polyfill-webpack-plugin');
+        chain.plugin('node-polyfill').use(nodePolyfillWebpackPlugin);
+      },
+
+      // extendWebpack(cfg, { isServer, isClient }) {
+      //   cfg.module.rules.push({
+      //     enforce: 'pre',
+      //     test: /\.(js|vue)$/,
+      //     loader: 'eslint-loader',
+      //     exclude: /(node_modules|quasar)/,
+      //   });
+      // },
     },
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
@@ -94,7 +111,7 @@ module.exports = configure(function (ctx) {
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
     framework: {
       iconSet: 'fontawesome-v5', // Quasar icon set
-      lang: 'en-us', // Quasar language pack
+      lang: 'en-US', // Quasar language pack
       config: {},
 
       // Possible values for "importStrategy":
