@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watchEffect } from '@vue/composition-api';
+import { computed, defineComponent, ref, watchEffect } from 'vue';
 import { Chain, supportedChains } from 'src/components/models';
 import useWalletStore from 'src/store/wallet';
 import { getChainById } from 'src/utils/utils';

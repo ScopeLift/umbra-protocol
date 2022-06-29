@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from '@vue/composition-api';
+import { computed, onMounted, ref } from 'vue';
 import { Dark, LocalStorage } from 'quasar';
 import { i18n } from '../boot/i18n';
 

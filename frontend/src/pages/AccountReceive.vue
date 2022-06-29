@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm } from 'quasar';
 import { UserAnnouncement, KeyPair, AnnouncementDetail } from '@umbra/umbra-js';
 import { BigNumber, isHexString } from 'src/utils/ethers';

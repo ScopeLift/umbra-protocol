@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType } from 'vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import Avatar from 'src/components/Avatar.vue';

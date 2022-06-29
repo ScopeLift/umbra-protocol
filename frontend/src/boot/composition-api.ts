@@ -1,4 +1,4 @@
-import VueCompositionApi from '@vue/composition-api';
+import VueCompositionApi from 'vue';
 import { boot } from 'quasar/wrappers';
 
 export default boot(({ Vue }) => {

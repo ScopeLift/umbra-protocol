@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent } from 'vue';
 import HomeActionCard from 'components/HomeActionCard.vue';
 import useWalletStore from 'src/store/wallet';
 

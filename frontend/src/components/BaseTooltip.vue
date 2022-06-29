@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'BaseTooltip',
