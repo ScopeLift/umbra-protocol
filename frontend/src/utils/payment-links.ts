@@ -3,7 +3,7 @@ import { TokenInfoExtended } from 'components/models';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 import useWalletStore from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
-import { JsonRpcProvider } from 'src/utils/ethers';
+import { StaticJsonRpcProvider } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 
 /**
@@ -11,7 +11,7 @@ import { UmbraApi } from 'src/utils/umbra-api';
  */
 function getProvider() {
   const { provider } = useWalletStore();
-  return provider.value || new JsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
+  return provider.value || new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
 }
 
 /**

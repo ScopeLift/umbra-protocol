@@ -12,6 +12,6 @@ export { Contract } from '@ethersproject/contracts';
 export { namehash } from '@ethersproject/hash';
 export { keccak256 } from '@ethersproject/keccak256';
 export { Logger, LogLevel } from '@ethersproject/logger';
-export { Block, JsonRpcProvider, JsonRpcSigner, Network, TransactionReceipt, TransactionResponse, Web3Provider, } from '@ethersproject/providers'; // prettier-ignore
+export { Block, JsonRpcSigner, Network, StaticJsonRpcProvider, TransactionReceipt, TransactionResponse, Web3Provider } from '@ethersproject/providers'; // prettier-ignore
 export { toUtf8Bytes } from '@ethersproject/strings';
 export { parseUnits, formatUnits } from '@ethersproject/units';

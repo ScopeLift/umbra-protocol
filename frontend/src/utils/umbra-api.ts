@@ -2,7 +2,7 @@
  * @notice Class for managing relayed withdrawal transactions
  */
 
-import { JsonRpcProvider } from 'src/utils/ethers';
+import { StaticJsonRpcProvider } from './ethers';
 import {
   FeeEstimateResponse,
   RelayerStatusResponse,
@@ -21,7 +21,7 @@ export class UmbraApi {
     readonly nativeTokenMinSendAmount: string | undefined
   ) {}
 
-  static async create(provider: Provider | JsonRpcProvider) {
+  static async create(provider: Provider | StaticJsonRpcProvider) {
     // Get API URL based on chain ID
     const chainId = (await provider.getNetwork()).chainId;
     const baseUrl = 'https://mainnet.api.umbra.cash'; // works for all networks
