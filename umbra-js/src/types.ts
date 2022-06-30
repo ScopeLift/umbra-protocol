@@ -2,7 +2,7 @@ import {
   BigNumber,
   ExternalProvider as EthersExternalProvider,
   JsonRpcFetchFunc,
-  JsonRpcProvider,
+  StaticJsonRpcProvider,
   Overrides,
   Web3Provider,
 } from './ethers';
@@ -11,7 +11,7 @@ import {
 export { TransactionResponse } from './ethers';
 import { TransactionResponse } from './ethers';
 export type ExternalProvider = EthersExternalProvider | JsonRpcFetchFunc;
-export type EthersProvider = Web3Provider | JsonRpcProvider;
+export type EthersProvider = Web3Provider | StaticJsonRpcProvider;
 
 // Transaction responses on L2s and other chains may have more fields than on L1.
 export interface TransactionResponseExtended extends TransactionResponse {

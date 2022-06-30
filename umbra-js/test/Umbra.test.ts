@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import hardhatConfig from '../hardhat.config';
 import { Umbra } from '../src/classes/Umbra';
-import { BigNumberish, BigNumber, JsonRpcProvider, Wallet } from '../src/ethers';
+import { BigNumberish, BigNumber, StaticJsonRpcProvider, Wallet } from '../src/ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
 import { expect } from 'chai';
@@ -17,7 +17,7 @@ import {
 
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
-const jsonRpcProvider = new JsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
+const jsonRpcProvider = new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
 
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const quantity = parseEther('5');

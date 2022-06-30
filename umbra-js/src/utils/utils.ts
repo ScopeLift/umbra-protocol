@@ -10,12 +10,12 @@ import {
   ContractInterface,
   getAddress,
   isHexString,
-  JsonRpcProvider,
   keccak256,
   Overrides,
   resolveProperties,
   serialize as serializeTransaction,
   splitSignature,
+  StaticJsonRpcProvider,
   UnsignedTransaction,
 } from '../ethers';
 import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
@@ -304,7 +304,8 @@ async function resolveEns(name: string, provider: EthersProvider) {
     // and overriding with a mainnet provider otherwise. This ensures ENS resolution is always done
     // against L1, as explained here: https://twitter.com/makoto_inoue/status/1453737962110275598
     const { chainId } = await provider.getNetwork();
-    if (chainId !== 1) provider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
+    if (chainId !== 1)
+      provider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
     const address = await provider.resolveName(name);
     return address || null;
   } catch (e) {

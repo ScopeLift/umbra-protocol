@@ -13,12 +13,12 @@ import {
   getAddress,
   hexlify,
   isHexString,
-  JsonRpcProvider,
   JsonRpcSigner,
   keccak256,
   Overrides,
   sha256,
   splitSignature,
+  StaticJsonRpcProvider,
   toUtf8Bytes,
   TransactionResponse,
   Wallet,
@@ -118,7 +118,7 @@ export class Umbra {
   // Fallback provider, used when a user's provider rejects the transaction. This may happen if the provider from
   // the user's wallet rejects transactions from accounts not associated with that user's wallet (in this case, that
   // means transactions from stealth addresses would be rejected). More info: https://github.com/coinbase/coinbase-wallet-sdk/issues/580
-  readonly fallbackProvider: JsonRpcProvider;
+  readonly fallbackProvider: StaticJsonRpcProvider;
 
   // ========================================= CONSTRUCTOR =========================================
   /**
@@ -129,7 +129,9 @@ export class Umbra {
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
     this.umbraContract = new Contract(this.chainConfig.umbraAddress, abi, provider) as UmbraContract;
-    this.fallbackProvider = new JsonRpcProvider(infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID)));
+    this.fallbackProvider = new StaticJsonRpcProvider(
+      infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
+    );
   }
 
   // ==================================== CONTRACT INTERACTION =====================================
