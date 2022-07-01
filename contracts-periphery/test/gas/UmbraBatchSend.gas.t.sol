@@ -60,10 +60,6 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
         sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
       }
       router.batchSendTokens{value: valueAmount}(toll, sendToken);
-<<<<<<< HEAD
-
-=======
->>>>>>> c8b01a3 (Fix executeParams)
     } else {
       assertTrue(etherAmount > 0 && tokenAmount > 0);
       for (uint256 i = 0; i < numOfAddrs; i++) {
