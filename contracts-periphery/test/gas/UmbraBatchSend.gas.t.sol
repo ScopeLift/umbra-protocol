@@ -54,15 +54,17 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
         valueAmount += toll;
         sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
       }
+      router.batchSendTokens{value: valueAmount}(toll, sendToken);
 
     } else {
-        assertTrue(etherAmount > 0 && tokenAmount >0);
-        for (uint256 i = 0; i < numOfAddrs; i++) {
-          valueAmount += etherAmount + toll * 2;
-          sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
-          sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
-        }
+      assertTrue(etherAmount > 0 && tokenAmount > 0);
+      for (uint256 i = 0; i < numOfAddrs; i++) {
+        valueAmount += etherAmount + toll * 2;
+        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
+        sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
       }
+      router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+    }
   }
 
   // Send max balance
