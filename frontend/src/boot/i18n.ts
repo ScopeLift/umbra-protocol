@@ -14,9 +14,9 @@ const locale = Quasar.lang.getLocale();
 //   messages,
 // });
 
-export const i18n = new createI18n({
+export const i18n = createI18n({
   locale: locale,
-  fallbackLocale: 'en-us',
+  fallbackLocale: 'en-US',
   messages,
 });
 
@@ -26,8 +26,8 @@ export default boot(({ app }) => {
   app.use(i18n);
 });
 
-const params = new URLSearchParams(window.location.search);
-if (params.has('locale')) {
-  i18n.locale = params.get('locale')!;
-  window.logger.info(params.get('locale'));
-}
+// const params = new URLSearchParams(window.location.search);
+// if (params.has('locale')) {
+//   i18n.locale = params.get('locale')!;
+//   window.logger.info(params.get('locale'));
+// }

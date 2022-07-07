@@ -7,10 +7,10 @@ import LoadingSpinner from 'components/LoadingSpinner.vue';
 import ProgressIndicator from 'components/ProgressIndicator.vue';
 
 // more info on params: https://quasar.dev/quasar-cli/cli-documentation/boot-files#Anatomy-of-a-boot-file
-export default boot(({ Vue }) => {
-  Vue.component('base-button', BaseButton);
-  Vue.component('base-input', BaseInput);
-  Vue.component('base-select', BaseSelect);
-  Vue.component('loading-spinner', LoadingSpinner);
-  Vue.component('progress-indicator', ProgressIndicator);
+export default boot(({ app }) => {
+  app.component('base-button', BaseButton);
+  app.component('base-input', BaseInput);
+  app.component('base-select', BaseSelect);
+  app.component('loading-spinner', LoadingSpinner);
+  app.component('progress-indicator', ProgressIndicator);
 });
