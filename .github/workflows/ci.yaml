@@ -8,40 +8,43 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: contracts-periphery/
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      - uses: volta-cli/action@v1
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
         with:
           version: nightly
 
-      - name: Build contracts
-        run: |
-          forge --version
-          forge build --sizes
+      - run: yarn install --network-concurrency 1
+
+      - run: yarn build
   tests:
     runs-on: ubuntu-latest
     env:
       FOUNDRY_PROFILE: ci
       ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
-    defaults:
-      run:
-        working-directory: contracts-periphery/
+      INFURA_ID: ${{ secrets.INFURA_ID }}
+      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      - uses: volta-cli/action@v1
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
         with:
           version: nightly
 
+      - run: yarn install --network-concurrency 1
+
       - name: Run tests
-        run: make test
+        run: yarn test
+

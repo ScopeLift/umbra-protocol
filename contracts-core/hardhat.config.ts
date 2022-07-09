@@ -199,7 +199,7 @@ const config: HardhatUserConfig = {
     enabled: shouldReportGas,
     currency: 'USD',
     gasPrice: 200,
-    excludeContracts: ['TestToken.sol', 'MockHook.sol', 'ERC20.sol', 'open_gsn/'],
+    excludeContracts: ['TestToken.sol', 'MockHook.sol', 'ERC20.sol'],
   },
   etherscan: {
     apiKey: etherscanApiKey,
