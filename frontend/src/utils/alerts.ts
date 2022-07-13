@@ -2,7 +2,8 @@ import { Dark } from 'quasar';
 import BNotify, { InitOptions, NotificationType } from 'bnc-notify';
 import { Provider } from 'components/models';
 import { getEtherscanUrl } from './utils';
-import { i18n } from '../boot/i18n';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Instantiate Blocknative's notify.js. We don't pass a dappId so we can use in UI only mode for any
 // notifications we need, i.e. not just Blocknative transaction notifications
@@ -63,7 +64,7 @@ export async function txNotify(txHash: string, provider: Provider) {
   const { update } = bNotify.notification({
     autoDismiss: 0,
     eventCode: 'txPending',
-    message: i18n.tc('Utils.Alerts.transaction-pending'),
+    message: t('Utils.Alerts.transaction-pending'),
     onclick,
     type: 'pending',
   });
@@ -73,7 +74,7 @@ export async function txNotify(txHash: string, provider: Provider) {
   update({
     autoDismiss: defaultTimeout,
     eventCode: status ? 'txSuccess' : 'txFail',
-    message: status ? i18n.tc('Utils.Alerts.transaction-succeeded') : i18n.tc('Utils.Alerts.transaction-failed'),
+    message: status ? t('Utils.Alerts.transaction-succeeded') : t('Utils.Alerts.transaction-failed'),
     onclick,
     type: status ? 'success' : 'error',
   });

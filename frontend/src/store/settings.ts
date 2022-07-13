@@ -1,6 +1,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { Dark, LocalStorage } from 'quasar';
-import { i18n } from '../boot/i18n';
+import { useI18n } from 'vue-i18n';
+const { locale } = useI18n();
 
 // Local storage key names
 const settings = {
@@ -33,15 +34,13 @@ export default function useSettingsStore() {
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
-    setLanguage(
-      (LocalStorage.getItem(settings.language) as Language) || { label: getLanguageLabel(), value: i18n.locale }
-    );
+    setLanguage((LocalStorage.getItem(settings.language) as Language) || { label: getLanguageLabel(), value: locale });
   });
 
   if (language.value.label === '') {
     language.value.value = LocalStorage.getItem(settings.language)
       ? (LocalStorage.getItem(settings.language) as Language).value
-      : i18n.locale;
+      : locale;
     language.value.label = getLanguageLabel();
   }
 
@@ -64,7 +63,7 @@ export default function useSettingsStore() {
 
   function setLanguage(newLanguage: Language) {
     language.value = newLanguage;
-    i18n.locale = language.value.value;
+    locale = language.value.value;
     LocalStorage.set(settings.language, language.value);
   }
 

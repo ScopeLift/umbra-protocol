@@ -13,7 +13,7 @@
         <div>{{ $t('WithdrawForm.withdraw-address') }}</div>
         <base-input
           v-model="content"
-          @input="emit('updateDestinationAddress', content)"
+          @update:modelValue="emit('updateDestinationAddress', content)"
           @click="
             emit('initializeWithdraw');
             setIsInWithdrawFlow(true);

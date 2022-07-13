@@ -1,5 +1,5 @@
 <template>
-  <q-expansion-item :value="expanded" class="q-py-sm" group="faq" header-style="font-size: 1.1em;" :label="question">
+  <q-expansion-item :model-value="expanded" class="q-py-sm" group="faq" header-style="font-size: 1.1em;" :label="question">
     <q-card>
       <q-card-section>
         <slot></slot>

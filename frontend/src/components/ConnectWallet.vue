@@ -15,13 +15,14 @@ function useWallet(context: SetupContext, to: string) {
     // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
     // from the home page)
     if (userAddress.value && to) {
-      await context.root.$router.push({ name: to });
+
+      await this.$router.push({ name: to });
       return;
     }
 
     await connectWallet();
 
-    if (to) await context.root.$router.push({ name: to }); // redirect to specified page
+    if (to) await this.$router.push({ name: to }); // redirect to specified page
   }
 
   return { connectWalletWithRedirect };

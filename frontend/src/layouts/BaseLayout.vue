@@ -153,8 +153,8 @@
           <!-- Advanced mode toggle -->
           <p>
             <q-toggle
-              @input="toggleAdvancedMode"
-              :value="advancedMode"
+              @update:modelValue="toggleAdvancedMode"
+              :model-value="advancedMode"
               class="icon"
               color="primary"
               dense
@@ -175,7 +175,7 @@
           <base-select
             class="language-selector"
             v-model="currentLanguage"
-            @input="setLanguage(currentLanguage)"
+            @update:modelValue="setLanguage(currentLanguage)"
             dense
             options-dense="true"
             :filled="false"

@@ -25,11 +25,11 @@
       standout
       @blur="hideHint"
       @focus="showHint"
-      @input="handleInput"
+      @update:modelValue="handleInput"
     >
-      <!-- 
+      <!--
       If we have a button, never show the loading slot because it makes the button jump left and right when the
-      loading slot is shown / hidden 
+      loading slot is shown / hidden
     -->
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:loading></template>
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:append>
@@ -43,7 +43,7 @@
       </template>
       <template v-else-if="counter && !$q.screen.xs" v-slot:append>
         <q-circular-progress
-          :value="counter"
+          :model-value="counter"
           size="2.75rem"
           :color="counter > 100 ? 'negative' : 'primary'"
           show-value
@@ -64,7 +64,7 @@
     />
     <q-circular-progress
       v-else-if="counter && $q.screen.xs"
-      :value="counter"
+      :model-value="counter"
       size="2.75rem"
       :color="counter > 100 ? 'negative' : 'primary'"
       show-value
@@ -76,9 +76,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'BaseInput',
 
   props: {
@@ -221,6 +221,13 @@ export default Vue.extend({
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     },
   },
+
+  emits: [
+    'click',
+    'input',
+    'blur',
+
+  ],
 
   methods: {
     handleClick() {

@@ -21,7 +21,7 @@
       :rules="[(val) => rules(val)]"
       @blur="hideHint"
       @focus="showHint"
-      @input="handleInput"
+      @update:modelValue="handleInput"
     >
       <!-- Show icons when selected or when the slot is provided-->
       <template v-slot:prepend v-if="content && content.logoURI">
@@ -47,9 +47,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'BaseInput',
 
   props: {

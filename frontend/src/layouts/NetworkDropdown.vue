@@ -1,7 +1,7 @@
 <template>
   <base-select
     v-model="currentNetwork"
-    @input="setNetwork(currentNetwork)"
+    @update:modelValue="setNetwork(currentNetwork)"
     dense
     :filled="false"
     :hideBottomSpace="true"

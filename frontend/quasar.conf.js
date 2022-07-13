@@ -15,7 +15,7 @@ module.exports = configure(function (ctx) {
     supportTS: {
       tsCheckerConfig: {
         eslint: {
-          enabled: true,
+          enabled: false,
           files: './src/**/*.{ts,tsx,js,jsx,vue}',
         },
       },
@@ -27,7 +27,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/boot-files
-    boot: ['composition-api', 'components', 'error-handler', 'logger', 'i18n'],
+    boot: ['components', 'error-handler', 'logger', 'i18n'],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: ['app.sass'],
