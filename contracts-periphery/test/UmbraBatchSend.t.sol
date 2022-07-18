@@ -8,9 +8,13 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
   UmbraBatchSend router;
 
   uint256 toll;
+  uint256 internal constant WAD = 1e18;
+
 
   UmbraBatchSend.SendEth[] sendEth;
   UmbraBatchSend.SendToken[] sendToken;
+  UmbraBatchSend.NewSendToken[] newSendToken;
+  UmbraBatchSend.SwapSummary[] swapSum;
 
   error ValueMismatch();
 
@@ -18,6 +22,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     super.setUp();
     router = new UmbraBatchSend(IUmbra(address(umbra)));
     router.approveToken(IERC20(address(token)));
+    router.approveToken(IERC20(address(token2)));
   }
 
   function testPostSetupState() public {
@@ -65,6 +70,94 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
 
     assertEq(token.balanceOf(umbra), totalAmount);
   }
+
+
+  function test_BatchSendTokens() public {
+    uint256 amount = 100 ether;
+    uint256 amount2 = 120 ether;
+    uint256 totalAmount = uint256(amount) + amount2;
+
+    swapSum.push(UmbraBatchSend.SwapSummary(totalAmount, address(token)));
+    // swapSum.push(UmbraBatchSend.SwapSummary(totalAmount, address(token2)));
+
+    newSendToken.push(UmbraBatchSend.NewSendToken(alice, address(token), amount, (divWadUp(WAD * amount, totalAmount)), pkx, ciphertext));
+    newSendToken.push(UmbraBatchSend.NewSendToken(bob, address(token), amount2, (divWadUp(WAD * amount2, totalAmount)), pkx, ciphertext));
+    // newSendToken.push(UmbraBatchSend.NewSendToken(alice, address(token2), amount, (WAD * amount / totalAmount), pkx, ciphertext));
+    // newSendToken.push(UmbraBatchSend.NewSendToken(bob, address(token2), amount2, (WAD * amount2 / totalAmount), pkx, ciphertext));
+    uint256 totalToll = toll *  newSendToken.length;
+    token.approve(address(router), totalAmount);
+    token2.approve(address(router), totalAmount);
+
+    vm.expectCall(address(router), abi.encodeWithSelector(router.newBatchSendTokens.selector, toll, newSendToken, swapSum));
+    vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
+    router.newBatchSendTokens{value: totalToll}(toll, newSendToken, swapSum);
+
+    assertEq(token.balanceOf(umbra), totalAmount);
+    // assertEq(token2.balanceOf(umbra), totalAmount);
+
+  }
+
+function mulWadDown(uint256 x, uint256 y) internal pure returns (uint256) {
+        return mulDivDown(x, y, WAD); // Equivalent to (x * y) / WAD rounded down.
+    }
+
+    function mulWadUp(uint256 x, uint256 y) internal pure returns (uint256) {
+        return mulDivUp(x, y, WAD); // Equivalent to (x * y) / WAD rounded up.
+    }
+
+    function divWadDown(uint256 x, uint256 y) internal pure returns (uint256) {
+        return mulDivDown(x, WAD, y); // Equivalent to (x * WAD) / y rounded down.
+    }
+
+    function divWadUp(uint256 x, uint256 y) internal pure returns (uint256) {
+        return mulDivUp(x, WAD, y); // Equivalent to (x * WAD) / y rounded up.
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                    LOW LEVEL FIXED POINT OPERATIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function mulDivDown(
+        uint256 x,
+        uint256 y,
+        uint256 denominator
+    ) internal pure returns (uint256 z) {
+        assembly {
+            // Store x * y in z for now.
+            z := mul(x, y)
+
+            // Equivalent to require(denominator != 0 && (x == 0 || (x * y) / x == y))
+            if iszero(and(iszero(iszero(denominator)), or(iszero(x), eq(div(z, x), y)))) {
+                revert(0, 0)
+            }
+
+            // Divide z by the denominator.
+            z := div(z, denominator)
+        }
+    }
+
+    function mulDivUp(
+        uint256 x,
+        uint256 y,
+        uint256 denominator
+    ) internal pure returns (uint256 z) {
+        assembly {
+            // Store x * y in z for now.
+            z := mul(x, y)
+
+            // Equivalent to require(denominator != 0 && (x == 0 || (x * y) / x == y))
+            if iszero(and(iszero(iszero(denominator)), or(iszero(x), eq(div(z, x), y)))) {
+                revert(0, 0)
+            }
+
+            // First, divide z - 1 by the denominator and add 1.
+            // We allow z - 1 to underflow if z is 0, because we multiply the
+            // end result by 0 if z is zero, ensuring we return 0 if z is zero.
+            z := mul(iszero(iszero(z)), add(div(sub(z, 1), denominator), 1))
+        }
+    }
+
+
 
   function testExpectRevert_BatchSendTokens() public {
     sendToken.push(UmbraBatchSend.SendToken(alice, address(token), 1 ether, pkx, ciphertext));
