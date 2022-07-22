@@ -6,21 +6,26 @@
 
 <script lang="ts">
 import { defineComponent, SetupContext } from 'vue';
+import { useRouter } from 'vue-router';
 import useWalletStore from 'src/store/wallet';
 
-function useWallet(context: SetupContext, to: string) {
+const router = useRouter();
+
+
+function useWallet(_context: SetupContext, to: string) {
   const { connectWallet, userAddress } = useWalletStore();
-  async function connectWalletWithRedirect() {
+  // async function connectWalletWithRedirect() {
+    const connectWalletWithRedirect = async () => {
     // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
     // from the home page)
     if (userAddress.value && to) {
-      await this.$router.push({ name: to });
+      await router.push({ name: to });
       return;
     }
 
     await connectWallet();
 
-    if (to) await this.$router.push({ name: to }); // redirect to specified page
+    if (to) await router.push({ name: to }); // redirect to specified page
   }
 
   return { connectWalletWithRedirect };

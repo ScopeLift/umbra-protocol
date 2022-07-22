@@ -297,7 +297,7 @@ function useSendForm() {
         advanced: shouldUseNormalPubKey.value,
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
       if (e.reason) return toSentenceCase(e.reason);
       return toSentenceCase(e.message);

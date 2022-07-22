@@ -555,13 +555,16 @@ import FAQItem from 'components/FAQItem.vue';
 import { copyToClipboard, scroll } from 'quasar';
 import { notifyUser } from 'src/utils/alerts';
 import { getEtherscanUrl } from 'src/utils/utils';
+import { useRouter } from 'vue-router';
 
-function useScrollToElement(context: SetupContext) {
-  const { getScrollTarget, setScrollPosition } = scroll;
+const router = useRouter();
+
+function useScrollToElement(_context: SetupContext) {
+  const { getScrollTarget, setVerticalScrollPosition } = scroll;
   const selectedId = ref('');
 
   // Hepler methods
-  const getElementIdFromUrl = () => context.root.$router.currentRoute.hash.slice(1); // .slice(1) to remove '#'
+  const getElementIdFromUrl = () => router.currentRoute.value.hash.slice(1); // .slice(1) to remove '#'
 
   const expandAndScrollToElement = (elementId: string) => {
     // Get element
@@ -574,14 +577,14 @@ function useScrollToElement(context: SetupContext) {
     const target = getScrollTarget(el);
     const offset = el.offsetTop;
     const duration = 500; // duration of scroll
-    setScrollPosition(target, offset, duration);
+    setVerticalScrollPosition(target, offset, duration);
   };
 
   // Copy the URL to go directly to the clicked element and update URL in navigation bar
   const copyUrl = async (e: MouseEvent) => {
     const el = e.currentTarget as HTMLElement;
     const elementId = el.id;
-    const slug = context.root.$router.currentRoute.path; // includes the leading forward slash
+    const slug = router.currentRoute.value.path; // includes the leading forward slash
     const page = `${slug}#${elementId}`;
     await copyToClipboard(`${window.location.origin}${page}`);
     if (el.getAttribute('isHeader')) notifyUser('success', 'URL successfully copied to clipboard');

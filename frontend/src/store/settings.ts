@@ -38,9 +38,10 @@ export default function useSettingsStore() {
   });
 
   if (language.value.label === '') {
-    language.value.value = LocalStorage.getItem(settings.language)
-      ? (LocalStorage.getItem(settings.language) as Language).value
-      : locale;
+    // Come back to this
+    // language.value.value = LocalStorage.getItem(settings.language)
+    //   ? (LocalStorage.getItem(settings.language) as Language).value
+    //   : locale;
     language.value.label = getLanguageLabel();
   }
 
@@ -63,7 +64,8 @@ export default function useSettingsStore() {
 
   function setLanguage(newLanguage: Language) {
     language.value = newLanguage;
-    locale = language.value.value;
+    // Come back to this
+    // locale = language.value.value;
     LocalStorage.set(settings.language, language.value);
   }
 
