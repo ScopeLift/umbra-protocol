@@ -76,10 +76,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'BaseInput',
+  components: {},
+  setup() {
+    const content = ref<any>(null);
+    const hintString = ref('');
+
+    return {
+      content,
+      hintString,
+    };
+  },
 
   props: {
     appendButtonDisable: {
@@ -151,7 +161,7 @@ export default defineComponent({
     hint: {
       type: String,
       required: false,
-      default: undefined,
+      default: '', // used to be undefined
     },
 
     label: {
@@ -205,13 +215,6 @@ export default defineComponent({
     },
   },
 
-  data() {
-    return {
-      content: this.value,
-      hintString: '',
-    };
-  },
-
   watch: {
     /**
      * @notice This is required for two-way binding when programtically updating the input
@@ -222,12 +225,7 @@ export default defineComponent({
     },
   },
 
-  emits: [
-    'click',
-    'input',
-    'blur',
-
-  ],
+  emits: ['click', 'input', 'blur'],
 
   methods: {
     handleClick() {

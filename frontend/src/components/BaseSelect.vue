@@ -47,10 +47,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'BaseInput',
+  components: {},
+  setup() {
+    const content = ref<any>(null);
+    const hintString = ref('');
+
+    return {
+      content,
+      hintString,
+    };
+  },
 
   props: {
     dense: {
@@ -86,7 +96,7 @@ export default defineComponent({
     hint: {
       type: String,
       required: false,
-      default: undefined,
+      default: '', // Used to be undefined
     },
 
     label: {
@@ -145,13 +155,6 @@ export default defineComponent({
     },
   },
 
-  data() {
-    return {
-      content: this.value,
-      hintString: '',
-    };
-  },
-
   watch: {
     /**
      * @notice This is required for two-way binding when programtically updating the input
@@ -161,6 +164,8 @@ export default defineComponent({
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     },
   },
+
+  emits: ['input'],
 
   methods: {
     handleInput() {

@@ -10,12 +10,10 @@ import useWalletStore from 'src/store/wallet';
 
 function useWallet(context: SetupContext, to: string) {
   const { connectWallet, userAddress } = useWalletStore();
-
   async function connectWalletWithRedirect() {
     // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
     // from the home page)
     if (userAddress.value && to) {
-
       await this.$router.push({ name: to });
       return;
     }
@@ -36,7 +34,7 @@ export default defineComponent({
     to: {
       type: String,
       required: false,
-      default: undefined,
+      default: '', // used to be undefined
     },
   },
 
