@@ -13,8 +13,13 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
 
   UmbraBatchSend.SendEth[] sendEth;
   UmbraBatchSend.SendToken[] sendToken;
+  UmbraBatchSend.TransferSummary[] transferSummary;
 
-  enum Send {ETH, TOKEN, BOTH}
+  enum Send {
+    ETH,
+    TOKEN,
+    BOTH
+  }
   address payable[] addrs;
 
   function setUp() public virtual override {
@@ -48,6 +53,7 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
 
     if (_type == Send.ETH) {
       assertTrue(etherAmount > 0);
+
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += etherAmount + toll;
         sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
@@ -55,19 +61,22 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
       router.batchSendEth{value: valueAmount}(toll, sendEth);
     } else if (_type == Send.TOKEN) {
       assertTrue(tokenAmount > 0);
+      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += toll;
         sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
       }
-      router.batchSendTokens{value: valueAmount}(toll, sendToken);
+      router.batchSendTokens{value: valueAmount}(toll, sendToken, transferSummary);
     } else {
       assertTrue(etherAmount > 0 && tokenAmount > 0);
+      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
+
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += etherAmount + toll * 2;
         sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
         sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
       }
-      router.batchSend{value: valueAmount}(toll, sendEth, sendToken);
+      router.batchSend{value: valueAmount}(toll, sendEth, sendToken, transferSummary);
     }
   }
 

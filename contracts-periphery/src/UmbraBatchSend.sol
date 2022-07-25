@@ -7,7 +7,6 @@ import "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "src/interface/IUmbra.sol";
 import "forge-std/console2.sol";
 
-
 contract UmbraBatchSend is Ownable {
   using SafeERC20 for IERC20;
   IUmbra internal immutable umbra;
@@ -28,118 +27,91 @@ contract UmbraBatchSend is Ownable {
     bytes32 ciphertext;
   }
 
-  mapping(address => uint256) internal donationRatios;
-  uint256 internal constant WAD = 1e18;
-
-  struct SwapSummary {
+  mapping(address => uint256) internal TotalTransferAmountPerToken;
+  struct TransferSummary {
     uint256 amount;
     address tokenAddr;
-  }
-
-  struct NewSendToken {
-    address receiver;
-    address tokenAddr;
-    uint256 amount;
-    uint256 ratio;
-    bytes32 pkx;
-    bytes32 ciphertext;
   }
 
   error ValueMismatch();
+  error TransferAmmountMismatch();
   event BatchSendExecuted(address indexed sender);
 
   constructor(IUmbra _umbra) {
     umbra = _umbra;
   }
 
-  function newBatchSendTokens(uint256 _tollCommitment, NewSendToken[] calldata _params, SwapSummary[] calldata _swaps) external payable {
-    // if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
-    _validateDonations(_params);
-    _newBatchSendTokens(_tollCommitment, _params, _swaps);
-
-    emit BatchSendExecuted(msg.sender);
-  }
-
-
-  function _validateDonations(NewSendToken[] calldata _donations) internal {
-    // TODO consider moving this to the section where we already loop through donations in case that saves a lot of
-    // gas. Leaving it here for now to improve readability
-
-    for (uint256 i = 0; i < _donations.length; i++) {
-      // Used later to validate ratios are correctly provided
-      donationRatios[_donations[i].tokenAddr] += _donations[i].ratio;
-    }
-  }
-
-  function _newBatchSendTokens(uint256 _tollCommitment, NewSendToken[] calldata _params, SwapSummary[] calldata _swaps) internal {
-    uint256 sumLength = _swaps.length;
-    for(uint256 j = 0; j < sumLength;) {
-
-      IERC20 token = IERC20(address(_swaps[j].tokenAddr));
-
-      console2.log(donationRatios[_swaps[j].tokenAddr]);
-      require(donationRatios[_swaps[j].tokenAddr] == WAD, "error msg");
-      SafeERC20.safeTransferFrom(token, msg.sender, address(this), _swaps[j].amount);
-
-      unchecked { j++; }
-
-    }
-
-    uint256 length = _params.length;
-    for (uint256 i = 0; i < length;) {
-
-
-      umbra.sendToken{value: _tollCommitment}(
-        _params[i].receiver,
-        _params[i].tokenAddr,
-        _params[i].amount,
-        _params[i].pkx,
-        _params[i].ciphertext
-      );
-      unchecked { i++; }
-    }
-  }
-
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
-    if(msg.value != _sumValueFromEthSends(_tollCommitment, _params)) revert ValueMismatch();
+    if (msg.value != _sumValueFromEthSends(_tollCommitment, _params)) revert ValueMismatch();
     _batchSendEth(_tollCommitment, _params);
     emit BatchSendExecuted(msg.sender);
   }
 
-  function batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) external payable {
-    if(msg.value != _tollCommitment * _params.length) revert ValueMismatch();
-    _batchSendTokens(_tollCommitment, _params);
+  function batchSendTokens(
+    uint256 _tollCommitment,
+    SendToken[] calldata _params,
+    TransferSummary[] calldata _transferSummary
+  ) public payable {
+    if (msg.value < _tollCommitment * _params.length) revert ValueMismatch();
+
+    for (uint256 i = 0; i < _params.length; i++) {
+      // Used later to validate total amounts are correctly provided
+      TotalTransferAmountPerToken[_params[i].tokenAddr] += _params[i].amount;
+    }
+
+    uint256 summaryLength = _transferSummary.length;
+    for (uint256 j = 0; j < summaryLength; ) {
+      IERC20 token = IERC20(address(_transferSummary[j].tokenAddr));
+
+      if (TotalTransferAmountPerToken[_transferSummary[j].tokenAddr] != _transferSummary[j].amount)
+        revert TransferAmmountMismatch();
+      SafeERC20.safeTransferFrom(token, msg.sender, address(this), _transferSummary[j].amount);
+
+      unchecked {
+        j++;
+      }
+    }
+    _batchSendTokens(_tollCommitment, _params, _transferSummary);
+
     emit BatchSendExecuted(msg.sender);
   }
 
   function batchSend(
     uint256 _tollCommitment,
     SendEth[] calldata _ethParams,
-    SendToken[] calldata _tokenParams
+    SendToken[] calldata _tokenParams,
+    TransferSummary[] calldata _transferSummary
   ) external payable {
     uint256 _totalAmount = _sumValueFromEthSends(_tollCommitment, _ethParams) + (_tollCommitment * _tokenParams.length);
-    if(msg.value != _totalAmount) revert ValueMismatch();
+    if (msg.value != _totalAmount) revert ValueMismatch();
 
     _batchSendEth(_tollCommitment, _ethParams);
-    _batchSendTokens(_tollCommitment, _tokenParams);
+    batchSendTokens(_tollCommitment, _tokenParams, _transferSummary);
     emit BatchSendExecuted(msg.sender);
   }
 
   function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
     uint256 length = _params.length;
-    for (uint256 i = 0; i < length;) {
-      umbra.sendEth{value: _params[i].amount + _tollCommitment}(_params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext);
-      unchecked { i++; }
+    for (uint256 i = 0; i < length; ) {
+      umbra.sendEth{value: _params[i].amount + _tollCommitment}(
+        _params[i].receiver,
+        _tollCommitment,
+        _params[i].pkx,
+        _params[i].ciphertext
+      );
+      unchecked {
+        i++;
+      }
     }
   }
 
-  function _batchSendTokens(uint256 _tollCommitment, SendToken[] calldata _params) internal {
+  function _batchSendTokens(
+    uint256 _tollCommitment,
+    SendToken[] calldata _params,
+    TransferSummary[] calldata _transferSummary
+  ) internal {
     uint256 length = _params.length;
-    for (uint256 i = 0; i < length;) {
-      IERC20 token = IERC20(address(_params[i].tokenAddr));
-
-      SafeERC20.safeTransferFrom(token, msg.sender, address(this), _params[i].amount);
-
+    for (uint256 i = 0; i < length; ) {
       umbra.sendToken{value: _tollCommitment}(
         _params[i].receiver,
         _params[i].tokenAddr,
@@ -147,16 +119,35 @@ contract UmbraBatchSend is Ownable {
         _params[i].pkx,
         _params[i].ciphertext
       );
-      unchecked { i++; }
+      unchecked {
+        i++;
+      }
+    }
+
+    uint256 summaryLength = _transferSummary.length;
+    for (uint256 j = 0; j < summaryLength; ) {
+      IERC20 token = IERC20(address(_transferSummary[j].tokenAddr));
+
+      TotalTransferAmountPerToken[_transferSummary[j].tokenAddr] = 0;
+
+      unchecked {
+        j++;
+      }
     }
   }
 
-  function _sumValueFromEthSends(uint256 _tollCommitment, SendEth[] calldata _params) internal pure returns(uint256 valueSentAccumulator) {
+  function _sumValueFromEthSends(uint256 _tollCommitment, SendEth[] calldata _params)
+    internal
+    pure
+    returns (uint256 valueSentAccumulator)
+  {
     uint256 length = _params.length;
-    for (uint256 i = 0; i < length;) {
+    for (uint256 i = 0; i < length; ) {
       //amount to be sent per receiver
       valueSentAccumulator = valueSentAccumulator + _params[i].amount + _tollCommitment;
-      unchecked { i++; }
+      unchecked {
+        i++;
+      }
     }
   }
 
