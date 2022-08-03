@@ -147,6 +147,12 @@ const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
 
 // Returns true if the address owns any POAP tokens
 const hasPOAPs = async (address: string) => {
-  const poaps = await jsonFetch(`https://api.poap.xyz/actions/scan/${address}`);
-  return poaps.length > 0 ? true : false;
+  try {
+    const poaps = await jsonFetch(`https://api.poap.xyz/actions/scan/${address}`);
+    return poaps.length > 0 ? true : false;
+  } catch (err) {
+    console.warn('Error in hasPOAPs');
+    console.warn(err);
+    return false;
+  }
 };
