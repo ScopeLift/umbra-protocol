@@ -59,8 +59,8 @@ contract UmbraBatchSend is Ownable {
       totalTransferAmountPerToken[_params[i].tokenAddr] += _params[i].amount;
     }
 
-    uint256 summaryLength = _transferSummary.length;
-    for (uint256 i = 0; i < summaryLength; ) {
+    uint256 _summaryLength = _transferSummary.length;
+    for (uint256 i = 0; i < _summaryLength; ) {
       IERC20 _token = IERC20(address(_transferSummary[i].tokenAddr));
 
       if (totalTransferAmountPerToken[_transferSummary[i].tokenAddr] != _transferSummary[i].amount) {
