@@ -514,18 +514,25 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
     if (!userAddress.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
     activeAnnouncement.value = announcement;
-    const { safe, reasons } = await isAddressSafe(
-      destinationAddress.value,
-      userAddress.value,
-      announcement.receiver,
-      provider.value
-    );
 
-    if (safe) {
-      showConfirmationModal.value = true;
-    } else {
-      showPrivacyModal.value = true;
-      privacyModalAddressWarnings.value = reasons;
+    try {
+      const { safe, reasons } = await isAddressSafe(
+        destinationAddress.value,
+        userAddress.value,
+        announcement.receiver,
+        provider.value
+      );
+
+      if (safe) {
+        showConfirmationModal.value = true;
+      } else {
+        showPrivacyModal.value = true;
+        privacyModalAddressWarnings.value = reasons;
+      }
+    } catch (err: any) {
+      setIsInWithdrawFlow(false);
+      console.warn(err);
+      throw new Error(err);
     }
   }
 
