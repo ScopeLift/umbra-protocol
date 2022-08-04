@@ -27,7 +27,7 @@ contract UmbraBatchSend is Ownable {
     bytes32 ciphertext;
   }
 
-  mapping(address => uint256) internal TotalTransferAmountPerToken;
+  mapping(address => uint256) internal totalTransferAmountPerToken;
   struct TransferSummary {
     uint256 amount;
     address tokenAddr;
@@ -56,19 +56,20 @@ contract UmbraBatchSend is Ownable {
 
     for (uint256 i = 0; i < _params.length; i++) {
       // Used later to validate total amounts are correctly provided
-      TotalTransferAmountPerToken[_params[i].tokenAddr] += _params[i].amount;
+      totalTransferAmountPerToken[_params[i].tokenAddr] += _params[i].amount;
     }
 
     uint256 summaryLength = _transferSummary.length;
-    for (uint256 j = 0; j < summaryLength; ) {
-      IERC20 token = IERC20(address(_transferSummary[j].tokenAddr));
+    for (uint256 i = 0; i < summaryLength; ) {
+      IERC20 _token = IERC20(address(_transferSummary[i].tokenAddr));
 
-      if (TotalTransferAmountPerToken[_transferSummary[j].tokenAddr] != _transferSummary[j].amount)
+      if (totalTransferAmountPerToken[_transferSummary[i].tokenAddr] != _transferSummary[i].amount) {
         revert TransferAmmountMismatch();
-      SafeERC20.safeTransferFrom(token, msg.sender, address(this), _transferSummary[j].amount);
+      }
 
+      SafeERC20.safeTransferFrom(_token, msg.sender, address(this), _transferSummary[i].amount);
       unchecked {
-        j++;
+        i++;
       }
     }
     _batchSendTokens(_tollCommitment, _params, _transferSummary);
@@ -91,8 +92,8 @@ contract UmbraBatchSend is Ownable {
   }
 
   function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
-    uint256 length = _params.length;
-    for (uint256 i = 0; i < length; ) {
+    uint256 _length = _params.length;
+    for (uint256 i = 0; i < _length; ) {
       umbra.sendEth{value: _params[i].amount + _tollCommitment}(
         _params[i].receiver,
         _tollCommitment,
@@ -110,8 +111,8 @@ contract UmbraBatchSend is Ownable {
     SendToken[] calldata _params,
     TransferSummary[] calldata _transferSummary
   ) internal {
-    uint256 length = _params.length;
-    for (uint256 i = 0; i < length; ) {
+    uint256 _length = _params.length;
+    for (uint256 i = 0; i < _length; ) {
       umbra.sendToken{value: _tollCommitment}(
         _params[i].receiver,
         _params[i].tokenAddr,
@@ -124,14 +125,11 @@ contract UmbraBatchSend is Ownable {
       }
     }
 
-    uint256 summaryLength = _transferSummary.length;
-    for (uint256 j = 0; j < summaryLength; ) {
-      IERC20 token = IERC20(address(_transferSummary[j].tokenAddr));
-
-      TotalTransferAmountPerToken[_transferSummary[j].tokenAddr] = 0;
-
+    uint256 _summaryLength = _transferSummary.length;
+    for (uint256 i = 0; i < _summaryLength; ) {
+      totalTransferAmountPerToken[_transferSummary[i].tokenAddr] = 0;
       unchecked {
-        j++;
+        i++;
       }
     }
   }
@@ -141,8 +139,8 @@ contract UmbraBatchSend is Ownable {
     pure
     returns (uint256 valueSentAccumulator)
   {
-    uint256 length = _params.length;
-    for (uint256 i = 0; i < length; ) {
+    uint256 _length = _params.length;
+    for (uint256 i = 0; i < _length; ) {
       //amount to be sent per receiver
       valueSentAccumulator = valueSentAccumulator + _params[i].amount + _tollCommitment;
       unchecked {

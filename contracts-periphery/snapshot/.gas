@@ -1,170 +1,8 @@
-Compiling 3 files with 0.8.13
-Solc 0.8.13 finished in 3.00s
-Compiler run successful
-
-Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollGasTest
-[32m[PASS][0m testPostSetupState() (gas: 11857)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
-[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
-[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
-[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
-[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
-[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
-[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17291523)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1812338)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 264827)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4391745)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 436730)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 952554)
-[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17294039)
-[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1814815)
-[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 267280)
-[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4394200)
-[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 439162)
-[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 955008)
-[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 30870833)
-[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3198529)
-[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 432060)
-[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7809540)
-[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 739478)
-[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1661584)
-[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 30870859)
-[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3198533)
-[32m[PASS][0m test_BatchSend_To1Addr() (gas: 30870905)
-[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7809567)
-[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 739525)
-[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1661611)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 77.82ms
-
-Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollAndWithTokenBalanceGasTest
-[32m[PASS][0m testPostSetupState() (gas: 11857)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
-[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
-[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
-[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
-[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
-[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
-[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17274423)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1795238)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 247727)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4374645)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 419630)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 935454)
-[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17276939)
-[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1797715)
-[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 250180)
-[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4377100)
-[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 422062)
-[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 937908)
-[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 30853733)
-[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3181429)
-[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 414960)
-[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7792440)
-[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 722378)
-[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1644484)
-[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 30853759)
-[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3181433)
-[32m[PASS][0m test_BatchSend_To1Addr() (gas: 30853805)
-[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7792467)
-[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 722425)
-[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1644511)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 82.18ms
-
-Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollAndWithTokenBalanceGasTest
-[32m[PASS][0m testPostSetupState() (gas: 11857)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
-[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
-[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
-[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
-[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
-[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
-[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17951123)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1868938)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 261127)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4548845)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 439730)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 975654)
-[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17953639)
-[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1871415)
-[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 263580)
-[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4551300)
-[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 442162)
-[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 978108)
-[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 31523733)
-[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3248429)
-[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 421660)
-[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7959940)
-[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 735778)
-[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1677984)
-[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 31523759)
-[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3248433)
-[32m[PASS][0m test_BatchSend_To1Addr() (gas: 31523805)
-[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7959967)
-[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 735825)
-[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1678011)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 83.67ms
-
-Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollGasTest
-[32m[PASS][0m testPostSetupState() (gas: 11857)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
-[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
-[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
-[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
-[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
-[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
-[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17968223)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1886038)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 278227)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4565945)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 456830)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 992754)
-[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17970739)
-[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1888515)
-[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 280680)
-[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4568400)
-[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 459262)
-[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 995208)
-[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 31540833)
-[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3265529)
-[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 438760)
-[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7977040)
-[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 752878)
-[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1695084)
-[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 31540859)
-[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3265533)
-[32m[PASS][0m test_BatchSend_To1Addr() (gas: 31540905)
-[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7977067)
-[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 752925)
-[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1695111)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 83.66ms
+No files changed, compilation skipped
 
 Running 6 tests for test/gas/UniswapWithdrawHook.fork.1.gas.t.sol:UniswapWithdrawHookGasTest
-[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCall(uint256,uint256,uint256,uint256) (runs: 256, μ: 2974539, ~: 2957425)
-[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCallOnBehalf(uint256,uint256,uint256,uint256) (runs: 256, μ: 3099519, ~: 3083588)
+[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCall(uint256,uint256,uint256,uint256) (runs: 256, μ: 2968799, ~: 2953628)
+[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCallOnBehalf(uint256,uint256,uint256,uint256) (runs: 256, μ: 3095583, ~: 3076081)
 [32m[PASS][0m test_SwapAllForEth_withdrawTokenAndCall() (gas: 399175)
 Logs:
   Bound Result: 10000000100000000000
@@ -193,7 +31,167 @@ Logs:
   Bound Result: 2
   Bound Result: 2
 
-Test result: [32mok[0m. 6 passed; 0 failed; finished in 5.48s
+Test result: [32mok[0m. 6 passed; 0 failed; finished in 21.52s
+
+Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollAndWithTokenBalanceGasTest
+[32m[PASS][0m testPostSetupState() (gas: 11857)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
+[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
+[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
+[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
+[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
+[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
+[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17569632)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1899428)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 332701)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4510816)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 506739)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 1028972)
+[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17572148)
+[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1901905)
+[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 335154)
+[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4513271)
+[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 509171)
+[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 1031426)
+[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 31143518)
+[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3280177)
+[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 494490)
+[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7923172)
+[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 804045)
+[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1732560)
+[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 31143544)
+[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3280181)
+[32m[PASS][0m test_BatchSend_To1Addr() (gas: 31143590)
+[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7923199)
+[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 804092)
+[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1732587)
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 22.19s
+
+Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollAndWithTokenBalanceGasTest
+[32m[PASS][0m testPostSetupState() (gas: 11857)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
+[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
+[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
+[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
+[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
+[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
+[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 16892932)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1825728)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 319301)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4336616)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 486639)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 988772)
+[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 16895448)
+[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1828205)
+[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 321754)
+[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4339071)
+[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 489071)
+[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 991226)
+[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 30473518)
+[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3213177)
+[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 487790)
+[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7755672)
+[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 790645)
+[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1699060)
+[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 30473544)
+[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3213181)
+[32m[PASS][0m test_BatchSend_To1Addr() (gas: 30473590)
+[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7755699)
+[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 790692)
+[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1699087)
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 22.19s
+
+Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollGasTest
+[32m[PASS][0m testPostSetupState() (gas: 11857)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
+[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
+[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
+[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
+[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
+[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
+[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17586732)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1916528)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 349801)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4527916)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 523839)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 1046072)
+[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17589248)
+[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1919005)
+[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 352254)
+[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4530371)
+[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 526271)
+[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 1048526)
+[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 31160618)
+[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3297277)
+[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 511590)
+[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7940272)
+[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 821145)
+[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1749660)
+[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 31160644)
+[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3297281)
+[32m[PASS][0m test_BatchSend_To1Addr() (gas: 31160690)
+[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7940299)
+[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 821192)
+[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1749687)
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 22.19s
+
+Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollGasTest
+[32m[PASS][0m testPostSetupState() (gas: 11857)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
+[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
+[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
+[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
+[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
+[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
+[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 16910032)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1842828)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 336401)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4353716)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 503739)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 1005872)
+[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 16912548)
+[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1845305)
+[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 338854)
+[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4356171)
+[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 506171)
+[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 1008326)
+[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 30490618)
+[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3230277)
+[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 504890)
+[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7772772)
+[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 807745)
+[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1716160)
+[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 30490644)
+[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3230281)
+[32m[PASS][0m test_BatchSend_To1Addr() (gas: 30490690)
+[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7772799)
+[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 807792)
+[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1716187)
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 22.19s
 ╭───────────────────────────────────────────────────────────────────┬─────────────────┬───────┬────────┬───────┬─────────╮
 │ lib/solmate/src/test/utils/mocks/MockERC20.sol:MockERC20 contract ┆                 ┆       ┆        ┆       ┆         │
 ╞═══════════════════════════════════════════════════════════════════╪═════════════════╪═══════╪════════╪═══════╪═════════╡
@@ -209,26 +207,26 @@ Test result: [32mok[0m. 6 passed; 0 failed; finished in 5.48s
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
 │ balanceOf                                                         ┆ 542             ┆ 542   ┆ 542    ┆ 542   ┆ 148     │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ mint                                                              ┆ 24791           ┆ 39583 ┆ 46691  ┆ 46691 ┆ 228     │
+│ mint                                                              ┆ 24791           ┆ 42448 ┆ 46691  ┆ 46691 ┆ 382     │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ transferFrom                                                      ┆ 2699            ┆ 13321 ┆ 21819  ┆ 32073 ┆ 5368    │
+│ transferFrom                                                      ┆ 2699            ┆ 4774  ┆ 3373   ┆ 32073 ┆ 2780    │
 ╰───────────────────────────────────────────────────────────────────┴─────────────────┴───────┴────────┴───────┴─────────╯
 ╭────────────────────────────────────────────────┬─────────────────┬─────────┬────────┬─────────┬─────────╮
 │ src/UmbraBatchSend.sol:UmbraBatchSend contract ┆                 ┆         ┆        ┆         ┆         │
 ╞════════════════════════════════════════════════╪═════════════════╪═════════╪════════╪═════════╪═════════╡
 │ Deployment Cost                                ┆ Deployment Size ┆         ┆        ┆         ┆         │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ 746134                                         ┆ 3881            ┆         ┆        ┆         ┆         │
+│ 880871                                         ┆ 4554            ┆         ┆        ┆         ┆         │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
 │ Function Name                                  ┆ min             ┆ avg     ┆ median ┆ max     ┆ # calls │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ approveToken                                   ┆ 27737           ┆ 27737   ┆ 27737  ┆ 27737   ┆ 148     │
+│ approveToken                                   ┆ 27748           ┆ 27748   ┆ 27748  ┆ 27748   ┆ 148     │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ batchSend                                      ┆ 102253          ┆ 2773604 ┆ 885802 ┆ 8925388 ┆ 48      │
+│ batchSend                                      ┆ 121844          ┆ 2637844 ┆ 850168 ┆ 8477748 ┆ 48      │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
 │ batchSendEth                                   ┆ 51742           ┆ 1088443 ┆ 346861 ┆ 4546639 ┆ 48      │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ batchSendTokens                                ┆ 64820           ┆ 1169956 ┆ 379478 ┆ 5099651 ┆ 48      │
+│ batchSendTokens                                ┆ 84100           ┆ 890580  ┆ 297225 ┆ 3935670 ┆ 48      │
 ╰────────────────────────────────────────────────┴─────────────────┴─────────┴────────┴─────────┴─────────╯
 ╭──────────────────────────────────────────────────────────┬─────────────────┬────────┬────────┬────────┬─────────╮
 │ src/UniswapWithdrawHook.sol:UniswapWithdrawHook contract ┆                 ┆        ┆        ┆        ┆         │
