@@ -72,7 +72,17 @@
       />
 
       <!-- Amount -->
-      <div>{{ $t('Send.amount') }}</div>
+	  <div class="flex justify-between items-center">
+		{{ $t('Send.amount') }} 
+		<base-button 
+		  class="cursor-pointer"
+		  color="primary"
+		  label="Max"
+		  :outline="true"
+		  :rounded="true"
+		  @click="setHumanAmountMax"
+		/>
+	  </div>
       <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
 
       <!-- Toll + summary details -->
@@ -398,6 +408,10 @@ function useSendForm() {
     sendFormRef.value?.resetValidation();
   }
 
+  function setHumanAmountMax() {
+    console.log("ahoy hoy")
+  }
+
   return {
     advancedMode,
     chainId,
@@ -414,6 +428,7 @@ function useSendForm() {
     onFormSubmit,
     recipientId,
     sendFormRef,
+	setHumanAmountMax,
     token,
     tokenList,
     toll,
