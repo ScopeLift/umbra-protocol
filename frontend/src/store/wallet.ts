@@ -83,14 +83,14 @@ export default function useWalletStore() {
           wallet: (wallet) => {
             setProvider(wallet.provider);
           },
-          address: async (address) => {
+          address: (address) => {
             if (address && userAddress.value && userAddress.value !== getAddress(address)) {
-              await configureProvider();
+              window.location.reload();
             }
           },
-          network: async (newChainId) => {
+          network: (newChainId) => {
             if (chainId.value && chainId.value !== newChainId) {
-              await configureProvider();
+              window.location.reload();
             }
           },
         },
