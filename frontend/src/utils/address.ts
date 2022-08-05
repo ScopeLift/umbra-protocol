@@ -151,8 +151,8 @@ const hasPOAPs = async (address: string) => {
     const poaps = await jsonFetch(`https://api.poap.xyz/actions/scan/${address}`);
     return poaps.length > 0 ? true : false;
   } catch (err) {
-    console.warn('Error in hasPOAPs');
-    console.warn(err);
+    window.logger.warn('Error in hasPOAPs');
+    window.logger.warn(err);
     return false;
   }
 };
