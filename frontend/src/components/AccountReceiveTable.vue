@@ -510,12 +510,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @param announcement Announcement to withdraw
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
-    // Check if withdrawal destination is safe
     if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
     if (!userAddress.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+
     activeAnnouncement.value = announcement;
 
     try {
+      // Check if withdrawal destination is safe
       const { safe, reasons } = await isAddressSafe(
         destinationAddress.value,
         userAddress.value,
