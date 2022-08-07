@@ -72,15 +72,15 @@
       />
 
       <!-- Amount -->
-	  <div class="flex justify-between items-center">
-		{{ $t('Send.amount') }} 
-		<base-button 
-		  v-if="recipientId"
-		  class="cursor-pointer"
-		  color="primary"
-		  label="Max"
-		  :outline="true"
-		  :rounded="true"
+      <div class="flex justify-between items-center">
+        {{ $t('Send.amount') }} 
+        <base-button 
+          v-if="recipientId"
+          class="cursor-pointer"
+          color="primary"
+          label="Max"
+          :outline="true"
+          :rounded="true"
           @click="setHumanAmountMax"
         />
       </div>
@@ -439,7 +439,7 @@ function useSendForm() {
     onFormSubmit,
     recipientId,
     sendFormRef,
-	setHumanAmountMax,
+    setHumanAmountMax,
     token,
     tokenList,
     toll,
