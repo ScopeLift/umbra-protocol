@@ -71,6 +71,7 @@
     "total": "总额",
     "copy-payment-link": "复制付款链接",
     "enter-an-amount": "请输入金额",
+    "enter-a-recipient": "請輸入收件者",
     "select-a-token": "请选择代币",
     "send-at-least": "请最少发送",
     "amount-exceeds-balance": "钱包金额不足",

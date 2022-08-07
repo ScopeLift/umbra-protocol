@@ -71,6 +71,7 @@
     "total": "Total",
     "copy-payment-link": "Copy payment link",
     "enter-an-amount": "Please enter an amount",
+    "enter-a-recipient": "Please enter a recipient",
     "select-a-token": "Please select a token",
     "send-at-least": "Please send at least",
     "amount-exceeds-balance": "Amount exceeds wallet balance",
