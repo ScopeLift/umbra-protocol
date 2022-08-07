@@ -81,9 +81,9 @@
 		  label="Max"
 		  :outline="true"
 		  :rounded="true"
-		  @click="setHumanAmountMax"
-		/>
-	  </div>
+          @click="setHumanAmountMax"
+        />
+      </div>
       <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
 
       <!-- Toll + summary details -->
@@ -410,17 +410,17 @@ function useSendForm() {
   }
 
   async function setHumanAmountMax() {
-	if (!token.value?.address)  throw new Error(vm.$i18n.tc('Send.select-a-token'))
-	if (NATIVE_TOKEN.value?.address === token.value?.address) {
-		const address = await signer.value?.getAddress()
-		if (!address || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'))
-		if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'))
-		const {ethToSend} = await umbraUtils.getEthSweepGasInfo(address || "", recipientId.value, provider.value)
-		humanAmount.value = formatUnits(ethToSend.toString(), token.value.decimals)
-		return ethToSend
-	}
-	const tokenBalance = balances.value[token.value.address]
-	return formatUnits(tokenBalance.toString(), token.value.decimals)
+    if (!token.value?.address)  throw new Error(vm.$i18n.tc('Send.select-a-token'))
+    if (NATIVE_TOKEN.value?.address === token.value?.address) {
+        const address = await signer.value?.getAddress()
+        if (!address || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'))
+        if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'))
+        const {ethToSend} = await umbraUtils.getEthSweepGasInfo(address || "", recipientId.value, provider.value)
+        humanAmount.value = formatUnits(ethToSend.toString(), token.value.decimals)
+        return ethToSend
+    }
+    const tokenBalance = balances.value[token.value.address]
+    return formatUnits(tokenBalance.toString(), token.value.decimals)
   }
 
   return {
