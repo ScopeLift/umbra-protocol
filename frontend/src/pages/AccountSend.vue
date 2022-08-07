@@ -178,7 +178,7 @@ import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
 import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero } from 'src/utils/ethers';
-import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
+import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult,  } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
@@ -408,8 +408,44 @@ function useSendForm() {
     sendFormRef.value?.resetValidation();
   }
 
-  function setHumanAmountMax() {
+  /* Will require send addres */
+  /* If ethereuem show if send address */
+  async function setHumanAmountMax() {
     console.log("ahoy hoy")
+	console.log(token.value)
+	console.log(NATIVE_TOKEN.value)
+	if (NATIVE_TOKEN.value?.address === token.value?.address) {
+		console.log("In native function")
+		/* Make sure there is an address or else raise an error*/
+		const address = await signer.value?.getAddress()
+		if (!token.value) {
+		  console.error("Missing Token")
+		  return
+		}
+		if (!address) {
+		  console.error("Missing Address")
+		  return
+		}
+		if (!recipientId.value) {
+		  console.error("Missing recipient")
+		  return
+		}
+		if (!provider.value) {
+		  console.error("Missing provider")
+		  return
+		}
+		/* Does this work for matic and other non-eth native tokens */
+		const {ethToSend} = await umbraUtils.getEthSweepGasInfo(address || "", recipientId.value, provider.value)
+		humanAmount.value = formatUnits(ethToSend.toString(), token.value.decimals)
+		return ethToSend
+	}
+	if (!token.value?.address) {
+	  console.error("Missing token")
+	  return
+	}
+	console.log(balances.value[token.value.address])
+	const tokenBalance = balances.value[token.value.address]
+	return formatUnits(tokenBalance.toString(), token.value.decimals)
   }
 
   return {
