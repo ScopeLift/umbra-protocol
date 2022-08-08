@@ -9,6 +9,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { configure } = require('quasar/wrappers');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const path = require('path');
 
 module.exports = configure(function (ctx) {
   return {
@@ -66,12 +67,22 @@ module.exports = configure(function (ctx) {
 
       // Options below are automatically set depending on the env, set them if you want to override
       // extractCSS: false,
-      extendWebpack(cfg) {
-        cfg.module.rules.push({
-          resourceQuery: /blockType=i18n/,
-          type: 'javascript/auto',
-          use: [{ loader: '@kazupon/vue-i18n-loader' }, { loader: 'yaml-loader' }],
-        });
+
+      chainWebpack: (chain) => {
+        chain.module
+          .rule('i18n-resource')
+          .test(/\.(json5?|ya?ml)$/)
+          .include.add(path.resolve(__dirname, './src/i18n'))
+          .end()
+          .type('javascript/auto')
+          .use('i18n-resource')
+          .loader('@intlify/vue-i18n-loader');
+        chain.module
+          .rule('i18n')
+          .resourceQuery(/blockType=i18n/)
+          .type('javascript/auto')
+          .use('i18n')
+          .loader('@intlify/vue-i18n-loader');
       },
 
       chainWebpack(chain) {
