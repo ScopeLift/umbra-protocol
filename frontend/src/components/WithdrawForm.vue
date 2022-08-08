@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from 'vue';
 import { FeeEstimateResponse } from './models';
 import { formatUnits } from 'src/utils/ethers';
 import { humanizeTokenAmount } from 'src/utils/utils';

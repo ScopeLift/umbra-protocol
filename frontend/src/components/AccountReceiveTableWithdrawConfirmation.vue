@@ -115,7 +115,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
 import { utils as umbraUtils, UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatAddress, toAddress } from 'src/utils/address';

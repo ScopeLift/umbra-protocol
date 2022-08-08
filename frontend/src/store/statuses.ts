@@ -3,7 +3,7 @@
  * components to avoid a clunk and complex setup using props. Right now this store is only used
  * for determining whether the "Withdraw" input/button in WithdrawForm.vue button should be disabled
  */
-import { computed, ref } from '@vue/composition-api';
+import { computed, ref } from 'vue';
 
 const isInWithdrawFlow = ref(false);
 

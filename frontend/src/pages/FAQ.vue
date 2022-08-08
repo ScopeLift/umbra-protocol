@@ -550,7 +550,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, SetupContext } from '@vue/composition-api';
+import { defineComponent, onMounted, ref, SetupContext } from 'vue';
 import FAQItem from 'components/FAQItem.vue';
 import { copyToClipboard, scroll } from 'quasar';
 import { notifyUser } from 'src/utils/alerts';
@@ -559,7 +559,6 @@ import { getEtherscanUrl } from 'src/utils/utils';
 function useScrollToElement(context: SetupContext) {
   const { getScrollTarget, setScrollPosition } = scroll;
   const selectedId = ref('');
-
   // Hepler methods
   const getElementIdFromUrl = () => context.root.$router.currentRoute.hash.slice(1); // .slice(1) to remove '#'
 

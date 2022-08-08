@@ -241,7 +241,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from '@vue/composition-api';
+import { computed, defineComponent, ref } from 'vue';
 import ArgentWarningModal from 'components/ArgentWarningModal.vue';
 import BaseButton from 'src/components/BaseButton.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';

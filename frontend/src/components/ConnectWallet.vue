@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, SetupContext } from '@vue/composition-api';
+import { defineComponent, SetupContext } from 'vue';
 import useWalletStore from 'src/store/wallet';
 
 function useWallet(context: SetupContext, to: string) {

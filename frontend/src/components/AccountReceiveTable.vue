@@ -323,7 +323,7 @@
 </template>
 
 <script lang="ts">
-import { computed, getCurrentInstance, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
+import { computed, getCurrentInstance, defineComponent, onMounted, PropType, ref } from 'vue';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';

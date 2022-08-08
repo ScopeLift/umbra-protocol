@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent } from 'vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 
 export default defineComponent({

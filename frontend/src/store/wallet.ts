@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, onMounted, ref, watch } from 'vue';
 import Onboard from 'bnc-onboard';
 import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
 import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';

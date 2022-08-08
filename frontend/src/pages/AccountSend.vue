@@ -156,7 +156,7 @@
 
 <script lang="ts">
 // --- External imports ---
-import { computed, defineComponent, getCurrentInstance, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, defineComponent, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import { QForm, QInput } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
