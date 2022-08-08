@@ -49,6 +49,7 @@
     "eslint-plugin-vue": "^7.0.0",
     "eslint-webpack-plugin": "^2.4.0",
     "jest": "^27.5.1",
+    "node-polyfill-webpack-plugin": "^2.0.1",
     "postinstall-postinstall": "^2.1.0",
     "quasar-app-extension-system-environment-variables": "^2.0.4",
     "ts-jest": "^27.1.3",
