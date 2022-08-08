@@ -1,8 +1,7 @@
 <template>
-  <div id="q-app">
-    <router-view />
-  </div>
+  <router-view />
 </template>
+
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
 
