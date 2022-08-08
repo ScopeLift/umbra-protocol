@@ -7,7 +7,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:vue/essential',
+    'plugin:vue/vue3-essential',
     'prettier',
     'prettier/@typescript-eslint',
     'prettier/vue',
