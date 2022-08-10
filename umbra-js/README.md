@@ -67,7 +67,7 @@ The corresponding FAQ question can be found [here](https://app.umbra.cash/faq#wh
 
 If you’re familiar with [ERC-777](https://eips.ethereum.org/EIPS/eip-777) or other similar standards, you are already familiar with the concept of hooks. Hooks let the caller perform other actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that contract.
 
-Umbra works simiarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into Tornado, or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.umbra.cash/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `Umbra.sol` for more information on hwo to use hooks.
+Umbra works simiarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into a DeFi protocol or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.umbra.cash/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `Umbra.sol` for more information on hwo to use hooks.
 
 ## Usage Example
 

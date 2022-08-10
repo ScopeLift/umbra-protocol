@@ -26,11 +26,8 @@
 Umbra is a protocol for stealth payments on EVM blockchain networks. It enables privacy preserving transactions where **the receiver's identity is only known to the sender and receiver**.
 
 <div align="center">
-	<img width="400" src="readme/stealth-addrs.png" alt="Umbra Logo">
 	<br />
-	<sub><sup>
-		Image via <a href="https://hackernoon.com/blockchain-privacy-enhancing-technology-series-stealth-address-i-c8a3eb4e4e43">@IoTeX hackernoon</a>.
-	</sub></sup>
+	<img width="650" src="readme/umbra-diagram.png" alt="Diagram showing how Umbra provides privacy.">
 </div>
 
 ### FAQ
@@ -78,13 +75,9 @@ In practice this isn’t necessarily the case, and an observer may be able to na
 1. Most users will use ENS names to send funds, so the recipient most likely has published keys under an ENS name
 2. Poor hygiene when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy properties provided by Umbra. See [Which addresses are safe for withdrawing funds?](https://app.umbra.cash/faq#what-addresses-are-safe-for-withdrawing-funds-to) for more details. Always use caution when withdrawing!
 
-#### How does Umbra compare to Tornado Cash and Aztec?
+#### Is Umbra a mixer?
 
-Tornado Cash is an on chain mixer that uses zero knowledge proofs. You deposit funds and receive a secret note, wait a while for other people to do the same, then use your note to prove you own some of the deposited funds and withdraw them to another address. Since everyone’s funds are pooled in the mixer, the link between the deposit address and withdrawal address is broken.
-
-Aztec is a privacy-focused Layer 2 solution, that also uses zero knowledge proofs. You deposit funds from Layer 1 (mainnet) into Aztec, and your funds effectively become "wrapped" in a private version. Regular transfers become private by default, meaning no one knows who you sent funds to, or how much you paid them. Balances are often private, so no one can see how much money you’re holding.
-
-Umbra is different than both of these and does not use zero knowledge proofs. Instead, Umbra is based on ordinary elliptic curve cryptography. It’s meant for payments between two entities, and comes with a different set of privacy tradeoffs. Rather than breaking the link between sending and receiving address, like Tornado does, Umbra makes that link meaningless. Everyone can see who sent the funds, and everyone can see the address funds were sent to, but that receiving address has never been seen on-chain so it’s impossible for any outside observers to know who controls it.
+No. Umbra is not a mixer and does not use zero knowledge proofs. Instead, Umbra is based on ordinary elliptic curve cryptography. It’s meant for payments between two entities, and comes with a different set of privacy tradeoffs. Rather than breaking the link between sending and receiving address, like a mixer, Umbra makes that link meaningless. Everyone can see who sent the funds, and everyone can see the address funds were sent to, but that receiving address has never been seen on-chain so it’s impossible for any outside observers to know who controls it.
 
 #### Where can I learn more?
 
@@ -144,4 +137,4 @@ Contributions to Umbra are welcome! Fork the project, create a new branch from m
 
 Umbra is available under the [MIT](LICENSE.txt) license.
 
-Copyright (c) 2021 ScopeLift
+Copyright (c) 2022 ScopeLift
