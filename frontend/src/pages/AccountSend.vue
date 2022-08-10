@@ -75,7 +75,7 @@
       <div class="flex justify-between items-center">
         {{ $t('Send.amount') }} 
         <base-button 
-          v-if="recipientId"
+          v-if="recipientId && isValidRecipientId"
           class="cursor-pointer"
           color="primary"
           label="Max"
@@ -420,7 +420,9 @@ function useSendForm() {
         return ethToSend
     }
     const tokenBalance = balances.value[token.value.address]
-    return formatUnits(tokenBalance.toString(), token.value.decimals)
+    humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals)
+    return tokenBalance.toString()
+
   }
 
   return {
