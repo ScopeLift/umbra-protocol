@@ -153,8 +153,8 @@
           <!-- Advanced mode toggle -->
           <p>
             <q-toggle
-              @input="toggleAdvancedMode"
-              :value="advancedMode"
+              @update:model-value="toggleAdvancedMode"
+              :model-value="advancedMode"
               class="icon"
               color="primary"
               dense
