@@ -72,19 +72,19 @@
       />
 
       <!-- Amount -->
-      <div class="flex justify-between items-center">
-        {{ $t('Send.amount') }} 
-        <base-button 
-          v-if="recipientId && isValidRecipientId"
-          class="cursor-pointer"
-          color="primary"
-          label="Max"
-          :outline="true"
-          :rounded="true"
-          @click="setHumanAmountMax"
-        />
+      <div>
+        {{ $t('Send.amount') }}
       </div>
-      <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
+      <base-input
+        v-model="humanAmount"
+        :disable="isSending"
+        placeholder="0"
+        :appendButtonDisable="!recipientId || !isValidRecipientId"
+        :appendButtonLabel="$t('Send.max')"
+        @click="setHumanAmountMax"
+        lazy-rules
+        :rules="isValidTokenAmount"
+      />
 
       <!-- Toll + summary details -->
       <div v-if="toll && toll.gt(0) && humanAmount && token">
@@ -179,7 +179,7 @@ import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
 import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero } from 'src/utils/ethers';
-import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult,  } from 'src/utils/utils';
+import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
@@ -410,19 +410,18 @@ function useSendForm() {
   }
 
   async function setHumanAmountMax() {
-    if (!token.value?.address)  throw new Error(vm.$i18n.tc('Send.select-a-token'))
+    if (!token.value?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
     if (NATIVE_TOKEN.value?.address === token.value?.address) {
-        const address = await signer.value?.getAddress()
-        if (!address || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'))
-        if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'))
-        const {ethToSend} = await umbraUtils.getEthSweepGasInfo(address || "", recipientId.value, provider.value)
-        humanAmount.value = formatUnits(ethToSend.toString(), token.value.decimals)
-        return ethToSend
+      const address = userAddress.value;
+      if (!address || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
+      if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
+      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(address || '', recipientId.value, provider.value);
+      humanAmount.value = humanizeTokenAmount(ethToSend, token.value);
+      return ethToSend;
     }
-    const tokenBalance = balances.value[token.value.address]
-    humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals)
-    return tokenBalance.toString()
-
+    const tokenBalance = balances.value[token.value.address];
+    humanAmount.value = humanizeTokenAmount(tokenBalance, token.value);
+    return tokenBalance.toString();
   }
 
   return {

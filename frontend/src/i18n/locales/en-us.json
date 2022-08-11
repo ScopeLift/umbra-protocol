@@ -69,6 +69,7 @@
     "fee": "Umbra Fee",
     "fee-explain": "Transactions on %{chainName} are very cheap, so a small fee is charged to deter spamming the protocol.",
     "total": "Total",
+    "max": "Max",
     "copy-payment-link": "Copy payment link",
     "enter-an-amount": "Please enter an amount",
     "enter-a-recipient": "Please enter a recipient",
