@@ -326,7 +326,7 @@
 import { computed, getCurrentInstance, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
-import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
+import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useStatusesStore from 'src/store/statuses';
 import useWalletStore from 'src/store/wallet';
@@ -565,6 +565,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     const stealthKeyPair = spendingKeyPair.mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
     const acceptor = await toAddress(destinationAddress.value, provider.value);
+    await utils.assertSupportedAddress(acceptor);
 
     // Send transaction
     try {
