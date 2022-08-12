@@ -413,16 +413,16 @@ function useSendForm() {
   async function setHumanAmountMax() {
     if (!token.value?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
     if (NATIVE_TOKEN.value?.address === token.value?.address) {
-      const address = await toAddress(userAddress.value, provider.value);
+      const address = await toAddress(userAddress.value!, provider.value!);
 
       if (!address || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
       if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
       const { ethToSend } = await umbraUtils.getEthSweepGasInfo(address, recipientId.value, provider.value);
-      humanAmount.value = humanizeTokenAmount(ethToSend, token.value);
+      humanAmount.value = formatUnits(ethToSend, token.value.decimals);
       return ethToSend;
     }
     const tokenBalance = balances.value[token.value.address];
-    humanAmount.value = humanizeTokenAmount(tokenBalance, token.value);
+    humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals);
     return tokenBalance.toString();
   }
 
