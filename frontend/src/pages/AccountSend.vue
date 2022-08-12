@@ -183,6 +183,7 @@ import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } 
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
+import { toAddress } from 'src/utils/address';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -412,10 +413,11 @@ function useSendForm() {
   async function setHumanAmountMax() {
     if (!token.value?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
     if (NATIVE_TOKEN.value?.address === token.value?.address) {
-      const address = userAddress.value;
+      const address = await toAddress(userAddress.value, provider.value);
+
       if (!address || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
       if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
-      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(address || '', recipientId.value, provider.value);
+      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(address, recipientId.value, provider.value);
       humanAmount.value = humanizeTokenAmount(ethToSend, token.value);
       return ethToSend;
     }
