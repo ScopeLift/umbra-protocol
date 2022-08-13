@@ -25,7 +25,7 @@ import {
 } from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient } from '../utils/utils';
+import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
@@ -165,7 +165,7 @@ export class Umbra {
     recipientId: string,
     overrides: SendOverrides = {}
   ) {
-    // Configure signer
+    await assertSupportedAddress(recipientId);
     const txSigner = this.getConnectedSigner(signer); // signer input validated
 
     // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
@@ -248,6 +248,7 @@ export class Umbra {
     // Address input validations
     // token === 'ETH' is valid so we don't verify that, and let ethers verify it during the function call
     destination = getAddress(destination);
+    await assertSupportedAddress(destination);
 
     // Configure signer
     const stealthWallet = new Wallet(spendingPrivateKey); // validates spendingPrivateKey input
@@ -303,6 +304,7 @@ export class Umbra {
     destination = getAddress(destination);
     token = getAddress(token);
     sponsor = getAddress(sponsor);
+    await assertSupportedAddress(destination);
 
     // Send withdraw transaction
     const txSigner = this.getConnectedSigner(signer);

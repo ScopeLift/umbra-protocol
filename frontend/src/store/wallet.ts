@@ -207,6 +207,7 @@ export default function useWalletStore() {
         provider.value.getNetwork(), // get information on the connected network
         UmbraApi.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
       ]);
+      await utils.assertSupportedAddress(_userAddress);
 
       // If nothing has changed, no need to continue configuring.
       if (_userAddress === userAddress.value && _network.chainId === chainId.value) {

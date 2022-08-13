@@ -380,12 +380,12 @@ describe('Umbra class', () => {
     it('throws when isEth is passed a bad address', async () => {
       // These error messages come from ethers
       await expectRejection(
-        umbra.send(sender, '123', '1', '1'), // last two args are dummy args since we're testing the second input
+        umbra.send(sender, '123', '1', ETH_ADDRESS),
         'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
       await expectRejection(
         // @ts-expect-error
-        umbra.send(sender, 123, '1', '1'), // last two args are dummy args since we're testing the second input
+        umbra.send(sender, 123, '1', ETH_ADDRESS),
         'invalid address (argument="address", value=123, code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
     });

@@ -326,7 +326,7 @@
 import { computed, getCurrentInstance, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
-import { Umbra, UserAnnouncement, KeyPair } from '@umbra/umbra-js';
+import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
 import useStatusesStore from 'src/store/statuses';
 import useWalletStore from 'src/store/wallet';
@@ -510,22 +510,30 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @param announcement Announcement to withdraw
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
-    // Check if withdrawal destination is safe
     if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
     if (!userAddress.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
-    activeAnnouncement.value = announcement;
-    const { safe, reasons } = await isAddressSafe(
-      destinationAddress.value,
-      userAddress.value,
-      announcement.receiver,
-      provider.value
-    );
 
-    if (safe) {
-      showConfirmationModal.value = true;
-    } else {
-      showPrivacyModal.value = true;
-      privacyModalAddressWarnings.value = reasons;
+    activeAnnouncement.value = announcement;
+
+    try {
+      // Check if withdrawal destination is safe
+      const { safe, reasons } = await isAddressSafe(
+        destinationAddress.value,
+        userAddress.value,
+        announcement.receiver,
+        provider.value
+      );
+
+      if (safe) {
+        showConfirmationModal.value = true;
+      } else {
+        showPrivacyModal.value = true;
+        privacyModalAddressWarnings.value = reasons;
+      }
+    } catch (err: any) {
+      setIsInWithdrawFlow(false);
+      console.warn(err);
+      throw new Error(err);
     }
   }
 
@@ -557,6 +565,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     const stealthKeyPair = spendingKeyPair.mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
     const acceptor = await toAddress(destinationAddress.value, provider.value);
+    await utils.assertSupportedAddress(acceptor);
 
     // Send transaction
     try {

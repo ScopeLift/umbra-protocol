@@ -83,8 +83,8 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { QForm } from 'quasar';
-import { UserAnnouncement, KeyPair, AnnouncementDetail } from '@umbra/umbra-js';
-import { BigNumber, isHexString } from 'src/utils/ethers';
+import { UserAnnouncement, KeyPair, AnnouncementDetail, utils } from '@umbra/umbra-js';
+import { BigNumber, computeAddress, isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
 import useWallet from 'src/store/wallet';
 import { filterUserAnnouncements } from 'src/worker/worker';
@@ -112,7 +112,7 @@ function useScan() {
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
   const needsSignature = computed(() => !hasKeys.value && !scanPrivateKeyLocal.value);
-  const settingsFormRef = ref<QForm>(); // for programtically verifying settings form
+  const settingsFormRef = ref<QForm>(); // for programmatically verifying settings form
 
   // Form validators and configurations
   const badPrivKeyMsg = 'Please enter a valid private key';
@@ -163,7 +163,10 @@ function useScan() {
     }
 
     // Save off the scanPrivateKeyLocal to memory if it exists, then scan
-    if (scanPrivateKeyLocal.value) setScanPrivateKey(scanPrivateKeyLocal.value);
+    if (scanPrivateKeyLocal.value) {
+      await utils.assertSupportedAddress(computeAddress(scanPrivateKeyLocal.value));
+      setScanPrivateKey(scanPrivateKeyLocal.value);
+    }
     await scan();
   }
 
