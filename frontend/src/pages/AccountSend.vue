@@ -412,16 +412,17 @@ function useSendForm() {
 
   async function setHumanAmountMax() {
     if (!token.value?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
-    if (NATIVE_TOKEN.value?.address === token.value?.address) {
-      const fromAddress = userAddress.value!;
-      const recipientAddress = await toAddress(recipientId.value, provider.value!);
+    if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
 
-      if (!fromAddress || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
-      if (!recipientAddress) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
+    if (NATIVE_TOKEN.value?.address === token.value?.address) {
+      if (!userAddress.value || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
+      const fromAddress = userAddress.value;
+      const recipientAddress = await toAddress(recipientId.value, provider.value);
       const { ethToSend } = await umbraUtils.getEthSweepGasInfo(fromAddress, recipientAddress, provider.value);
       humanAmount.value = formatUnits(ethToSend, token.value.decimals);
       return ethToSend;
     }
+
     const tokenBalance = balances.value[token.value.address];
     humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals);
     return tokenBalance.toString();
