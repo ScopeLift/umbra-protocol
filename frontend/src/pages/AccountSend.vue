@@ -414,7 +414,7 @@ function useSendForm() {
     if (!token.value?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
     if (NATIVE_TOKEN.value?.address === token.value?.address) {
       const fromAddress = userAddress.value!;
-      const recipientAddress = await toAddress(fromAddress, provider.value!);
+      const recipientAddress = await toAddress(recipientId.value, provider.value!);
 
       if (!fromAddress || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
       if (!recipientAddress) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
