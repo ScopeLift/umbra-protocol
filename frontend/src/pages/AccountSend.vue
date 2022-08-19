@@ -80,7 +80,7 @@
         :disable="isSending"
         placeholder="0"
         :appendButtonDisable="!recipientId || !isValidRecipientId"
-        :appendButtonLabel="$t('Send.max')"
+        :appendButtonLabel="token.address !== NATIVE_TOKEN.address ? $t('Send.max') : ''"
         @click="setHumanAmountMax"
         lazy-rules
         :rules="isValidTokenAmount"
