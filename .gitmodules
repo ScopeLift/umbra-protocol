@@ -7,6 +7,3 @@
 [submodule "contracts-periphery/lib/openzeppelin-contracts"]
 	path = contracts-periphery/lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/OpenZeppelin-contracts
-[submodule "contracts-periphery/lib/solmate"]
-	path = contracts-periphery/lib/solmate
-	url = https://github.com/Rari-capital/solmate
