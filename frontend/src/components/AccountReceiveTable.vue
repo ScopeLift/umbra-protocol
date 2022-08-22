@@ -233,7 +233,11 @@
               <!-- Sender column -->
               <div v-else-if="col.name === 'from'" class="d-inline-block">
                 <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
-                  <span>{{ col.value }}</span>
+                  <span
+                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" target="_blank">{{
+                      formatAddress(col.value)
+                    }}</a></span
+                  >
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -241,7 +245,11 @@
               <!-- Receiver column -->
               <div v-else-if="col.name === 'receiver'" class="d-inline-block">
                 <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
-                  <span>{{ formatAddress(col.value) }}</span>
+                  <span
+                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" target="_blank">{{
+                      formatAddress(col.value)
+                    }}</a></span
+                  >
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -336,7 +344,7 @@ import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTa
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { FeeEstimateResponse } from 'components/models';
-import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
+import { formatAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
 
@@ -424,7 +432,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       sortable: true,
       format: toString,
     },
-    { align: 'left', field: 'from', label: vm.$i18n.tc('AccountReceiveTable.sender'), name: 'from', sortable: true },
+    {
+      align: 'left',
+      field: 'from',
+      label: vm.$i18n.tc('AccountReceiveTable.sender'),
+      name: 'from',
+      sortable: true,
+    },
     {
       align: 'left',
       field: 'receiver',
@@ -473,7 +487,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
 
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
-    const formattedAddresses = await lookupOrFormatAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
+    const formattedAddresses = await lookupOrReturnAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
     formattedAnnouncements.value.forEach((announcement, index) => {
       announcement.from = formattedAddresses[index];
     });
@@ -503,6 +517,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     window.open(getEtherscanUrl(row.txHash, chainId));
+  }
+
+  function getSenderOrReceiverEtherscanUrl(address: string) {
+    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    // Assume mainnet if we don't have a provider with a valid chainId
+    const chainId = provider.value.network.chainId || 1;
+    return getEtherscanUrl(address, chainId);
   }
 
   /**
@@ -650,6 +671,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     isWithdrawInProgress,
     mainTableColumns,
     openInEtherscan,
+    getSenderOrReceiverEtherscanUrl,
     paginationConfig,
     privacyModalAddressWarnings,
     showConfirmationModal,

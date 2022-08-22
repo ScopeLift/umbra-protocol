@@ -25,6 +25,12 @@ export const lookupOrFormatAddress = async (address: string, provider: Provider)
   return domainName !== address ? domainName : formatAddress(address);
 };
 
+// Returns an ENS or CNS name if found, otherwise returns the address
+export const lookupOrReturnAddress = async (address: string, provider: Provider) => {
+  const domainName = await lookupAddress(address, provider);
+  return domainName !== address ? domainName : address;
+};
+
 // Returns ENS name that address resolves to, or null if not found
 export const lookupEnsName = async (address: string, provider: Provider) => {
   try {
@@ -89,6 +95,11 @@ export const lookupAddresses = async (addresses: string[], provider: Provider) =
 
 export const lookupOrFormatAddresses = async (addresses: string[], provider: Provider) => {
   const promises = addresses.map((address) => lookupOrFormatAddress(address, provider));
+  return Promise.all(promises);
+};
+
+export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider) => {
+  const promises = addresses.map((address) => lookupOrReturnAddress(address, provider));
   return Promise.all(promises);
 };
 
