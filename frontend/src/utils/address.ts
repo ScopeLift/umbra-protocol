@@ -11,8 +11,9 @@ import { i18n } from '../boot/i18n';
 // ================================================== Address Helpers ==================================================
 
 // Returns an address with the following format: 0x1234...abcd
-export const formatNameOrAddress = (address: string) =>
-  isHexString(address) ? `${address.slice(0, 6)}...${address.slice(38)}` : address;
+export const formatNameOrAddress = (nameOrAddress: string) => {
+  return isHexString(nameOrAddress) ? `${nameOrAddress.slice(0, 6)}...${nameOrAddress.slice(38)}` : nameOrAddress;
+}
 
 // Returns an ENS or CNS name if found, otherwise returns the address
 export const lookupAddress = async (address: string, provider: Provider) => {
