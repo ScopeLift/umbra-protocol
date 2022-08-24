@@ -234,7 +234,7 @@
               <div v-else-if="col.name === 'from'" class="d-inline-block">
                 <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                   <span
-                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" target="_blank">{{
+                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
                       formatAddress(col.value)
                     }}</a></span
                   >
@@ -246,7 +246,7 @@
               <div v-else-if="col.name === 'receiver'" class="d-inline-block">
                 <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
                   <span
-                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" target="_blank">{{
+                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
                       formatAddress(col.value)
                     }}</a></span
                   >
