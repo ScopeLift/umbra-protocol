@@ -13,18 +13,12 @@ import { i18n } from '../boot/i18n';
 // Returns an address with the following format: 0x1234...abcd
 export const formatNameOrAddress = (nameOrAddress: string) => {
   return isHexString(nameOrAddress) ? `${nameOrAddress.slice(0, 6)}...${nameOrAddress.slice(38)}` : nameOrAddress;
-}
+};
 
 // Returns an ENS or CNS name if found, otherwise returns the address
 export const lookupAddress = async (address: string, provider: Provider) => {
   const domainName = await lookupEnsOrCns(address, provider);
   return domainName ? domainName : address;
-};
-
-// Returns an ENS or CNS name if found, otherwise returns a formatted version of the address
-export const lookupOrFormatAddress = async (address: string, provider: Provider) => {
-  const domainName = await lookupAddress(address, provider);
-  return domainName !== address ? domainName : formatNameOrAddress(address);
 };
 
 // Returns an ENS or CNS name if found, otherwise returns the address

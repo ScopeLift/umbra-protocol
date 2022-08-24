@@ -1,10 +1,10 @@
 import { supportedChains, TokenInfo } from 'src/components/models';
-import { BigNumber, BigNumberish, hexValue, parseUnits, formatUnits } from './ethers';
+import { BigNumber, BigNumberish, hexValue, parseUnits, formatUnits, isHexString } from './ethers';
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` or `address and `chainId`
  */
 export const getEtherscanUrl = (txHashOrAddress: string, chainId: number) => {
-  const group = txHashOrAddress.length === 42 ? 'address' : txHashOrAddress.length === 66 ? 'tx' : 'ens';
+  const group = isHexString(txHashOrAddress) ? (txHashOrAddress.length === 42 ? 'address' : 'tx') : 'ens';
   const chain = getChainById(chainId);
   const networkPrefix = chain?.blockExplorerUrls?.length ? chain?.blockExplorerUrls[0] : 'https://etherscan.io';
   if (group === 'ens') {
