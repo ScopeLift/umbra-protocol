@@ -116,7 +116,7 @@
                     </base-tooltip>
                   </div>
                   <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
-                    <span>{{ formatAddress(props.row.receiver) }}</span>
+                    <span>{{ formatNameOrAddress(props.row.receiver) }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
@@ -235,7 +235,7 @@
                 <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                   <span
                     ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
-                      formatAddress(col.value)
+                      formatNameOrAddress(col.value)
                     }}</a></span
                   >
                   <q-icon class="copy-icon" name="far fa-copy" right />
@@ -247,7 +247,7 @@
                 <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
                   <span
                     ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
-                      formatAddress(col.value)
+                      formatNameOrAddress(col.value)
                     }}</a></span
                   >
                   <q-icon class="copy-icon" name="far fa-copy" right />
@@ -344,7 +344,7 @@ import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTa
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { FeeEstimateResponse } from 'components/models';
-import { formatAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
+import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
 
@@ -655,7 +655,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     destinationAddress,
     executeWithdraw,
     expanded,
-    formatAddress,
+    formatNameOrAddress,
     formatAmount,
     formatDate,
     formattedAnnouncements,
