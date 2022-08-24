@@ -23,6 +23,12 @@
       @focus="showHint"
       @input="handleInput"
     >
+    <!-- modify these sections and add a slot for the balance -->
+    <!-- so that it can be displayed below the token name -->
+    <!-- E.g. -->
+    <!-- ETH           -->
+    <!-- balance: 0.85 -->
+
       <!-- Show icons when selected or when the slot is provided-->
       <template v-slot:prepend v-if="content && content.logoURI">
         <img :src="content.logoURI" height="25rem" />

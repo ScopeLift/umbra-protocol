@@ -132,6 +132,8 @@ export interface CnsQueryResponse {
 export type ApiError = { error: string };
 export interface TokenInfoExtended extends TokenInfo {
   minSendAmount: string;
+  dropdownName?: string;
+  balance?: string;
 }
 // Omit the TokenList.tokens type so we can override it with our own.
 export interface TokenListSuccessResponse extends Omit<TokenList, 'tokens'> {

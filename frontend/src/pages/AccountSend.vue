@@ -68,7 +68,7 @@
         filled
         :label="$t('Send.token')"
         :options="tokenList"
-        option-label="symbol"
+        option-label="dropdownName"
       />
 
       <!-- Amount -->
@@ -196,7 +196,7 @@ function useSendForm() {
     NATIVE_TOKEN,
     provider,
     signer,
-    tokens: tokenList,
+    tokens,
     umbra,
     userAddress,
   } = useWalletStore();
@@ -217,6 +217,21 @@ function useSendForm() {
   const humanAmountBaseInputRef = ref<Vue>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
+
+  // TODO
+  // - token balance gets messed up when switching chains
+  const tokenList = computed(() => {
+    return tokens.value.map((token) => {
+      token.balance = balances.value[token.address] || BigNumber.from(0);
+      return token;
+    }).sort(
+      (tokenA, tokenB) => tokenA.balance.gt(tokenB.balance) ? -1 : 1
+    ).map((token) => {
+      const sendableBalance = humanizeTokenAmount(token.balance, token);
+      token.dropdownName = `${sendableBalance} ${token.symbol}`;
+      return token;
+    });
+  });
   const toll = ref<BigNumber>(Zero);
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
@@ -288,7 +303,10 @@ function useSendForm() {
 
   onMounted(async () => {
     // Check for query parameters on load
-    const { to, token: paymentToken, amount } = await parsePaymentLink(NATIVE_TOKEN.value);
+    const [{ to, token: paymentToken, amount }, _getBalancesReturnVal] = await Promise.all([
+      parsePaymentLink(NATIVE_TOKEN.value),
+      getTokenBalances(),
+    ]);
     if (to) recipientId.value = to;
     if (amount) humanAmount.value = amount;
 
