@@ -234,9 +234,9 @@
               <div v-else-if="col.name === 'from'" class="d-inline-block">
                 <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                   <span
-                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
-                      formatNameOrAddress(col.value)
-                    }}</a></span
+                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank"
+                      >{{ formatNameOrAddress(col.value) }} and {{ formattedAddresses }}</a
+                    ></span
                   >
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
@@ -347,6 +347,10 @@ import { FeeEstimateResponse } from 'components/models';
 import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
+
+interface ReceiveTableAnnouncement extends UserAnnouncement {
+  formattedFrom: string;
+}
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const vm = getCurrentInstance()!;
@@ -480,7 +484,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   };
 
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
-  const formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
+  let formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
+  formattedAnnouncements = Object.assign(formattedAnnouncements, { formattedFrom: '' });
   onMounted(async () => {
     isLoading.value = true;
     if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
@@ -489,7 +494,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     const fromAddresses = announcements.map((announcement) => announcement.from);
     const formattedAddresses = await lookupOrReturnAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
     formattedAnnouncements.value.forEach((announcement, index) => {
-      announcement.from = formattedAddresses[index];
+      announcement.formattedFrom = formattedAddresses[index];
+      announcement.from = fromAddresses[index];
     });
 
     // Find announcements that have been withdrawn
