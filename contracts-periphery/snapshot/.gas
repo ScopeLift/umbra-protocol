@@ -1,8 +1,8 @@
 No files changed, compilation skipped
 
 Running 6 tests for test/gas/UniswapWithdrawHook.fork.1.gas.t.sol:UniswapWithdrawHookGasTest
-[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCall(uint256,uint256,uint256,uint256) (runs: 256, μ: 2950876, ~: 2937143)
-[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCallOnBehalf(uint256,uint256,uint256,uint256) (runs: 256, μ: 3074551, ~: 3061131)
+[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCall(uint256,uint256,uint256,uint256) (runs: 256, μ: 2949193, ~: 2937143)
+[32m[PASS][0m testFuzz_HookTest_withdrawTokenAndCallOnBehalf(uint256,uint256,uint256,uint256) (runs: 256, μ: 3074349, ~: 3061131)
 [32m[PASS][0m test_SwapAllForEth_withdrawTokenAndCall() (gas: 399175)
 Logs:
   Bound Result: 10000000100000000000
@@ -31,47 +31,7 @@ Logs:
   Bound Result: 2
   Bound Result: 2
 
-Test result: [32mok[0m. 6 passed; 0 failed; finished in 21.04s
-
-Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollGasTest
-[32m[PASS][0m testPostSetupState() (gas: 11857)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
-[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
-[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
-[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
-[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
-[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
-[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
-[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17586732)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1916528)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 349801)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4527916)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 523839)
-[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 1046072)
-[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17589248)
-[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1919005)
-[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 352254)
-[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4530371)
-[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 526271)
-[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 1048526)
-[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 31160618)
-[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3297277)
-[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 511590)
-[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7940272)
-[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 821145)
-[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1749660)
-[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 31160644)
-[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3297281)
-[32m[PASS][0m test_BatchSend_To1Addr() (gas: 31160690)
-[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7940299)
-[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 821192)
-[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1749687)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.14s
+Test result: [32mok[0m. 6 passed; 0 failed; finished in 18.32s
 
 Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollAndWithTokenBalanceGasTest
 [32m[PASS][0m testPostSetupState() (gas: 11857)
@@ -111,7 +71,7 @@ Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollAndWi
 [32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7755699)
 [32m[PASS][0m test_BatchSend_To2Addrs() (gas: 790692)
 [32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1699087)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.14s
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.56s
 
 Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollGasTest
 [32m[PASS][0m testPostSetupState() (gas: 11857)
@@ -151,7 +111,47 @@ Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithoutTollGasTe
 [32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7772799)
 [32m[PASS][0m test_BatchSend_To2Addrs() (gas: 807792)
 [32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1716187)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.14s
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.56s
+
+Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollGasTest
+[32m[PASS][0m testPostSetupState() (gas: 11857)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To100Addrs() (gas: 15898270)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To10Addrs() (gas: 1650142)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To1Addr() (gas: 225508)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To25Addrs() (gas: 4024600)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To2Addrs() (gas: 383799)
+[32m[PASS][0m test_BatchSendEth_MaxBalance_To5Addrs() (gas: 858719)
+[32m[PASS][0m test_BatchSendEth_To100Addrs() (gas: 15895780)
+[32m[PASS][0m test_BatchSendEth_To10Addrs() (gas: 1647739)
+[32m[PASS][0m test_BatchSendEth_To1Addr() (gas: 223087)
+[32m[PASS][0m test_BatchSendEth_To25Addrs() (gas: 4022197)
+[32m[PASS][0m test_BatchSendEth_To2Addrs() (gas: 381376)
+[32m[PASS][0m test_BatchSendEth_To5Addrs() (gas: 856208)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To100Addrs() (gas: 17586732)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To10Addrs() (gas: 1916528)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To1Addr() (gas: 349801)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To25Addrs() (gas: 4527916)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To2Addrs() (gas: 523839)
+[32m[PASS][0m test_BatchSendTokens_MaxBalance_To5Addrs() (gas: 1046072)
+[32m[PASS][0m test_BatchSendTokens_To100Addrs() (gas: 17589248)
+[32m[PASS][0m test_BatchSendTokens_To10Addrs() (gas: 1919005)
+[32m[PASS][0m test_BatchSendTokens_To1Addr() (gas: 352254)
+[32m[PASS][0m test_BatchSendTokens_To25Addrs() (gas: 4530371)
+[32m[PASS][0m test_BatchSendTokens_To2Addrs() (gas: 526271)
+[32m[PASS][0m test_BatchSendTokens_To5Addrs() (gas: 1048526)
+[32m[PASS][0m test_BatchSend_MaxBalance_To100Addrs() (gas: 31160618)
+[32m[PASS][0m test_BatchSend_MaxBalance_To10Addrs() (gas: 3297277)
+[32m[PASS][0m test_BatchSend_MaxBalance_To1Addr() (gas: 511590)
+[32m[PASS][0m test_BatchSend_MaxBalance_To25Addrs() (gas: 7940272)
+[32m[PASS][0m test_BatchSend_MaxBalance_To2Addrs() (gas: 821145)
+[32m[PASS][0m test_BatchSend_MaxBalance_To5Addrs() (gas: 1749660)
+[32m[PASS][0m test_BatchSend_To100Addrs() (gas: 31160644)
+[32m[PASS][0m test_BatchSend_To10Addrs() (gas: 3297281)
+[32m[PASS][0m test_BatchSend_To1Addr() (gas: 31160690)
+[32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7940299)
+[32m[PASS][0m test_BatchSend_To2Addrs() (gas: 821192)
+[32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1749687)
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.56s
 
 Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollAndWithTokenBalanceGasTest
 [32m[PASS][0m testPostSetupState() (gas: 11857)
@@ -191,7 +191,7 @@ Running 37 tests for test/gas/UmbraBatchSend.gas.t.sol:BatchSendWithTollAndWithT
 [32m[PASS][0m test_BatchSend_To25Addrs() (gas: 7923199)
 [32m[PASS][0m test_BatchSend_To2Addrs() (gas: 804092)
 [32m[PASS][0m test_BatchSend_To5Addrs() (gas: 1732587)
-Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.14s
+Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.56s
 ╭───────────────────────────────────────────────────────────────────┬─────────────────┬───────┬────────┬───────┬─────────╮
 │ lib/solmate/src/test/utils/mocks/MockERC20.sol:MockERC20 contract ┆                 ┆       ┆        ┆       ┆         │
 ╞═══════════════════════════════════════════════════════════════════╪═════════════════╪═══════╪════════╪═══════╪═════════╡
@@ -239,6 +239,6 @@ Test result: [32mok[0m. 37 passed; 0 failed; finished in 45.14s
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
 │ approveToken                                             ┆ 30143           ┆ 30143  ┆ 30143  ┆ 30143  ┆ 6       │
 ├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ tokensWithdrawn                                          ┆ 141574          ┆ 148522 ┆ 141574 ┆ 169367 ┆ 24      │
+│ tokensWithdrawn                                          ┆ 141465          ┆ 150451 ┆ 142286 ┆ 178049 ┆ 24      │
 ╰──────────────────────────────────────────────────────────┴─────────────────┴────────┴────────┴────────┴─────────╯
 
