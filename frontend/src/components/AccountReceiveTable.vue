@@ -234,9 +234,9 @@
               <div v-else-if="col.name === 'from'" class="d-inline-block">
                 <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                   <span
-                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank"
-                      >{{ formatNameOrAddress(col.value) }} and {{ formattedAddresses }}</a
-                    ></span
+                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
+                      formatNameOrAddress(props.row.formattedFrom)
+                    }}</a></span
                   >
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
@@ -348,10 +348,6 @@ import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe 
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
 
-interface ReceiveTableAnnouncement extends UserAnnouncement {
-  formattedFrom: string;
-}
-
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const vm = getCurrentInstance()!;
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
@@ -395,6 +391,10 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   };
 
   return { scanDescriptionString, hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
+}
+
+interface ReceiveTableAnnouncement extends UserAnnouncement {
+  formattedFrom: string;
 }
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
@@ -484,8 +484,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   };
 
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
-  let formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
-  formattedAnnouncements = Object.assign(formattedAnnouncements, { formattedFrom: '' });
+  const formattedAnnouncements = ref(announcements.reverse() as ReceiveTableAnnouncement[]); // We reverse so most recent transaction is first
   onMounted(async () => {
     isLoading.value = true;
     if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
