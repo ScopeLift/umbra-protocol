@@ -70,7 +70,7 @@ export default function useWalletStore() {
         walletSelect: {
           wallets: [
             { walletName: 'metamask', preferred: true },
-            { walletName: 'walletConnect', infuraKey: process.env.INFURA_ID, preferred: true },
+            { walletName: 'walletConnect', infuraKey: process.env.INFURA_ID, rpc: { 42161: "https://arb1.arbitrum.io/rpc", }, preferred: true },
             { walletName: 'fortmatic', apiKey: process.env.FORTMATIC_API_KEY, preferred: true },
             { walletName: 'portis', apiKey: process.env.PORTIS_API_KEY },
             { walletName: 'ledger', rpcUrl: MAINNET_RPC_URL },
