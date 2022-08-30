@@ -6,8 +6,9 @@ import "src/UniswapWithdrawHook.sol";
 
 contract UniswapWithdrawHookTest is DeployUmbraTest {
   using SafeERC20 for IERC20;
-  UniswapWithdrawHook withdrawHook;
+  uint256 mainnetForkId;
 
+  UniswapWithdrawHook withdrawHook;
   IUmbra umbraContract;
   ISwapRouter swapRouter;
   IQuoter quoterContract;
@@ -34,6 +35,9 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
 
   function setUp() public override {
     super.setUp();
+    uint256 mainnetForkBlock = 15181633;
+    mainnetForkId = vm.createSelectFork(vm.rpcUrl("mainnet"), mainnetForkBlock);
+
     umbraContract = IUmbra(umbra);
     swapRouter = ISwapRouter(router);
     quoterContract = IQuoter(quoter);
