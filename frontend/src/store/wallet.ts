@@ -1,8 +1,7 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
-import Onboard from 'bnc-onboard';
-import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
+import Onboard, { OnboardAPI, WalletState } from '@web3-onboard/core';
+import injectedModule from '@web3-onboard/injected-wallets';
 import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
-
 import {
   Chain,
   MulticallResponse,
@@ -10,16 +9,19 @@ import {
   Network,
   Provider,
   Signer,
+  supportedChains,
   supportedChainIds,
   SupportedChainId,
   TokenInfoExtended,
 } from 'components/models';
 import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
-import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
+import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { BigNumber, Contract, getAddress, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
+
+const injected = injectedModule();
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -64,35 +66,19 @@ export default function useWalletStore() {
     // Initialize onboard.js if not yet done
     if (!onboard.value) {
       onboard.value = Onboard({
-        dappId: process.env.BLOCKNATIVE_API_KEY,
-        networkId: 1,
-        walletCheck: [{ checkName: 'connect' }],
-        walletSelect: {
-          wallets: [
-            { walletName: 'metamask', preferred: true },
-            { walletName: 'walletConnect', infuraKey: process.env.INFURA_ID, preferred: true },
-            { walletName: 'fortmatic', apiKey: process.env.FORTMATIC_API_KEY, preferred: true },
-            { walletName: 'portis', apiKey: process.env.PORTIS_API_KEY },
-            { walletName: 'ledger', rpcUrl: MAINNET_RPC_URL },
-            { walletName: 'torus', preferred: true },
-            { walletName: 'lattice', rpcUrl: MAINNET_RPC_URL, appName: 'Umbra' },
-            { walletName: 'opera' },
-          ],
-        },
-        subscriptions: {
-          wallet: (wallet) => {
-            setProvider(wallet.provider);
-          },
-          address: (address) => {
-            if (address && userAddress.value && userAddress.value !== getAddress(address)) {
-              window.location.reload();
-            }
-          },
-          network: (newChainId) => {
-            if (chainId.value && chainId.value !== newChainId) {
-              window.location.reload();
-            }
-          },
+        wallets: [injected],
+        chains: supportedChains.map((chain) => {
+          return {
+            id: chain.chainId,
+            token: chain.nativeCurrency.symbol,
+            label: chain.chainName,
+            rpcUrl: chain.rpcUrls[0],
+            icon: chain.logoURI,
+          };
+        }),
+        accountCenter: {
+          desktop: { enabled: false },
+          mobile: { enabled: false },
         },
       });
     }
@@ -151,35 +137,14 @@ export default function useWalletStore() {
 
   async function connectWallet() {
     try {
-      if (isLoading.value) return;
+      if (isLoading.value || !onboard.value) return;
 
       setLoading(true);
-
-      // Clear existing wallet selection
-      onboard.value?.walletReset();
-
-      // Use stored wallet on initialization if there is one
-      const hasSelected =
-        userAddress.value || !lastWallet.value
-          ? await onboard.value?.walletSelect()
-          : await onboard.value?.walletSelect(String(lastWallet.value));
-      if (!hasSelected) {
-        setLoading(false);
-        return;
-      }
-
-      const hasChecked = await onboard.value?.walletCheck();
-      if (!hasChecked) {
-        setLoading(false);
-        return;
-      }
+      const [mostRecentWallet] = await onboard.value.connectWallet();
+      setProvider(mostRecentWallet.provider);
 
       // Get ENS name, CNS names, etc.
       await configureProvider();
-
-      // Add wallet name to localStorage
-      const walletName = onboard.value?.getState().wallet.name;
-      if (walletName) setLastWallet(walletName);
     } catch (e) {
       resetState();
       setLoading(false);
