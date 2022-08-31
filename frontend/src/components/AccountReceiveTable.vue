@@ -233,11 +233,7 @@
               <!-- Sender column -->
               <div v-else-if="col.name === 'from'" class="d-inline-block">
                 <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
-                  <span
-                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
-                      formatNameOrAddress(props.row.formattedFrom)
-                    }}</a></span
-                  >
+                  <span>{{ formatNameOrAddress(props.row.formattedFrom) }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -245,11 +241,7 @@
               <!-- Receiver column -->
               <div v-else-if="col.name === 'receiver'" class="d-inline-block">
                 <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
-                  <span
-                    ><a :href="getSenderOrReceiverEtherscanUrl(col.value)" class="hyperlink" target="_blank">{{
-                      formatNameOrAddress(col.value)
-                    }}</a></span
-                  >
+                  <span>{{ formatNameOrAddress(col.value) }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -280,7 +272,17 @@
                   if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
                 "
               >
-                {{ $t('AccountReceiveTable.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
+                <div v-if="isNativeToken(props.row.token)" class="cursor-pointer external-link-icon-parent">
+                  <a :href="getSenderOrReceiverEtherscanUrl(props.row.receiver)" class="text-positive" target="_blank">
+                    {{ $t('AccountReceiveTable.withdrawn') }}</a
+                  >
+                  <q-icon name="fas fa-check" class="q-ml-sm" right />
+                  <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
+                </div>
+                <div v-else>
+                  {{ $t('AccountReceiveTable.withdrawn') }}
+                  <q-icon name="fas fa-check" class="q-ml-sm" right />
+                </div>
               </div>
               <base-button
                 v-else
