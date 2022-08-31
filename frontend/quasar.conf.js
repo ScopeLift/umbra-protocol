@@ -82,6 +82,12 @@ module.exports = configure(function (ctx) {
           use: [{ loader: '@kazupon/vue-i18n-loader' }, { loader: 'yaml-loader' }],
         });
       },
+      extendWebpack(cfg) {
+        cfg.resolve.alias = {
+          ...cfg.resolve.alias, // This adds the existing aliases.
+          '@ledgerhq/devices': '@ledgerhq/devices/lib-es', // https://github.com/LedgerHQ/ledger-live/issues/763#issuecomment-1209204659
+        };
+      },
     },
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer

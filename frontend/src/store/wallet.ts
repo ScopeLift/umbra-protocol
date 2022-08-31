@@ -1,6 +1,12 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
+
 import Onboard, { OnboardAPI, WalletState } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
+import walletConnectModule from '@web3-onboard/walletconnect';
+import coinbaseWalletModule from '@web3-onboard/coinbase';
+import ledgerModule from '@web3-onboard/ledger';
+import trezorModule from '@web3-onboard/trezor';
+
 import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 import {
   Chain,
@@ -21,8 +27,14 @@ import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
 
+// Wallet configurations.
 const injected = injectedModule();
-
+const walletConnect = walletConnectModule({
+  qrcodeModalOptions: { mobileLinks: ['rainbow', 'metamask', 'argent', 'trust', 'imtoken', 'pillar'] },
+});
+const coinbaseWalletSdk = coinbaseWalletModule();
+const ledger = ledgerModule();
+const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
 /**
  * State is handled in reusable components, where each component is its own self-contained
  * file consisting of one function defined used the composition API.
@@ -66,7 +78,7 @@ export default function useWalletStore() {
     // Initialize onboard.js if not yet done
     if (!onboard.value) {
       onboard.value = Onboard({
-        wallets: [injected],
+        wallets: [injected, walletConnect, coinbaseWalletSdk, ledger, trezor],
         chains: supportedChains.map((chain) => {
           return {
             id: chain.chainId,
