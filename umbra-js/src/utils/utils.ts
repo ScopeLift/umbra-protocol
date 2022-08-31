@@ -331,6 +331,9 @@ async function resolveCns(name: string, provider: EthersProvider) {
 
 /**
  * @notice Given a from address, to address, and provider, return parameters needed to sweep all ETH
+ * @dev The intent of this method is to facilitate sweeping ETH from a stealth address (EOA) to another
+ * account. As a result, we don't consider the chance of the sender being a contract wallet that
+ * results in extra gas costs.
  * @param from Address sending ETH
  * @param to Address receiving ETH
  * @param provider Provider to use for querying data
@@ -342,8 +345,9 @@ export async function getEthSweepGasInfo(
   provider: EthersProvider,
   overrides: Overrides = {}
 ) {
-  const gasLimitOf21k = [1, 4, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
-  const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
+  // To maximize ETH sweeps, ignore uer-specified gasPrice overrides for rollups where gas costs
+  // are a function of L1 costs and L2 costs.
+  const ignoreGasPriceOverride = [10, 42161];
 
   const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([
     provider.getCode(to),
@@ -358,7 +362,7 @@ export async function getEthSweepGasInfo(
   // transfers always to cost 21000 gas, use 21000. Otherwise, estimate the gas limit.
   const gasLimit = overrides.gasLimit
     ? BigNumber.from(await overrides.gasLimit)
-    : isEoa && gasLimitOf21k.includes(chainId)
+    : isEoa
     ? BigNumber.from('21000')
     : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
 
