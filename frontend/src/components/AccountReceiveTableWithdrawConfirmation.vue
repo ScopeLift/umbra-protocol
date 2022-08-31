@@ -58,6 +58,8 @@
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
           <div v-if="loaded">-{{ formattedDefaultTxCost }} {{ symbol }}</div>
+          <!-- Custom fees not allowed on L2s, since gas price is affected by
+          both L1 and L2 costs, so users will likely not estimate it properly -->
           <q-icon
             v-if="isNativeToken && loaded && ![10, 42161].includes(chainId)"
             @click="toggleCustomFee"
