@@ -345,9 +345,8 @@ export async function getEthSweepGasInfo(
   provider: EthersProvider,
   overrides: Overrides = {}
 ) {
-  // To maximize ETH sweeps, ignore uer-specified gasPrice overrides for rollups where gas costs
-  // are a function of L1 costs and L2 costs.
-  const ignoreGasPriceOverride = [10, 42161];
+  const gasLimitOf21k = [1, 4, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
+  const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
   const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([
     provider.getCode(to),
@@ -362,7 +361,7 @@ export async function getEthSweepGasInfo(
   // transfers always to cost 21000 gas, use 21000. Otherwise, estimate the gas limit.
   const gasLimit = overrides.gasLimit
     ? BigNumber.from(await overrides.gasLimit)
-    : isEoa
+    : isEoa && gasLimitOf21k.includes(chainId)
     ? BigNumber.from('21000')
     : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
 
