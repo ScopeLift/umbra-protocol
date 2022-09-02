@@ -5,13 +5,15 @@
 import { CnsQueryResponse, Provider } from 'components/models';
 import { utils } from '@umbra/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
-import { getAddress, Web3Provider } from 'src/utils/ethers';
+import { getAddress, Web3Provider, isHexString } from 'src/utils/ethers';
 import { getChainById } from 'src/utils/utils';
 import { i18n } from '../boot/i18n';
 // ================================================== Address Helpers ==================================================
 
 // Returns an address with the following format: 0x1234...abcd
-export const formatAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(38)}`;
+export const formatNameOrAddress = (nameOrAddress: string) => {
+  return isHexString(nameOrAddress) ? `${nameOrAddress.slice(0, 6)}...${nameOrAddress.slice(38)}` : nameOrAddress;
+};
 
 // Returns an ENS or CNS name if found, otherwise returns the address
 export const lookupAddress = async (address: string, provider: Provider) => {
@@ -19,10 +21,10 @@ export const lookupAddress = async (address: string, provider: Provider) => {
   return domainName ? domainName : address;
 };
 
-// Returns an ENS or CNS name if found, otherwise returns a formatted version of the address
-export const lookupOrFormatAddress = async (address: string, provider: Provider) => {
+// Returns an ENS or CNS name if found, otherwise returns the address
+export const lookupOrReturnAddress = async (address: string, provider: Provider) => {
   const domainName = await lookupAddress(address, provider);
-  return domainName !== address ? domainName : formatAddress(address);
+  return domainName !== address ? domainName : address;
 };
 
 // Returns ENS name that address resolves to, or null if not found
@@ -80,15 +82,15 @@ export const toAddress = utils.toAddress;
 // =============================================== Bulk Address Helpers ================================================
 // Duplicates of the above methods for operating on multiple addresses in parallel
 
-export const formatAddresses = (addresses: string[]) => addresses.map(formatAddress);
+export const formatAddresses = (addresses: string[]) => addresses.map(formatNameOrAddress);
 
 export const lookupAddresses = async (addresses: string[], provider: Provider) => {
   const promises = addresses.map((address) => lookupAddress(address, provider));
   return Promise.all(promises);
 };
 
-export const lookupOrFormatAddresses = async (addresses: string[], provider: Provider) => {
-  const promises = addresses.map((address) => lookupOrFormatAddress(address, provider));
+export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider) => {
+  const promises = addresses.map((address) => lookupOrReturnAddress(address, provider));
   return Promise.all(promises);
 };
 

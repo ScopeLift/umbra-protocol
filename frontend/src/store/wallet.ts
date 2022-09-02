@@ -14,7 +14,7 @@ import {
   SupportedChainId,
   TokenInfoExtended,
 } from 'components/models';
-import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
+import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
 import { BigNumber, Contract, getAddress, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
@@ -424,7 +424,7 @@ export default function useWalletStore() {
   const userDisplayName = computed(() => {
     if (userEns.value) return userEns.value;
     if (userCns.value) return userCns.value;
-    return userAddress.value ? formatAddress(userAddress.value) : undefined;
+    return userAddress.value ? formatNameOrAddress(userAddress.value) : undefined;
   });
 
   const keysMatch = computed(() => {

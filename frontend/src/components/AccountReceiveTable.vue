@@ -116,7 +116,7 @@
                     </base-tooltip>
                   </div>
                   <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
-                    <span>{{ formatAddress(props.row.receiver) }}</span>
+                    <span>{{ formatNameOrAddress(props.row.receiver) }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
@@ -233,7 +233,7 @@
               <!-- Sender column -->
               <div v-else-if="col.name === 'from'" class="d-inline-block">
                 <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
-                  <span>{{ col.value }}</span>
+                  <span>{{ formatNameOrAddress(props.row.formattedFrom) }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -241,7 +241,7 @@
               <!-- Receiver column -->
               <div v-else-if="col.name === 'receiver'" class="d-inline-block">
                 <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
-                  <span>{{ formatAddress(col.value) }}</span>
+                  <span>{{ formatNameOrAddress(col.value) }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -272,7 +272,17 @@
                   if (advancedMode) expanded = expanded[0] === props.key ? [] : [props.key];
                 "
               >
-                {{ $t('AccountReceiveTable.withdrawn') }}<q-icon name="fas fa-check" class="q-ml-sm" />
+                <div v-if="isNativeToken(props.row.token)" class="cursor-pointer external-link-icon-parent">
+                  <a :href="getSenderOrReceiverEtherscanUrl(props.row.receiver)" class="text-positive" target="_blank">
+                    {{ $t('AccountReceiveTable.withdrawn') }}</a
+                  >
+                  <q-icon name="fas fa-check" class="q-ml-sm" right />
+                  <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
+                </div>
+                <div v-else>
+                  {{ $t('AccountReceiveTable.withdrawn') }}
+                  <q-icon name="fas fa-check" class="q-ml-sm" right />
+                </div>
               </div>
               <base-button
                 v-else
@@ -336,7 +346,7 @@ import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTa
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { FeeEstimateResponse } from 'components/models';
-import { formatAddress, lookupOrFormatAddresses, toAddress, isAddressSafe } from 'src/utils/address';
+import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
 
@@ -385,6 +395,10 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   return { scanDescriptionString, hidePrivateKey, togglePrivateKey, spendingPrivateKey, copyPrivateKey };
 }
 
+interface ReceiveTableAnnouncement extends UserAnnouncement {
+  formattedFrom: string;
+}
+
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
   const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const { setIsInWithdrawFlow } = useStatusesStore();
@@ -424,7 +438,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       sortable: true,
       format: toString,
     },
-    { align: 'left', field: 'from', label: vm.$i18n.tc('AccountReceiveTable.sender'), name: 'from', sortable: true },
+    {
+      align: 'left',
+      field: 'from',
+      label: vm.$i18n.tc('AccountReceiveTable.sender'),
+      name: 'from',
+      sortable: true,
+    },
     {
       align: 'left',
       field: 'receiver',
@@ -466,16 +486,17 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   };
 
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
-  const formattedAnnouncements = ref(announcements.reverse()); // We reverse so most recent transaction is first
+  const formattedAnnouncements = ref(announcements.reverse() as ReceiveTableAnnouncement[]); // We reverse so most recent transaction is first
   onMounted(async () => {
     isLoading.value = true;
     if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
 
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
-    const formattedAddresses = await lookupOrFormatAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
+    const formattedAddresses = await lookupOrReturnAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
     formattedAnnouncements.value.forEach((announcement, index) => {
-      announcement.from = formattedAddresses[index];
+      announcement.formattedFrom = formattedAddresses[index];
+      announcement.from = fromAddresses[index];
     });
 
     // Find announcements that have been withdrawn
@@ -503,6 +524,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     window.open(getEtherscanUrl(row.txHash, chainId));
+  }
+
+  function getSenderOrReceiverEtherscanUrl(address: string) {
+    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    // Assume mainnet if we don't have a provider with a valid chainId
+    const chainId = provider.value.network.chainId || 1;
+    return getEtherscanUrl(address, chainId);
   }
 
   /**
@@ -634,7 +662,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     destinationAddress,
     executeWithdraw,
     expanded,
-    formatAddress,
+    formatNameOrAddress,
     formatAmount,
     formatDate,
     formattedAnnouncements,
@@ -650,6 +678,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     isWithdrawInProgress,
     mainTableColumns,
     openInEtherscan,
+    getSenderOrReceiverEtherscanUrl,
     paginationConfig,
     privacyModalAddressWarnings,
     showConfirmationModal,

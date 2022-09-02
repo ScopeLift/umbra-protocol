@@ -8,7 +8,7 @@
 
     <q-card-section>
       <div class="text-caption text-grey">{{ $t('AccountReceiveTableWithdrawConfirmation.to') }}</div>
-      <div>{{ $q.screen.xs ? formatAddress(destinationAddress) : destinationAddress }}</div>
+      <div>{{ $q.screen.xs ? formatNameOrAddress(destinationAddress) : destinationAddress }}</div>
 
       <div>
         <div class="text-caption text-grey q-mt-md">{{ $t('AccountReceiveTableWithdrawConfirmation.amount') }}</div>
@@ -120,7 +120,7 @@
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
 import { utils as umbraUtils, UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
-import { formatAddress, toAddress } from 'src/utils/address';
+import { formatNameOrAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
 import { getEtherscanUrl, getGasPrice, humanizeTokenAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
@@ -282,7 +282,7 @@ export default defineComponent({
       context,
       confirmationOptions,
       etherscanUrl,
-      formatAddress,
+      formatNameOrAddress,
       formattedAmount,
       formattedAmountReceived,
       formattedDefaultTxCost,
