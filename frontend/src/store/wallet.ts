@@ -159,8 +159,17 @@ export default function useWalletStore() {
       if (isLoading.value || !onboard.value) return;
 
       setLoading(true);
-      const [mostRecentWallet] = await onboard.value.connectWallet();
-      setProvider(mostRecentWallet.provider);
+      const [connectedWallet] = await onboard.value.connectWallet({
+        autoSelect: lastWallet.value,
+      });
+
+      if (!connectedWallet) {
+        // if the user just decides not to complete the connection
+        setLoading(false);
+        return;
+      }
+
+      setProvider(connectedWallet.provider);
 
       // Get ENS name, CNS names, etc.
       await configureProvider();
