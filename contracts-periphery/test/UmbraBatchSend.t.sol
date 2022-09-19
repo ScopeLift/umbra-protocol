@@ -15,7 +15,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
   UmbraBatchSend.TransferSummary[] transferSummary;
 
   error ValueMismatch();
-  error TransferAmmountMismatch();
+  error TransferAmountMismatch();
 
   function setUp() public virtual override {
     super.setUp();
@@ -111,7 +111,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     sendToken.push(UmbraBatchSend.SendToken(bob, address(token), 1 ether, pkx, ciphertext));
 
     token.approve(address(router), 2 ether);
-    vm.expectRevert(abi.encodeWithSelector(TransferAmmountMismatch.selector));
+    vm.expectRevert(abi.encodeWithSelector(TransferAmountMismatch.selector));
     router.batchSendTokens{value: toll * sendToken.length}(toll, sendToken, transferSummary);
   }
 

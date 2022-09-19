@@ -4,7 +4,6 @@ fs_permissions = [{ access = "read", path = "./"}]
 
 [profile.ci]
 fuzz_runs = 10000
-fs_permissions = [{ access = "read", path = "./"}]
 # See more config options https://github.com/gakonst/foundry/tree/master/config
 
 [rpc_endpoints]
