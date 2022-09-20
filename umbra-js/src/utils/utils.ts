@@ -9,6 +9,7 @@ import {
   Contract,
   ContractInterface,
   getAddress,
+  HashZero,
   isHexString,
   keccak256,
   Overrides,
@@ -142,10 +143,10 @@ export async function getSentTransaction(address: string, ethersProvider: Ethers
       // from, since not all transactions returned by Etherscan are actually signed transactions: some are just
       // messages. This is a bit inefficient since it's an additional RPC call, and this method just returns the
       // txHash instead of the full transaction data, so we end up  making the same RPC call again later, but
-      // that's ok for now. Read more at https://developer.offchainlabs.com/docs/arbos_formats
+      // that's ok for now. We identify signed transactions by just looking for the presence of a signature.
       if (chainId === 42161) {
         const txData = await getTransactionByHash(tx.hash, ethersProvider);
-        const isSignedTx = txData.arbType === 3 && txData.arbSubType === 4;
+        const isSignedTx = txData.r !== HashZero && txData.s !== HashZero;
         if (!isSignedTx) continue;
       }
       txHash = tx.hash;
