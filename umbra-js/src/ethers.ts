@@ -8,7 +8,7 @@ export { defaultAbiCoder } from '@ethersproject/abi';
 export { getAddress } from '@ethersproject/address';
 export { BigNumberish, BigNumber } from '@ethersproject/bignumber';
 export { arrayify, hexlify, hexZeroPad, isHexString, SignatureLike, splitSignature } from '@ethersproject/bytes';
-export { AddressZero, Zero } from '@ethersproject/constants';
+export { AddressZero, HashZero, Zero } from '@ethersproject/constants';
 export { Contract, ContractInterface, ContractTransaction, Event, Overrides } from '@ethersproject/contracts';
 export { namehash } from '@ethersproject/hash';
 export { keccak256 } from '@ethersproject/keccak256';
