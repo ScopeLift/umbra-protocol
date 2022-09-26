@@ -40,20 +40,53 @@ contract UmbraBatchSend is Ownable {
     umbra = _umbra;
   }
 
-  function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) public payable {
+  function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
     _checkValueFromSends(msg.value, _tollCommitment, _params, new SendToken[](0));
     _batchSendEth(_tollCommitment, _params);
-    emit BatchSendExecuted(msg.sender);
   }
 
   function batchSendTokens(
     uint256 _tollCommitment,
     SendToken[] calldata _params,
     TransferSummary[] calldata _transferSummary
-  ) public payable {
+  ) external payable {
     _checkValueFromSends(msg.value, _tollCommitment, new SendEth[](0), _params);
+    _batchSendTokens(_tollCommitment, _params, _transferSummary);
+  }
 
-    for (uint256 i = 0; i < _params.length; i = _uncheckedIncrement(i)) {
+  function batchSend(
+    uint256 _tollCommitment,
+    SendEth[] calldata _ethParams,
+    SendToken[] calldata _tokenParams,
+    TransferSummary[] calldata _transferSummary
+  ) external payable {
+    _checkValueFromSends(msg.value, _tollCommitment, _ethParams, _tokenParams);
+    _batchSendEth(_tollCommitment, _ethParams);
+    _batchSendTokens(_tollCommitment, _tokenParams, _transferSummary);
+    emit BatchSendExecuted(msg.sender);
+  }
+
+  function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
+    uint256 _length = _params.length;
+    for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
+      umbra.sendEth{value: _params[i].amount + _tollCommitment}(
+        _params[i].receiver,
+        _tollCommitment,
+        _params[i].pkx,
+        _params[i].ciphertext
+      );
+    }
+    emit BatchSendExecuted(msg.sender);
+  }
+
+  function _batchSendTokens(
+    uint256 _tollCommitment,
+    SendToken[] calldata _params,
+    TransferSummary[] calldata _transferSummary
+  ) internal {
+
+    uint256 _length = _params.length;
+    for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
       // Used later to validate total amounts are correctly provided
       totalTransferAmountPerToken[_params[i].tokenAddr] += _params[i].amount;
     }
@@ -68,40 +101,7 @@ contract UmbraBatchSend is Ownable {
 
       IERC20(_token).safeTransferFrom(msg.sender, address(this), _transferSummary[i].amount);
     }
-    _batchSendTokens(_tollCommitment, _params, _transferSummary);
 
-    emit BatchSendExecuted(msg.sender);
-  }
-
-  function batchSend(
-    uint256 _tollCommitment,
-    SendEth[] calldata _ethParams,
-    SendToken[] calldata _tokenParams,
-    TransferSummary[] calldata _transferSummary
-  ) external payable {
-    batchSendEth(_tollCommitment, _ethParams);
-    batchSendTokens(_tollCommitment, _tokenParams, _transferSummary);
-    emit BatchSendExecuted(msg.sender);
-  }
-
-  function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
-    uint256 _length = _params.length;
-    for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      umbra.sendEth{value: _params[i].amount + _tollCommitment}(
-        _params[i].receiver,
-        _tollCommitment,
-        _params[i].pkx,
-        _params[i].ciphertext
-      );
-    }
-  }
-
-  function _batchSendTokens(
-    uint256 _tollCommitment,
-    SendToken[] calldata _params,
-    TransferSummary[] calldata _transferSummary
-  ) internal {
-    uint256 _length = _params.length;
     for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
       umbra.sendToken{value: _tollCommitment}(
         _params[i].receiver,
@@ -112,10 +112,10 @@ contract UmbraBatchSend is Ownable {
       );
     }
 
-    uint256 _summaryLength = _transferSummary.length;
     for (uint256 i = 0; i < _summaryLength; i = _uncheckedIncrement(i)) {
       totalTransferAmountPerToken[_transferSummary[i].tokenAddr] = 0;
     }
+    emit BatchSendExecuted(msg.sender);
   }
 
   function _checkValueFromSends(uint256 _value, uint256 _tollCommitment, SendEth[] memory _ethParams, SendToken[] memory _tokenParams)
