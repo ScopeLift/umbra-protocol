@@ -1,6 +1,6 @@
 import { computed, onMounted, ref, watch } from '@vue/composition-api';
 
-import Onboard, { OnboardAPI, WalletState } from '@web3-onboard/core';
+import Onboard, { OnboardAPI } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 import walletConnectModule from '@web3-onboard/walletconnect';
 import coinbaseWalletModule from '@web3-onboard/coinbase';
@@ -22,7 +22,7 @@ import {
 } from 'components/models';
 import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
-import { BigNumber, Contract, getAddress, Web3Provider, parseUnits } from 'src/utils/ethers';
+import { BigNumber, Contract, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
@@ -159,9 +159,14 @@ export default function useWalletStore() {
       if (isLoading.value || !onboard.value) return;
 
       setLoading(true);
-      const [connectedWallet] = await onboard.value.connectWallet({
-        autoSelect: lastWallet.value,
-      });
+      let connectedWallet;
+      if (lastWallet.value) {
+        [connectedWallet] = await onboard.value.connectWallet({
+          autoSelect: lastWallet.value,
+        });
+      } else {
+        [connectedWallet] = await onboard.value.connectWallet();
+      }
 
       if (!connectedWallet) {
         // if the user just decides not to complete the connection
@@ -170,6 +175,9 @@ export default function useWalletStore() {
       }
 
       setProvider(connectedWallet.provider);
+
+      // Add wallet name to localStorage
+      if (connectedWallet.label) setLastWallet(connectedWallet.label);
 
       // Get ENS name, CNS names, etc.
       await configureProvider();
