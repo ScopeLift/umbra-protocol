@@ -220,7 +220,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     );
     token.approve(address(router), 1e17 * 2);
 
-    uint totalToll = toll * sendEth.length + toll * sendToken.length;
+    // uint totalToll = toll * sendEth.length + toll * sendToken.length;
     vm.expectRevert(abi.encodeWithSelector(ValueMismatch.selector));
     router.batchSend{value: 0}(toll, sendEth, sendToken, transferSummary);
   }

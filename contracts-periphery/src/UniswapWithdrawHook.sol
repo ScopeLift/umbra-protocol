@@ -30,13 +30,11 @@ contract UniswapWithdrawHook is Ownable {
   ) external {
     (address _recipient, bytes[] memory _multicallData) =
       abi.decode(_data, (address, bytes[]));
+
     swapRouter.multicall(_multicallData);
 
-    if (IERC20(_tokenAddr).balanceOf(address(this)) > 0) {
-      IERC20(_tokenAddr).safeTransfer(
-        _recipient, IERC20(_tokenAddr).balanceOf(address(this))
-      );
-    }
+    uint _balance = IERC20(_tokenAddr).balanceOf(address(this));
+    if (_balance > 0) IERC20(_tokenAddr).safeTransfer(_recipient, _balance);
   }
 
   /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
