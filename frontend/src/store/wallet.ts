@@ -100,6 +100,17 @@ export default function useWalletStore() {
           explore: 'https://app.umbra.cash/faq',
         },
       });
+      const addresses = onboard.value.state.select('wallets');
+      addresses.subscribe((update) => {
+        update.map((wallet) => {
+          wallet.provider.on('accountsChanged', () => {
+            window.location.reload();
+          });
+          wallet.provider.on('chainChanged', () => {
+            window.location.reload();
+          });
+        });
+      });
     }
   });
 
