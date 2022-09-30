@@ -33,7 +33,9 @@ interface IUmbra {
    */
   function collectTolls() external;
 
-  // ======================================= Send =================================================
+  // ======================
+  // ======== Send ========
+  // ======================
 
   /**
    * @notice Send and announce ETH payment to a stealth address
@@ -67,7 +69,9 @@ interface IUmbra {
     bytes32 _ciphertext
   ) external payable;
 
-  // ======================================= Withdraw =============================================
+  // ==========================
+  // ======== Withdraw ========
+  // ==========================
 
   /**
    * @notice Withdraw an ERC20 token payment sent to a stealth address

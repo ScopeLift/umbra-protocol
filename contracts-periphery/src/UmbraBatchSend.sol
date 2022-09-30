@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "openzeppelin-contracts/access/Ownable.sol";
-import "openzeppelin-contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-import "src/interface/IUmbra.sol";
+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+import {IUmbra} from "src/interface/IUmbra.sol";
 
 contract UmbraBatchSend is Ownable {
   using SafeERC20 for IERC20;
@@ -47,9 +47,7 @@ contract UmbraBatchSend is Ownable {
     external
     payable
   {
-    _checkValueFromSends(
-      msg.value, _tollCommitment, _params, new SendToken[](0)
-    );
+    _validateMsgValue(_tollCommitment, _params, new SendToken[](0));
     _batchSendEth(_tollCommitment, _params);
   }
 
@@ -58,7 +56,7 @@ contract UmbraBatchSend is Ownable {
     SendToken[] calldata _params,
     TransferSummary[] calldata _transferSummary
   ) external payable {
-    _checkValueFromSends(msg.value, _tollCommitment, new SendEth[](0), _params);
+    _validateMsgValue(_tollCommitment, new SendEth[](0), _params);
     _batchSendTokens(_tollCommitment, _params, _transferSummary);
   }
 
@@ -68,7 +66,7 @@ contract UmbraBatchSend is Ownable {
     SendToken[] calldata _tokenParams,
     TransferSummary[] calldata _transferSummary
   ) external payable {
-    _checkValueFromSends(msg.value, _tollCommitment, _ethParams, _tokenParams);
+    _validateMsgValue(_tollCommitment, _ethParams, _tokenParams);
     _batchSendEth(_tollCommitment, _ethParams);
     _batchSendTokens(_tollCommitment, _tokenParams, _transferSummary);
     emit BatchSendExecuted(msg.sender);
@@ -102,16 +100,13 @@ contract UmbraBatchSend is Ownable {
 
     uint _summaryLength = _transferSummary.length;
     for (uint i = 0; i < _summaryLength; i = _uncheckedIncrement(i)) {
-      IERC20 _token = IERC20(address(_transferSummary[i].tokenAddr));
+      address _token = _transferSummary[i].tokenAddr;
+      uint _amt = _transferSummary[i].amount;
+      if (totalTransferAmountPerToken[_token] != _amt) {
+        revert TransferAmountMismatch();
+      }
 
-      if (
-        totalTransferAmountPerToken[_transferSummary[i].tokenAddr]
-          != _transferSummary[i].amount
-      ) revert TransferAmountMismatch();
-
-      IERC20(_token).safeTransferFrom(
-        msg.sender, address(this), _transferSummary[i].amount
-      );
+      IERC20(_token).safeTransferFrom(msg.sender, address(this), _amt);
     }
 
     for (uint i = 0; i < _length; i = _uncheckedIncrement(i)) {
@@ -130,21 +125,19 @@ contract UmbraBatchSend is Ownable {
     emit BatchSendExecuted(msg.sender);
   }
 
-  function _checkValueFromSends(
-    uint _value,
+  function _validateMsgValue(
     uint _tollCommitment,
     SendEth[] memory _ethParams,
     SendToken[] memory _tokenParams
-  ) internal pure {
+  ) internal view {
     uint _valueSentAccumulator;
     uint _length = _ethParams.length;
     for (uint i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      //amount to be sent per receiver
-      _valueSentAccumulator =
-        _valueSentAccumulator + _ethParams[i].amount + _tollCommitment;
+      // Amount to be sent per receiver.
+      _valueSentAccumulator += _ethParams[i].amount + _tollCommitment;
     }
     _valueSentAccumulator += _tollCommitment * _tokenParams.length;
-    if (_value < _valueSentAccumulator) revert ValueMismatch();
+    if (msg.value < _valueSentAccumulator) revert ValueMismatch();
   }
 
   /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
