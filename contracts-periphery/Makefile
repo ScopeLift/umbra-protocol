@@ -7,8 +7,6 @@ else
   INSTALL_CMD := forge install
 endif
 
-forkBlock = 14800081
-
 build :; forge build
 clean :; forge clean
 install :; $(INSTALL_CMD)
