@@ -25,10 +25,18 @@ contract DeployUmbraTest is DSTestPlus {
 
   function deployUmbra() public virtual {
     // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
-    vm.etch(umbra, (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code);
+    vm.etch(
+      umbra,
+      (
+        deployCode(
+          "test/utils/Umbra.json",
+          bytes(abi.encode(0, address(this), address(this)))
+        )
+      ).code
+    );
   }
 
-  function createMockERC20AndMint(address addr, uint256 amount) public {
+  function createMockERC20AndMint(address addr, uint amount) public {
     token = new MockERC20("Test", "TT", 18);
     token2 = new MockERC20("Test2", "TT2", 18);
     token.mint(addr, amount);
@@ -39,36 +47,28 @@ contract DeployUmbraTest is DSTestPlus {
     address _acceptor,
     address _tokenAddr,
     address _sponsor,
-    uint256 _sponsorFee,
+    uint _sponsorFee,
     IUmbraHookReceiver _hook,
     bytes memory _data,
-    uint256 _privateKey
-  )
-    internal
-    returns (
-      uint8 v,
-      bytes32 r,
-      bytes32 s
-    )
-  {
-    bytes32 _digest =
-      keccak256(
-        abi.encodePacked(
-          "\x19Ethereum Signed Message:\n32",
-          keccak256(
-            abi.encode(
-              block.chainid,
-              address(umbra),
-              _acceptor,
-              _tokenAddr,
-              _sponsor,
-              _sponsorFee,
-              address(_hook),
-              _data
-            )
+    uint _privateKey
+  ) internal returns (uint8 v, bytes32 r, bytes32 s) {
+    bytes32 _digest = keccak256(
+      abi.encodePacked(
+        "\x19Ethereum Signed Message:\n32",
+        keccak256(
+          abi.encode(
+            block.chainid,
+            address(umbra),
+            _acceptor,
+            _tokenAddr,
+            _sponsor,
+            _sponsorFee,
+            address(_hook),
+            _data
           )
         )
-      );
+      )
+    );
 
     return vm.sign(_privateKey, _digest);
   }

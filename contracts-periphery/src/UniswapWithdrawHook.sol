@@ -20,25 +20,28 @@ contract UniswapWithdrawHook is Ownable {
    * @dev The SwapRouter02 source code can be found here: https://github.com/Uniswap/swap-router-contracts/blob/main/contracts/SwapRouter02.sol
    */
   function tokensWithdrawn(
-    uint256, /* _amount */
+    uint, /* _amount */
     address, /* _stealthAddr */
     address, /* _acceptor */
     address _tokenAddr,
     address, /* _sponsor */
-    uint256, /* _sponsorFee */
+    uint, /* _sponsorFee */
     bytes memory _data
   ) external {
-    (address _recipient, bytes[] memory _multicallData) = abi.decode(_data, (address, bytes[]));
+    (address _recipient, bytes[] memory _multicallData) =
+      abi.decode(_data, (address, bytes[]));
     swapRouter.multicall(_multicallData);
 
     if (IERC20(_tokenAddr).balanceOf(address(this)) > 0) {
-      IERC20(_tokenAddr).safeTransfer(_recipient, IERC20(_tokenAddr).balanceOf(address(this)));
+      IERC20(_tokenAddr).safeTransfer(
+        _recipient, IERC20(_tokenAddr).balanceOf(address(this))
+      );
     }
   }
 
   /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
   /// that token in this contract.
   function approveToken(IERC20 _token) external onlyOwner {
-    _token.safeApprove(address(swapRouter), type(uint256).max);
+    _token.safeApprove(address(swapRouter), type(uint).max);
   }
 }
