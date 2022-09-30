@@ -8,13 +8,13 @@ interface IUmbra {
    * @notice Public state variable get function
    * @return uint256 toll
    */
-  function toll() external returns(uint256);
+  function toll() external returns (uint);
 
   /**
    * @notice Admin only function to update the toll
    * @param _newToll New ETH toll in wei
    */
-  function setToll(uint256 _newToll) external;
+  function setToll(uint _newToll) external;
 
   /**
    * @notice Admin only function to update the toll collector
@@ -46,7 +46,7 @@ interface IUmbra {
    */
   function sendEth(
     address payable _receiver,
-    uint256 _tollCommitment,
+    uint _tollCommitment,
     bytes32 _pkx, // ephemeral public key x coordinate
     bytes32 _ciphertext
   ) external payable;
@@ -62,7 +62,7 @@ interface IUmbra {
   function sendToken(
     address _receiver,
     address _tokenAddr,
-    uint256 _amount,
+    uint _amount,
     bytes32 _pkx, // ephemeral public key x coordinate
     bytes32 _ciphertext
   ) external payable;
@@ -108,7 +108,7 @@ interface IUmbra {
     address _acceptor,
     address _tokenAddr,
     address _sponsor,
-    uint256 _sponsorFee,
+    uint _sponsorFee,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
@@ -132,12 +132,11 @@ interface IUmbra {
     address _acceptor,
     address _tokenAddr,
     address _sponsor,
-    uint256 _sponsorFee,
+    uint _sponsorFee,
     IUmbraHookReceiver _hook,
     bytes memory _data,
     uint8 _v,
     bytes32 _r,
     bytes32 _s
   ) external;
-
 }
