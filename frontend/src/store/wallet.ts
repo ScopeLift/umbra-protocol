@@ -26,6 +26,8 @@ import { BigNumber, Contract, Web3Provider, parseUnits } from 'src/utils/ethers'
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
+import enLocal from 'src/i18n/locales/en-us.json';
+import chLocal from 'src/i18n/locales/zh-cn.json';
 
 // Wallet configurations.
 const injected = injectedModule();
@@ -91,6 +93,20 @@ export default function useWalletStore() {
         accountCenter: {
           desktop: { enabled: false },
           mobile: { enabled: false },
+        },
+        i18n: {
+          'en-us': {
+            connect: enLocal['connect'],
+            modals: enLocal['modals'],
+            accountCenter: enLocal['accountCenter'],
+            notify: enLocal['notify'],
+          },
+          'zh-cn': {
+            connect: chLocal['connect'],
+            modals: chLocal['modals'],
+            accountCenter: chLocal['accountCenter'],
+            notify: chLocal['notify'],
+          },
         },
         appMetadata: {
           name: 'Umbra',
