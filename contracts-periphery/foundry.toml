@@ -1,10 +1,55 @@
+# =================================
+# ======== Default Profile ========
+# =================================
 [profile.default]
-verbosity = 3
-fs_permissions = [{ access = "read", path = "./"}]
-remappings = ['openzeppelin-contracts/=lib/openzeppelin-contracts/contracts']
-[profile.ci]
-fuzz_runs = 10000
-# See more config options https://github.com/gakonst/foundry/tree/master/config
+  fs_permissions = [{ access = "read", path = "./" }]
+  optimizer = true
+  optimizer_runs = 10_000_000
+  remappings = [
+    "test/=test/",
+    "script/=script/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts",
+  ]
+  solc_version = "0.8.16"
+  verbosity = 3
 
+# ==============================
+# ======== Lite Profile ========
+# ==============================
+# Speed up compilation and tests during development.
+[profile.lite]
+  optimizer = false
+
+[profile.lite.fuzz]
+  runs = 50
+
+[profile.lite.invariant]
+  runs = 10
+
+# ============================
+# ======== CI Profile ========
+# ============================
+[profile.ci.fuzz]
+  runs = 10000
+
+[profile.ci.invariant]
+  runs = 1000
+
+# ===============================
+# ======== RPC Endpoints ========
+# ===============================
 [rpc_endpoints]
-mainnet = "${ETH_RPC_URL}"
+  mainnet = "${ETH_RPC_URL}"
+
+# ============================
+# ======== Formatting ========
+# ============================
+[fmt]
+  bracket_spacing = false
+  int_types = "short"
+  line_length = 80
+  multiline_func_header = "attributes_first"
+  number_underscore = "thousands"
+  quote_style = "double"
+  single_line_statement_blocks = "single"
+  tab_width = 2
