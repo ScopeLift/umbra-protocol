@@ -309,6 +309,8 @@
       "it": "It",
       "resolves-to": "resolves to",
       "is": "is",
+      "is-erc20": "an ERC20 token",
+      "is-erc721": "an ERC721 token",
       "same-addr-as-wallet": "the same address as the connected wallet",
       "same-addr-as-stealth": "the same address as the stealth address",
       "address-it-resolves-to": "The address it resolves to",
