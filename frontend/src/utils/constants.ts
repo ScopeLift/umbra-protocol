@@ -19,6 +19,8 @@ export const ERC20_ABI = [
   'event Transfer(address indexed from, address indexed to, uint256 value)',
 ];
 
+export const ERC721_ABI = ['function name() view returns (string)', 'function symbol() view returns (string)'];
+
 export const MULTICALL_ABI = [
   // https://github.com/mds1/multicall
   'function aggregate(tuple(address target, bytes callData)[] calls) payable returns (uint256 blockNumber, bytes[] returnData)',

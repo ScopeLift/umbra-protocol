@@ -306,6 +306,8 @@
       "it": "它",
       "resolves-to": "解析为",
       "is": "是",
+      "is-erc20": "一个 ERC20 代币",
+      "is-erc721": "一个 ERC721 代币",
       "same-addr-as-wallet": "与连接的钱包地址相同",
       "same-addr-as-stealth": "与隐形地址相同",
       "address-it-resolves-to": "它解析为的地址",
