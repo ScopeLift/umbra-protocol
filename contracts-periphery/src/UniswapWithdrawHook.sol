@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "openzeppelin-contracts/access/Ownable.sol";
-import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-import "src/interface/ISwapRouter.sol";
+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+import {ISwapRouter} from "src/interface/ISwapRouter.sol";
 
 contract UniswapWithdrawHook is Ownable {
   using SafeERC20 for IERC20;

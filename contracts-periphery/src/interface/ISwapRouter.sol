@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.13;
 
-import "src/interface/IUniswapV3SwapCallback.sol";
+import {IUniswapV3SwapCallback} from "src/interface/IUniswapV3SwapCallback.sol";
 
 /// @title Router token swapping functionality
 /// @notice Functions for swapping tokens via Uniswap V3
