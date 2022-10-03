@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "test/UniswapWithdrawHook.fork.1.t.sol";
+import {UniswapWithdrawHookTest} from "test/UniswapWithdrawHook.fork.1.t.sol";
 
 contract UniswapWithdrawHookGasTest is UniswapWithdrawHookTest {
   function test_SwapHalfForEth_withdrawTokenAndCall() public {
