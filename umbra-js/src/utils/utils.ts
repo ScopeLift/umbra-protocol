@@ -286,7 +286,7 @@ function getResolutionInstance(provider: EthersProvider) {
     sourceConfig: {
       cns: {
         provider: Eip1993Factories.fromEthersProvider(provider),
-        network: networkName as 'mainnet' | 'rinkeby',
+        network: networkName as 'mainnet',
       },
     },
   });
@@ -346,7 +346,7 @@ export async function getEthSweepGasInfo(
   provider: EthersProvider,
   overrides: Overrides = {}
 ) {
-  const gasLimitOf21k = [1, 4, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
+  const gasLimitOf21k = [1, 4, 5, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
   const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
   const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([

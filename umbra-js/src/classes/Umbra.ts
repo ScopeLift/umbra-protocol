@@ -37,7 +37,7 @@ const { abi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umb
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
 const subgraphs = {
   1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
-  4: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby',
+  5: 'https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli',
   10: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraoptimism',
   137: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
   42161: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone',
@@ -45,7 +45,7 @@ const subgraphs = {
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
-  4: { chainId: 4, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Rinkeby Graph disabled due to outage/issues
+  5: { chainId: 5, umbraAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
   10: { chainId: 10, umbraAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
   137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
@@ -105,7 +105,7 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
   chainId = BigNumber.from(chainId).toNumber();
   // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
   if (chainId === 1 || chainId === 1337) return `https://mainnet.infura.io/v3/${infuraId}`;
-  if (chainId === 4) return `https://rinkeby.infura.io/v3/${infuraId}`;
+  if (chainId === 5) return `https://goerli.infura.io/v3/${infuraId}`;
   if (chainId === 10) return `https://optimism-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 137) return `https://polygon-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 42161) return `https://arbitrum-mainnet.infura.io/v3/${infuraId}`;

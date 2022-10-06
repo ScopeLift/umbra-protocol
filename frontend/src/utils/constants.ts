@@ -31,12 +31,4 @@ export const MULTICALL_ABI = [
   'function getLastBlockHash() view returns (bytes32 blockHash)',
 ];
 
-export const MULTICALL_ADDRESSES = {
-  // https://github.com/makerdao/multicall#multicall-contract-addresses
-  '1': '0x5e227AD1969Ea493B43F840cfF78d08a6fc17796',
-  '3': '0x53C43764255c17BD724F74c4eF150724AC50a3ed',
-  '4': '0x42Ad527de7d4e9d9d011aC45B31D8551f8Fe9821',
-  '10': '0x187C0F98FEF80E87880Db50241D40551eDd027Bf',
-  '137': '0x11ce4B23bD875D7F5C6a31084f55fDe1e9A87507',
-  '42161': '0xB064Fe785d8131653eE12f3581F9A55F6D6E1ca3',
-};
+export const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11';

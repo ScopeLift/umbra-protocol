@@ -17,11 +17,10 @@ import {
   Signer,
   supportedChains,
   supportedChainIds,
-  SupportedChainId,
   TokenInfoExtended,
 } from 'components/models';
 import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
-import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
+import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
 import { BigNumber, Contract, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
@@ -140,15 +139,14 @@ export default function useWalletStore() {
     // Setup
     if (!provider.value) throw new Error('Provider not connected');
     if (!relayer.value) throw new Error('Relayer instance not found');
-    const multicallAddress = MULTICALL_ADDRESSES[String(chainId.value) as SupportedChainId];
-    const multicall = new Contract(multicallAddress, MULTICALL_ABI, provider.value);
+    const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider.value);
 
     // Generate balance calls using Multicall contract
     const calls = tokens.value.map((token) => {
       const { address: tokenAddress } = token;
       if (tokenAddress === currentChain.value?.nativeCurrency.address) {
         return {
-          target: multicallAddress,
+          target: MULTICALL_ADDRESS,
           callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
         };
       } else {
