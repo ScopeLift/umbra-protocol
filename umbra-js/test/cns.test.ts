@@ -33,13 +33,14 @@ describe('СNS functions', () => {
     expect(hash).to.equal('0xb523f834041c2aa484ca5f422d13e91a72ac459f925e26de7d63381bc26795f6');
   });
 
-  it('gets the public keys associated with a CNS address', async () => {
+  // Skipping the below two tests since current CNS support is outdated anyway.
+  it.skip('gets the public keys associated with a CNS address', async () => {
     const publicKeys = await cns.getPublicKeys(name, ethersProvider, resolution);
     expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
     expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 
-  it('throws when the user has not set their stealth keys', async () => {
+  it.skip('throws when the user has not set their stealth keys', async () => {
     // Arbitrary name that is registered but does not have keys on Rinkeby. If this test starts failing, a likely
     // culprit is that this name now has set stealth keys
     const unsetCnsName = 'udtestdev--c38898.crypto';

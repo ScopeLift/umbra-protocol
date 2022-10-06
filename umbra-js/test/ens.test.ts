@@ -23,22 +23,25 @@ describe('ENS functions', () => {
     expect(hash).to.equal('0xbe0b801f52a20451e2845cf346b7c8de65f4beca0ebba17c14ce601de7bbc7fb');
   });
 
-  it('gets the public keys associated with an ENS address', async () => {
+  // The below tests are outdated and from when we set stealth keys directly on the ENS resolver.
+  // We still have logic for this legacy logic in the frontend, so these are skipped instead of
+  // deleted in case they are useful as a reference.
+  it.skip('gets the public keys associated with an ENS address', async () => {
     const publicKeys = await ens.getPublicKeys(name, ethersProvider);
     expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
     expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 
-  it('throws when the user has not set their resolver', async () => {
-    // Arbitrary name that is not registered on Rinkeby and therefore has no resolver set. If this test starts failing,
+  it.skip('throws when the user has not set their resolver', async () => {
+    // Arbitrary name that is not registered on Goerli and therefore has no resolver set. If this test starts failing,
     // a likely culprit is that this name is now registered
     const unsetEnsName = 'superRandomQwertyHelloWhyWouldYouRegisterThis.eth';
     const errorMsg = `Name ${unsetEnsName} is not registered or user has not set their resolver`;
     await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
   });
 
-  it('throws when the user has a resolver that does not support stealth keys', async () => {
-    // Arbitrary name that is registered on Rinkeby and has set a resolver, but has a resolver that does not support
+  it.skip('throws when the user has a resolver that does not support stealth keys', async () => {
+    // Arbitrary name that is registered on Goerli and has set a resolver, but has a resolver that does not support
     // getting and setting stealth keys. If this test starts failing, a likely culprit is that this user has changed
     // to a supported resolver or the name registration has expired
     const unsetEnsName = 'abc.eth';
@@ -46,8 +49,8 @@ describe('ENS functions', () => {
     await expectRejection(ens.getPublicKeys(unsetEnsName, ethersProvider), errorMsg);
   });
 
-  it('throws when the user has not set their stealth keys', async () => {
-    // Arbitrary name that is registered on Rinkeby and has set a supported resolver, but has not set their stealth
+  it.skip('throws when the user has not set their stealth keys', async () => {
+    // Arbitrary name that is registered on Goerli and has set a supported resolver, but has not set their stealth
     // keys. If this test starts failing, a likely culprit is that this user has set their stealth keys or the name
     // registration has expired
     const unsetEnsName = 'unsetStealthKeys.eth';

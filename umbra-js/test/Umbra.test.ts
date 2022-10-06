@@ -117,12 +117,11 @@ describe('Umbra class', () => {
       expect(umbra2.chainConfig.startBlock).to.equal(8505089);
       expect(umbra2.chainConfig.subgraphUrl).to.equal(false);
 
-      // --- Rinkeby ---
-      const umbra3 = new Umbra(jsonRpcProvider, 4);
+      // --- Goerli ---
+      const umbra3 = new Umbra(jsonRpcProvider, 5);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra3.chainConfig.startBlock).to.equal(8505089);
-      // expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby');
-      expect(umbra3.chainConfig.subgraphUrl).to.equal(false);
+      expect(umbra3.chainConfig.startBlock).to.equal(7718444);
+      expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli');
 
       // --- Mainnet ---
       const umbra4 = new Umbra(jsonRpcProvider, 1);
