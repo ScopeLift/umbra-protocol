@@ -17,6 +17,8 @@ function useWallet(context: SetupContext, to: string) {
     if (userAddress.value && to) {
       await context.root.$router.push({ name: to });
       return;
+    } else if (userAddress.value) {
+      return;
     }
 
     await connectWallet();

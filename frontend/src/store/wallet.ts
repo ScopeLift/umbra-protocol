@@ -31,9 +31,7 @@ import chLocal from 'src/i18n/locales/zh-cn.json';
 
 // Wallet configurations.
 const injected = injectedModule();
-const walletConnect = walletConnectModule({
-  qrcodeModalOptions: { mobileLinks: ['rainbow', 'metamask', 'argent', 'trust', 'imtoken', 'pillar'] },
-});
+const walletConnect = walletConnectModule();
 const coinbaseWalletSdk = coinbaseWalletModule();
 const ledger = ledgerModule();
 const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
