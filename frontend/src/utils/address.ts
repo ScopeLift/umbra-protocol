@@ -124,13 +124,13 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
   // Check if address is an ERC20
   const desIsERC20 = await isERC20(destinationAddress, provider);
   if (desIsERC20) {
-    reasons.push(`${i18n.tc('Utils.Address.it')} ${i18n.tc('Utils.Address.is')} ${i18n.tc('Utils.Address.is-erc20')}`);
+    reasons.push(`${i18n.tc('Utils.Address.is-erc20')}`);
   }
 
   // Check if address is an ERC721
   const desIsERC721 = await isERC721(destinationAddress, provider);
   if (!desIsERC20 && desIsERC721) {
-    reasons.push(`${i18n.tc('Utils.Address.it')} ${i18n.tc('Utils.Address.is')} ${i18n.tc('Utils.Address.is-erc721')}`);
+    reasons.push(`${i18n.tc('Utils.Address.is-erc721')}`);
   }
 
   // If we're withdrawing to an ENS name, and if we're not on L1, and if the L1 address it resolves to is a contract,
