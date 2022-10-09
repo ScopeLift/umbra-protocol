@@ -28,7 +28,7 @@ describe('StealthKeyRegistry', () => {
   });
 
   describe('initialization', () => {
-    it('should deploy the registry contract', async () => {
+    it('should deploy the registry contract', () => {
       expect(isAddress(registry.address), 'Failed to deploy StealthKeyRegistry').to.be.true;
     });
 
@@ -167,7 +167,7 @@ describe('StealthKeyRegistry', () => {
         viewingPubKey,
       };
 
-      let signature = await user._signTypedData(domain, types, value);
+      const signature = await user._signTypedData(domain, types, value);
       return ethers.utils.splitSignature(signature);
     };
 
