@@ -78,7 +78,8 @@
     "amount-exceeds-balance": "钱包金额不足",
     "please-complete-form": "请填写表格",
     "wallet-not-connected": "钱包未连接",
-    "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额"
+    "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额",
+    "advanced-mode-warning": "使用高级模式可能会导致使资金无法恢复的操作"
   },
   "Receive": {
     "receive": "接收",
@@ -310,6 +311,9 @@
       "same-addr-as-stealth": "与隐形地址相同",
       "address-it-resolves-to": "它解析为的地址",
       "has-poap-tokens": "具有 POAP 令牌"
+    },
+    "Dialog": {
+      "warning": "警告！"
     }
   },
   "connect": {
