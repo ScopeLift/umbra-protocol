@@ -6,7 +6,7 @@ import { Provider } from 'components/models';
 import { utils } from '@umbra/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getAddress, Web3Provider, isHexString } from 'src/utils/ethers';
-import { getChainById, isERC20, isERC721 } from 'src/utils/utils';
+import { getChainById, isToken } from 'src/utils/utils';
 import { i18n } from '../boot/i18n';
 import Resolution from '@unstoppabledomains/resolution';
 // ================================================== Address Helpers ==================================================
@@ -121,16 +121,10 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
   // Check if address has contributed to Gitcoin Grants
   // TODO
 
-  // Check if address is an ERC20
-  const desIsERC20 = await isERC20(destinationAddress, provider);
-  if (desIsERC20) {
-    reasons.push(`${i18n.tc('Utils.Address.is-erc20')}`);
-  }
-
-  // Check if address is an ERC721
-  const desIsERC721 = await isERC721(destinationAddress, provider);
-  if (!desIsERC20 && desIsERC721) {
-    reasons.push(`${i18n.tc('Utils.Address.is-erc721')}`);
+  // Check if address might be an ERC-20 or ERC-721
+  const desIsToken = await isToken(destinationAddress, provider);
+  if (desIsToken) {
+    reasons.push(`${i18n.tc('Utils.Address.might-be-token')}`);
   }
 
   // If we're withdrawing to an ENS name, and if we're not on L1, and if the L1 address it resolves to is a contract,

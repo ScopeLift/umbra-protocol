@@ -1,5 +1,5 @@
 import { supportedChains, TokenInfo, Provider } from 'src/components/models';
-import { ERC20_ABI, ERC721_ABI } from './constants';
+import { ERC20_ABI } from './constants';
 import { BigNumber, BigNumberish, Contract, hexValue, parseUnits, formatUnits, isHexString } from './ethers';
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` or `address and `chainId`
@@ -140,21 +140,9 @@ export const getGasPrice = async (gasPriceConfidence: TxPriceConfidence = 99): P
   }
 };
 
-export const isERC20 = async (address: string, provider: Provider) => {
+// Address might be an ERC-20 or ERC-721 token
+export const isToken = async (address: string, provider: Provider) => {
   const tokenContract = new Contract(address, ERC20_ABI, provider);
-  const hasDecimalsPromise = tokenContract.decimals();
-  const hasNamePromise = tokenContract.name();
-  const hasSymbolPromise = tokenContract.symbol();
-  try {
-    await Promise.all([hasSymbolPromise, hasNamePromise, hasDecimalsPromise]);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const isERC721 = async (address: string, provider: Provider) => {
-  const tokenContract = new Contract(address, ERC721_ABI, provider);
   const hasNamePromise = tokenContract.name();
   const hasSymbolPromise = tokenContract.symbol();
   try {
