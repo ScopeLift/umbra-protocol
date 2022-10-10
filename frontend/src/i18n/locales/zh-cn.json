@@ -303,14 +303,13 @@
       "transaction-failed": "您的交易已失败(Your transaction has failed)"
     },
     "Address": {
+      "might-be-token": "它可能是一个代币合约，例如ERC-20或ERC-721",
       "name-publicly-viewable": "此名称可公开查看",
       "name-resolves-to-ens": "此名称解析为可公开查看的 ENS 名称 ",
       "name-resolves-to-cns": "此名称解析为可公开查看的 CNS 名称 ",
       "it": "它",
       "resolves-to": "解析为",
       "is": "是",
-      "is-erc20": "它是一个 ERC-20 代币",
-      "is-erc721": "它是一个 ERC-721 令牌",
       "same-addr-as-wallet": "与连接的钱包地址相同",
       "same-addr-as-stealth": "与隐形地址相同",
       "address-it-resolves-to": "它解析为的地址",

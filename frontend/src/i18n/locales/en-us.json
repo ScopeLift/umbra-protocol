@@ -303,14 +303,13 @@
       "transaction-failed": "Your transaction has failed"
     },
     "Address": {
+      "might-be-token": "It might be a token contract, such as an ERC-20 or ERC-721",
       "name-publicly-viewable": "This name is publicly viewable",
       "name-resolves-to-ens": "This name resolves to the publicly viewable ENS name ",
       "name-resolves-to-cns": "This name resolves to the publicly viewable CNS name ",
       "it": "It",
       "resolves-to": "resolves to",
       "is": "is",
-      "is-erc20": "It is an ERC-20 token",
-      "is-erc721": "It is an ERC-721 token",
       "same-addr-as-wallet": "the same address as the connected wallet",
       "same-addr-as-stealth": "the same address as the stealth address",
       "address-it-resolves-to": "The address it resolves to",
