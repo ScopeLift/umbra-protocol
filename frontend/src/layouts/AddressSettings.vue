@@ -4,7 +4,7 @@
       <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>
     </span>
     <connect-wallet>
-      <div class="row text-caption cursor-pointer dark-toggle">
+      <div class="row text-caption dark-toggle">
         <span v-if="userDisplayName">
           {{ userDisplayName }}
         </span>
