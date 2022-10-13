@@ -17,12 +17,21 @@
             <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
           </h5>
         </q-card-section>
-        <q-card-section>
+        <q-card-section class="q-pb-sm">
           <div class="row items-center text">
-            {{ $t('Send.advanced-mode-warning') }}
+            <span>
+              {{ $t('Send.advanced-send-warning') }}
+              <router-link
+                class="hyperlink"
+                to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
+                target="_blank"
+              >
+                {{ $t('Send.learn-more') }}
+              </router-link>
+            </span>
           </div>
         </q-card-section>
-        <q-card-section>
+        <q-card-section class="q-pt-sm">
           <div class="row justify-evenly">
             <base-button
               :label="$t('AccountReceiveTableWarning.acknowledge-risks')"
@@ -40,21 +49,33 @@
             <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
           </h5>
         </q-card-section>
-        <q-card-section>
+        <q-card-section class="q-pb-sm">
           <div class="row items-center text">
-            {{ $t('Send.advanced-mode-warning') }}
+            <span class="q-pa-sm">
+              {{ $t('Send.advanced-send-warning') }}
+              <router-link
+                class="hyperlink"
+                to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
+                target="_blank"
+              >
+                {{ $t('Send.learn-more') }}
+              </router-link>
+            </span>
+            <q-checkbox v-model="acknowledgeSendRisk">
+              {{ $t('Send.acknowledge-risks') }}
+            </q-checkbox>
           </div>
         </q-card-section>
-        <q-card-section>
+
+        <q-card-section class="q-pt-sm">
           <div class="row justify-evenly">
             <base-button
               type="submit"
               @click="onFormSubmit()"
-              :disable="!isValidForm || isSending"
+              :disable="!isValidForm || isSending || !acknowledgeSendRisk"
               :full-width="true"
               :label="$t('Send.send')"
               :loading="isSending"
-              v-close-popup
             />
           </div>
         </q-card-section>
@@ -195,7 +216,6 @@
       </div>
 
       <!-- Send button -->
-      <!-- Pop modal and send in that -->
       <div>
         <base-button
           v-if="sendAdvancedButton"
@@ -266,7 +286,8 @@ function useSendForm() {
   const sendFormRef = ref<QForm>();
   const isSending = ref(false);
   const advancedAcknowledged = ref(false);
-  const showAdvancedSendWarning = ref(false);
+  let showAdvancedSendWarning = ref(false);
+  const acknowledgeSendRisk = ref(false);
   const vm = getCurrentInstance()!;
 
   // Form parameters
@@ -465,6 +486,7 @@ function useSendForm() {
       resetForm();
     } finally {
       isSending.value = false;
+      showAdvancedSendWarning = false;
     }
   }
 
@@ -494,6 +516,7 @@ function useSendForm() {
   }
 
   return {
+    acknowledgeSendRisk,
     advancedMode,
     advancedAcknowledged,
     chainId,
