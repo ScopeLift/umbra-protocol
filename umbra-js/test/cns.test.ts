@@ -1,26 +1,19 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-import { ethers } from 'hardhat';
-import { default as Resolution, Eip1993Factories } from '@unstoppabledomains/resolution';
+import { default as Resolution } from '@unstoppabledomains/resolution';
 import * as cns from '../src/utils/cns';
-import { expectRejection } from './utils';
+import * as utils from '../src/utils/utils';
+import { StaticJsonRpcProvider } from '../src/ethers';
 
-const ethersProvider = ethers.provider;
-const resolution = new Resolution({
-  sourceConfig: {
-    cns: {
-      provider: Eip1993Factories.fromEthersProvider(ethersProvider),
-      network: 'rinkeby',
-    },
-  },
-});
+// const ethersProvider = ethers.provider;
+const resolution = new Resolution();
 
 // Truth parameters to test against
-const name = 'udtestdev-msolomon.crypto';
+const name = 'blockdudes.nft';
 const nameSpendingPublicKey =
-  '0x04f04b29a6ef7e7da9a2f2767c574c587b1d048c3cb0a7b29955175a35d8a2b345ebb852237b955d81e32a8c94ebd71704ccb4c8ab5b3ad5866543ca91ede825ef';
+  '0x04044eb8172250ac55e7c32d42cbed2bc15798093c5a55fe2c5af1e019109de649a1df9d84219c3a74c21e7583ebc81e822827e9c8dce4e23dfe48fa7d1c87e2f1';
 const nameViewingPublicKey =
-  '0x04cc7d4c34d8f78e7bd65a04bea64bc21589073c139658040b4a20cc58991da385f0706d354b3aace6d1184e1e49ce2201dc884a3eb2b7f03a2d3a2bfbab10bd7d';
+  '0x04b1be486379952764a1cdd6af5e97aed6c266c5aa4ccf8e5c0d78d77234e2fe8983914a981cc46750dbc2b2238eb26684e091022c287107e21b5376ede8e8e768';
 
 describe('СNS functions', () => {
   it('throws when namehash is not given a string', () => {
@@ -30,21 +23,16 @@ describe('СNS functions', () => {
 
   it('computes the namehash of a CNS domain', () => {
     const hash = cns.namehash(name, resolution);
-    expect(hash).to.equal('0xb523f834041c2aa484ca5f422d13e91a72ac459f925e26de7d63381bc26795f6');
+    expect(hash).to.equal('0xe36da3a0bde173af5446ba3a17c97c0601d7d4c2356e3f3f84643aa3236814ee');
   });
 
-  // Skipping the below two tests since current CNS support is outdated anyway.
-  it.skip('gets the public keys associated with a CNS address', async () => {
-    const publicKeys = await cns.getPublicKeys(name, ethersProvider, resolution);
-    expect(publicKeys.spendingPublicKey).to.equal(nameSpendingPublicKey);
-    expect(publicKeys.viewingPublicKey).to.equal(nameViewingPublicKey);
-  });
-
-  it.skip('throws when the user has not set their stealth keys', async () => {
-    // Arbitrary name that is registered but does not have keys on Rinkeby. If this test starts failing, a likely
-    // culprit is that this name now has set stealth keys
-    const unsetCnsName = 'udtestdev--c38898.crypto';
-    const errorMsg = `Public keys not found for ${unsetCnsName}. User must setup their Umbra account`;
-    await expectRejection(cns.getPublicKeys(unsetCnsName, ethersProvider, resolution), errorMsg);
+  it('gets the public keys associated with a CNS address', async () => {
+    const address = await resolution.addr(name, 'ETH');
+    const ethersProvider = new StaticJsonRpcProvider(
+      `https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`
+    );
+    const keys = await utils.lookupRecipient(address, ethersProvider);
+    expect(keys.spendingPublicKey).to.equal(nameSpendingPublicKey);
+    expect(keys.viewingPublicKey).to.equal(nameViewingPublicKey);
   });
 });

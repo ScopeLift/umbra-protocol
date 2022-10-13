@@ -22,6 +22,7 @@
     "@quasar/extras": "^1.0.0",
     "@umbra/umbra-js": "^0.1.0",
     "@uniswap/token-lists": "^1.0.0-beta.19",
+    "@unstoppabledomains/resolution": "8.3.1",
     "@vue/composition-api": "^0.6.4",
     "@web3-onboard/coinbase": "^2.1.1",
     "@web3-onboard/core": "^2.8.1",

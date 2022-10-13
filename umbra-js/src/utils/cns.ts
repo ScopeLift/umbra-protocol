@@ -2,7 +2,7 @@
  * @dev Functions for interacting with the Unstoppable Domains Crypto Name Service (CNS)
  */
 import { Point } from 'noble-secp256k1';
-import { default as Resolution } from '@unstoppabledomains/resolution';
+import { default as Resolution, NamingServiceName } from '@unstoppabledomains/resolution';
 import type { EthersProvider } from '../types';
 import { CNS_RESOLVER_ABI } from './constants';
 import { createContract } from './utils';
@@ -19,7 +19,7 @@ export function namehash(name: string, resolution: Resolution) {
   if (typeof name !== 'string') {
     throw new Error('Name must be a string');
   }
-  return resolution.namehash(name);
+  return resolution.namehash(name, NamingServiceName.UNS);
 }
 
 /**
@@ -30,7 +30,7 @@ export function namehash(name: string, resolution: Resolution) {
  */
 export async function getPublicKeys(name: string, provider: EthersProvider, resolution: Resolution) {
   // Read compressed public keys
-  const domainNamehash = resolution.namehash(name);
+  const domainNamehash = resolution.namehash(name, NamingServiceName.UNS);
   const resolverAddress = await resolution.resolver(name);
   const cnsResolver = createContract(resolverAddress, CNS_RESOLVER_ABI, provider);
   const [compressedSpendingPublicKey, compressedViewingPublicKey] = await cnsResolver.getMany(
