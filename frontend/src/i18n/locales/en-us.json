@@ -79,7 +79,9 @@
     "please-complete-form": "Please complete the form",
     "wallet-not-connected": "Wallet not connected",
     "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance",
-    "advanced-mode-warning": "Using advanced mode may lead to actions that make funds unrecoverable!"
+    "advanced-send-warning": "The receiver will have to enter their account's private key into this app to withdrawal the funds. Don't use this feature unless you know what you're doing.",
+    "learn-more": "Learn more",
+    "acknowledge-risks": "I acknowledge the risks"
   },
   "Receive": {
     "receive": "Receive",
@@ -313,7 +315,7 @@
       "has-poap-tokens": "has POAP tokens"
     },
     "Dialog": {
-      "warning": "Warning!"
+      "warning": "Warning"
     }
   },
   "connect": {

@@ -79,7 +79,9 @@
     "please-complete-form": "请填写表格",
     "wallet-not-connected": "钱包未连接",
     "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额",
-    "advanced-mode-warning": "使用高级模式可能会导致使资金无法恢复的操作"
+    "advanced-send-warning": "接收者必须将其帐户的私钥输入此应用程序才能提取资金。除非您知道自己在做什么，否则不要使用此功能",
+    "learn-more": "了解更多信息",
+    "acknowledge-risks": "我承认风险"
   },
   "Receive": {
     "receive": "接收",
