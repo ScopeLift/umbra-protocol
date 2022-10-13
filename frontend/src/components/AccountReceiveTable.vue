@@ -512,7 +512,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @notice Copies the address of type to the clipboard
    */
   async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
-    await copyToClipboard(address);
+    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    const mainAddress = await toAddress(address, provider.value);
+    await copyToClipboard(mainAddress);
     notifyUser('success', `${type} ${vm.$i18n.tc('AccountReceiveTable.address-copied')}`);
   }
 
