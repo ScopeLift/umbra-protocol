@@ -3,7 +3,7 @@
     <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
       <div class="column all-content-format">
         <!-- Main header -->
-        <div class="row justify-between items-center no-wrap">
+        <div class="row justify-between items-center no-wrap" style="height: 60px">
           <div class="col-sm-auto">
             <div class="row justify-start items-center">
               <!-- LOGO AND TITLE -->
@@ -15,6 +15,7 @@
                     src="~assets/app-logo-128x128.png"
                     style="max-width: 50px"
                     class="q-ml-md"
+                    v-if="$q.screen.gt.sm || !network"
                   />
                   <div v-if="$q.screen.gt.sm" @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
                     <span class="primary header-black q-ml-md">Umbra</span>
@@ -23,14 +24,6 @@
                     <div v-if="isLoading" class="q-ml-md row">
                       <q-spinner color="primary" size="1em" />
                     </div>
-                    <address-settings
-                      v-else-if="!isLoading && (userDisplayName || network)"
-                      :avatar="avatar"
-                      :userAddress="userAddress"
-                      :userDisplayName="userDisplayName"
-                      :advancedMode="advancedMode"
-                      class="q-ml-md row"
-                    />
                   </div>
                 </div>
 
@@ -57,19 +50,7 @@
             <div v-if="isLoading" class="row justify-end items-center">
               <q-spinner color="primary" size="1em" />
             </div>
-            <div v-else-if="!isLoading && (userDisplayName || network)" class="row justify-end items-center no-wrap">
-              <div class="q-mr-md">
-                <address-settings
-                  :avatar="avatar"
-                  :userAddress="userAddress"
-                  :userDisplayName="userDisplayName"
-                  :advancedMode="advancedMode"
-                  class="row"
-                />
-              </div>
-              <network-dropdown />
-            </div>
-            <connect-wallet v-else-if="!isLoading">
+            <connect-wallet v-if="!isLoading">
               <div class="row justify-end items-center">
                 <connect-wallet>
                   <base-button
@@ -117,10 +98,7 @@
       <div class="col q-col-gutter-y-sm q-px-md">
         <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
       </div>
-      <div v-if="!isLoading && userDisplayName" class="row q-pt-sm q-px-md full-width">
-        <network-dropdown />
-      </div>
-      <connect-wallet v-else-if="!isLoading">
+      <connect-wallet v-if="!isLoading && !network">
         <base-button
           class="q-ml-md cursor-pointer"
           color="primary"

@@ -84,12 +84,14 @@ export default function useWalletStore() {
             token: chain.nativeCurrency.symbol,
             label: chain.chainName,
             rpcUrl: chain.rpcUrls[0],
-            icon: chain.logoURI,
           };
         }),
+        // Mobile descktop distinction doesn't work
+        // We need to use media queries to minimize
+        // and to shift to the left from right
         accountCenter: {
-          desktop: { enabled: true },
-          mobile: { enabled: true },
+          desktop: { enabled: true, position: 'topRight' },
+          mobile: { enabled: true, minimal: true, position: 'topLeft' },
         },
         i18n: {
           'en-us': {
@@ -115,7 +117,12 @@ export default function useWalletStore() {
       });
       const addresses = onboard.value.state.select('wallets');
       addresses.subscribe((update) => {
+        if (update.length === 0) {
+          resetState();
+        }
         update.map((wallet) => {
+          console.log('wakket');
+          console.log(wallet);
           wallet.provider.on('accountsChanged', () => {
             window.location.reload();
           });

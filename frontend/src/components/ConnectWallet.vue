@@ -16,8 +16,7 @@ function useWallet(context: SetupContext, to: string) {
     // from the home page)
     if (userAddress.value && to) {
       await context.root.$router.push({ name: to });
-      return;
-    } else if (userAddress.value) {
+      console.log('First if');
       return;
     }
 
