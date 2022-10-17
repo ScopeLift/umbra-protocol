@@ -88,8 +88,8 @@ export default function useWalletStore() {
           };
         }),
         accountCenter: {
-          desktop: { enabled: false },
-          mobile: { enabled: false },
+          desktop: { enabled: true },
+          mobile: { enabled: true },
         },
         i18n: {
           'en-us': {
