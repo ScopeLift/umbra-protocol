@@ -6,17 +6,15 @@
 
     <q-card-section>
       <h5 class="text-bold text-center q-mt-none">
-        Danger <q-icon name="fas fa-exclamation-triangle" class="danger" left />
+        {{ $t('AccountReceiveTable.danger') }} <q-icon name="fas fa-exclamation-triangle" class="danger" left />
       </h5>
     </q-card-section>
 
     <q-card-section>
       <p>
-        It looks like you're trying to withdraw your funds to token contract. It is very likely this is not what you
-        intend, and proceeding will likely result in a loss of funds. Do not proceed unless you know exactly what you
-        are doing.
+        {{ $t('AccountReceiveTable.loss-warning') }}
       </p>
-      <q-checkbox v-model="acknowledgeWarning"> I know what I am doing </q-checkbox>
+      <q-checkbox v-model="acknowledgeWarning"> {{ $t('AccountReceiveTable.i-know-what') }} </q-checkbox>
     </q-card-section>
 
     <q-card-section>
