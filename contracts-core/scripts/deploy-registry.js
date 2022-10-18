@@ -9,10 +9,10 @@
  */
 const fs = require('fs');
 const hre = require('hardhat');
-const { exit } = require('process');
+const { exit } = require('process'); // eslint-disable-line @typescript-eslint/unbound-method
 const { ethers } = hre;
 
-const network = process.env.HARDHAT_NETWORK;
+const network = process.env.HARDHAT_NETWORK || '';
 
 // Initialize object that will hold all deploy info. We'll continually update this and save it to
 // a file using the save() method below

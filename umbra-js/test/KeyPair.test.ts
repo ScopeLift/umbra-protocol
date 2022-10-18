@@ -47,8 +47,8 @@ describe('KeyPair class', () => {
 
     it('initializes an instance from a regular transaction', async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0x0f18ca5d71b4ad595a7a9a649c940aeec068ef6f1a4fe71f210578a8ea483e0f';
-      const from = '0x40f3F89639bFFc7B23cA5D9FCB9eD9a9C579664B';
+      const txHash = '0xb72708c3c414d6757c924f812913a351d0f9a89ce11d3fc22381980f0253e04f';
+      const from = '0x4fF79526eA1d492a3dB2aa210d7318ff13F2012c';
       // Create instance and check result
       const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
       expect(keyPair.address).to.equal(from);
@@ -56,8 +56,8 @@ describe('KeyPair class', () => {
 
     it('initializes an instance from a contract interaction transaction', async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0xfc84305e8aea7c735bd89e01e0fe66b50ce8ed8c940291fa8f3e1a1070f029c5';
-      const from = '0x72378CbC246C17fe856d7678d944a0C51227eD59';
+      const txHash = '0x4e490ed2b7752d48a480e9712e6833fbccbae2991823d97686eb796aad199e8b';
+      const from = '0xb589178adfb6c6915c55b08B284bdBbbcf4f452e';
       // Create instance and check result
       const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
       expect(keyPair.address).to.equal(from);
@@ -65,8 +65,8 @@ describe('KeyPair class', () => {
 
     it('initializes an instance from a contract creation transaction', async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0xa84eae9a81444a02d10916627c282fe16fd78eb8ed3e2bd36ec257f7272ddcd0';
-      const from = '0x627306090abaB3A6e1400e9345bC60c78a8BEf57';
+      const txHash = '0x22f07e4fad1329ce6f6cc6cafdc080c23fd9e70822121f634a41ac459b18d1be';
+      const from = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
       // Create instance and check result
       const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
       expect(keyPair.address).to.equal(from);
@@ -76,9 +76,9 @@ describe('KeyPair class', () => {
   describe('Functionality', () => {
     it('will recover the public key from an arbitrary transaction', async () => {
       // Specify rinkeby transaction hash and its sender
-      const txHash = '0x0f18ca5d71b4ad595a7a9a649c940aeec068ef6f1a4fe71f210578a8ea483e0f';
+      const txHash = '0xb72708c3c414d6757c924f812913a351d0f9a89ce11d3fc22381980f0253e04f';
       const sendersPublicKey =
-        '0x041e2f66297fe2f58c9a9e4b7895bd4e5107581ed533ea9ff311631ea15692a6e6eb8d38f1bddf2e6e9f00dc5120e313671c93570b4997dcd9cd9388ae35ffd4b8';
+        '0x04972a34d8f2ded8515b1b32234fe305273a8a680643bea54e33cb0b862130f6af3088686afefb99b3b6bf9bb3af4ac8f193f7326be203984dceda2791eff47c53';
       // Create instance and check result
       const recoveredPublicKey = await utils.recoverPublicKeyFromTransaction(txHash, ethersProvider);
       expect(recoveredPublicKey).to.equal(sendersPublicKey);
@@ -119,7 +119,7 @@ describe('KeyPair class', () => {
         const recipientHardhat = (await ethers.getSigners())[i];
         const recipient = new Wallet(testPrivateKeys[i]);
         if (recipientHardhat.address !== recipient.address) throw new Error('Address mismatch');
-        const umbra = new Umbra(ethersProvider, 4);
+        const umbra = new Umbra(ethersProvider, 5);
         const { viewingKeyPair } = await umbra.generatePrivateKeys(recipient);
 
         // Simulate sender encrypting the random number

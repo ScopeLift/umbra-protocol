@@ -2,7 +2,7 @@
   <q-page padding class="text-left form-extra-wide">
     <h2 class="page-title">Terms of Service</h2>
 
-    <p>Last Updated: April 16, 2021</p>
+    <p>Last Updated: August 11, 2022</p>
 
     <p>
       Umbra is an application that utilizes the Ethereum blockchain network enabling users to send and receive payments
@@ -122,17 +122,18 @@
         impersonate another person (via the use of an email address or otherwise); (iv) upload, post, transmit or
         otherwise make available through the App any content that infringes the intellectual proprietary rights of any
         party; (v) use the App to violate the legal rights (such as rights of privacy and publicity) of others; (vi)
-        engage in, promote, or encourage illegal activity (including, without limitation, money laundering); (vii)
-        interfere with other users’ enjoyment of the App; (viii) exploit the App for any unauthorized commercial
-        purpose; (ix) modify, adapt, translate, or reverse engineer any portion of the App; (x) remove any copyright,
-        trademark or other proprietary rights notices contained in or on the App or any part of it; (xi) reformat or
-        frame any portion of the App; (xii) display any content on the App that contains any hate-related or violent
-        content or contains any other material, products or services that violate or encourage conduct that would
-        violate any criminal laws, any other applicable laws, or any third party rights; (xiii) use any robot, spider,
-        site search/retrieval application, or other device to retrieve or index any portion of the App or the content
-        posted on the App, or to collect information about its users for any unauthorized purpose; (xiv) create user
-        accounts by automated means or under false or fraudulent pretenses; or (xv) access or use the App for the
-        purpose of creating a product or service that is competitive with any of our products or services.
+        engage in, promote, or encourage illegal activity (including, without limitation, money laundering or the use of
+        an illegal or sanctioned mixing service i.e. an illegal or sanctioned mixer or tumbler used to obscure the
+        source of funds); (vii) interfere with other users’ enjoyment of the App; (viii) exploit the App for any
+        unauthorized commercial purpose; (ix) modify, adapt, translate, or reverse engineer any portion of the App; (x)
+        remove any copyright, trademark or other proprietary rights notices contained in or on the App or any part of
+        it; (xi) reformat or frame any portion of the App; (xii) display any content on the App that contains any
+        hate-related or violent content or contains any other material, products or services that violate or encourage
+        conduct that would violate any criminal laws, any other applicable laws, or any third party rights; (xiii) use
+        any robot, spider, site search/retrieval application, or other device to retrieve or index any portion of the
+        App or the content posted on the App, or to collect information about its users for any unauthorized purpose;
+        (xiv) create user accounts by automated means or under false or fraudulent pretenses; or (xv) access or use the
+        App for the purpose of creating a product or service that is competitive with any of our products or services.
       </li>
     </ol>
 
@@ -171,6 +172,11 @@
       <li>
         YOU ACCEPT THE INHERENT SECURITY RISKS OF PROVIDING INFORMATION AND DEALING ONLINE OVER THE INTERNET, AND AGREE
         THAT WE HAVE NO LIABILITY OR RESPONSIBILITY FOR ANY BREACH OF SECURITY UNLESS IT IS DUE TO OUR GROSS NEGLIGENCE.
+      </li>
+      <li>
+        SCOPELIFT IS NOT LIABLE TO YOU FOR ANY LEGAL ACTION DERIVED FROM THE USE OF A CRYPTOCURRENCY MIXING SERVICE
+        (I.E. A MIXER OR TUMBLER USED TO OBSCURE THE SOURCE OF FUNDS). SCOPELIFT EXPRESSLY CONDEMNS THE USE OF ANY SUCH
+        ILLEGAL OR SANCTIONED SERVICE.
       </li>
       <li>
         WE WILL NOT BE RESPONSIBLE OR LIABLE TO YOU FOR ANY LOSSES YOU INCUR AS THE RESULT OF YOUR USE OF THE ETHEREUM

@@ -117,12 +117,11 @@ describe('Umbra class', () => {
       expect(umbra2.chainConfig.startBlock).to.equal(8505089);
       expect(umbra2.chainConfig.subgraphUrl).to.equal(false);
 
-      // --- Rinkeby ---
-      const umbra3 = new Umbra(jsonRpcProvider, 4);
+      // --- Goerli ---
+      const umbra3 = new Umbra(jsonRpcProvider, 5);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra3.chainConfig.startBlock).to.equal(8505089);
-      // expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby');
-      expect(umbra3.chainConfig.subgraphUrl).to.equal(false);
+      expect(umbra3.chainConfig.startBlock).to.equal(7718444);
+      expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli');
 
       // --- Mainnet ---
       const umbra4 = new Umbra(jsonRpcProvider, 1);
@@ -380,12 +379,12 @@ describe('Umbra class', () => {
     it('throws when isEth is passed a bad address', async () => {
       // These error messages come from ethers
       await expectRejection(
-        umbra.send(sender, '123', '1', '1'), // last two args are dummy args since we're testing the second input
+        umbra.send(sender, '123', '1', ETH_ADDRESS),
         'invalid address (argument="address", value="123", code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
       await expectRejection(
         // @ts-expect-error
-        umbra.send(sender, 123, '1', '1'), // last two args are dummy args since we're testing the second input
+        umbra.send(sender, 123, '1', ETH_ADDRESS),
         'invalid address (argument="address", value=123, code=INVALID_ARGUMENT, version=address/5.6.1)'
       );
     });

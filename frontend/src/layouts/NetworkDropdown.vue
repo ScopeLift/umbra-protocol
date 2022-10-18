@@ -34,7 +34,7 @@ export default defineComponent({
     // We only show Rinkeby as an option in the network dropdown if the user is connected to Rinkeby
     const chainOptions = computed(() => {
       if (network.value?.chainId === 4) return supportedChains;
-      return supportedChains.filter((chain) => chain.chainName !== 'Rinkeby');
+      return supportedChains.filter((chain) => chain.chainName !== 'Goerli');
     });
 
     watchEffect(() => {

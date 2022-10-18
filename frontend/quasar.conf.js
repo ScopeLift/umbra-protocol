@@ -90,6 +90,12 @@ module.exports = configure(function (ctx) {
         chain.plugin('node-polyfill').use(nodePolyfillWebpackPlugin);
         chain.plugin('eslint-webpack-plugin').use(ESLintPlugin, [{ extensions: ['js', 'ts', 'vue'] }]);
       },
+      extendWebpack(cfg) {
+        cfg.resolve.alias = {
+          ...cfg.resolve.alias, // This adds the existing aliases.
+          '@ledgerhq/devices': '@ledgerhq/devices/lib-es', // https://github.com/LedgerHQ/ledger-live/issues/763#issuecomment-1209204659
+        };
+      },
     },
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer

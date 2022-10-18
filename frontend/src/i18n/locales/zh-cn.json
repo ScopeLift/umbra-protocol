@@ -69,8 +69,10 @@
     "fee": "Umbra 费",
     "fee-explain": "在 %{chainName} 上交易非常便宜，因此会收取少量费用以阻止垃圾信息。",
     "total": "总额",
+    "max": "最大限额",
     "copy-payment-link": "复制付款链接",
     "enter-an-amount": "请输入金额",
+    "enter-a-recipient": "请输入收款人",
     "select-a-token": "请选择代币",
     "send-at-least": "请最少发送",
     "amount-exceeds-balance": "钱包金额不足",
@@ -124,8 +126,8 @@
     "how-does-it-work-technical-dtails": "“技术细节：它是如何工作的？“",
     "how-private": "Umbra 有多私密？",
     "how-private-answer": "<p>Umbra 提供了一组有限的隐私保证，在使用协议之前了解它们很重要。 Umbra <span class=\"text-bold\">不像</span> Aztec 或 Zcash 那样提供“完整”隐私。 它只是让任何外部观察者（即任何不是发送者或接收者的人）都无法通过查看接收地址来知道发送者为谁付款。</p><p>重要的是要了解接收方的安全状况不佳（例如，将资金直接发送到公开地址）会消除发送方和接收方的隐私利益。</p><p>如果观察者可以缩小给定交易的潜在接收者的范围，Umbra 的隐私属性也可以被减少。任何有效的公钥都可以用作接收者，任何在以太坊上发送过交易的人都有一个公开的公钥。因此，默认情况下，“匿名集”——交易的潜在接收者的集合——是任何曾经发送过以太坊交易的人！</p><p>在实践中，情况不一定如此，观察者可以通过以下几种方式缩小收件人列表范围：</p><ol><li>大多数用户将使用 Umbra 隐形密钥注册表来发送资金，因此接收者很可能在其中发布了密钥。</li><li>从您的隐身地址提取资金时不小心会减少或使 Umbra 提供的隐私属性无效。请参阅“取款到哪个地址是安全的？”更多细节。取款时请务必小心！</li></ol>",
-    "umbra-vs-tornado": "Umbra 与 TornadoCash 和 Aztec 相比如何？",
-    "umbra-vs-tornado-answer": "<p> Tornado Cash 是一个使用零知识证明的链上混合器。您存入资金并收到一个秘密票据，等待一段时间让其他人也这样做，然后使用您的票据证明您拥有一些存入资金并将其提取到另一个地址。由于每个人的资金都集中在混音器中，因此存款地址和提款地址之间的链接可以被断开。</p> <p> Aztec 是一个以隐私为中心的第 2 层解决方案，它也使用零知识证明。您将来自第 1 层（主网）的资金存入 Aztec，您的资金有效地被“包裹”在一个私人版本中。默认情况下，定期转账是私密的，这意味着没有人知道您向谁汇款，或者你支付了多少钱。余额通常是私人的，因此没有人可以看到您持有多少资金。</p> <p> Umbra 与这两者不同，并且不使用零知识证明。相反，Umbra 基于普通的椭圆曲线密码学。它适用于两个人或商户之间的支付，并带有一组不同的隐私权衡。 Umbra 并没有像 Tornado 那样断开发送和接收地址之间的链接，而是使该链接变得毫无意义。每个人都可以看到谁发送了资金，每个人都可以看到资金发送到的地址，但是这个接收地址从来没有在链上被用过，所以任何外部观察者都不可能知道谁在控制它。</p>",
+    "umbra-vs-mixer": "Umbra 是一个混币器吗？",
+    "umbra-vs-mixer-answer": "<p> Umbra 不是一个混币器，也不使用零知识证明。相反，Umbra基于普通的椭圆曲线密码学。它适用于两者之间的交易，并带有一组不同的隐私权衡。Umbra 不会像混币器那样断开发送地址和接收地址之间的链接，而是使该链接变得毫无意义。每个人都可以看到谁发送了资金，每个人都可以看到资金被发送到的地址，但是该接收地址从未在链上出现过，因此任何外部观察者都不可能知道谁控制它。</p>",
     "account-setup": "帐户注册",
     "what-is-setup": "什么是账户注册？",
     "what-is-setup-answer": " <p> 用户签署一条消息，并从中生成 Umbra 公钥和私钥。 在 Umbra 隐形密钥注册表上进行交易，将公钥与您的地址相关联。</p>",
@@ -152,7 +154,7 @@
     "non-safe-address": "提取资金到哪些地址不安全？",
     "non-safe-address-answer": "<p> 取款时要考虑的风险是，如果您提取到与某些公开身份相关联的地址，那么隐私将丢失如下： </p> <p> 假设 Alice 通过 Umbra 向 Bob 发送资金。现在，只有 Alice 和 Bob 知道 Alice 付钱给 Bob。任何其他观察者都知道 Alice 向某人发送了资金，但他们不知道那个人是谁。 </p> <p> 如果 Bob 将这些资金提取到他公开的bob.eth地址，该地址解析为0x123...def，那么观察者知道发生了以下两件事之一： </p> <ol> <li>场景 1：Alice 向 Bob 发送资金，然后 Bob 将资金提取到他自己的地址，或者</li> <li>场景 2：Alice 向认识 Bob 的人发送资金，并从他们的隐身地址支付 Bob</li> </ol> <p> 此外，考虑 Bob 通过直接向他的朋友 Charlie 支付款项而取款的情况——Charlie 现在知道 Alice 向 Bob 支付了款项。 </p> <p>为了帮助缓解这种情况，如果您输入的提款地址可能会降低您的隐私，Umbra 应用程序会尝试警告您。因此，如果应用检测到您正在提款到以下地址，您会看到警告： </p> <ol> <li>有 ENS 或 CNS 名称</li> <li>拥有 POAP 代币</li> <li>是您登录的钱包</li> <li>（即将推出）：提取到对 Gitcoin 有贡献的地址。</li> </ol> <p> 这些<span class=\"text-bold\">不是</span>所有潜在危险提款地址的完整列表，因此请谨慎使用。 </p>",
     "umbra-withdrawal": "Umbra 能否以保护隐私的方式更轻松地提取资金？",
-    "umbra-withdrawal-answer": "<p> 是的！这是我们打算在未来进行许多改进的领域，主要是依靠 Umbra 的提款后挂钩功能。 </p> <p>我们计划如何利用这一点的一些示例包括：</p> <ol> <li>直接提取到 Tornado Cash</li> <li>以原子方式将一些代币交换为 ETH，并将其全部发送到新地址</li> <li>将资金直接提取到 DeFi 协议中</li> </ol> <p> 我们可以通过钩子追求许多其他选项，以极大地扩展隐私保护取款选项。 </p>",
+    "umbra-withdrawal-answer": "<p> 是的！这是我们打算在未来进行许多改进的领域，主要是依靠 Umbra 的提款后挂钩功能。 </p> <p>我们计划如何利用这一点的一些示例包括：</p> <ol> <li>以原子方式将一些代币交换为 ETH，并将其全部发送到新地址</li> <li>将资金直接提取到 DeFi 协议中</li> </ol> <p> 我们可以通过钩子追求许多其他选项，以极大地扩展隐私保护取款选项。 </p>",
     "scan-time": "为什么扫描我的资金需要这么长时间？",
     "scan-time-answer": "<p> 查找给您发送的付款时，该应用程序需要搜索每一笔发送过的付款并检查它是否属于您。因此，已发送的付款越多，所需的时间就越长。 </p>",
     "scan-time-answer-issue": "这是一个具有各种潜在解决方案的研究问题 ({one}{two})，我们希望随着时间的推移改进这一点。",
@@ -207,7 +209,7 @@
     "receive-vkey-answer": "<p> 目前，唯一的方法是使用 <span class=\"code\">Umbra.generatePrivateKeys()</span>请求用户签名，这将返回他们的消费密钥和查看密钥。您可以丢弃支出密钥而不使用它。执行此操作的示例片段如下： </p> <div class=\"text-caption bg-muted q-pa-md\"> <div class=\"code code-grey\">// 导入 Umbra 类</div> <div class=\"code code\"> <span class=\"code-blue\">import </span> <span class=\"text-grey\">{</span> Umbra <span class=\"text-grey\">} </span> <span class=\"code-blue\">from</span> <span class=\"code-green\">'@umbra/umbra-js'</span>; </div> <br /> <div class=\"code code-grey\">// 用户连接他们的钱包后把`signer`设为ethers JsonRpcSigner</div> <div class=\"code code-grey\">// 下面的行将从用户那里要求签名，</div> <div class=\"code code-grey\">// 计算他们的消费和查看键，但是</div> <div class=\"code code-grey\">// 只将查看的 KeyPair 实例返回给调用者。</div> <div class=\"code code\"> <span class=\"code-blue\">const </span> <span class=\"text-grey\">{</span> viewingKeyPair <span class=\"text-grey\">}</span> = <span class=\"code-blue\">await</span> Umbra.<span class=\"code-pink\" >generatePrivateKeys</span >(signer); </div> </div>",
     "hooks": "什么是 Hooks 以及如何使用它们？",
     "hooks-answer": "如果您熟悉 {0} 或者其他类似的标准，你已经熟悉了钩子（Hooks）的概念。 除了被调用方法的核心逻辑之外，钩子还允许调用者执行其他操作。在 ERC-777 的情况下，在将代币转移到合同后，可以使用转移挂钩来调用合同上的方法。",
-    "hooks-answer-rest": "<p> Umbra 的工作方式类似——当从合约中提取资金时——用户可能希望将它们直接存入 Tornado，或者将他们的 DAI 换成 ETH。Hooks 让你可以做到这一点。 </p> <p>您会注意到 Umbra 合约公开了多种提款方法。首先我们有：</p> <ol> <li><span class=\"code\">withdrawToken()</span>用于标准提款，即简单转账</li> <li> <span class=\"code\">withdrawTokenOnBehalf()</span> 具有与 <span class=\"code\">withdrawToken()</span>相同的功能 ，但允许中继者代表您提交提款以支持元交易。</li> </ol> <p>然后我们有两个钩子方法：</p> <ol> <li> <span class=\"code\">withdrawTokenAndCall()</span> 类似于 <span class=\"code\">withdrawToken()</span>, but ，但允许你传入合约的地址和调用该合约的数据。</li> <li> <span class=\"code\">withdrawTokenAndCallOnBehalf()</span> 类似于 <span class=\"code\">withdrawTokenOnBehalf()</span>，但也允许您传入合约地址和调用该合约的数据。 </li> </ol> <p> 要使用钩子，首先需要编写和部署符合 <span class=\"code\">IUmbraHookReceiver</span> 接口的钩子合约。这需要合约实现一个调用 <span class=\"code\">tokensWithdrawn()</span> 的方法，该方法需要一些参数。此合约的地址将作为上述方法中  <span class=\"code\">_hook</span> 输入的值传递。",
+    "hooks-answer-rest": "<p> Umbra 的工作方式类似——当从合约中提取资金时——用户可能希望将它们直接存入一个 DeFi 协议，或者将他们的 DAI 换成 ETH。Hooks 可以让您做到这一点。 </p> <p>您会注意到 Umbra 合约公开了多种提款方法。首先我们有：</p> <ol> <li><span class=\"code\">withdrawToken()</span>用于标准提款，即简单转账</li> <li> <span class=\"code\">withdrawTokenOnBehalf()</span> 具有与 <span class=\"code\">withdrawToken()</span>相同的功能 ，但允许中继者代表您提交提款以支持元交易。</li> </ol> <p>然后我们有两个钩子方法：</p> <ol> <li> <span class=\"code\">withdrawTokenAndCall()</span> 类似于 <span class=\"code\">withdrawToken()</span>, but ，但允许你传入合约的地址和调用该合约的数据。</li> <li> <span class=\"code\">withdrawTokenAndCallOnBehalf()</span> 类似于 <span class=\"code\">withdrawTokenOnBehalf()</span>，但也允许您传入合约地址和调用该合约的数据。 </li> </ol> <p> 要使用钩子，首先需要编写和部署符合 <span class=\"code\">IUmbraHookReceiver</span> 接口的钩子合约。这需要合约实现一个调用 <span class=\"code\">tokensWithdrawn()</span> 的方法，该方法需要一些参数。此合约的地址将作为上述方法中  <span class=\"code\">_hook</span> 输入的值传递。",
     "hooks-answer-encode-data": " 然后你需要对钩子合约将接收并可以操作的调用数据进行编码。见 ethers.js 文档的 {0} 部分以获取有关如何编码函数数据的信息。</p> ",
     "hooks-answer-encoding-data": "编码数据",
     "hooks-answer-end": "<p> 这些就是您了解钩子所需的知识。有了钩子合约的地址和编码的调用数据，您就可以调用两个基于钩子的方法之一了。 </p>"
@@ -308,6 +310,115 @@
       "same-addr-as-stealth": "与隐形地址相同",
       "address-it-resolves-to": "它解析为的地址",
       "has-poap-tokens": "具有 POAP 令牌"
+    }
+  },
+  "connect": {
+    "selectingWallet": {
+      "header": "可用钱包",
+      "sidebar": {
+        "heading": "开始使用",
+        "subheading": "连接您的钱包",
+        "paragraph": "连接您的钱包就像'登录'Web3一样。 从选项中选择您的钱包，即可开始。"
+      },
+      "recommendedWalletsPart1": "{app} 只支持",
+      "recommendedWalletsPart2": "在这个平台上。 请使用或安装一个支持的钱包来继续使用",
+      "installWallet": "您没有安装任何 {app} 支持的钱包, 请使用支持的钱包",
+      "agreement": {
+        "agree": "我同意以下",
+        "terms": "Terms & Conditions",
+        "and": "and",
+        "privacy": "Privacy Policy"
+      }
+    },
+    "connectingWallet": {
+      "header": "{connectionRejected, select, false {Connecting to {wallet}...} 其他 {Connection Rejected}}",
+      "sidebar": {
+        "subheading": "批准连接",
+        "paragraph": "请批准钱包中的连接并授权来继续访问。"
+      },
+      "mainText": "正在连接...",
+      "paragraph": "确保选择所有您想授予访问权的账户",
+      "previousConnection": "{wallet} 已经有一个待处理的连接请求， 请打开 {wallet} 应用程序登录并连接。",
+      "rejectedText": "连接被拒绝了!",
+      "rejectedCTA": "点击这里重试",
+      "primaryButton": "返回到钱包"
+    },
+    "connectedWallet": {
+      "header": "连接成功",
+      "sidebar": {
+        "subheading": "连接成功!",
+        "paragraph": "您的钱包现在已经连接到 {app}"
+      },
+      "mainText": "已连接"
+    }
+  },
+  "modals": {
+    "actionRequired": {
+      "heading": "需要采取的行动在 {wallet}",
+      "paragraph": "请切换您钱包中的活动账户。",
+      "linkText": "了解更多。",
+      "buttonText": "好的"
+    },
+    "switchChain": {
+      "heading": "交换链",
+      "paragraph1": "{app} 要求您将钱包切换到 {nextNetworkName} 网络上才能继续。",
+      "paragraph2": "*有些钱包可能不支持改变网络。 如果您不能在您的钱包中改变网络，您可以考虑切换到另一个钱包。"
+    },
+    "confirmDisconnectAll": {
+      "heading": "断开所有钱包的连接",
+      "description": "你确定要断开所有钱包的连接吗？",
+      "confirm": "确认",
+      "cancel": "取消"
+    }
+  },
+  "accountCenter": {
+    "connectAnotherWallet": "连接另一个钱包",
+    "disconnectAllWallets": "断开所有钱包的连接",
+    "currentNetwork": "当前网络",
+    "appInfo": "应用信息",
+    "learnMore": "了解更多",
+    "gettingStartedGuide": "入门手册",
+    "smartContracts": "智能合约",
+    "explore": "探索",
+    "backToApp": "返回到 dapp",
+    "poweredBy": "提供者是",
+    "addAccount": "添加账户",
+    "setPrimaryAccount": "设置主账户",
+    "disconnectWallet": "断开钱包",
+    "copyAddress": "复制钱包地址"
+  },
+  "notify": {
+    "transaction": {
+      "txRequest": "您的交易正在等待您的确认",
+      "nsfFail": "您没有足够的资金进行这项交易",
+      "txUnderpriced": "您的交易的gas费太低了，试试更高的gas费吧",
+      "txRepeat": "这可能是一个重复的交易",
+      "txAwaitingApproval": "您有一个先前的交易等待您去确认",
+      "txConfirmReminder": "请确认您的交易以继续",
+      "txSendFail": "您拒绝了该交易",
+      "txSent": "您的交易已被发送到网络上",
+      "txStallPending": "您的交易在发送前已经停滞，请再试一次",
+      "txStuck": "您的交易由于nonce缺口而被卡住了",
+      "txPool": "您的交易已经开始",
+      "txStallConfirmed": "您的交易已经停滞，没有得到确认",
+      "txSpeedUp": "您的交易已被加快",
+      "txCancel": "您的交易正在被取消",
+      "txFailed": "您的交易已经失败",
+      "txConfirmed": "您的交易已经成功",
+      "txError": "哎呀，出错了，请再试一次",
+      "txReplaceError": "更换您的交易出现错误，请重试。"
+    },
+    "watched": {
+      "txPool": "您的账户 {verb} {formattedValue} {asset} {preposition} {counterpartyShortened}",
+      "txSpeedUp": "交易 {formattedValue} {asset} {preposition} {counterpartyShortened} 已经被加快",
+      "txCancel": "交易 {formattedValue} {asset} {preposition} {counterpartyShortened} 已被取消",
+      "txConfirmed": "您的账户已成功 {verb} {formattedValue} {asset} {preposition} {counterpartyShortened}",
+      "txFailed": "您的账户未能 {verb} {formattedValue} {asset} {preposition} {counterpartyShortened}",
+      "txStuck": "您的交易由于nonce缺口而被卡住了"
+    },
+    "time": {
+      "minutes": "分钟",
+      "seconds": "秒钟"
     }
   }
 }

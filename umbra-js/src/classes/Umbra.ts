@@ -25,7 +25,7 @@ import {
 } from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient } from '../utils/utils';
+import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
@@ -37,7 +37,7 @@ const { abi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umb
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
 const subgraphs = {
   1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
-  4: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrarinkeby',
+  5: 'https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli',
   10: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraoptimism',
   137: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
   42161: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone',
@@ -45,7 +45,7 @@ const subgraphs = {
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
-  4: { chainId: 4, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Rinkeby Graph disabled due to outage/issues
+  5: { chainId: 5, umbraAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
   10: { chainId: 10, umbraAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
   137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
@@ -105,7 +105,7 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
   chainId = BigNumber.from(chainId).toNumber();
   // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
   if (chainId === 1 || chainId === 1337) return `https://mainnet.infura.io/v3/${infuraId}`;
-  if (chainId === 4) return `https://rinkeby.infura.io/v3/${infuraId}`;
+  if (chainId === 5) return `https://goerli.infura.io/v3/${infuraId}`;
   if (chainId === 10) return `https://optimism-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 137) return `https://polygon-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 42161) return `https://arbitrum-mainnet.infura.io/v3/${infuraId}`;
@@ -165,7 +165,7 @@ export class Umbra {
     recipientId: string,
     overrides: SendOverrides = {}
   ) {
-    // Configure signer
+    await assertSupportedAddress(recipientId);
     const txSigner = this.getConnectedSigner(signer); // signer input validated
 
     // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
@@ -248,6 +248,7 @@ export class Umbra {
     // Address input validations
     // token === 'ETH' is valid so we don't verify that, and let ethers verify it during the function call
     destination = getAddress(destination);
+    await assertSupportedAddress(destination);
 
     // Configure signer
     const stealthWallet = new Wallet(spendingPrivateKey); // validates spendingPrivateKey input
@@ -303,6 +304,7 @@ export class Umbra {
     destination = getAddress(destination);
     token = getAddress(token);
     sponsor = getAddress(sponsor);
+    await assertSupportedAddress(destination);
 
     // Send withdraw transaction
     const txSigner = this.getConnectedSigner(signer);

@@ -20,23 +20,24 @@ export const ERC20_ABI = [
 ];
 
 export const MULTICALL_ABI = [
-  // https://github.com/makerdao/multicall
-  'function aggregate(tuple(address target, bytes callData)[] calls) returns (uint256 blockNumber, bytes[] returnData)',
+  // https://github.com/mds1/multicall
+  'function aggregate(tuple(address target, bytes callData)[] calls) payable returns (uint256 blockNumber, bytes[] returnData)',
+  'function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)',
+  'function aggregate3Value(tuple(address target, bool allowFailure, uint256 value, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)',
+  'function blockAndAggregate(tuple(address target, bytes callData)[] calls) payable returns (uint256 blockNumber, bytes32 blockHash, tuple(bool success, bytes returnData)[] returnData)',
+  'function getBasefee() view returns (uint256 basefee)',
   'function getBlockHash(uint256 blockNumber) view returns (bytes32 blockHash)',
+  'function getBlockNumber() view returns (uint256 blockNumber)',
+  'function getChainId() view returns (uint256 chainid)',
   'function getCurrentBlockCoinbase() view returns (address coinbase)',
   'function getCurrentBlockDifficulty() view returns (uint256 difficulty)',
   'function getCurrentBlockGasLimit() view returns (uint256 gaslimit)',
   'function getCurrentBlockTimestamp() view returns (uint256 timestamp)',
   'function getEthBalance(address addr) view returns (uint256 balance)',
   'function getLastBlockHash() view returns (bytes32 blockHash)',
+  'function tryAggregate(bool requireSuccess, tuple(address target, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)',
+  'function tryBlockAndAggregate(bool requireSuccess, tuple(address target, bytes callData)[] calls) payable returns (uint256 blockNumber, bytes32 blockHash, tuple(bool success, bytes returnData)[] returnData)',
 ];
 
-export const MULTICALL_ADDRESSES = {
-  // https://github.com/makerdao/multicall#multicall-contract-addresses
-  '1': '0x5e227AD1969Ea493B43F840cfF78d08a6fc17796',
-  '3': '0x53C43764255c17BD724F74c4eF150724AC50a3ed',
-  '4': '0x42Ad527de7d4e9d9d011aC45B31D8551f8Fe9821',
-  '10': '0x187C0F98FEF80E87880Db50241D40551eDd027Bf',
-  '137': '0x11ce4B23bD875D7F5C6a31084f55fDe1e9A87507',
-  '42161': '0xB064Fe785d8131653eE12f3581F9A55F6D6E1ca3',
-};
+// https://github.com/mds1/multicall
+export const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11';

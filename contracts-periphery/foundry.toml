@@ -1,6 +1,10 @@
-[default]
+[profile.default]
 verbosity = 3
-
-[ci]
+fs_permissions = [{ access = "read", path = "./"}]
+remappings = ['openzeppelin-contracts/=lib/openzeppelin-contracts/contracts']
+[profile.ci]
 fuzz_runs = 10000
 # See more config options https://github.com/gakonst/foundry/tree/master/config
+
+[rpc_endpoints]
+mainnet = "${ETH_RPC_URL}"

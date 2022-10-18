@@ -16,6 +16,9 @@
       <div @click="copyUrl" id="what-is-umbra">
         <f-a-q-item :expanded="selectedId === 'what-is-umbra'" :question="$t('FAQ.what-is-umbra')">
           <div v-html="$t('FAQ.what-is-umbra-answer')"></div>
+          <div>
+            <img src="/umbra-diagram.png" style="display: block; width: 100%" />
+          </div>
         </f-a-q-item>
       </div>
 
@@ -48,12 +51,9 @@
         </f-a-q-item>
       </div>
 
-      <div @click="copyUrl" id="how-does-umbra-compare-to-tornado-cash-and-aztec">
-        <f-a-q-item
-          :expanded="selectedId === 'how-does-umbra-compare-to-tornado-cash-and-aztec'"
-          :question="$t('FAQ.umbra-vs-tornado')"
-        >
-          <div v-html="$t('FAQ.umbra-vs-tornado-answer')"></div>
+      <div @click="copyUrl" id="is-umbra-a-mixer">
+        <f-a-q-item :expanded="selectedId === 'is-umbra-a-mixer'" :question="$t('FAQ.umbra-vs-mixer')">
+          <div v-html="$t('FAQ.umbra-vs-mixer-answer')"></div>
         </f-a-q-item>
       </div>
 
@@ -346,8 +346,8 @@
               <template v-slot:mainnet>
                 <a :href="getEtherscanUrl(deployments.umbra, 1)" class="hyperlink" target="_blank"> mainnet </a>
               </template>
-              <template v-slot:rinkeby>
-                <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
+              <template v-slot:goerli>
+                <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Goerli </a>
               </template>
               <template v-slot:optimism>
                 <a :href="getEtherscanUrl(deployments.umbra, 10)" class="hyperlink" target="_blank"> Optimism </a>
@@ -369,8 +369,8 @@
               <template v-slot:mainnet>
                 <a :href="getEtherscanUrl(deployments.registry, 1)" class="hyperlink" target="_blank"> mainnet </a>
               </template>
-              <template v-slot:rinkeby>
-                <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Rinkeby </a>
+              <template v-slot:goerli>
+                <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Goerli </a>
               </template>
               <template v-slot:optimism>
                 <a :href="getEtherscanUrl(deployments.registry, 10)" class="hyperlink" target="_blank"> Optimism </a>

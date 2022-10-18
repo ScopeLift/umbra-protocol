@@ -6,10 +6,12 @@ import "test/utils/DSTestPlus.sol";
 import "src/interface/IUmbra.sol";
 import "src/interface/IUmbraHookReceiver.sol";
 import "src/interface/IQuoter.sol";
+import "forge-std/console2.sol";
 
 contract DeployUmbraTest is DSTestPlus {
   address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   MockERC20 token;
+  MockERC20 token2;
   address alice = address(0x202204);
   address bob = address(0x202205);
   bytes32 constant pkx = "pkx";
@@ -17,7 +19,7 @@ contract DeployUmbraTest is DSTestPlus {
 
   function setUp() public virtual {
     deployUmbra();
-    createMockERC20AndMint(address(this), 1e7 ether);
+    createMockERC20AndMint(address(this), 1e9 ether);
     vm.deal(address(this), 1e5 ether);
   }
 
@@ -28,7 +30,9 @@ contract DeployUmbraTest is DSTestPlus {
 
   function createMockERC20AndMint(address addr, uint256 amount) public {
     token = new MockERC20("Test", "TT", 18);
+    token2 = new MockERC20("Test2", "TT2", 18);
     token.mint(addr, amount);
+    token2.mint(addr, amount);
   }
 
   function createDigestAndSign(

@@ -72,8 +72,19 @@
       />
 
       <!-- Amount -->
-      <div>{{ $t('Send.amount') }}</div>
-      <base-input v-model="humanAmount" :disable="isSending" placeholder="0" lazy-rules :rules="isValidTokenAmount" />
+      <div>
+        {{ $t('Send.amount') }}
+      </div>
+      <base-input
+        v-model="humanAmount"
+        :disable="isSending"
+        placeholder="0"
+        :appendButtonDisable="!recipientId || !isValidRecipientId"
+        :appendButtonLabel="token && NATIVE_TOKEN && token.address !== NATIVE_TOKEN.address ? $t('Send.max') : ''"
+        @click="setHumanAmountMax"
+        lazy-rules
+        :rules="isValidTokenAmount"
+      />
 
       <!-- Toll + summary details -->
       <div v-if="toll && toll.gt(0) && humanAmount && token">
@@ -172,6 +183,7 @@ import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } 
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
+import { toAddress } from 'src/utils/address';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -398,6 +410,24 @@ function useSendForm() {
     sendFormRef.value?.resetValidation();
   }
 
+  async function setHumanAmountMax() {
+    if (!token.value?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
+    if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
+
+    if (NATIVE_TOKEN.value?.address === token.value?.address) {
+      if (!userAddress.value || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
+      const fromAddress = userAddress.value;
+      const recipientAddress = await toAddress(recipientId.value, provider.value);
+      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(fromAddress, recipientAddress, provider.value);
+      humanAmount.value = formatUnits(ethToSend, token.value.decimals);
+      return ethToSend;
+    }
+
+    const tokenBalance = balances.value[token.value.address];
+    humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals);
+    return tokenBalance.toString();
+  }
+
   return {
     advancedMode,
     chainId,
@@ -414,6 +444,7 @@ function useSendForm() {
     onFormSubmit,
     recipientId,
     sendFormRef,
+    setHumanAmountMax,
     token,
     tokenList,
     toll,

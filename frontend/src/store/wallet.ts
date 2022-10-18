@@ -1,8 +1,13 @@
-import { computed, onMounted, ref, watch } from 'vue';
-import Onboard from 'bnc-onboard';
-import { API as OnboardAPI } from 'bnc-onboard/dist/src/interfaces';
-import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
+import { computed, onMounted, ref, watch } from '@vue/composition-api';
 
+import Onboard, { OnboardAPI } from '@web3-onboard/core';
+import injectedModule from '@web3-onboard/injected-wallets';
+import walletConnectModule from '@web3-onboard/walletconnect';
+import coinbaseWalletModule from '@web3-onboard/coinbase';
+import ledgerModule from '@web3-onboard/ledger';
+import trezorModule from '@web3-onboard/trezor';
+
+import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbra/umbra-js';
 import {
   Chain,
   MulticallResponse,
@@ -10,17 +15,25 @@ import {
   Network,
   Provider,
   Signer,
+  supportedChains,
   supportedChainIds,
-  SupportedChainId,
   TokenInfoExtended,
 } from 'components/models';
-import { formatAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
-import { ERC20_ABI, MAINNET_PROVIDER, MAINNET_RPC_URL, MULTICALL_ABI, MULTICALL_ADDRESSES } from 'src/utils/constants';
-import { BigNumber, Contract, getAddress, Web3Provider, parseUnits } from 'src/utils/ethers';
+import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
+import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+import { BigNumber, Contract, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
+import enLocal from 'src/i18n/locales/en-us.json';
+import chLocal from 'src/i18n/locales/zh-cn.json';
 
+// Wallet configurations.
+const injected = injectedModule();
+const walletConnect = walletConnectModule();
+const coinbaseWalletSdk = coinbaseWalletModule();
+const ledger = ledgerModule();
+const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
 /**
  * State is handled in reusable components, where each component is its own self-contained
  * file consisting of one function defined used the composition API.
@@ -64,36 +77,52 @@ export default function useWalletStore() {
     // Initialize onboard.js if not yet done
     if (!onboard.value) {
       onboard.value = Onboard({
-        dappId: process.env.BLOCKNATIVE_API_KEY,
-        networkId: 1,
-        walletCheck: [{ checkName: 'connect' }],
-        walletSelect: {
-          wallets: [
-            { walletName: 'metamask', preferred: true },
-            { walletName: 'walletConnect', infuraKey: process.env.INFURA_ID, preferred: true },
-            { walletName: 'fortmatic', apiKey: process.env.FORTMATIC_API_KEY, preferred: true },
-            { walletName: 'portis', apiKey: process.env.PORTIS_API_KEY },
-            { walletName: 'ledger', rpcUrl: MAINNET_RPC_URL },
-            { walletName: 'torus', preferred: true },
-            { walletName: 'lattice', rpcUrl: MAINNET_RPC_URL, appName: 'Umbra' },
-            { walletName: 'opera' },
-          ],
+        wallets: [injected, walletConnect, coinbaseWalletSdk, ledger, trezor],
+        chains: supportedChains.map((chain) => {
+          return {
+            id: chain.chainId,
+            token: chain.nativeCurrency.symbol,
+            label: chain.chainName,
+            rpcUrl: chain.rpcUrls[0],
+            icon: chain.logoURI,
+          };
+        }),
+        accountCenter: {
+          desktop: { enabled: false },
+          mobile: { enabled: false },
         },
-        subscriptions: {
-          wallet: (wallet) => {
-            setProvider(wallet.provider);
+        i18n: {
+          'en-us': {
+            connect: enLocal['connect'],
+            modals: enLocal['modals'],
+            accountCenter: enLocal['accountCenter'],
+            notify: enLocal['notify'],
           },
-          address: (address) => {
-            if (address && userAddress.value && userAddress.value !== getAddress(address)) {
-              window.location.reload();
-            }
-          },
-          network: (newChainId) => {
-            if (chainId.value && chainId.value !== newChainId) {
-              window.location.reload();
-            }
+          'zh-cn': {
+            connect: chLocal['connect'],
+            modals: chLocal['modals'],
+            accountCenter: chLocal['accountCenter'],
+            notify: chLocal['notify'],
           },
         },
+        appMetadata: {
+          name: 'Umbra',
+          icon: '/icons/favicon-128x128.png',
+          logo: '/icons/favicon-128x128.png',
+          description: 'Send stealth payments.',
+          explore: 'https://app.umbra.cash/faq',
+        },
+      });
+      const addresses = onboard.value.state.select('wallets');
+      addresses.subscribe((update) => {
+        update.map((wallet) => {
+          wallet.provider.on('accountsChanged', () => {
+            window.location.reload();
+          });
+          wallet.provider.on('chainChanged', () => {
+            window.location.reload();
+          });
+        });
       });
     }
   });
@@ -110,15 +139,14 @@ export default function useWalletStore() {
     // Setup
     if (!provider.value) throw new Error('Provider not connected');
     if (!relayer.value) throw new Error('Relayer instance not found');
-    const multicallAddress = MULTICALL_ADDRESSES[String(chainId.value) as SupportedChainId];
-    const multicall = new Contract(multicallAddress, MULTICALL_ABI, provider.value);
+    const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider.value);
 
     // Generate balance calls using Multicall contract
     const calls = tokens.value.map((token) => {
       const { address: tokenAddress } = token;
       if (tokenAddress === currentChain.value?.nativeCurrency.address) {
         return {
-          target: multicallAddress,
+          target: MULTICALL_ADDRESS,
           callData: multicall.interface.encodeFunctionData('getEthBalance', [userAddress.value]),
         };
       } else {
@@ -151,35 +179,31 @@ export default function useWalletStore() {
 
   async function connectWallet() {
     try {
-      if (isLoading.value) return;
+      if (isLoading.value || !onboard.value) return;
 
       setLoading(true);
+      let connectedWallet;
+      if (lastWallet.value) {
+        [connectedWallet] = await onboard.value.connectWallet({
+          autoSelect: lastWallet.value,
+        });
+      } else {
+        [connectedWallet] = await onboard.value.connectWallet();
+      }
 
-      // Clear existing wallet selection
-      onboard.value?.walletReset();
-
-      // Use stored wallet on initialization if there is one
-      const hasSelected =
-        userAddress.value || !lastWallet.value
-          ? await onboard.value?.walletSelect()
-          : await onboard.value?.walletSelect(String(lastWallet.value));
-      if (!hasSelected) {
+      if (!connectedWallet) {
+        // if the user just decides not to complete the connection
         setLoading(false);
         return;
       }
 
-      const hasChecked = await onboard.value?.walletCheck();
-      if (!hasChecked) {
-        setLoading(false);
-        return;
-      }
+      setProvider(connectedWallet.provider);
+
+      // Add wallet name to localStorage
+      if (connectedWallet.label) setLastWallet(connectedWallet.label);
 
       // Get ENS name, CNS names, etc.
       await configureProvider();
-
-      // Add wallet name to localStorage
-      const walletName = onboard.value?.getState().wallet.name;
-      if (walletName) setLastWallet(walletName);
     } catch (e) {
       resetState();
       setLoading(false);
@@ -207,6 +231,7 @@ export default function useWalletStore() {
         provider.value.getNetwork(), // get information on the connected network
         UmbraApi.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
       ]);
+      await utils.assertSupportedAddress(_userAddress);
 
       // If nothing has changed, no need to continue configuring.
       if (_userAddress === userAddress.value && _network.chainId === chainId.value) {
@@ -421,9 +446,10 @@ export default function useWalletStore() {
   });
 
   const userDisplayName = computed(() => {
-    if (userEns.value) return userEns.value;
     if (userCns.value) return userCns.value;
-    return userAddress.value ? formatAddress(userAddress.value) : undefined;
+    if (userEns.value) return userEns.value;
+
+    return userAddress.value ? formatNameOrAddress(userAddress.value) : undefined;
   });
 
   const keysMatch = computed(() => {

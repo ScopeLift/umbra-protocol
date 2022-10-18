@@ -1,13 +1,13 @@
 const { ethers, web3, artifacts } = require('hardhat');
-const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 const { argumentBytes } = require('./sample-data');
-const { sumTokenAmounts, signMetaWithdrawal } = require('./utils');
+const { signMetaWithdrawal } = require('./utils');
 
 const Umbra = artifacts.require('Umbra');
 const TestToken = artifacts.require('TestToken');
 const MockHook = artifacts.require('MockHook');
-const { toWei, fromWei, BN } = web3.utils;
+const { toWei, fromWei } = web3.utils; // eslint-disable-line @typescript-eslint/unbound-method
 const AddressZero = ethers.constants.AddressZero;
 
 describe('Umbra Hooks', () => {
@@ -58,7 +58,7 @@ describe('Umbra Hooks', () => {
     ctx.hook = await MockHook.new();
   });
 
-  it('should see the deployed Umbra contract', async () => {
+  it('should see the deployed Umbra contract', () => {
     expect(ctx.umbra.address.startsWith('0x')).to.be.true;
     expect(ctx.umbra.address.length).to.equal(42);
     expect(ctx.token.address.startsWith('0x')).to.be.true;
@@ -67,7 +67,7 @@ describe('Umbra Hooks', () => {
     expect(ctx.hook.address.length).to.equal(42);
   });
 
-  describe('Direct withdrawal + hooks', async () => {
+  describe('Direct withdrawal + hooks', () => {
     it('should call the hook contract when the stealth receiver withdraws directly', async () => {
       await mintAndSendToken(sender, receiver, '100');
 
@@ -155,7 +155,7 @@ describe('Umbra Hooks', () => {
     });
   });
 
-  describe('Meta withdrawal + hooks', async () => {
+  describe('Meta withdrawal + hooks', () => {
     it('should call the hook contract when the stealth receiver withdraws via meta tx', async () => {
       await mintAndSendToken(sender, metaWallet.address, '100');
 
@@ -171,7 +171,7 @@ describe('Umbra Hooks', () => {
         '0xbeefc0ffee'
       );
 
-      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
+      await ctx.umbra.withdrawTokenAndCallOnBehalf(
         metaWallet.address,
         acceptor,
         ctx.token.address,
@@ -217,7 +217,7 @@ describe('Umbra Hooks', () => {
         '0x'
       );
 
-      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
+      await ctx.umbra.withdrawTokenAndCallOnBehalf(
         metaWallet.address,
         acceptor,
         ctx.token.address,
@@ -263,7 +263,7 @@ describe('Umbra Hooks', () => {
         '0xbeefc0ffee'
       );
 
-      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
+      await ctx.umbra.withdrawTokenAndCallOnBehalf(
         metaWallet.address,
         acceptor,
         ctx.token.address,
@@ -310,7 +310,7 @@ describe('Umbra Hooks', () => {
         '0xbeefc0ffee'
       );
 
-      const receipt = await ctx.umbra.withdrawTokenAndCallOnBehalf(
+      await ctx.umbra.withdrawTokenAndCallOnBehalf(
         metaWallet.address,
         ctx.hook.address,
         ctx.token.address,
@@ -342,7 +342,7 @@ describe('Umbra Hooks', () => {
     });
   });
 
-  describe('Meta withdrawal + hooks + dishonest relayer', async () => {
+  describe('Meta withdrawal + hooks + dishonest relayer', () => {
     it('should fail if the relayer sends the wrong hook address', async () => {
       await mintAndSendToken(sender, metaWallet.address, '100');
 

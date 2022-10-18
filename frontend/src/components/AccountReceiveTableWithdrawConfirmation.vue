@@ -8,7 +8,7 @@
 
     <q-card-section>
       <div class="text-caption text-grey">{{ $t('AccountReceiveTableWithdrawConfirmation.to') }}</div>
-      <div>{{ $q.screen.xs ? formatAddress(destinationAddress) : destinationAddress }}</div>
+      <div>{{ $q.screen.xs ? formatNameOrAddress(destinationAddress) : destinationAddress }}</div>
 
       <div>
         <div class="text-caption text-grey q-mt-md">{{ $t('AccountReceiveTableWithdrawConfirmation.amount') }}</div>
@@ -58,6 +58,8 @@
           <img :src="tokenURL" class="q-mr-sm" style="height: 1rem" />
           <q-spinner-puff v-if="!loaded" class="text-left q-ml-sm" color="primary" size="1rem" />
           <div v-if="loaded">-{{ formattedDefaultTxCost }} {{ symbol }}</div>
+          <!-- Custom fees not allowed on L2s, since gas price is affected by
+          both L1 and L2 costs, so users will likely not estimate it properly -->
           <q-icon
             v-if="isNativeToken && loaded && ![10, 42161].includes(chainId)"
             @click="toggleCustomFee"
@@ -118,7 +120,7 @@
 import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
 import { utils as umbraUtils, UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
-import { formatAddress, toAddress } from 'src/utils/address';
+import { formatNameOrAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
 import { getEtherscanUrl, getGasPrice, humanizeTokenAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
@@ -280,7 +282,7 @@ export default defineComponent({
       context,
       confirmationOptions,
       etherscanUrl,
-      formatAddress,
+      formatNameOrAddress,
       formattedAmount,
       formattedAmountReceived,
       formattedDefaultTxCost,

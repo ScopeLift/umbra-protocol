@@ -6,7 +6,7 @@ const { sumTokenAmounts, signMetaWithdrawal } = require('./utils');
 
 const Umbra = artifacts.require('Umbra');
 const TestToken = artifacts.require('TestToken');
-const { toWei, BN } = web3.utils;
+const { toWei, BN } = web3.utils; // eslint-disable-line @typescript-eslint/unbound-method
 
 describe('Umbra', () => {
   const ctx = {};
@@ -61,7 +61,7 @@ describe('Umbra', () => {
     await ctx.token.mint(payer2, mintTokenAmount);
   });
 
-  it('should see the deployed Umbra contract', async () => {
+  it('should see the deployed Umbra contract', () => {
     expect(ctx.umbra.address.startsWith('0x')).to.be.true;
     expect(ctx.umbra.address.length).to.equal(42);
     expect(ctx.token.address.startsWith('0x')).to.be.true;
