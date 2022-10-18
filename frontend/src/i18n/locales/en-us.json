@@ -250,7 +250,7 @@
     "fee-not-set": "Fee is not set",
     "invalid-chain-id": "Invalid chainID",
     "receiver-tool-tip": "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key.",
-    "loss-warning": "It looks like you're trying to withdraw your funds to token contract. It is very likely this is not what you intend, and proceeding will likely result in a loss of funds. Do not proceed unless you know exactly what you are doing.",
+    "loss-warning": "It looks like you're trying to withdraw your funds to a token contract. It is very likely this is not what you intend, and proceeding will likely result in a loss of funds. Do not proceed unless you know exactly what you are doing.",
     "i-know-what": "I know what I am doing",
     "danger": "Danger"
   },
