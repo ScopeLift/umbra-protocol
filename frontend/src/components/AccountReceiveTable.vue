@@ -5,7 +5,7 @@
       We don't need @show="setIsInWithdrawFlow(true)" because that's set immediately after clicking the
       withdraw button and therefore is already true by the time this modal opens
     -->
-    <q-dialog v-model="showWithdrawLossModal">
+    <q-dialog v-model="showWithdrawLossModal" @hide="setIsInWithdrawFlow(false)">
       <account-receive-table-loss-warning @acknowledged="confirmWithdraw" class="q-pa-lg" />
     </q-dialog>
     <q-dialog v-model="showPrivacyModal" @hide="setIsInWithdrawFlow(false)">
