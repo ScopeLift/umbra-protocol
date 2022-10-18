@@ -11,6 +11,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "sourceMap": true,
+    "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
       "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]

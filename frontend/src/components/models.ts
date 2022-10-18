@@ -35,7 +35,7 @@ export type Chain = {
   // logoURI is not part of EIP-3085, but is added for convenience because that is what our BaseSelect component
   // uses to display images form the chain objects it recevies. It's not required because we always want a chain
   // logo to be showin in the network selector dropdown
-  logoURI: string;
+  logoURI?: string; // Must be optional so it can be deleted before calling `wallet_addEthereumChain`.
 };
 
 export const supportedChains: Array<Chain> = [
@@ -118,7 +118,7 @@ export const supportedChains: Array<Chain> = [
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
 export type SupportedChainId = '1' | '5' | '10' | '137' | '42161'; // strings for indexing into JSON files
-export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
+export const supportedChainIds = supportedChains.map(chain => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response
 type CnsName = { name: string };

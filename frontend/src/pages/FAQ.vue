@@ -550,17 +550,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, SetupContext } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import FAQItem from 'components/FAQItem.vue';
 import { copyToClipboard, scroll } from 'quasar';
 import { notifyUser } from 'src/utils/alerts';
 import { getEtherscanUrl } from 'src/utils/utils';
 
-function useScrollToElement(context: SetupContext) {
-  const { getScrollTarget, setScrollPosition } = scroll;
+function useScrollToElement() {
+  const { setVerticalScrollPosition } = scroll;
+  scroll.setVerticalScrollPosition;
   const selectedId = ref('');
-  // Hepler methods
-  const getElementIdFromUrl = () => context.root.$router.currentRoute.hash.slice(1); // .slice(1) to remove '#'
+  // Helper methods
+  const getElementIdFromUrl = () => useRoute().hash.slice(1); // .slice(1) to remove '#'
 
   const expandAndScrollToElement = (elementId: string) => {
     // Get element
@@ -570,17 +572,16 @@ function useScrollToElement(context: SetupContext) {
     selectedId.value = elementId;
 
     // Scroll to element
-    const target = getScrollTarget(el);
     const offset = el.offsetTop;
     const duration = 500; // duration of scroll
-    setScrollPosition(target, offset, duration);
+    setVerticalScrollPosition(el, offset, duration);
   };
 
   // Copy the URL to go directly to the clicked element and update URL in navigation bar
   const copyUrl = async (e: MouseEvent) => {
     const el = e.currentTarget as HTMLElement;
     const elementId = el.id;
-    const slug = context.root.$router.currentRoute.path; // includes the leading forward slash
+    const slug = useRoute().path; // includes the leading forward slash
     const page = `${slug}#${elementId}`;
     await copyToClipboard(`${window.location.origin}${page}`);
     if (el.getAttribute('isHeader')) notifyUser('success', 'URL successfully copied to clipboard');
@@ -596,12 +597,12 @@ function useScrollToElement(context: SetupContext) {
 export default defineComponent({
   name: 'PageFAQ',
   components: { FAQItem },
-  setup(_props, context) {
+  setup() {
     const deployments = {
       umbra: '0xFb2dc580Eed955B528407b4d36FfaFe3da685401',
       registry: '0x31fe56609C65Cd0C510E7125f051D440424D38f3',
     };
-    return { ...useScrollToElement(context), deployments, getEtherscanUrl };
+    return { ...useScrollToElement(), deployments, getEtherscanUrl };
   },
 });
 </script>

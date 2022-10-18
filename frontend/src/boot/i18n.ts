@@ -15,6 +15,8 @@ export const i18n = createI18n({
   messages,
 });
 
+export const { tc } = i18n.global;
+
 export default boot(({ app }) => {
   // Tell app to use the I18n instance.
   app.use(i18n);

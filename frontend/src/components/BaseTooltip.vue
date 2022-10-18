@@ -1,7 +1,7 @@
 <template>
   <q-btn-dropdown
-    @mouseover.native="isShown = true"
-    @mouseleave.native="onRootMouseLeave"
+    @mouseover="isShown = true"
+    @mouseleave="onRootMouseLeave"
     ref="rootRef"
     v-model="isShown"
     :dropdown-icon="icon"
@@ -17,7 +17,7 @@
     :class="{ 'without-icon': icon === ' ' }"
   >
     <q-item
-      @mouseleave.native="onTooltipMouseLeave"
+      @mouseleave="onTooltipMouseLeave"
       ref="tooltipRef"
       class="bg-muted dark-toggle shadow-2 q-pa-md"
       style="max-width: 14rem; font-size: 10px; display: inline-block"

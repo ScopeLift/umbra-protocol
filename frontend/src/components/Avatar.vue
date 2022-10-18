@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, toRefs } from 'vue';
 import Jazzicon from 'src/components/Jazzicon.vue';
 
 export default defineComponent({
@@ -21,7 +21,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup: (props) => {
+  setup: props => {
     if (props.avatar) {
       // load the avatar image async and display the jazzicon while waiting
       const avatarImg = new Image();
@@ -31,7 +31,7 @@ export default defineComponent({
       };
       avatarImg.id = 'avatar';
       avatarImg.width = 20;
-      avatarImg.src = props.avatar;
+      avatarImg.src = toRefs(props).avatar;
     }
   },
 });

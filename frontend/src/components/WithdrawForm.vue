@@ -121,10 +121,10 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ destinationAddress }, { emit }) {
+  setup(data, { emit }) {
     const { NATIVE_TOKEN } = useWalletStore();
     const { setIsInWithdrawFlow, isInWithdrawFlow } = useStatusesStore();
-    const content = ref<string>(destinationAddress || '');
+    const content = ref<string>(data.destinationAddress || '');
     const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
     return {
       formatUnits,

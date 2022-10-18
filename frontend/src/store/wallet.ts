@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import Onboard, { OnboardAPI } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
@@ -349,8 +349,8 @@ export default function useWalletStore() {
       // This error code indicates that the chain has not been added to MetaMask.
       if (code === 4902) {
         try {
-          const eip3085Chain = <any>{ ...chain }; // without casting to any, TS errors on `delete` since we're deleting a required property
-          delete eip3085Chain.logoURI; // if you don't remove extraneous fields, adding the chain will error
+          const eip3085Chain = <Chain>{ ...chain }; // without casting to any, TS errors on `delete` since we're deleting a required property
+          delete eip3085Chain.logoURI // if you don't remove extraneous fields, adding the chain will error
           await provider.value?.send('wallet_addEthereumChain', [eip3085Chain]);
         } catch (addError) {
           console.log(addError);

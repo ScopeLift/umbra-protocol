@@ -75,9 +75,10 @@
         card-container-class="col q-col-gutter-md"
         :columns="mainTableColumns"
         :data="formattedAnnouncements"
-        :expanded.sync="expanded"
+        v-model:expanded="expanded"
         :no-data-label="$t('AccountReceiveTable.account-empty')"
         :pagination="paginationConfig"
+        v-model:pagination="paginationConfig"
         row-key="randomNumber"
         :title="$t('AccountReceiveTable.received-funds')"
       >
@@ -333,10 +334,11 @@
 </template>
 
 <script lang="ts">
-import { computed, getCurrentInstance, defineComponent, onMounted, PropType, ref } from 'vue';
+import { computed,  defineComponent, onMounted, PropType, ref } from 'vue';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbra/umbra-js';
+import { tc } from 'src/boot/i18n';
 import useSettingsStore from 'src/store/settings';
 import useStatusesStore from 'src/store/statuses';
 import useWalletStore from 'src/store/wallet';
@@ -351,24 +353,23 @@ import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
-  const vm = getCurrentInstance()!;
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
   const spendingPrivateKey = ref<string>(); // used for hiding/showing private key in UI, so not a computed property
 
   // Generate string that explains scan settings that were used
   const scanDescriptionString = computed(() => {
-    const suffix = scanPrivateKey.value ? vm.$i18n.tc('AccountReceiveTable.custom-prv-key') : '';
+    const suffix = scanPrivateKey.value ? tc('AccountReceiveTable.custom-prv-key') : '';
     const hasStartBlock = Number(startBlock.value) >= 0;
     const hasEndBlock = Number(endBlock.value) >= 0;
-    let msg = `${vm.$i18n.tc('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.tc(
+    let msg = `${tc('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${tc(
       'AccountReceiveTable.to'
     )} ${Number(endBlock.value)}`; // default message
 
-    if (!hasStartBlock && !hasEndBlock) msg = `${vm.$i18n.tc('AccountReceiveTable.all-blocks-scanned')}`;
+    if (!hasStartBlock && !hasEndBlock) msg = `${tc('AccountReceiveTable.all-blocks-scanned')}`;
     if (!hasStartBlock && hasEndBlock)
-      msg = `${vm.$i18n.tc('AccountReceiveTable.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
+      msg = `${tc('AccountReceiveTable.scanned-all-blocks-up-to')} ${Number(endBlock.value)}`;
     if (hasStartBlock && !hasEndBlock)
-      msg = `${vm.$i18n.tc('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${vm.$i18n.tc(
+      msg = `${tc('AccountReceiveTable.scanned-from-block')} ${Number(startBlock.value)} ${tc(
         'AccountReceiveTable.to-current-block'
       )}`;
     return `${msg}${suffix}`;
@@ -385,10 +386,10 @@ function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   // For advanced mode: hides the stealth private key after it's shown
   const hidePrivateKey = () => (spendingPrivateKey.value = undefined);
 
-  // For advanced mode: copyies the provided stealth private key to the clipboard
+  // For advanced mode: copies the provided stealth private key to the clipboard
   const copyPrivateKey = async (privateKey: string) => {
     await copyToClipboard(privateKey);
-    notifyUser('success', vm.$i18n.tc('AccountReceiveTable.private-key-copied'));
+    notifyUser('success', tc('AccountReceiveTable.private-key-copied'));
     hidePrivateKey();
   };
 
@@ -415,7 +416,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const isFeeLoading = ref(false);
   const isWithdrawInProgress = ref(false);
   const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have a relayer tx ID)
-  const vm = getCurrentInstance()!;
 
   // Define table columns
   const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
@@ -425,7 +425,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'timestamp',
-      label: vm.$i18n.tc('AccountReceiveTable.date-received'),
+      label: tc('AccountReceiveTable.date-received'),
       name: 'date',
       sortable: true,
       sort: sortByTime,
@@ -433,7 +433,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'amount',
-      label: vm.$i18n.tc('AccountReceiveTable.amount'),
+      label: tc('AccountReceiveTable.amount'),
       name: 'amount',
       sortable: true,
       format: toString,
@@ -441,14 +441,14 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     {
       align: 'left',
       field: 'from',
-      label: vm.$i18n.tc('AccountReceiveTable.sender'),
+      label: tc('AccountReceiveTable.sender'),
       name: 'from',
       sortable: true,
     },
     {
       align: 'left',
       field: 'receiver',
-      label: vm.$i18n.tc('AccountReceiveTable.stealth-receiver'),
+      label: tc('AccountReceiveTable.stealth-receiver'),
       name: 'receiver',
       sortable: false,
     },
@@ -489,7 +489,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const formattedAnnouncements = ref(announcements.reverse() as ReceiveTableAnnouncement[]); // We reverse so most recent transaction is first
   onMounted(async () => {
     isLoading.value = true;
-    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    if (!provider.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
 
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
@@ -512,24 +512,24 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @notice Copies the address of type to the clipboard
    */
   async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
-    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    if (!provider.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
     const mainAddress = await toAddress(address, provider.value);
     await copyToClipboard(mainAddress);
-    notifyUser('success', `${type} ${vm.$i18n.tc('AccountReceiveTable.address-copied')}`);
+    notifyUser('success', `${type} ${tc('AccountReceiveTable.address-copied')}`);
   }
 
   /**
    * @notice Opens the transaction in etherscan
    */
   function openInEtherscan(row: UserAnnouncement) {
-    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    if (!provider.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
     // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     window.open(getEtherscanUrl(row.txHash, chainId));
   }
 
   function getSenderOrReceiverEtherscanUrl(address: string) {
-    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    if (!provider.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
     // Assume mainnet if we don't have a provider with a valid chainId
     const chainId = provider.value.network.chainId || 1;
     return getEtherscanUrl(address, chainId);
@@ -540,8 +540,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @param announcement Announcement to withdraw
    */
   async function initializeWithdraw(announcement: UserAnnouncement) {
-    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
-    if (!userAddress.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
+    if (!provider.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
+    if (!userAddress.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
 
     activeAnnouncement.value = announcement;
 
@@ -560,7 +560,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         showPrivacyModal.value = true;
         privacyModalAddressWarnings.value = reasons;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsInWithdrawFlow(false);
       console.warn(err);
       throw new Error(err);
@@ -584,9 +584,9 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
    * @notice Executes the withdraw process
    */
   async function executeWithdraw(options: ExecuteWithdrawalOptions) {
-    if (!umbra.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.umbra-instance-not-found'));
-    if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.provider-not-found'));
-    if (!activeAnnouncement.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.no-announcement-selected'));
+    if (!umbra.value) throw new Error(tc('AccountReceiveTable.umbra-instance-not-found'));
+    if (!provider.value) throw new Error(tc('AccountReceiveTable.provider-not-found'));
+    if (!activeAnnouncement.value) throw new Error(tc('AccountReceiveTable.no-announcement-selected'));
     showPrivacyModal.value = false;
 
     // Get token info, stealth private key, and destination (acceptor) address
@@ -610,11 +610,11 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value)
-          throw new Error(vm.$i18n.tc('AccountReceiveTable.signer-or-provider-not-found'));
+          throw new Error(tc('AccountReceiveTable.signer-or-provider-not-found'));
         if (!activeFee.value || !('fee' in activeFee.value))
-          throw new Error(vm.$i18n.tc('AccountReceiveTable.fee-not-set'));
+          throw new Error(tc('AccountReceiveTable.fee-not-set'));
         const chainId = network.value?.chainId;
-        if (!chainId) throw new Error(`${vm.$i18n.tc('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
+        if (!chainId) throw new Error(`${tc('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
 
         // Get users signature
         const sponsor = '0xb4435399AB53D6136C9AEEBb77a0120620b117F9'; // TODO update this
@@ -709,8 +709,7 @@ export default defineComponent({
       if (advancedMode.value && scanPrivateKey.value) return new KeyPair(scanPrivateKey.value);
       return spendingKeyPairFromSig.value as KeyPair;
     });
-    const vm = getCurrentInstance()!;
-    const receiverTooltipText = vm.$i18n.tc('AccountReceiveTable.receiver-tool-tip');
+    const receiverTooltipText = tc('AccountReceiveTable.receiver-tool-tip');
 
     return {
       advancedMode,

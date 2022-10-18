@@ -34,14 +34,14 @@ export default function useSettingsStore() {
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
     setLanguage(
-      (LocalStorage.getItem(settings.language) as Language) || { label: getLanguageLabel(), value: i18n.locale }
+      (LocalStorage.getItem(settings.language) as Language) || { label: getLanguageLabel(), value: i18n.global.locale }
     );
   });
 
   if (language.value.label === '') {
     language.value.value = LocalStorage.getItem(settings.language)
       ? (LocalStorage.getItem(settings.language) as Language).value
-      : i18n.locale;
+      : i18n.global.locale;
     language.value.label = getLanguageLabel();
   }
 
@@ -64,7 +64,7 @@ export default function useSettingsStore() {
 
   function setLanguage(newLanguage: Language) {
     language.value = newLanguage;
-    i18n.locale = language.value.value;
+    i18n.global.locale = <'en-us' | 'zh-cn'>language.value.value;
     LocalStorage.set(settings.language, language.value);
   }
 
