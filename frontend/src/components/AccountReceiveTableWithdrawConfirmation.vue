@@ -199,7 +199,9 @@ export default defineComponent({
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
     const customTxFeeInWei = computed(() => gasLimit.value.mul(customGasPriceInWei.value));
-    const formattedCustomTxCostEth = computed(() => humanizeTokenAmount(customTxFeeInWei.value, propsRef.activeFee.token));
+    const formattedCustomTxCostEth = computed(() =>
+      humanizeTokenAmount(customTxFeeInWei.value, propsRef.activeFee.token)
+    );
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
     async function tryGetGasPrice() {
@@ -243,7 +245,9 @@ export default defineComponent({
 
     // Define computed properties dependent on the fee. Must be computed to react to gas price updates by user.
     // Variables prefixed with `formatted*` are intended for display in the UI.
-    const amountReceived = computed(() => <BigNumber>amount.sub(useCustomFee.value ? customTxFeeInWei.value : fee.value)); // amount user will receive
+    const amountReceived = computed(
+      () => <BigNumber>amount.sub(useCustomFee.value ? customTxFeeInWei.value : fee.value)
+    ); // amount user will receive
 
     // transaction fee, rounded
     const formattedDefaultTxCost = computed(() => {

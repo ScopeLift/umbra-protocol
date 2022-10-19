@@ -21,7 +21,7 @@ import {
 } from 'components/models';
 import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
-import { BigNumber, Contract, Web3Provider, parseUnits } from 'src/utils/ethers';
+import { BigNumber, Contract, ExternalProvider, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
@@ -222,7 +222,7 @@ export default function useWalletStore() {
         return;
       }
 
-      provider.value = new Web3Provider(rawProvider.value, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
+      provider.value = new Web3Provider((rawProvider.value as unknown) as ExternalProvider, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
       signer.value = provider.value.getSigner();
 
       // Get user and network information
@@ -350,7 +350,7 @@ export default function useWalletStore() {
       if (code === 4902) {
         try {
           const eip3085Chain = <Chain>{ ...chain }; // without casting to any, TS errors on `delete` since we're deleting a required property
-          delete eip3085Chain.logoURI // if you don't remove extraneous fields, adding the chain will error
+          delete eip3085Chain.logoURI; // if you don't remove extraneous fields, adding the chain will error
           await provider.value?.send('wallet_addEthereumChain', [eip3085Chain]);
         } catch (addError) {
           console.log(addError);

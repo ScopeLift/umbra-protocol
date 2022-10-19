@@ -9,7 +9,7 @@ import { defineComponent, PropType, toRefs } from 'vue';
 import Jazzicon from 'src/components/Jazzicon.vue';
 
 export default defineComponent({
-  name: 'Avatar',
+  name: 'AvatarComponent',
   components: { Jazzicon },
   props: {
     avatar: {
@@ -21,7 +21,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup: props => {
+  setup: (props) => {
     if (props.avatar) {
       // load the avatar image async and display the jazzicon while waiting
       const avatarImg = new Image();

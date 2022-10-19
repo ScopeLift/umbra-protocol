@@ -5,17 +5,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, SetupContext } from 'vue';
+import { defineComponent } from 'vue';
+import { useRouter } from 'vue-router';
 import useWalletStore from 'src/store/wallet';
 
-function useWallet(context: SetupContext, to: string) {
+function useWallet(to: string) {
   const { connectWallet, userAddress } = useWalletStore();
 
   async function connectWalletWithRedirect() {
     // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
     // from the home page)
     if (userAddress.value && to) {
-      await context.root.$router.push({ name: to });
+      await useRouter().push({ name: to });
       return;
     } else if (userAddress.value) {
       return;
@@ -23,7 +24,7 @@ function useWallet(context: SetupContext, to: string) {
 
     await connectWallet();
 
-    if (to) await context.root.$router.push({ name: to }); // redirect to specified page
+    if (to) await useRouter().push({ name: to }); // redirect to specified page
   }
 
   return { connectWalletWithRedirect };
@@ -41,8 +42,8 @@ export default defineComponent({
     },
   },
 
-  setup(props, context) {
-    return { ...useWallet(context, props.to) };
+  setup(props) {
+    return { ...useWallet(props.to || 'home') };
   },
 });
 </script>

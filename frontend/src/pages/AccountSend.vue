@@ -167,7 +167,7 @@
 
 <script lang="ts">
 // --- External imports ---
-import { computed, defineComponent,  onMounted, ref, watch } from 'vue';
+import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm, QInput } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
@@ -308,10 +308,11 @@ function useSendForm() {
         advanced: shouldUseNormalPubKey.value,
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
       if (e.reason) return toSentenceCase(e.reason);
-      return toSentenceCase(e.message);
+      if (e.message) return toSentenceCase(e.message);
+      return JSON.stringify(e);
     }
   }
 
@@ -348,8 +349,7 @@ function useSendForm() {
   async function onFormSubmit() {
     try {
       // Form validation
-      if (!recipientId.value || !token.value || !humanAmount.value)
-        throw new Error(tc('Send.please-complete-form'));
+      if (!recipientId.value || !token.value || !humanAmount.value) throw new Error(tc('Send.please-complete-form'));
       if (!signer.value) throw new Error(tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
 
@@ -367,8 +367,7 @@ function useSendForm() {
       if (tokenAddress === NATIVE_TOKEN.value.address) {
         // Sending the native token, so check that user has balance of: amount being sent + toll
         const requiredAmount = tokenAmount.add(toll.value);
-        if (requiredAmount.gt(balances.value[tokenAddress]))
-          throw new Error(`${tc('Send.amount-exceeds-balance')}`);
+        if (requiredAmount.gt(balances.value[tokenAddress])) throw new Error(`${tc('Send.amount-exceeds-balance')}`);
       } else {
         // Sending other tokens, so we need to check both separately
         const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${tc('Send.umbra-fee-exceeds-balance')}`;

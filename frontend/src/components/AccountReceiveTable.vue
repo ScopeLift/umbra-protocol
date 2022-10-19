@@ -334,7 +334,7 @@
 </template>
 
 <script lang="ts">
-import { computed,  defineComponent, onMounted, PropType, ref } from 'vue';
+import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbra/umbra-js';
@@ -609,10 +609,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         await tx.wait();
       } else {
         // Withdrawing token
-        if (!signer.value || !provider.value)
-          throw new Error(tc('AccountReceiveTable.signer-or-provider-not-found'));
-        if (!activeFee.value || !('fee' in activeFee.value))
-          throw new Error(tc('AccountReceiveTable.fee-not-set'));
+        if (!signer.value || !provider.value) throw new Error(tc('AccountReceiveTable.signer-or-provider-not-found'));
+        if (!activeFee.value || !('fee' in activeFee.value)) throw new Error(tc('AccountReceiveTable.fee-not-set'));
         const chainId = network.value?.chainId;
         if (!chainId) throw new Error(`${tc('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
 
