@@ -17,9 +17,9 @@
             <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
           </h5>
         </q-card-section>
-        <q-card-section class="q-pb-sm">
+        <q-card-section class="q-pb-lg">
           <div class="row items-center text">
-            <span>
+            <span class="q-pa-sm">
               {{ $t('Send.advanced-send-warning') }}
               <router-link
                 class="hyperlink"
@@ -30,15 +30,9 @@
               </router-link>
             </span>
           </div>
-        </q-card-section>
-        <q-card-section class="q-pt-sm">
-          <div class="row justify-evenly">
-            <base-button
-              :label="$t('AccountReceiveTableWarning.acknowledge-risks')"
-              :outline="true"
-              @click="advancedAcknowledged = true"
-            />
-          </div>
+          <q-checkbox v-model="advancedAcknowledged">
+            {{ $t('Send.acknowledge-risks') }}
+          </q-checkbox>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -286,7 +280,7 @@ function useSendForm() {
   const sendFormRef = ref<QForm>();
   const isSending = ref(false);
   const advancedAcknowledged = ref(false);
-  let showAdvancedSendWarning = ref(false);
+  const showAdvancedSendWarning = ref(false);
   const acknowledgeSendRisk = ref(false);
   const vm = getCurrentInstance()!;
 
@@ -344,6 +338,10 @@ function useSendForm() {
       }
       if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
         await humanAmountInputRef.validate();
+      }
+
+      if (!useNormalPubKey) {
+        advancedAcknowledged.value = false;
       }
 
       // Reset token and amount if token is not supported on the network
@@ -486,7 +484,7 @@ function useSendForm() {
       resetForm();
     } finally {
       isSending.value = false;
-      showAdvancedSendWarning = false;
+      showAdvancedSendWarning.value = false;
     }
   }
 
