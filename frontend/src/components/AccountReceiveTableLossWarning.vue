@@ -6,7 +6,7 @@
 
     <q-card-section>
       <h5 class="text-bold text-center q-mt-none">
-        {{ $t('AccountReceiveTable.danger') }} <q-icon name="fas fa-exclamation-triangle" class="danger" left />
+        <q-icon name="fas fa-exclamation-triangle" class="danger" left />{{ $t('AccountReceiveTable.danger') }}
       </h5>
     </q-card-section>
 
