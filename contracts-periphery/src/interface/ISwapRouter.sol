@@ -9,24 +9,21 @@ interface ISwapRouter is IUniswapV3SwapCallback {
   struct ExactInputParams {
     bytes path;
     address recipient;
-    uint amountIn;
-    uint amountOutMinimum;
+    uint256 amountIn;
+    uint256 amountOutMinimum;
   }
 
   function exactInput(ExactInputParams calldata params)
     external
     payable
-    returns (uint amountOut);
+    returns (uint256 amountOut);
 
-  function multicall(bytes[] calldata data)
-    external
-    payable
-    returns (bytes[] memory results);
+  function multicall(bytes[] calldata data) external payable returns (bytes[] memory results);
 
   function unwrapWETH9WithFee(
-    uint amountMinimum,
+    uint256 amountMinimum,
     address recipient,
-    uint feeBips,
+    uint256 feeBips,
     address feeRecipient
   ) external payable;
 }

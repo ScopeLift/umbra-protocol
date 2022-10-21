@@ -46,8 +46,8 @@
 # ============================
 [fmt]
   bracket_spacing = false
-  int_types = "short"
-  line_length = 80
+  int_types = "long"
+  line_length = 100
   multiline_func_header = "attributes_first"
   number_underscore = "thousands"
   quote_style = "double"
