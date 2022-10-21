@@ -6,7 +6,7 @@ import "forge-std/Test.sol";
 contract DSTestPlus is Test {
   using stdStorage for StdStorage;
 
-  function setToll(address umbraAddr, uint newToll) public {
+  function setToll(address umbraAddr, uint256 newToll) public {
     stdstore.target(address(umbraAddr)).sig("toll()").checked_write(newToll);
   }
 }

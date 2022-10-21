@@ -9,9 +9,9 @@ import {UmbraBatchSend} from "src/UmbraBatchSend.sol";
 abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
   UmbraBatchSend router;
 
-  uint ethBalance;
-  uint tokenBalance;
-  uint toll;
+  uint256 ethBalance;
+  uint256 tokenBalance;
+  uint256 toll;
 
   UmbraBatchSend.SendEth[] sendEth;
   UmbraBatchSend.SendToken[] sendToken;
@@ -30,81 +30,62 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
     router = new UmbraBatchSend(IUmbra(address(umbra)));
     ethBalance = address(this).balance;
     tokenBalance = token.balanceOf(address(this));
-    token.approve(address(router), type(uint).max);
+    token.approve(address(router), type(uint256).max);
     router.approveToken(IERC20(address(token)));
   }
 
   function testPostSetupState() public {
-    uint currentToll = IUmbra(umbra).toll();
+    uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
     assertTrue(ethBalance > 0 && tokenBalance > 0);
   }
 
-  function executeParams(
-    Send _type,
-    uint numOfAddrs,
-    uint etherAmount,
-    uint tokenAmount
-  ) public {
+  function executeParams(Send _type, uint256 numOfAddrs, uint256 etherAmount, uint256 tokenAmount)
+    public
+  {
     assertTrue(numOfAddrs > 0);
 
-    uint valueAmount;
+    uint256 valueAmount;
     // Create a list of addresses
-    for (uint i = 0; i < numOfAddrs; i++) {
-      addrs.push(payable(address(uint160(uint(keccak256(abi.encode(i)))))));
+    for (uint256 i = 0; i < numOfAddrs; i++) {
+      addrs.push(payable(address(uint160(uint256(keccak256(abi.encode(i)))))));
     }
 
     if (_type == Send.ETH) {
       assertTrue(etherAmount > 0);
 
-      for (uint i = 0; i < numOfAddrs; i++) {
+      for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += etherAmount + toll;
-        sendEth.push(
-          UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext)
-        );
+        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
       }
       router.batchSendEth{value: valueAmount}(toll, sendEth);
     } else if (_type == Send.TOKEN) {
       assertTrue(tokenAmount > 0);
-      transferSummary.push(
-        UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token))
-      );
-      for (uint i = 0; i < numOfAddrs; i++) {
+      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
+      for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += toll;
         sendToken.push(
-          UmbraBatchSend.SendToken(
-            addrs[i], address(token), tokenAmount, pkx, ciphertext
-          )
+          UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext)
         );
       }
-      router.batchSendTokens{value: valueAmount}(
-        toll, sendToken, transferSummary
-      );
+      router.batchSendTokens{value: valueAmount}(toll, sendToken, transferSummary);
     } else {
       assertTrue(etherAmount > 0 && tokenAmount > 0);
-      transferSummary.push(
-        UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token))
-      );
+      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
 
-      for (uint i = 0; i < numOfAddrs; i++) {
+      for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += etherAmount + toll * 2;
-        sendEth.push(
-          UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext)
-        );
+        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
         sendToken.push(
-          UmbraBatchSend.SendToken(
-            addrs[i], address(token), tokenAmount, pkx, ciphertext
-          )
+          UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext)
         );
       }
-      router.batchSend{value: valueAmount}(
-        toll, sendEth, sendToken, transferSummary
-      );
+      router.batchSend{value: valueAmount}(toll, sendEth, sendToken, transferSummary);
     }
   }
 
   // Send max balance
-  function executeParams(Send _type, uint numOfAddrs) public {
+  function executeParams(Send _type, uint256 numOfAddrs) public {
     assertTrue(numOfAddrs > 0);
 
     if (_type == Send.ETH) {
@@ -113,10 +94,7 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
       executeParams(Send.TOKEN, numOfAddrs, 0, (tokenBalance / numOfAddrs));
     } else {
       executeParams(
-        Send.BOTH,
-        numOfAddrs,
-        (ethBalance / numOfAddrs) - toll * 2,
-        (tokenBalance / numOfAddrs)
+        Send.BOTH, numOfAddrs, (ethBalance / numOfAddrs) - toll * 2, (tokenBalance / numOfAddrs)
       );
     }
   }
@@ -291,9 +269,7 @@ contract BatchSendWithTollAndWithTokenBalanceGasTest is UmbraBatchSendGasTest {
   }
 }
 
-contract BatchSendWithoutTollAndWithTokenBalanceGasTest is
-  UmbraBatchSendGasTest
-{
+contract BatchSendWithoutTollAndWithTokenBalanceGasTest is UmbraBatchSendGasTest {
   function setUp() public override {
     super.setUp();
     toll = 0;

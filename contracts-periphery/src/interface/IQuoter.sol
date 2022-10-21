@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 interface IQuoter {
-  function quoteExactInput(bytes memory path, uint amountIn)
+  function quoteExactInput(bytes memory path, uint256 amountIn)
     external
-    returns (uint amountOut);
+    returns (uint256 amountOut);
 }

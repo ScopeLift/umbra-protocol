@@ -14,12 +14,12 @@ interface IUmbraHookReceiver {
    * @param _data Arbitrary data passed to this hook by the withdrawer
    */
   function tokensWithdrawn(
-    uint _amount,
+    uint256 _amount,
     address _stealthAddr,
     address _acceptor,
     address _tokenAddr,
     address _sponsor,
-    uint _sponsorFee,
+    uint256 _sponsorFee,
     bytes memory _data
   ) external;
 }

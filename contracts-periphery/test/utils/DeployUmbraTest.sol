@@ -26,16 +26,11 @@ contract DeployUmbraTest is DSTestPlus {
     // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
     vm.etch(
       umbra,
-      (
-        deployCode(
-          "test/utils/Umbra.json",
-          bytes(abi.encode(0, address(this), address(this)))
-        )
-      ).code
+      (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code
     );
   }
 
-  function createMockERC20AndMint(address addr, uint amount) public {
+  function createMockERC20AndMint(address addr, uint256 amount) public {
     token = new MockERC20("Test", "TT", 18);
     token2 = new MockERC20("Test2", "TT2", 18);
     token.mint(addr, amount);
@@ -46,10 +41,10 @@ contract DeployUmbraTest is DSTestPlus {
     address _acceptor,
     address _tokenAddr,
     address _sponsor,
-    uint _sponsorFee,
+    uint256 _sponsorFee,
     IUmbraHookReceiver _hook,
     bytes memory _data,
-    uint _privateKey
+    uint256 _privateKey
   ) internal returns (uint8 v, bytes32 r, bytes32 s) {
     bytes32 _digest = keccak256(
       abi.encodePacked(
