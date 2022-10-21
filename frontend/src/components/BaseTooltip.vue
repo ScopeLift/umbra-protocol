@@ -53,8 +53,8 @@ export default defineComponent({
   },
   setup() {
     const isShown = ref(false);
-    const rootRef = ref<Vue | null>(null);
-    const tooltipRef = ref<Vue | null>(null);
+    const rootRef = ref<Vue | /* Vue */ null>(null);
+    const tooltipRef = ref<Vue | /* Vue */ null>(null);
 
     const onRootMouseLeave = (e: MouseEvent) => {
       if (tooltipRef.value?.$el !== e.relatedTarget) {

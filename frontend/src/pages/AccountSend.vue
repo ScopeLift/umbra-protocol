@@ -208,13 +208,13 @@ function useSendForm() {
 
   // Form parameters
   const recipientId = ref<string>();
-  const recipientIdBaseInputRef = ref<Vue>();
+  const recipientIdBaseInputRef = ref<any /* Vue */>();
   const useNormalPubKey = ref(false);
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const token = ref<TokenInfoExtended | null>();
-  const tokenBaseInputRef = ref<Vue>();
+  const tokenBaseInputRef = ref<any /* Vue */>();
   const humanAmount = ref<string>();
-  const humanAmountBaseInputRef = ref<Vue>();
+  const humanAmountBaseInputRef = ref<any /* Vue */>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
