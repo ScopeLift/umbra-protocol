@@ -584,6 +584,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   function confirmWithdraw() {
     showPrivacyModal.value = false;
     showConfirmationModal.value = true;
+    showWithdrawLossModal.value = false;
   }
 
   type ExecuteWithdrawalOptions = {
