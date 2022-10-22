@@ -21,7 +21,7 @@
                     <span class="primary header-black q-ml-md">Umbra</span>
                   </div>
                   <div v-else-if="$q.screen.xs">
-                    <div v-if="isLoading" class="q-ml-md row">
+                    <div v-if="isLoading" class="row">
                       <q-spinner color="primary" size="1em" />
                     </div>
                   </div>
@@ -50,7 +50,7 @@
             <div v-if="isLoading" class="row justify-end items-center">
               <q-spinner color="primary" size="1em" />
             </div>
-            <connect-wallet v-if="!isLoading">
+            <connect-wallet v-if="!isLoading && !network">
               <div class="row justify-end items-center">
                 <connect-wallet>
                   <base-button

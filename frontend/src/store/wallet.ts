@@ -86,9 +86,6 @@ export default function useWalletStore() {
             rpcUrl: chain.rpcUrls[0],
           };
         }),
-        // Mobile descktop distinction doesn't work
-        // We need to use media queries to minimize
-        // and to shift to the left from right
         accountCenter: {
           desktop: { enabled: true, position: 'topRight' },
           mobile: { enabled: true, minimal: true, position: 'topLeft' },
@@ -121,8 +118,6 @@ export default function useWalletStore() {
           resetState();
         }
         update.map((wallet) => {
-          console.log('wakket');
-          console.log(wallet);
           wallet.provider.on('accountsChanged', () => {
             window.location.reload();
           });
@@ -136,6 +131,13 @@ export default function useWalletStore() {
 
   watch(lastWallet, async () => {
     if (lastWallet.value && !userAddress.value) {
+      if (lastWallet.value === 'MetaMask') {
+        const unlocked = await window.ethereum._metamask.isUnlocked();
+        if (!unlocked) {
+          setLoading(false);
+          return;
+        }
+      }
       await connectWallet();
     }
   });
@@ -192,7 +194,7 @@ export default function useWalletStore() {
       let connectedWallet;
       if (lastWallet.value) {
         [connectedWallet] = await onboard.value.connectWallet({
-          autoSelect: lastWallet.value,
+          autoSelect: { label: lastWallet.value, disableModals: true },
         });
       } else {
         [connectedWallet] = await onboard.value.connectWallet();
