@@ -226,13 +226,11 @@ import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'src/components/ConnectWallet.vue';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
-import AddressSettings from './AddressSettings.vue';
 import HeaderLinks from './HeaderLinks.vue';
-import NetworkDropdown from './NetworkDropdown.vue';
 
 export default defineComponent({
   name: 'BaseLayout',
-  components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
+  components: { ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks }, // prettier-ignore
   setup() {
     const {
       advancedMode,
