@@ -1,4 +1,3 @@
-import { ExternalProvider } from 'ethersproject/providers';
 // Mocks all files ending in `.vue` showing them as plain Vue instances
 declare module '*.vue' {
   import Vue from 'vue';
@@ -8,10 +7,4 @@ declare module '*.vue' {
 // For the @metamask/jazzicon package
 declare module '@metamask/jazzicon' {
   export default function (diameter: number, seed: number): HTMLElement;
-}
-
-declare global {
-  interface Window {
-    ethereum: ExternalProvider;
-  }
 }
