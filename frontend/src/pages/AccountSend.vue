@@ -481,6 +481,11 @@ function useSendForm() {
       });
       void txNotify(tx.hash, ethersProvider);
       await tx.wait();
+      /* wther */
+      // Add signature here
+      // 1. Get signature
+      // 2. Store signature and messages
+      // 3. Encrypt signature and message
       resetForm();
     } finally {
       isSending.value = false;
