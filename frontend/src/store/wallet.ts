@@ -129,6 +129,13 @@ export default function useWalletStore() {
 
   watch(lastWallet, async () => {
     if (lastWallet.value && !userAddress.value) {
+      if (lastWallet.value === 'MetaMask') {
+        const unlocked = await window.ethereum._metamask.isUnlocked();
+        if (!unlocked) {
+          setLoading(false);
+          return;
+        }
+      }
       await connectWallet();
     }
   });
@@ -185,7 +192,7 @@ export default function useWalletStore() {
       let connectedWallet;
       if (lastWallet.value) {
         [connectedWallet] = await onboard.value.connectWallet({
-          autoSelect: lastWallet.value,
+          autoSelect: { label: lastWallet.value, disableModals: true },
         });
       } else {
         [connectedWallet] = await onboard.value.connectWallet();
