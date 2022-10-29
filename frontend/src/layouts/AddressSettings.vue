@@ -1,6 +1,6 @@
 <template>
   <div class="column relative-position">
-    <div class="row no-wrap">
+    <div class="row no-wrap" @click="displayWalletRow = !displayWalletRow">
       <span v-if="advancedMode" class="q-mr-sm">
         <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>
       </span>
@@ -13,13 +13,18 @@
         </div>
       </connect-wallet>
     </div>
-    <WalletRow :userDisplayName="userDisplayName" :userAddress="userAddress" />
+    <WalletRow
+      :userDisplayName="userDisplayName"
+      :userAddress="userAddress"
+      :display="displayWalletRow"
+      :setDisplayWalletRow="setDisplayWalletRow"
+    />
   </div>
 </template>
 
 <script lang="ts">
 // Add WalletRow
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from '@vue/composition-api';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import Avatar from 'src/components/Avatar.vue';
@@ -45,6 +50,19 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
+  },
+
+  setup(_props, context) {
+    const displayWalletRow = ref(false);
+    const setDisplayWalletRow = (value: boolean) => {
+      displayWalletRow.value = value;
+    };
+
+    return {
+      context,
+      displayWalletRow,
+      setDisplayWalletRow,
+    };
   },
 });
 </script>
