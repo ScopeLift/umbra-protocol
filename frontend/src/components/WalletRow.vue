@@ -1,6 +1,11 @@
 <template>
-  <div class="absolute container">
-    <div class="q-mb-sm">Account</div>
+  <div v-if="display" class="container q-menu" :class="isDark ? 'q-dark' : ''">
+    <div class="row justify-between items-center q-mb-sm">
+      <div>Account</div>
+      <div @click="setDisplayWalletRow(false)">
+        <q-icon class="copy-icon q-pr-xs" name="fas fa-times" />
+      </div>
+    </div>
     <div class="column inner-container">
       <div class="row justify-between items-center">
         <div class="text-xxs">Connected with {{ connectedWalletLabel }}</div>
@@ -26,12 +31,12 @@
             <span class="text-xxs">Copy Address</span>
           </div>
 
-          <a class="text-decoration-none" :href="blockExplorerUrl" target="_blank" rel="noopener noreferrer">
-            <div class="row items-center q-ml-sm text-xxs external-link-parent cursor-pointer">
-              <q-icon class="external-link q-pr-xs" name="fas fa-external-link-alt" />
+          <div class="row items-center q-ml-sm text-xxs external-link-parent cursor-pointer">
+            <a class="hyperlink" :href="blockExplorerUrl" target="_blank" rel="noopener noreferrer">
+              <q-icon class="external-link q-pr-xs dark-toggle" name="fas fa-external-link-alt" />
               <span>View on Explorer</span>
-            </div>
-          </a>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -40,13 +45,13 @@
 
 <script lang="ts">
 // Add WalletRow
-import { computed } from '@vue/composition-api';
-import { defineComponent, onMounted } from '@vue/composition-api';
+import { defineComponent, onUpdated, computed } from '@vue/composition-api';
 import { copyToClipboard } from 'quasar';
 import BaseButton from 'src/components/BaseButton.vue';
 import { toAddress } from 'src/utils/address';
 import useWalletStore from 'src/store/wallet';
 import jazzicon from '@metamask/jazzicon';
+import useSettingsStore from 'src/store/settings';
 
 function useWalletRow(userAddress: string) {
   const { provider, currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
@@ -84,18 +89,36 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    display: {
+      type: Boolean,
+      required: true,
+    },
+    setDisplayWalletRow: {
+      type: Function,
+      required: true,
+    },
   },
 
   setup(props, context) {
-    onMounted(() => {
-      const width = 20;
-      const identicon = jazzicon(width, parseInt(props.userAddress.slice(2, 10), 16));
-      document.querySelector('#wallet-row-jazzicon')?.appendChild(identicon);
+    const { isDark } = useSettingsStore();
+    console.log('IsDark');
+    console.log(isDark);
+
+    onUpdated(() => {
+      if (props.display) {
+        const width = 20;
+        const identicon = jazzicon(width, parseInt(props.userAddress.slice(2, 10), 16));
+        const node = document.querySelector('#wallet-row-jazzicon');
+        if (node && !node?.firstChild) {
+          node.appendChild(identicon);
+        }
+      }
     });
 
     return {
       context,
       ...useWalletRow(props.userAddress),
+      isDark,
     };
   },
 });
@@ -104,31 +127,27 @@ export default defineComponent({
 <style lang="sass" scoped>
 .container
   margin-top: 40px
+  position: absolute !important
   width: 290px
   height: 150px
-  background: white
   z-index: 1
   border-radius: 15px
   padding: 15px
   box-shadow: 0 1px 5px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 12%)
+
+  @media screen and (max-width: $breakpoint-xs-max)
+    left: -40px
 
 .inner-container
   padding: 8px
   border: .4px solid grey
   border-radius: 15px
 
-.copy-icon-parent:hover .copy-icon
+.copy-icon-parent:hover
   color: $primary
 
-.copy-icon
-  color: black
-.external-link-parent:hover .external-link
+.external-link-parent:hover
   color: $primary
-.external-link
-  color: black
 .text-xxs
   font-size: 10px
-.text-decoration-none
-  text-decoration: none
-  color: black
 </style>
