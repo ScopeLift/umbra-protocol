@@ -284,6 +284,13 @@
   "ConnectWalletCard": {
     "connect-wallet": "Connect Wallet"
   },
+  "WalletRow": {
+    "account": "Account",
+    "address-copied": "Address copied to clipboard",
+    "connected-with": "Connected with",
+    "copy-address": "Copy address",
+    "view-on-explorer": "View on explorer"
+  },
   "WithdrawForm": {
     "withdraw-address": "Enter address to withdraw funds to",
     "address": "Address",

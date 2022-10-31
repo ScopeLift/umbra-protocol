@@ -284,6 +284,13 @@
   "ConnectWalletCard": {
     "connect-wallet": "连接钱包"
   },
+  "WalletRow": {
+    "account": "帐户",
+    "address-copied": "地址复制到剪贴板",
+    "connected-with": "已连接",
+    "copy-address": "复制地址",
+    "view-on-explorer": "在资源管理器上查看"
+  },
   "WithdrawForm": {
     "withdraw-address": "输入提款地址",
     "address": "地址",

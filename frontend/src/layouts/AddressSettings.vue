@@ -23,7 +23,6 @@
 </template>
 
 <script lang="ts">
-// Add WalletRow
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
