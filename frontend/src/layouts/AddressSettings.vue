@@ -1,5 +1,5 @@
 <template>
-  <div class="column relative-position">
+  <div id="address-settings" class="column relative-position">
     <div class="row no-wrap" @click="displayWalletRow = !displayWalletRow">
       <span v-if="advancedMode" class="q-mr-sm">
         <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>

@@ -1,14 +1,14 @@
 <template>
-  <div v-if="display" class="container q-menu" :class="isDark ? 'q-dark' : ''">
+  <div v-if="display" class="walletRow-container q-menu" :class="isDark ? 'q-dark' : ''">
     <div class="row justify-between items-center q-mb-sm">
       <div>{{ $t('WalletRow.account') }}</div>
       <div @click="setDisplayWalletRow(false)">
-        <q-icon class="copy-icon q-pr-xs" name="fas fa-times" />
+        <q-icon class="copy-icon q-pr-xs cursor-pointer" name="fas fa-times" />
       </div>
     </div>
     <div class="column inner-container">
       <div class="row justify-between items-center">
-        <div class="text-xxs">{{ $t('WalletRow.connected-with') }}{{ connectedWalletLabel }}</div>
+        <div class="text-xxs">{{ $t('WalletRow.connected-with') }} {{ connectedWalletLabel }}</div>
         <base-button
           @click="disconnectWallet()"
           label="Disconnect"
@@ -19,13 +19,13 @@
         />
       </div>
       <div class="row">
-        <div class="row text-caption text-break-word cursor-pointer">
+        <div class="row text-caption text-break-word">
           <div class="flex q-mr-sm" id="wallet-row-jazzicon" />
           <span v-if="userDisplayName" class="text-caption text-bold">
             {{ userDisplayName }}
           </span>
         </div>
-        <div class="row text-caption items-center">
+        <div class="row text-caption items-center cursor-pointer">
           <div @click="copyAddress(userAddress)" class="text-xxs copy-icon-parent cursor-pointer">
             <q-icon class="copy-icon q-pr-xs" name="far fa-copy" />
             <span class="text-xxs">{{ $t('WalletRow.copy-address') }}</span>
@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onUpdated, computed, getCurrentInstance } from '@vue/composition-api';
+import { defineComponent, onUpdated, computed, getCurrentInstance, PropType } from '@vue/composition-api';
 import { copyToClipboard } from 'quasar';
 import BaseButton from 'src/components/BaseButton.vue';
 import { toAddress } from 'src/utils/address';
@@ -91,13 +91,22 @@ export default defineComponent({
       required: true,
     },
     setDisplayWalletRow: {
-      type: Function,
+      type: Function as PropType<(display: boolean) => void>,
       required: true,
     },
   },
 
   setup(props, context) {
     const { isDark } = useSettingsStore();
+    const onClickOutside = (e: Event) => {
+      const addressSettings = document.querySelector('#address-settings');
+      const walletRow = document.querySelector('.walletRow-container');
+      const path = e.composedPath();
+
+      if (addressSettings && walletRow && !path.includes(addressSettings) && !path.includes(walletRow)) {
+        props.setDisplayWalletRow(false);
+      }
+    };
 
     onUpdated(() => {
       if (props.display) {
@@ -107,6 +116,9 @@ export default defineComponent({
         if (node && !node?.firstChild) {
           node.appendChild(identicon);
         }
+        window.addEventListener('click', onClickOutside);
+      } else {
+        window.removeEventListener('click', onClickOutside);
       }
     });
 
@@ -120,7 +132,7 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-.container
+.walletRow-container
   margin-top: 40px
   position: absolute !important
   width: 290px
