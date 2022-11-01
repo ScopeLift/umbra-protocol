@@ -165,16 +165,16 @@ export default defineComponent({
     // Parse the provided props
     const { NATIVE_TOKEN, network, provider } = useWalletStore();
     const propsRef = toRefs(props);
-    const isNativeToken = propsRef.activeFee.token.symbol === NATIVE_TOKEN.value.symbol;
-    const amount = propsRef.activeAnnouncement.amount; // amount being withdrawn
-    const symbol = propsRef.activeFee.token.symbol; // token symbol
-    const tokenURL = propsRef.activeFee.token.logoURI; // URL pointing to image of token logo
+    const isNativeToken = propsRef.activeFee.value.token.symbol === NATIVE_TOKEN.value.symbol;
+    const amount = propsRef.activeAnnouncement.value.amount; // amount being withdrawn
+    const symbol = propsRef.activeFee.value.token.symbol; // token symbol
+    const tokenURL = propsRef.activeFee.value.token.logoURI; // URL pointing to image of token logo
 
     // Get properties dependent on those props
     const etherscanUrl = computed(() => getEtherscanUrl(propsRef.txHash, propsRef.chainId)); // withdrawal tx hash URL
 
     // amount being withdrawn, rounded
-    const formattedAmount: string = humanizeTokenAmount(amount, propsRef.activeFee.token);
+    const formattedAmount: string = humanizeTokenAmount(amount, propsRef.activeFee.value.token);
 
     function isValidFeeAmount(val: string) {
       if (!val || !(Number(val) > 0)) return 'Please enter an amount';
@@ -200,7 +200,7 @@ export default defineComponent({
     });
     const customTxFeeInWei = computed(() => gasLimit.value.mul(customGasPriceInWei.value));
     const formattedCustomTxCostEth = computed(() =>
-      humanizeTokenAmount(customTxFeeInWei.value, propsRef.activeFee.token)
+      humanizeTokenAmount(customTxFeeInWei.value, propsRef.activeFee.value.token)
     );
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
@@ -217,8 +217,8 @@ export default defineComponent({
       if (isNativeToken) {
         // Flooring this because the string we get back from formatUnits is a decimal.
         const formattedCost = (gasPrice: BigNumber) => String(Math.floor(Number(formatUnits(gasPrice, 'gwei'))));
-        const from = propsRef.activeAnnouncement.receiver;
-        const to = await toAddress(propsRef.destinationAddress, provider.value!);
+        const from = propsRef.activeAnnouncement.value.receiver;
+        const to = await toAddress(propsRef.destinationAddress.value, provider.value!);
 
         // On Optimism, we use Umbra's getEthSweepGasInfo method to ensure L1 fees are accounted for.
         // Otherwise we use the standard gasPrice * gasLimit as the default.
@@ -238,21 +238,19 @@ export default defineComponent({
           formattedCustomTxCostGwei.value = formattedCost(gasPrice!);
         }
       } else {
-        fee.value = propsRef.activeFee.fee;
+        fee.value = propsRef.activeFee.value.fee;
       }
       loaded.value = true;
     });
 
     // Define computed properties dependent on the fee. Must be computed to react to gas price updates by user.
     // Variables prefixed with `formatted*` are intended for display in the UI.
-    const amountReceived = computed(
-      () => <BigNumber>amount.sub(useCustomFee.value ? customTxFeeInWei.value : fee.value)
-    ); // amount user will receive
+    const amountReceived = computed(() => amount.sub(useCustomFee.value ? customTxFeeInWei.value : fee.value)); // amount user will receive
 
     // transaction fee, rounded
     const formattedDefaultTxCost = computed(() => {
-      const txFee = isNativeToken ? fee.value : propsRef.activeFee.fee;
-      return humanizeTokenAmount(txFee, propsRef.activeFee.token);
+      const txFee = isNativeToken ? fee.value : propsRef.activeFee.value.fee;
+      return humanizeTokenAmount(txFee, propsRef.activeFee.value.token);
     });
 
     // amount user will receive, rounded
@@ -263,7 +261,7 @@ export default defineComponent({
         // we want to base this on what the user *sees*, i.e. the formatted fees, since
         // they are what the user will be checking our calculations against
         [formattedAmount, formattedFee.value],
-        propsRef.activeFee.token
+        propsRef.activeFee.value.token
       );
     });
 

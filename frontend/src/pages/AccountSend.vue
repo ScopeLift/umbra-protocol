@@ -179,7 +179,16 @@ import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { tc } from 'src/boot/i18n';
 import { txNotify } from 'src/utils/alerts';
-import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero } from 'src/utils/ethers';
+import {
+  BigNumber,
+  Contract,
+  formatUnits,
+  getAddress,
+  MaxUint256,
+  parseUnits,
+  TransactionResponse,
+  Zero,
+} from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
@@ -308,10 +317,10 @@ function useSendForm() {
         advanced: shouldUseNormalPubKey.value,
       });
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
-      if (e.reason) return toSentenceCase(e.reason);
-      if (e.message) return toSentenceCase(e.message);
+      if (e.reason) return toSentenceCase(<string>e.reason);
+      if (e.message) return toSentenceCase(<string>e.message);
       return JSON.stringify(e);
     }
   }
@@ -381,10 +390,10 @@ function useSendForm() {
         // Check allowance
         const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
         const umbraAddress = umbra.value.umbraContract.address;
-        const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
+        const allowance = <BigNumber>await tokenContract.allowance(userAddress.value, umbraAddress);
         // If insufficient allowance, get approval
         if (tokenAmount.gt(allowance)) {
-          const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
+          const approveTx = <TransactionResponse>await tokenContract.approve(umbraAddress, MaxUint256);
           void txNotify(approveTx.hash, ethersProvider);
           await approveTx.wait();
         }

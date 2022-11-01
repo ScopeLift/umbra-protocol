@@ -72,7 +72,7 @@ export const filterUserAnnouncements = (
         const done = e.data.done;
 
         if (done) {
-          e.data.data.forEach(function (data: any) {
+          e.data.data.forEach(function (data: { index: number; randomNumber: string; token: string }) {
             const { index, randomNumber, token } = data;
             const { amount, from, receiver, timestamp, txHash } = subAnnouncements[worker_id][index];
             const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check

@@ -1,20 +1,20 @@
 // This is a worker script that can be controlled by `worker.ts`
 // Be aware that this is not a module script, it is a *worker* script.
 
-import { Umbra } from '@umbra/umbra-js';
+import { Announcement, Umbra } from '@umbra/umbra-js';
 import { getAddress } from 'src/utils/ethers';
 
 // https://github.com/webpack-contrib/worker-loader#integrating-with-typescript
-const ctx: Worker = self as any;
+const ctx: Worker = self as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // This event listener will be triggered if the controller (i.e. worker.ts) post a message to this worker.
 self.addEventListener(
   'message',
   function (e) {
     const worker_id = e.data.worker_id;
-    const announcements = e.data.announcements;
-    const spendingPublicKey = e.data.spendingPublicKey;
-    const viewingPrivateKey = e.data.viewingPrivateKey;
+    const announcements = <Announcement[]>e.data.announcements;
+    const spendingPublicKey = <string>e.data.spendingPublicKey;
+    const viewingPrivateKey = <string>e.data.viewingPrivateKey;
     const results = [];
     for (let index = 0; index < announcements.length; index++) {
       const ann = announcements[index];

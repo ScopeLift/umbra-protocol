@@ -38,6 +38,7 @@
             <img class="horizontal-center" :src="scope.opt.logoURI" height="25rem" />
           </q-item-section>
           <q-item-section>
+            <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->
             <q-item-label v-html="scope.opt[optionLabel]" />
           </q-item-section>
         </q-item>
