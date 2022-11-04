@@ -272,7 +272,7 @@ function useSendForm() {
       // Reset token and amount if token is not supported on the network
       if (
         tokenList.value.length &&
-        !tokenList.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfoExtended)?.symbol)
+        !tokenList.value.some(tokenOption => tokenOption.symbol === (tokenValue as TokenInfoExtended)?.symbol)
       ) {
         token.value = tokenList.value[0];
         humanAmount.value = undefined;
@@ -319,8 +319,8 @@ function useSendForm() {
       return true;
     } catch (e: unknown) {
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
-      if (e.reason) return toSentenceCase(<string>e.reason);
-      if (e.message) return toSentenceCase(<string>e.message);
+      if (e instanceof Error && e.message) return toSentenceCase(e.message);
+      if ((e as { reason: string }).reason) return toSentenceCase((e as { reason: string }).reason);
       return JSON.stringify(e);
     }
   }
@@ -328,7 +328,7 @@ function useSendForm() {
   const isNativeToken = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
 
   const getMinSendAmount = (tokenAddress: string): number => {
-    const tokenInfo = tokenList.value.filter((token) => token.address === tokenAddress)[0];
+    const tokenInfo = tokenList.value.filter(token => token.address === tokenAddress)[0];
     if (!tokenInfo) throw new Error(`token info unavailable for ${tokenAddress}`); // this state should not be possible
     const tokenMinSendInWei = parseUnits(tokenInfo.minSendAmount, 'wei');
     // We don't need to worry about fallbacks: native tokens have hardcoded fallbacks

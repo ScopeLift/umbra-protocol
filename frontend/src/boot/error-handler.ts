@@ -8,7 +8,7 @@ export default boot(({ Vue }) => {
   // the error was found in. Only available in 2.2.0+
   Vue.config.errorHandler = function (err, _vm, info) {
     console.log('Error info:', info);
-    handleError(err);
+    handleError(err); // eslint-disable-line @typescript-eslint/no-unsafe-argument
   };
 
   // General JS (non-Vue) error handler
@@ -30,6 +30,6 @@ export default boot(({ Vue }) => {
     if (event.reason.code === -32000 && event.reason.message === 'already known') {
       return;
     }
-    throw new Error(event.reason);
+    throw new Error(<string>event.reason);
   });
 });

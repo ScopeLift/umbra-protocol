@@ -28,7 +28,6 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
@@ -53,8 +52,8 @@ export default defineComponent({
   },
   setup() {
     const isShown = ref(false);
-    const rootRef = ref<Vue | /* Vue */ null>(null);
-    const tooltipRef = ref<Vue | /* Vue */ null>(null);
+    const rootRef = ref<any | /* Vue */ null>(null);
+    const tooltipRef = ref<any | /* Vue */ null>(null);
 
     const onRootMouseLeave = (e: MouseEvent) => {
       if (tooltipRef.value?.$el !== e.relatedTarget) {

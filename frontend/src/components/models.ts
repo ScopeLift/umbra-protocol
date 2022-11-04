@@ -1,5 +1,5 @@
 import { BigNumber } from 'src/utils/ethers';
-import { TransactionReceipt, JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
+import { JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
 import type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 import { UmbraLogger } from 'components/logger';
 import { ETH_NETWORK_LOGO } from 'src/utils/constants';
@@ -118,7 +118,7 @@ export const supportedChains: Array<Chain> = [
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
 export type SupportedChainId = '1' | '5' | '10' | '137' | '42161'; // strings for indexing into JSON files
-export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
+export const supportedChainIds = supportedChains.map(chain => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response
 type CnsName = { name: string };
@@ -148,9 +148,6 @@ export type WithdrawalInputs = {
   sponsorFee: string;
 };
 export type RelayResponse = { relayTransactionHash: string } | ApiError;
-export type RelayerStatusResponse =
-  | { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt }
-  | ApiError;
 
 // Logger type added to window
 declare global {

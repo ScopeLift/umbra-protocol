@@ -719,7 +719,7 @@ export default defineComponent({
       keysMatch,
       setIsInWithdrawFlow,
       ...useAdvancedFeatures(spendingKeyPair.value),
-      ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
+      ...useReceivedFundsTable(<UserAnnouncement[]>props.announcements, spendingKeyPair.value),
     };
   },
 });
