@@ -286,6 +286,7 @@
   },
   "WalletRow": {
     "account": "Account",
+    "disconnect": "Disconnect",
     "address-copied": "Address copied to clipboard",
     "connected-with": "Connected with",
     "copy-address": "Copy address",
