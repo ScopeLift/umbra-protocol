@@ -11,7 +11,7 @@
         <div class="text-xxs">{{ $t('WalletRow.connected-with') }} {{ connectedWalletLabel }}</div>
         <base-button
           @click="disconnectWallet()"
-          label="Disconnect"
+          :label="$t('WalletRow.disconnect')"
           :outline="true"
           :rounded="true"
           size="10px"
@@ -20,9 +20,14 @@
       </div>
       <div class="row">
         <div class="row text-caption text-break-word">
-          <div class="flex q-mr-sm" id="wallet-row-jazzicon" />
+          <span v-if="advancedMode" class="q-mr-sm">
+            <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>
+          </span>
           <span v-if="userDisplayName" class="text-caption text-bold">
             {{ userDisplayName }}
+          </span>
+          <span id="#wallet-row-avatar-container" class="row q-me-sm">
+            <div class="flex q-ml-sm" id="wallet-row-jazzicon" />
           </span>
         </div>
         <div class="row text-caption items-center cursor-pointer">
@@ -46,7 +51,9 @@
 <script lang="ts">
 import { defineComponent, onUpdated, computed, getCurrentInstance, PropType } from '@vue/composition-api';
 import { copyToClipboard } from 'quasar';
+import Avatar from 'src/components/Avatar.vue';
 import BaseButton from 'src/components/BaseButton.vue';
+import BaseTooltip from 'src/components/BaseTooltip.vue';
 import { toAddress } from 'src/utils/address';
 import { notifyUser } from 'src/utils/alerts';
 import useWalletStore from 'src/store/wallet';
@@ -76,7 +83,7 @@ function useWalletRow(userAddress: string) {
 
 export default defineComponent({
   name: 'WalletRow',
-  components: { BaseButton },
+  components: { Avatar, BaseButton, BaseTooltip },
   props: {
     userDisplayName: {
       type: String,
@@ -92,6 +99,14 @@ export default defineComponent({
     },
     setDisplayWalletRow: {
       type: Function as PropType<(display: boolean) => void>,
+      required: true,
+    },
+    advancedMode: {
+      type: Boolean,
+      required: true,
+    },
+    avatar: {
+      type: (null as unknown) as PropType<string | null>,
       required: true,
     },
   },
@@ -111,10 +126,26 @@ export default defineComponent({
     onUpdated(() => {
       if (props.display) {
         const width = 20;
-        const identicon = jazzicon(width, parseInt(props.userAddress.slice(2, 10), 16));
-        const node = document.querySelector('#wallet-row-jazzicon');
+        let img;
+        let node;
+        if (props.avatar) {
+          // load the avatar image async and display the jazzicon while waiting
+          const avatarImg = new Image();
+          avatarImg.onload = () => {
+            document.querySelector('#wallet-row-jazzicon')?.remove();
+            node = document.querySelector('#wallet-row-avatar-container');
+          };
+          avatarImg.id = 'avatar';
+          avatarImg.width = 20;
+          avatarImg.src = props.avatar;
+          img = avatarImg;
+        } else {
+          const identicon = jazzicon(width, parseInt(props.userAddress.slice(2, 10), 16));
+          node = document.querySelector('#wallet-row-jazzicon');
+          img = identicon;
+        }
         if (node && !node?.firstChild) {
-          node.appendChild(identicon);
+          node.appendChild(img);
         }
         window.addEventListener('click', onClickOutside);
       } else {
