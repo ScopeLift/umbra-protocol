@@ -5,7 +5,7 @@
         <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>
       </span>
       <connect-wallet>
-        <div class="row text-caption dark-toggle">
+        <div class="row text-caption dark-toggle cursor-pointer">
           <span v-if="userDisplayName">
             {{ userDisplayName }}
           </span>
@@ -18,6 +18,8 @@
       :userAddress="userAddress"
       :display="displayWalletRow"
       :setDisplayWalletRow="setDisplayWalletRow"
+      :advancedMode="advancedMode"
+      :avatar="avatar"
     />
   </div>
 </template>
