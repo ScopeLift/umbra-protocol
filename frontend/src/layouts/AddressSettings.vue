@@ -1,17 +1,17 @@
 <template>
   <div id="address-settings" class="column relative-position">
     <div class="row no-wrap" @click="displayWalletRow = !displayWalletRow">
-      <span v-if="advancedMode" class="q-mr-sm">
-        <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>
-      </span>
       <connect-wallet>
         <div class="row text-caption dark-toggle cursor-pointer">
+          <Avatar v-if="userAddress" :address="userAddress" :avatar="avatar" class="q-mr-sm" />
           <span v-if="userDisplayName">
             {{ userDisplayName }}
           </span>
-          <Avatar v-if="userAddress" :address="userAddress" :avatar="avatar" class="q-ml-sm" />
         </div>
       </connect-wallet>
+      <span v-if="advancedMode" class="q-ml-sm">
+        <base-tooltip label="🧙" size="sm">{{ $t('Address-Settings.advanced-mode-on') }}</base-tooltip>
+      </span>
     </div>
     <WalletRow
       :userDisplayName="userDisplayName"
