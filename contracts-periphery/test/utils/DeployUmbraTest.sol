@@ -23,7 +23,8 @@ contract DeployUmbraTest is DSTestPlus {
   }
 
   function deployUmbra() public virtual {
-    // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address as the production deploys.
+    // Deploy Umbra at an arbitrary address, then place the resulting bytecode at the same address
+    // as the production deploys.
     vm.etch(
       umbra,
       (deployCode("test/utils/Umbra.json", bytes(abi.encode(0, address(this), address(this))))).code

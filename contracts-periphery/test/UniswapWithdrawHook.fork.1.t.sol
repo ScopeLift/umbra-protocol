@@ -65,8 +65,8 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     uint256 feeBips,
     uint256 sponsorFee
   ) public {
-    // Using for loop here to generate deterministic addresses instead of fetching random address state
-    // from network RPC node every time a fuzz test is run
+    // Using for loop here to generate deterministic addresses instead of fetching random address
+    // state from network RPC node every time a fuzz test is run.
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
@@ -88,8 +88,8 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     uint256 feeBips,
     uint256 sponsorFee
   ) public {
-    // Using for loop here to generate deterministic addresses instead of fetching random address state
-    // from network RPC node every time a fuzz test is run
+    // Using for loop here to generate deterministic addresses instead of fetching random address
+    // state from network RPC node every time a fuzz test is run.
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
