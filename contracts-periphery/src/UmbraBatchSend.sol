@@ -130,7 +130,8 @@ contract UmbraBatchSend is Ownable {
     if (msg.value < _valueSentAccumulator) revert ValueMismatch();
   }
 
-  /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
+  /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to
+  /// support
   /// that token in this contract.
   function approveToken(IERC20 _token) external onlyOwner {
     _token.safeApprove(address(umbra), type(uint256).max);

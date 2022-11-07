@@ -41,10 +41,11 @@ interface IUmbra {
    * @notice Send and announce ETH payment to a stealth address
    * @param _receiver Stealth address receiving the payment
    * @param _tollCommitment Exact toll the sender is paying; should equal contract toll;
-   * the committment is used to prevent frontrunning attacks by the owner;
+   * the commitment is used to prevent frontrunning attacks by the owner;
    * see https://github.com/ScopeLift/umbra-protocol/issues/54 for more information
    * @param _pkx X-coordinate of the ephemeral public key used to encrypt the payload
-   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload extension
+   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload
+   * extension
    */
   function sendEth(
     address payable _receiver,
@@ -59,7 +60,8 @@ interface IUmbra {
    * @param _tokenAddr Address of the ERC20 token being sent
    * @param _amount Amount of the token to send, in its own base units
    * @param _pkx X-coordinate of the ephemeral public key used to encrypt the payload
-   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload extension
+   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload
+   * extension
    */
   function sendToken(
     address _receiver,
