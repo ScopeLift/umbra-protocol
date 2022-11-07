@@ -62,7 +62,24 @@ jobs:
         with:
           version: nightly
 
+      - name: Install scopelint
+        uses: engineerd/configurator@v0.0.8
+        with:
+          name: scopelint
+          repo: ScopeLift/scopelint
+          fromGitHubReleases: true
+          version: latest
+          pathInArchive: scopelint-x86_64-linux/scopelint
+          urlTemplate: https://github.com/ScopeLift/scopelint/releases/download/{{version}}/scopelint-x86_64-linux.tar.xz
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - run: yarn install
 
-      - name: Run lint
+      - name: Run yarn lint
         run: yarn lint
+
+      - name: Run scopelint
+        run: |
+          cd contracts-periphery
+          scopelint --version
+          scopelint check
