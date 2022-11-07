@@ -8,13 +8,13 @@ import {IUmbraHookReceiver} from "src/interface/IUmbraHookReceiver.sol";
 import {IQuoter} from "src/interface/IQuoter.sol";
 
 contract DeployUmbraTest is DSTestPlus {
-  address constant umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
+  address umbra = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   MockERC20 token;
   MockERC20 token2;
   address alice = address(0x202204);
   address bob = address(0x202205);
-  bytes32 constant pkx = "pkx";
-  bytes32 constant ciphertext = "ciphertext";
+  bytes32 pkx = "pkx";
+  bytes32 ciphertext = "ciphertext";
 
   function setUp() public virtual {
     deployUmbra();

@@ -29,10 +29,11 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
   uint256 feeAmount;
 
   // Mainnet Addresses
-  address public constant dai = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-  address public constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-  address public constant router = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
-  address public constant quoter = 0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6;
+  address public dai = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address public weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  address public router = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
+  address public quoter = 0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6;
+
   // 0.3% pool fee is unique to this DAI-WETH pool
   uint24 poolFee = 3000;
 
