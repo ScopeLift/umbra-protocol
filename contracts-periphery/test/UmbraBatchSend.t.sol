@@ -26,7 +26,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     router.approveToken(IERC20(address(token2)));
   }
 
-  function testPostSetupState() public {
+  function test_PostSetupState() public {
     uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
   }
@@ -50,7 +50,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     assertEq(bob.balance, amount2);
   }
 
-  function testExpectRevert_BatchSendEth() public {
+  function test_RevertIf_WrongEthAmountIsSent() public {
     sendEth.push(UmbraBatchSend.SendEth(payable(alice), 1 ether, pkx, ciphertext));
     sendEth.push(UmbraBatchSend.SendEth(payable(bob), 1 ether, pkx, ciphertext));
 
@@ -106,7 +106,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     assertEq(token2.balanceOf(umbra), totalAmount2);
   }
 
-  function testExpectRevert_BatchSendTokens() public {
+  function test_RevertIf_WrongTransferSummaryIsProvided() public {
     transferSummary.push(UmbraBatchSend.TransferSummary(2.5 ether, address(token)));
     sendToken.push(UmbraBatchSend.SendToken(alice, address(token), 1 ether, pkx, ciphertext));
     sendToken.push(UmbraBatchSend.SendToken(bob, address(token), 1 ether, pkx, ciphertext));
@@ -148,7 +148,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     assertEq(token.balanceOf(umbra), totalTokenAmount);
   }
 
-  function testExpectRevert_BatchSend() public {
+  function test_RevertIf_WrongEthAmountIsSent2() public {
     sendEth.push(UmbraBatchSend.SendEth(payable(alice), 1e16, pkx, ciphertext));
     sendEth.push(UmbraBatchSend.SendEth(payable(bob), 1e16, pkx, ciphertext));
 

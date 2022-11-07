@@ -34,7 +34,7 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
     router.approveToken(IERC20(address(token)));
   }
 
-  function testPostSetupState() public {
+  function test_PostSetupState() public {
     uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
     assertTrue(ethBalance > 0 && tokenBalance > 0);
