@@ -1,6 +1,3 @@
-# =================================
-# ======== Default Profile ========
-# =================================
 [profile.default]
   fs_permissions = [{ access = "read", path = "./" }]
   optimizer = true
@@ -13,37 +10,19 @@
   solc_version = "0.8.16"
   verbosity = 3
 
-# ==============================
-# ======== Lite Profile ========
-# ==============================
-# Speed up compilation and tests during development.
 [profile.lite]
+  fuzz = { runs = 50 }
+  invariant = { runs = 10 }
+  # Speed up compilation and tests during development.
   optimizer = false
 
-[profile.lite.fuzz]
-  runs = 50
+[profile.ci]
+  fuzz = { runs = 10000 }
+  invariant = { runs = 1000 }
 
-[profile.lite.invariant]
-  runs = 10
-
-# ============================
-# ======== CI Profile ========
-# ============================
-[profile.ci.fuzz]
-  runs = 10000
-
-[profile.ci.invariant]
-  runs = 1000
-
-# ===============================
-# ======== RPC Endpoints ========
-# ===============================
 [rpc_endpoints]
   mainnet = "${ETH_RPC_URL}"
 
-# ============================
-# ======== Formatting ========
-# ============================
 [fmt]
   bracket_spacing = false
   int_types = "long"
@@ -53,3 +32,4 @@
   quote_style = "double"
   single_line_statement_blocks = "single"
   tab_width = 2
+  wrap_comments = true
