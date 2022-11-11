@@ -48,6 +48,47 @@ jobs:
       - name: Run tests
         run: yarn test
 
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      FOUNDRY_PROFILE: ci
+      ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+      INFURA_ID: ${{ secrets.INFURA_ID }}
+      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: volta-cli/action@v1
+
+      - name: Install Foundry
+        uses: onbjerg/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - run: yarn install
+
+      - name: Run coverage
+        run: yarn coverage
+      - name: Merge directories
+        run: |
+          sudo apt update && sudo apt install -y lcov
+          lcov --add-tracefile ./contracts-periphery/lcov.info --add-tracefile ./umbra-js/coverage/lcov.info  --output-file lcov.info
+          # To ignore coverage for certain directories modify the paths in this step as needed. The
+      # below default ignores coverage results for the test and script directories. Alternatively,
+      # to include coverage in all directories, comment out this step.
+      - name: Filter directories
+        run: |
+          lcov --remove ./lcov.info 'contracts-periphery/test/*' 'contracts-periphery/script/*'
+      - name: Verify coverage level
+        uses: zgosalvez/github-actions-report-lcov@v1
+        with:
+          coverage-files: ./lcov.info
+          minimum-coverage: 82 # Set coverage threshold.
+          github-token: ${{ secrets.GITHUB_TOKEN }} # Adds a coverage summary comment to the PR.
+
   lint:
     runs-on: ubuntu-latest
     steps:
