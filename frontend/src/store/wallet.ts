@@ -326,6 +326,7 @@ export default function useWalletStore() {
     const [primaryWallet] = onboard.value.state.get().wallets;
     await onboard.value.disconnectWallet({ label: primaryWallet.label });
     resetState();
+    setLastWallet(null);
   }
 
   /**
