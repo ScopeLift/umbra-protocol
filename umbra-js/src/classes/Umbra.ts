@@ -29,7 +29,9 @@ import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
-import type { Announcement, SendBatch, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
+// import type { Announcement, SendBatch, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
+
 // Umbra.sol ABI
 const umbraAbi: ContractInterface = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
@@ -57,7 +59,7 @@ const umbraAbi: ContractInterface = [
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
-const batchSendAddress = ''; 
+// const batchSendAddress = '';
 const subgraphs = {
   1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
   5: 'https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli',
@@ -258,80 +260,80 @@ export class Umbra {
     return { tx, stealthKeyPair };
   }
 
-  async batchSend(
-    signer: JsonRpcSigner | Wallet,
-    batch: SendBatch,
-    overrides: SendOverrides = {}
-  ) {
-    await assertSupportedAddress(recipientId);
-    const txSigner = this.getConnectedSigner(signer); // signer input validated
+  // async batchSend(
+  //   signer: JsonRpcSigner | Wallet,
+  //   batch: SendBatch,
+  //   overrides: SendOverrides = {}
+  // ) {
+  // await assertSupportedAddress(recipientId);
+  // const txSigner = this.getConnectedSigner(signer); // signer input validated
 
-    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
-    // method also serves to validate the token input
-    if (!isEth(token)) {
-      const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
-      const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
-      if (tokenBalance.lt(amount)) {
-        const providedAmount = BigNumber.from(amount).toString();
-        const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
-        throw new Error(`Insufficient balance to complete transfer. ${details}`);
-      }
-    }
+  // // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
+  // // method also serves to validate the token input
+  // if (!isEth(token)) {
+  //   const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
+  //   const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
+  //   if (tokenBalance.lt(amount)) {
+  //     const providedAmount = BigNumber.from(amount).toString();
+  //     const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
+  //     throw new Error(`Insufficient balance to complete transfer. ${details}`);
+  //   }
+  // }
 
-    // Get toll amount from contract
-    const toll = await this.umbraContract.toll();
+  // // Get toll amount from contract
+  // const toll = await this.umbraContract.toll();
 
-    // Parse provided overrides
-    const localOverrides = { ...overrides }; // avoid mutating the object passed in
-    const advanced = localOverrides?.advanced || false;
-    const supportPubKey = localOverrides?.supportPubKey || false;
-    const supportTxHash = localOverrides?.supportTxHash || false;
-    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
+  // // Parse provided overrides
+  // const localOverrides = { ...overrides }; // avoid mutating the object passed in
+  // const advanced = localOverrides?.advanced || false;
+  // const supportPubKey = localOverrides?.supportPubKey || false;
+  // const supportTxHash = localOverrides?.supportTxHash || false;
+  // const lookupOverrides = { advanced, supportPubKey, supportTxHash };
 
-    delete localOverrides.advanced;
-    delete localOverrides.supportPubKey;
-    delete localOverrides.supportTxHash;
+  // delete localOverrides.advanced;
+  // delete localOverrides.supportPubKey;
+  // delete localOverrides.supportTxHash;
 
-    // Lookup recipient's public key
-    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
-    if (!spendingPublicKey || !viewingPublicKey) {
-      throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
-    }
-    const spendingKeyPair = new KeyPair(spendingPublicKey);
-    const viewingKeyPair = new KeyPair(viewingPublicKey);
+  // // Lookup recipient's public key
+  // const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
+  // if (!spendingPublicKey || !viewingPublicKey) {
+  //   throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
+  // }
+  // const spendingKeyPair = new KeyPair(spendingPublicKey);
+  // const viewingKeyPair = new KeyPair(viewingPublicKey);
 
-    // Generate random number
-    const randomNumber = new RandomNumber();
+  // // Generate random number
+  // const randomNumber = new RandomNumber();
 
-    // Encrypt random number with recipient's public key
-    const encrypted = viewingKeyPair.encrypt(randomNumber);
+  // // Encrypt random number with recipient's public key
+  // const encrypted = viewingKeyPair.encrypt(randomNumber);
 
-    // Get x,y coordinates of ephemeral private key
-    const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
+  // // Get x,y coordinates of ephemeral private key
+  // const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
 
-    // Compute stealth address
-    const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
+  // // Compute stealth address
+  // const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
 
-    // Ensure that the stealthKeyPair's address is not on the block list
-    if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
+  // // Ensure that the stealthKeyPair's address is not on the block list
+  // if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
 
-    // Send transaction
-    let tx: ContractTransaction;
-    if (isEth(token)) {
-      const txOverrides = { ...localOverrides, value: toll.add(amount) };
-      tx = await this.umbraContract
-        .connect(txSigner)
-        .sendEth(stealthKeyPair.address, toll, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
-    } else {
-      const txOverrides = { ...localOverrides, value: toll };
-      tx = await this.umbraContract
-        .connect(txSigner)
-        .sendToken(stealthKeyPair.address, token, amount, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
-    }
+  // // Send transaction
+  // let tx: ContractTransaction;
+  // if (isEth(token)) {
+  //   const txOverrides = { ...localOverrides, value: toll.add(amount) };
+  //   tx = await this.umbraContract
+  //     .connect(txSigner)
+  //     .sendEth(stealthKeyPair.address, toll, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
+  // } else {
+  //   const txOverrides = { ...localOverrides, value: toll };
+  //   tx = await this.umbraContract
+  //     .connect(txSigner)
+  //     .sendToken(stealthKeyPair.address, token, amount, pubKeyXCoordinate, encrypted.ciphertext, txOverrides);
+  // }
 
-    // We do not wait for the transaction to be mined before returning it
-    return { tx, stealthKeyPair };
-  }
+  // // We do not wait for the transaction to be mined before returning it
+  // return { tx, stealthKeyPair };
+  // }
 
   /**
    * @notice Withdraw ETH or tokens to a specified destination address with a regular transaction
