@@ -237,9 +237,6 @@
         />
       </div>
     </q-form>
-
-    <div style="text-align: center">------------------------------------------------</div>
-    
   </q-page>
 </template>
 

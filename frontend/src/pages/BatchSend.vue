@@ -1,5 +1,9 @@
 <template>
+  
+
   <q-form @submit="onFormSubmit" class="form">
+    <h2 class="page-title">Batch Send</h2>
+
     {{ Sends }}
 
     <div v-for="(Send, index) in Sends" :key="index">
