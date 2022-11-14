@@ -7,6 +7,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { name: 'home', path: '', component: () => import('pages/Home.vue') },
       { name: 'send', path: '/send', component: () => import('pages/AccountSend.vue') },
+      { name: 'batch-send', path: '/batch-send', component: () => import('pages/BatchSend.vue')},
       { name: 'receive', path: '/receive', component: () => import('pages/AccountReceive.vue') },
       { name: 'sent', path: '/sent', component: () => import('pages/AccountSent.vue') },
       { name: 'setup', path: '/setup', component: () => import('pages/AccountSetup.vue') },

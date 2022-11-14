@@ -247,6 +247,17 @@
         </router-link>
       </div>
     </q-form>
+    <send-form
+      @onFormSubmit="onFormSubmit()"
+      @updateRecipientId="recipientId = arguments[0]"
+      @updateuseNormalPubKey="useNormalPubKey = arguments[0]"
+      @updateTokenPick="token= arguments[0]"
+      :recipientId="recipientId"
+      :isSending="isSending"
+      :advancedMode="advancedMode"
+    />
+    <div style="text-align: center">------------------------------------------------</div>
+    
   </q-page>
 </template>
 
@@ -260,6 +271,7 @@ import BaseInput from 'components/BaseInput.vue';
 import BaseSelect from 'components/BaseSelect.vue';
 import BaseTooltip from 'components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
+import SendForm from 'components/SendForm.vue';
 // --- Store ---
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
@@ -686,7 +698,7 @@ function useSendForm() {
 
 export default defineComponent({
   name: 'PageSend',
-  components: { BaseTooltip, ConnectWallet },
+  components: { BaseTooltip, ConnectWallet, SendForm },
   setup() {
     const isMaintenanceMode = Number(process.env.MAINTENANCE_MODE_SEND) === 1;
     return { generatePaymentLink, ...useSendForm(), isMaintenanceMode };
