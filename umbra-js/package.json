@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "yarn build && yarn hardhat test",
-    "coverage": "yarn clean && yarn build && nyc yarn hardhat test && sed -i 's/SF:/SF:umbra-js\\//gI' ./coverage/lcov.info",
+    "coverage": "yarn clean && yarn build && nyc yarn hardhat test && sed -i'.bak' 's/SF:/SF:umbra-js\\//gI' ./coverage/lcov.info",
     "lint": "eslint --ext .js,.ts ./",
     "prettier": "prettier --write .",
     "watch": "tsc --watch",
