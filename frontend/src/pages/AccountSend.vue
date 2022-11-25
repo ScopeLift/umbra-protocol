@@ -259,6 +259,7 @@ import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
+import { storeSend } from 'src/utils/account-send';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -269,11 +270,13 @@ function useSendForm() {
     getTokenBalances,
     isLoading,
     NATIVE_TOKEN,
+    getPrivateKeys,
     provider,
     signer,
     tokens: tokenList,
     umbra,
     userAddress,
+    viewingKeyPair,
   } = useWalletStore();
 
   // Helpers
@@ -347,7 +350,7 @@ function useSendForm() {
       // Reset token and amount if token is not supported on the network
       if (
         tokenList.value.length &&
-        !tokenList.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfoExtended)?.symbol)
+        !tokenList.value.some(tokenOption => tokenOption.symbol === (tokenValue as TokenInfoExtended)?.symbol)
       ) {
         token.value = tokenList.value[0];
         humanAmount.value = undefined;
@@ -402,7 +405,7 @@ function useSendForm() {
   const isNativeToken = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
 
   const getMinSendAmount = (tokenAddress: string): number => {
-    const tokenInfo = tokenList.value.filter((token) => token.address === tokenAddress)[0];
+    const tokenInfo = tokenList.value.filter(token => token.address === tokenAddress)[0];
     if (!tokenInfo) throw new Error(`token info unavailable for ${tokenAddress}`); // this state should not be possible
     const tokenMinSendInWei = parseUnits(tokenInfo.minSendAmount, 'wei');
     // We don't need to worry about fallbacks: native tokens have hardcoded fallbacks
@@ -476,11 +479,43 @@ function useSendForm() {
       }
 
       // Send with Umbra
-      const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
-        advanced: shouldUseNormalPubKey.value,
-      });
-      void txNotify(tx.hash, ethersProvider);
-      await tx.wait();
+      // const signature = await signer.value.signMessage(
+      //   JSON.stringify({
+      //     amount: tokenAmount.toString(),
+      //     tokenAddress,
+      //     address: recipientId.value,
+      //   })
+      // );
+      if (!viewingKeyPair.value?.privateKeyHex) {
+        const resp = await getPrivateKeys();
+        if (resp == 'success' && viewingKeyPair.value?.privateKeyHex) {
+          const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
+            advanced: shouldUseNormalPubKey.value,
+          });
+
+          await storeSend(
+            viewingKeyPair.value.privateKeyHex,
+            recipientId.value,
+            tokenAmount,
+            tokenAddress,
+            tx.hash,
+            ''
+          );
+
+          void txNotify(tx.hash, ethersProvider);
+          await tx.wait();
+        } // TODO add error message is signature fails
+      } else {
+        const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
+          advanced: shouldUseNormalPubKey.value,
+        });
+
+        await storeSend(viewingKeyPair.value.privateKeyHex, recipientId.value, tokenAmount, tokenAddress, tx.hash, '');
+
+        void txNotify(tx.hash, ethersProvider);
+        await tx.wait();
+      }
+
       /* ether */
       // Add signature here
       // 1. Get signature

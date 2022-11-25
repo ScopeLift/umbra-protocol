@@ -87,22 +87,22 @@
         <!-- Card Layout for grid option -->
         <template v-slot:item="props">
           <div :key="props.row.id" class="col-12">
-            <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center">
-              <q-card-section class="row justify-center items-center">
+            <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center ">
+              <q-card-section class="q-px-sm row justify-center items-center">
                 <img class="q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.2rem" />
                 <div class="text-primary text-h6 header-black q-pb-none">
                   {{ formatAmount(props.row.amount, props.row.token) }} {{ getTokenSymbol(props.row.token) }}
                 </div>
               </q-card-section>
               <q-card-section>
-                <div class="row justify-between items-center">
+                <div class="row justify-between items-center q-px-sm">
                   <div>{{ $t('AccountReceiveTable.sender') }}</div>
                   <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                     <span>{{ props.row.from }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
-                <div class="row justify-between items-center">
+                <div class="row justify-between items-center q-px-sm">
                   <div>
                     <span class="q-mr-xs">{{ $t('AccountReceiveTable.stealth-receiver') }}</span>
                     <base-tooltip icon="fas fa-question-circle">
@@ -123,7 +123,7 @@
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
-                <div class="row justify-between items-center text-caption text-grey">
+                <div class="row justify-between items-center text-caption text-grey q-px-sm">
                   <div>{{ $t('AccountReceiveTable.received') }}</div>
                   <div>
                     {{ formatDate(props.row.timestamp * 1000) }}
@@ -475,7 +475,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
   const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
   const isNativeToken = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-  const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
+  const getTokenInfo = (tokenAddress: string) => tokens.value.filter(token => token.address === tokenAddress)[0];
   const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
     if (isNativeToken(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
     return (await umbra.value?.umbraContract.tokenPayments(userAddress, tokenAddress)) as BigNumber;
@@ -497,7 +497,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
 
     // Format addresses to use ENS, CNS, or formatted address
-    const fromAddresses = announcements.map((announcement) => announcement.from);
+    const fromAddresses = announcements.map(announcement => announcement.from);
     const formattedAddresses = await lookupOrReturnAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
     formattedAnnouncements.value.forEach((announcement, index) => {
       announcement.formattedFrom = formattedAddresses[index];
@@ -505,7 +505,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     });
 
     // Find announcements that have been withdrawn
-    const stealthBalancePromises = announcements.map((a) => getStealthBalance(a.token, a.receiver));
+    const stealthBalancePromises = announcements.map(a => getStealthBalance(a.token, a.receiver));
     const stealthBalances = await Promise.all(stealthBalancePromises);
     formattedAnnouncements.value.forEach((announcement, index) => {
       announcement.isWithdrawn = stealthBalances[index].lt(announcement.amount);
@@ -570,7 +570,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         showPrivacyModal.value = true;
         privacyModalAddressWarnings.value = reasons;
       }
-    } catch (err: any) {
+    } catch (err) {
       setIsInWithdrawFlow(false);
       console.warn(err);
       throw new Error(err);
@@ -653,7 +653,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       txHashIfEth.value = ''; // no transaction hash to show anymore
       destinationAddress.value = ''; // clear destination address
       expanded.value = []; // hides expanded row
-      formattedAnnouncements.value.forEach((x) => {
+      formattedAnnouncements.value.forEach(x => {
         if (announcement.receiver === x.receiver) {
           x.isWithdrawn = true; // update receive table to indicate this was withdrawn
         }

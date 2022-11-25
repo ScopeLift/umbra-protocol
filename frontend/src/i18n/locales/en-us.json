@@ -16,6 +16,8 @@
   "Home-action-card": {
     "send": "Send",
     "send-description": "Send funds to another user",
+    "sent": "Sent",
+    "sent-description": "View sent funds on this browser",
     "receive": "Receive",
     "receive-description": "View and withdraw received funds",
     "setup": "Setup",
@@ -275,6 +277,14 @@
     "cannot-withdraw": "Cannot withdraw, please correct fee error",
     "withdraw-in-progress": "Withdraw in progress...",
     "view-transaction": "View transaction"
+  },
+  "AccountSendTable": {
+    "account-empty": "No funds sent in this browser",
+    "address": "Recipient address",
+    "amount": "Amount",
+    "date-sent": "Date sent",
+    "hash": "Transaction hash",
+    "sent-funds": "Sent funds"
   },
   "Argent": {
     "warning": "Warning: Argent Compatibility Issues",

@@ -20,6 +20,12 @@
         :description="$t('Home-action-card.receive-description')"
       />
       <home-action-card
+        class="col-xs-12 col-4"
+        to="sent"
+        :text="$t('Home-action-card.sent')"
+        :description="$t('Home-action-card.sent-description')"
+      />
+      <home-action-card
         v-if="!isAccountSetup"
         class="col-xs-12 col-4"
         to="setup"
@@ -56,6 +62,7 @@ import { defineComponent } from '@vue/composition-api';
 import HomeActionCard from 'components/HomeActionCard.vue';
 import useWalletStore from 'src/store/wallet';
 
+// TODO hide sent card
 export default defineComponent({
   name: 'PageHome',
   components: { HomeActionCard },
