@@ -499,7 +499,9 @@ function useSendForm() {
             tokenAmount,
             tokenAddress,
             tx.hash,
-            ''
+            '',
+            userAddress.value!,
+            chainId.value!
           );
 
           void txNotify(tx.hash, ethersProvider);
@@ -510,7 +512,16 @@ function useSendForm() {
           advanced: shouldUseNormalPubKey.value,
         });
 
-        await storeSend(viewingKeyPair.value.privateKeyHex, recipientId.value, tokenAmount, tokenAddress, tx.hash, '');
+        await storeSend(
+          viewingKeyPair.value.privateKeyHex,
+          recipientId.value,
+          tokenAmount,
+          tokenAddress,
+          tx.hash,
+          '',
+          userAddress.value!,
+          chainId.value!
+        );
 
         void txNotify(tx.hash, ethersProvider);
         await tx.wait();

@@ -16,6 +16,14 @@ type SendMetadataEncrypted = {
   signedMsg: string;
 };
 
+type SendMetadataDecrypted = {
+  amount: string;
+  address: string;
+  dateSent: Date;
+  hash: string;
+  tokenAddress: string;
+};
+
 const encryptAddress = async (recipientAddress: string, privateKey: string) => {
   console.log('Encrpty recipient address');
   const iv = getRandomBytesSync(16);
@@ -33,12 +41,15 @@ export const storeSend = async (
   amount: BigNumber,
   tokenAddress: string,
   hash: string,
-  signature: string
+  signature: string,
+  userAddress: string,
+  chainId: number
 ) => {
   // TODO: Get signature as well
+  const key = `${LOCALFORAGE_KEY}-${userAddress}-${chainId}`;
 
   const { encrypted, iv } = await encryptAddress(recipientAddress, privateKey);
-  const value = ((await localforage.getItem(LOCALFORAGE_KEY)) as SendMetadataEncrypted[]) || [];
+  const value = ((await localforage.getItem(key)) as SendMetadataEncrypted[]) || [];
   const sendMetadata = {
     encryptedAddress: encrypted,
     amount: amount.toString(),
@@ -47,7 +58,9 @@ export const storeSend = async (
     hash,
     iv,
   };
-  await localforage.setItem(LOCALFORAGE_KEY, [
+  console.log('Storing');
+  console.log(`${LOCALFORAGE_KEY}-${userAddress}`);
+  await localforage.setItem(key, [
     ...value,
     {
       ...sendMetadata,
@@ -58,12 +71,19 @@ export const storeSend = async (
 };
 
 export const fetchAccountSend = async (
+  userAddress: string,
+  chainId: number,
   privateKey: string,
   progress: (arg0: number) => void
-): Promise<{ amount: string; address: string; dateSent: Date; hash: string; tokenAddress: string }[]> => {
+): Promise<SendMetadataDecrypted[]> => {
   console.log('Fetch the first page or all depending on existing functionality');
-  const value = (await localforage.getItem(LOCALFORAGE_KEY)) as SendMetadataEncrypted[];
-  const accountSendValue = [];
+  console.log(`${LOCALFORAGE_KEY}-${userAddress}`);
+  const value = (await localforage.getItem(`${LOCALFORAGE_KEY}-${userAddress}-${chainId}`)) as SendMetadataEncrypted[];
+  const accountSendValue = [] as SendMetadataDecrypted[];
+  console.log(value);
+  if (!value || value.length === 0) {
+    return accountSendValue;
+  }
   for (const [index, sendInfo] of value.entries()) {
     // iterate until
     // Also verify all signatures are correct

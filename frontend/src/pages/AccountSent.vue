@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">{{ $t('Receive.receive') }}</h2>
+    <h2 class="page-title">{{ $t('AccountSendTable.sent-funds') }}</h2>
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
       <p class="text-center">{{ $t('Receive.connect-your-wallet') }}</p>
@@ -39,17 +39,29 @@
 import { computed, defineComponent, ref, watch } from '@vue/composition-api';
 import useWallet from 'src/store/wallet';
 import useWalletStore from 'src/store/wallet';
-import { AccountSendTable, SendTableMetdataRow } from 'components/AccountSendTable.vue';
+import AccountSendTable from 'components/AccountSendTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import { fetchAccountSend } from 'src/utils/account-send';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
 import { date } from 'quasar';
 import { formatNameOrAddress } from 'src/utils/address';
 
+type SendTableMetdataRow = {
+  dateSent: string;
+  dateSentUnix: number;
+  dateSentTime: string;
+  amount: string;
+  address: string;
+  hash: string;
+  tokenLogo?: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+};
+
 // consolidate
 
 function useAccountSent() {
-  const { userAddress, viewingKeyPair, getPrivateKeys } = useWallet();
+  const { userAddress, viewingKeyPair, getPrivateKeys, chainId } = useWallet();
   const { tokens } = useWalletStore();
   // Make scan status a shared type
   type ScanStatus = 'waiting' | 'fetching' | 'scanning' | 'complete';
@@ -94,9 +106,11 @@ function useAccountSent() {
     scanStatus.value = 'scanning';
     // begin fetching sent data
     try {
-      const data = await fetchAccountSend(viewingPrivateKey.value, percent => {
+      console.log('Fetching');
+      const data = await fetchAccountSend(userAddress.value!, chainId.value!, viewingPrivateKey.value, percent => {
         scanPercentage.value = Math.floor(percent);
       });
+      console.log('Fetched');
       const formattedRows = [];
       for (const row of data) {
         formattedRows.push({
@@ -115,7 +129,7 @@ function useAccountSent() {
       sendMetadata.value = formattedRows;
       scanStatus.value = 'complete';
     } catch (err) {
-      console.log(err);
+      console.error(err);
       resetState();
     }
   }

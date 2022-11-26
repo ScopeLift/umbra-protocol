@@ -111,7 +111,7 @@
 import { defineComponent, getCurrentInstance, PropType } from '@vue/composition-api';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 
-export type SendTableMetdataRow = {
+type SendTableMetdataRow = {
   dateSent: string;
   dateSentUnix: number;
   dateSentTime: string;
@@ -125,7 +125,7 @@ export type SendTableMetdataRow = {
 
 // 1. on mount fetch data
 // 2. Event will trigger a refetch
-export const AccountSendTable = defineComponent({
+export default defineComponent({
   name: 'AccountSendTable',
   components: { BaseTooltip },
   props: {
