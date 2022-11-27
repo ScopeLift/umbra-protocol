@@ -16,4 +16,3 @@ export { Block, JsonRpcSigner, Network, StaticJsonRpcProvider, TransactionReceip
 export { toUtf8Bytes } from '@ethersproject/strings';
 export { computeAddress } from '@ethersproject/transactions';
 export { parseUnits, formatUnits } from '@ethersproject/units';
-export { verifyMessage } from '@ethersproject/wallet';

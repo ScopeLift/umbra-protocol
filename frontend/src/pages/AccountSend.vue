@@ -478,60 +478,28 @@ function useSendForm() {
         }
       }
 
-      // Send with Umbra
-      // const signature = await signer.value.signMessage(
-      //   JSON.stringify({
-      //     amount: tokenAmount.toString(),
-      //     tokenAddress,
-      //     address: recipientId.value,
-      //   })
-      // );
       if (!viewingKeyPair.value?.privateKeyHex) {
-        const resp = await getPrivateKeys();
-        if (resp == 'success' && viewingKeyPair.value?.privateKeyHex) {
-          const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
-            advanced: shouldUseNormalPubKey.value,
-          });
+        await getPrivateKeys();
+      }
 
-          await storeSend(
-            viewingKeyPair.value.privateKeyHex,
-            recipientId.value,
-            tokenAmount,
-            tokenAddress,
-            tx.hash,
-            '',
-            userAddress.value!,
-            chainId.value!
-          );
+      const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
+        advanced: shouldUseNormalPubKey.value,
+      });
 
-          void txNotify(tx.hash, ethersProvider);
-          await tx.wait();
-        } // TODO add error message is signature fails
-      } else {
-        const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
-          advanced: shouldUseNormalPubKey.value,
-        });
-
+      if (viewingKeyPair.value?.privateKeyHex && userAddress.value && chainId.value) {
         await storeSend(
           viewingKeyPair.value.privateKeyHex,
           recipientId.value,
           tokenAmount,
           tokenAddress,
           tx.hash,
-          '',
-          userAddress.value!,
-          chainId.value!
+          userAddress.value,
+          chainId.value
         );
-
-        void txNotify(tx.hash, ethersProvider);
-        await tx.wait();
       }
+      void txNotify(tx.hash, ethersProvider);
+      await tx.wait();
 
-      /* ether */
-      // Add signature here
-      // 1. Get signature
-      // 2. Store signature and messages
-      // 3. Encrypt address and store message
       resetForm();
     } finally {
       isSending.value = false;

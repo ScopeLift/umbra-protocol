@@ -62,7 +62,6 @@ import { defineComponent } from '@vue/composition-api';
 import HomeActionCard from 'components/HomeActionCard.vue';
 import useWalletStore from 'src/store/wallet';
 
-// TODO hide sent card
 export default defineComponent({
   name: 'PageHome',
   components: { HomeActionCard },

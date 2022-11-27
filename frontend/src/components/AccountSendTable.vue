@@ -12,7 +12,7 @@
     <!-- Card Layout for grid option -->
     <template v-slot:item="props">
       <div :key="props.row.dateSentUnix" class="col-12">
-        <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center">
+        <q-card class="card-border cursor-pointer q-pa-md col justify-center items-center">
           <q-card-section class="row justify-center items-center">
             <img class="q-mr-md" :src="props.row.tokenLogo" style="width: 1.2rem" />
             <div class="text-primary text-h6 header-black q-pb-none">
@@ -21,30 +21,18 @@
           </q-card-section>
           <div class="row justify-between items-center">
             <div>
-              <span class="q-mr-xs">{{ $t('AccountReceiveTable.stealth-receiver') }}</span>
-              <base-tooltip icon="fas fa-question-circle">
-                <span>
-                  {{ 'tooltip text' }}
-                </span>
-                <router-link
-                  active-class="text-bold"
-                  class="hyperlink dark-toggle"
-                  :to="{ path: 'faq', hash: '#receiving-funds' }"
-                >
-                  {{ $t('AccountReceiveTable.learn-more') }}
-                </router-link>
-              </base-tooltip>
+              <span class="q-mr-xs">{{ $t('AccountSendTable.receiver') }}</span>
             </div>
             <div>
-              <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
-                <span>{{ props.row.address }}</span>
+              <div @click="copyAddress(props.row.address)" class="cursor-pointer copy-icon-parent">
+                <span>{{ props.row.addressShortened }}</span>
                 <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
               </div>
             </div>
           </div>
 
           <div class="row justify-between items-center text-caption text-grey">
-            <div>{{ $t('AccountReceiveTable.received') }}</div>
+            <div>{{ $t('AccountSendTable.received') }}</div>
             <div>
               {{ props.row.dateSent }}
               {{ props.row.dateSentTime }}
@@ -54,28 +42,21 @@
       </div>
     </template>
 
-    <!-- Header labels -->
-    <template v-slot:header="props">
-      <q-tr :props="props">
-        <q-th v-for="col in props.cols" :key="col.name" :props="props">
-          {{ col.label }}
-          <!-- Question mark with tooltip for receiver column -->
-        </q-th>
-        <q-th auto-width />
-      </q-tr>
-    </template>
-
     <!-- Body row configuration -->
     <template v-slot:body="props">
       <q-tr :props="props" :key="props.row.dateSentUnix">
         <q-td v-for="col in props.cols" :key="col.name" :props="props">
           <!-- Date column -->
           <div v-if="col.name === 'dateSent'" class="d-inline-block">
-            <div class="row justify-start items-center cursor-pointer external-link-icon-parent">
+            <div
+              @click="openInEtherscan(props.row.hash)"
+              class="row justify-start items-center cursor-pointer external-link-icon-parent"
+            >
               <div class="col-auto">
                 <div>{{ col.value }}</div>
                 <div class="text-caption text-grey">{{ props.row.dateSentTime }}</div>
               </div>
+              <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
             </div>
           </div>
 
@@ -91,9 +72,9 @@
           </div>
 
           <!-- Sender column -->
-          <div v-else-if="col.name === 'address'" class="d-inline-block">
-            <div @click="copyAddress(props.row.address, 'Sender')" class="cursor-pointer copy-icon-parent">
-              <span>{{ props.row.address }}</span>
+          <div v-else-if="col.name === 'from'" class="d-inline-block">
+            <div @click="copyAddress(props.row.address)" class="cursor-pointer copy-icon-parent">
+              <span>{{ props.row.addressShortened }}</span>
               <q-icon class="copy-icon" name="far fa-copy" right />
             </div>
           </div>
@@ -106,10 +87,13 @@
 </template>
 
 <script lang="ts">
-// get the data as props
-
 import { defineComponent, getCurrentInstance, PropType } from '@vue/composition-api';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
+import { copyToClipboard } from 'quasar';
+import { notifyUser } from 'src/utils/alerts';
+import { toAddress } from 'src/utils/address';
+import { getEtherscanUrl } from 'src/utils/utils';
+import useWalletStore from 'src/store/wallet';
 
 type SendTableMetdataRow = {
   dateSent: string;
@@ -123,8 +107,6 @@ type SendTableMetdataRow = {
   tokenSymbol: string;
 };
 
-// 1. on mount fetch data
-// 2. Event will trigger a refetch
 export default defineComponent({
   name: 'AccountSendTable',
   components: { BaseTooltip },
@@ -137,13 +119,18 @@ export default defineComponent({
 
   setup(props, context) {
     const vm = getCurrentInstance()!;
+    const { provider, chainId } = useWalletStore();
     const paginationConfig = { rowsPerPage: 25 };
-    function copyAddress() {
-      //if (!provider.value) throw new Error(vm.$i18n.tc('AccountReceiveTable.wallet-not-connected'));
-      //const mainAddress = await toAddress(address, provider.value);
-      //await copyToClipboard(mainAddress);
-      //notifyUser('success', `${type} ${vm.$i18n.tc('AccountReceiveTable.address-copied')}`);
-      console.log('Copy');
+    async function copyAddress(address: string) {
+      if (!provider.value) throw new Error(vm.$i18n.tc('AccountSendTable.wallet-not-connected'));
+      const mainAddress = await toAddress(address, provider.value);
+      await copyToClipboard(mainAddress);
+      notifyUser('success', `${vm.$i18n.tc('AccountSendTable.address-copied')}`);
+    }
+    function openInEtherscan(hash: string) {
+      if (!provider.value) throw new Error(vm.$i18n.tc('AccountSendTable.wallet-not-connected'));
+      // Assume mainnet if we don't have a provider with a valid chainId
+      window.open(getEtherscanUrl(hash, chainId.value || 1));
     }
 
     const mainTableColumns = [
@@ -168,13 +155,6 @@ export default defineComponent({
         name: 'from',
         sortable: true,
       },
-      {
-        align: 'left',
-        field: 'hash',
-        label: vm.$i18n.tc('AccountSendTable.hash'),
-        name: 'hash',
-        sortable: false,
-      },
     ];
 
     return {
@@ -183,7 +163,22 @@ export default defineComponent({
       mainTableColumns,
       formattedSendMetadata: props.sendMetadata,
       copyAddress,
+      openInEtherscan,
     };
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.copy-icon-parent:hover .copy-icon
+  color: $primary
+
+.copy-icon
+  color: transparent
+
+.external-link-icon-parent:hover .external-link-icon
+  color: $primary
+
+.external-link-icon
+  color: transparent
+</style>

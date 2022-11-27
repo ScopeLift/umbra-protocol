@@ -1,6 +1,9 @@
 import { supportedChains, TokenInfo, Provider } from 'src/components/models';
 import { ERC20_ABI } from './constants';
 import { BigNumber, BigNumberish, Contract, hexValue, parseUnits, formatUnits, isHexString } from './ethers';
+import { TokenInfoExtended } from 'components/models';
+import { date } from 'quasar';
+
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` or `address and `chainId`
  */
@@ -19,7 +22,7 @@ export const getEtherscanUrl = (txHashOrAddress: string, chainId: number) => {
  * @notice Gets `Chain` based on the given `chainId`
  */
 export const getChainById = (chainId: BigNumberish) => {
-  return supportedChains.find((chain) => chain.chainId === hexValue(chainId));
+  return supportedChains.find(chain => chain.chainId === hexValue(chainId));
 };
 
 /**
@@ -89,7 +92,7 @@ export const humanizeArithmeticResult = (total: BigNumberish, operands: string[]
 /**
  * @notice GETs JSON from the provided `url`
  */
-export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
+export const jsonFetch = (url: string) => fetch(url).then(res => res.json());
 
 // Shape of data returned from the TxPrice API
 type TxPriceResponse = {
@@ -127,7 +130,7 @@ export const getGasPrice = async (gasPriceConfidence: TxPriceConfidence = 99): P
   try {
     const response: TxPriceResponse = await jsonFetch('https://api.TxPrice.com/');
     const estimatedPrice = response.blockPrices[0]?.estimatedPrices?.find(
-      (price) => price.confidence === gasPriceConfidence
+      price => price.confidence === gasPriceConfidence
     );
     const gasPriceInGwei = estimatedPrice?.price;
     if (!gasPriceInGwei) throw new Error('API did not return a valid gas price');
@@ -152,3 +155,25 @@ export const isToken = async (address: string, provider: Provider) => {
     return false;
   }
 };
+
+// Data format utils
+export const getTokenInfo = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  tokens.filter(token => token.address === tokenAddress)[0];
+
+export const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
+
+export const formatAmount = (amount: BigNumber, tokenAddress: string, tokens: TokenInfoExtended[]) => {
+  const decimals = getTokenInfo(tokenAddress, tokens).decimals;
+  return Number(formatUnits(amount, decimals)).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 10,
+  });
+};
+
+export const getTokenLogoUri = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  getTokenInfo(tokenAddress, tokens).logoURI;
+
+export const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
+
+export const getTokenSymbol = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  getTokenInfo(tokenAddress, tokens).symbol;

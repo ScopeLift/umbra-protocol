@@ -87,22 +87,22 @@
         <!-- Card Layout for grid option -->
         <template v-slot:item="props">
           <div :key="props.row.id" class="col-12">
-            <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center ">
-              <q-card-section class="q-px-sm row justify-center items-center">
+            <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center">
+              <q-card-section class="row justify-center items-center">
                 <img class="q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.2rem" />
                 <div class="text-primary text-h6 header-black q-pb-none">
                   {{ formatAmount(props.row.amount, props.row.token) }} {{ getTokenSymbol(props.row.token) }}
                 </div>
               </q-card-section>
               <q-card-section>
-                <div class="row justify-between items-center q-px-sm">
+                <div class="row justify-between items-center">
                   <div>{{ $t('AccountReceiveTable.sender') }}</div>
                   <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
                     <span>{{ props.row.from }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
-                <div class="row justify-between items-center q-px-sm">
+                <div class="row justify-between items-center">
                   <div>
                     <span class="q-mr-xs">{{ $t('AccountReceiveTable.stealth-receiver') }}</span>
                     <base-tooltip icon="fas fa-question-circle">
@@ -123,7 +123,7 @@
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
-                <div class="row justify-between items-center text-caption text-grey q-px-sm">
+                <div class="row justify-between items-center text-caption text-grey">
                   <div>{{ $t('AccountReceiveTable.received') }}</div>
                   <div>
                     {{ formatDate(props.row.timestamp * 1000) }}
@@ -337,7 +337,7 @@
 
 <script lang="ts">
 import { computed, getCurrentInstance, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
-import { date, copyToClipboard } from 'quasar';
+import { copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbra/umbra-js';
 import useSettingsStore from 'src/store/settings';
@@ -353,6 +353,7 @@ import { FeeEstimateResponse } from 'components/models';
 import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getEtherscanUrl, isToken } from 'src/utils/utils';
+import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const vm = getCurrentInstance()!;
@@ -472,24 +473,12 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   };
 
   // Table formatters and helpers
-  const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
-  const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
   const isNativeToken = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter(token => token.address === tokenAddress)[0];
   const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
     if (isNativeToken(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
     return (await umbra.value?.umbraContract.tokenPayments(userAddress, tokenAddress)) as BigNumber;
   };
-  const getTokenSymbol = (tokenAddress: string) => getTokenInfo(tokenAddress).symbol;
-  const getTokenLogoUri = (tokenAddress: string) => getTokenInfo(tokenAddress).logoURI;
-  const formatAmount = (amount: BigNumber, tokenAddress: string) => {
-    const decimals = getTokenInfo(tokenAddress).decimals;
-    return Number(formatUnits(amount, decimals)).toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 10,
-    });
-  };
-
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
   const formattedAnnouncements = ref(announcements.reverse() as ReceiveTableAnnouncement[]); // We reverse so most recent transaction is first
   onMounted(async () => {

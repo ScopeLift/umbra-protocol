@@ -276,6 +276,29 @@
     "withdraw-in-progress": "正在提款...",
     "view-transaction": "查看交易"
   },
+  "AccountSendTable": {
+    "address-copied": "接收方地址复制到剪贴板",
+    "account-empty": "此浏览器中未发送任何资金",
+    "address": "收件人地址",
+    "amount": "量",
+    "date-sent": "发送日期",
+    "hash": "交易哈希",
+    "receiver": "接收器",
+    "received": "收到",
+    "sent-funds": "已发送资金",
+    "wallet-not-connected": "钱包未连接。尝试刷新页面并连接您的钱包"
+  },
+  "AccountSent": {
+    "connect-wallet": "连接钱包",
+    "connect-your-wallet": "连接您的钱包以发送资金",
+    "need-signature": "此应用程序需要您的签名才能扫描您收到的资金",
+    "scan": "扫描",
+    "scan-funds": "点击下方扫描您收到的资金",
+    "scanning": "正在扫描资金...",
+    "sign": "标志",
+    "wait": "这可能需要几分钟，具体取决于您的连接和设备。这是正常的 - 请耐心等待。",
+    "valid-private-key-missing": "未提供有效的私钥。无法获取已发送的事务"
+  },
   "Argent": {
     "warning": "警告：Argent兼容性问题： Warning: Argent Compatibility Issues",
     "warning-paragraph": "<p class=\"text-bold\"> Umbra 与 Argent 的标准安全模型不兼容。虽然您仍然可以将 Umbra 与 Argent 一起使用，但如果您切换设备或必须依靠社交恢复而不首先提取通过Umbra发送给您的任何资金，则您将面临损失资金的风险。 </p> <p> Umbra 的工作原理是从钱包的私钥派生出特定于应用程序的密钥。Argent的独特之处在于其安全性不依赖于您的私钥。这在很多方面都是好的。 </p> <p>但是，在使用 Umbra 时，必须注意以下事项：</p> <ol> <li> 如果您将Argent钱包恢复到新设备上，则新钱包将具有相同的地址，但具有不同的私钥。除非您有权访问旧设备，否则通过Umbra发送的您尚未提取的资金将无法恢复。 </li> <br /> <li> 因此，当您获得新设备时，您应该首先使用旧设备提取所有资金，然后重复Umbra帐户注册并重新发布密钥。很快，该应用程序将尝试检测何时需要执行此操作，以最大程度地减少资金损失的可能性，但现在您必须手动执行此操作。 </li> <br /> <li> 与其他应用程序不同，Umbra 接收的资金的安全性不受标准 Argent 安全模型的保护，而只是受您的私钥保护。 </li> </ol>",
