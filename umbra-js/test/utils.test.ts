@@ -7,8 +7,8 @@ import { expectRejection } from './utils';
 
 const ethersProvider = ethers.provider;
 
-const infura = process.env.INFURA_ID;
-if (!infura) throw new Error('Please set your INFURA_ID in a .env file');
+const INFURA_ID = <string>process.env.INFURA_ID;
+if (!INFURA_ID) throw new Error('Please set your INFURA_ID in a .env file');
 
 // Public key and address corresponding to msolomon.eth
 const publicKey = '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee'; // prettier-ignore
@@ -119,7 +119,7 @@ describe('Utilities', () => {
     });
 
     it.skip('looks up recipients by CNS, advanced mode on', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`);
+      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`);
       const keys = await utils.lookupRecipient('udtestdev-msolomon.crypto', ethersProvider, { advanced: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
@@ -127,7 +127,7 @@ describe('Utilities', () => {
 
     // --- Address, advanced mode off (i.e. use the StealthKeyRegistry) ---
     it('looks up recipients by address, advanced mode off', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`); // otherwise throws with unsupported network since we're on localhost
+      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`); // otherwise throws with unsupported network since we're on localhost
       const keys = await utils.lookupRecipient(address, ethersProvider);
       expect(keys.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
@@ -139,7 +139,7 @@ describe('Utilities', () => {
     });
 
     it('looks up recipients by ENS, advanced mode off', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`);
+      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`);
       const keys = await utils.lookupRecipient('msolomon.eth', ethersProvider);
       // These values are set on the Goerli resolver
       expect(keys.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
@@ -166,13 +166,13 @@ describe('Utilities', () => {
 
     // --- Address history by network ---
     it('looks up transaction history on mainnet', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
+      const ethersProvider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`);
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
     });
 
     it('looks up transaction history on goerli', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`);
+      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`);
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
     });
@@ -221,7 +221,7 @@ describe('Utilities', () => {
 
     it('throws when looking up an address that has not sent a transaction', async () => {
       const address = '0x0000000000000000000000000000000000000002';
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`); // otherwise throws with unsupported network since we're on localhost
+      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`); // otherwise throws with unsupported network since we're on localhost
       const errorMsg = `Address ${address} has not registered stealth keys. Please ask them to setup their Umbra account`;
       await expectRejection(utils.lookupRecipient(address, ethersProvider), errorMsg);
     });
