@@ -5,6 +5,9 @@ on:
       - main
   pull_request:
 
+env:
+  FOUNDRY_PROFILE: ci
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,7 +29,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     env:
-      FOUNDRY_PROFILE: ci
       ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
       INFURA_ID: ${{ secrets.INFURA_ID }}
       ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
