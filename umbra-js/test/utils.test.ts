@@ -178,14 +178,16 @@ describe('Utilities', () => {
     });
 
     it('looks up transaction history on polygon', async () => {
-      const ethersProvider = new ethers.providers.StaticJsonRpcProvider('https://polygon-rpc.com') as EthersProvider;
+      const ethersProvider = new ethers.providers.StaticJsonRpcProvider(
+        `https://polygon-mainnet.infura.io/v3/${INFURA_ID}`
+      ) as EthersProvider;
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
     });
 
     it('looks up transaction history on optimism', async () => {
       const ethersProvider = new ethers.providers.StaticJsonRpcProvider(
-        'https://mainnet.optimism.io'
+        `https://optimism-mainnet.infura.io/v3/${INFURA_ID}`
       ) as EthersProvider;
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
@@ -193,7 +195,7 @@ describe('Utilities', () => {
 
     it('looks up transaction history on arbitrum one', async () => {
       const ethersProvider = new ethers.providers.StaticJsonRpcProvider(
-        'https://arb1.arbitrum.io/rpc'
+        `https://arbitrum-mainnet.infura.io/v3/${INFURA_ID}`
       ) as EthersProvider;
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
