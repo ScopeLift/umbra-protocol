@@ -88,7 +88,6 @@ jobs:
           coverage-files: ./contracts-periphery/lcov.info
           minimum-coverage: 82 # Set coverage threshold.
           github-token: ${{ secrets.GITHUB_TOKEN }} # Adds a coverage summary comment to the PR.
-          working-directory: ./contracts-periphery
 
   lint:
     runs-on: ubuntu-latest
