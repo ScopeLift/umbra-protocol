@@ -13,4 +13,4 @@ install :; $(INSTALL_CMD)
 test :; forge test
 test-gas :; forge test --match-path *.gas.t.sol
 snapshot-gas :; forge test --match-path *.gas.t.sol --gas-report > snapshot/.gas
-coverage :; forge coverage --report lcov && sed -i'.bak' 's/SF:/SF:contracts-periphery\//gI' lcov.info
+coverage :; forge coverage --report lcov --report summary && sed -i'.bak' 's/SF:/SF:contracts-periphery\//gI' lcov.info
