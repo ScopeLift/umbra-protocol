@@ -13,10 +13,10 @@
 [profile.lite]
   fuzz = { runs = 50 }
   invariant = { runs = 10 }
-  optimizer = false         # Speed up compilation and tests during development.
+  # Speed up compilation and tests during development.
+  optimizer = false
 
 [profile.ci]
-  deny_warnings = true        # fails build if there are compiler warnings
   fuzz = { runs = 10000 }
   invariant = { runs = 1000 }
 
