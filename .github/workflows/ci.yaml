@@ -6,7 +6,7 @@ on:
   pull_request:
 
 env:
-      FOUNDRY_PROFILE: ci
+  FOUNDRY_PROFILE: ci
 
 jobs:
   build:
@@ -90,7 +90,7 @@ jobs:
         uses: zgosalvez/github-actions-report-lcov@v1
         with:
           coverage-files: ./lcov.info
-          minimum-coverage: 50 # Set coverage threshold.
+          minimum-coverage: 70 # Set coverage threshold.
           github-token: ${{ secrets.GITHUB_TOKEN }} # Adds a coverage summary comment to the PR.
 
   lint:
