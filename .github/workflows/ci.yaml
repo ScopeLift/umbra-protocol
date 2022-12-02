@@ -87,7 +87,7 @@ jobs:
         run: |
           lcov --remove ./lcov.info 'contracts-periphery/test/*' 'contracts-periphery/script/*'
       - name: Verify coverage level
-        uses: zgosalvez/github-actions-report-lcov@v1
+        uses: zgosalvez/github-actions-report-lcov@v2
         with:
           coverage-files: ./lcov.info
           minimum-coverage: 70 # Set coverage threshold.
