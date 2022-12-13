@@ -209,6 +209,7 @@ export default defineComponent({
     return {
       content: this.value,
       hintString: '',
+      hintHack: this.hint(),
     };
   },
 
@@ -237,7 +238,7 @@ export default defineComponent({
     },
 
     showHint() {
-      this.hintString = this.hint;
+      this.hintString = this.hintHack;
     },
   },
 });
