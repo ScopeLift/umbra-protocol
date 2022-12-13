@@ -25,8 +25,8 @@ import { BigNumber, Contract, ExternalProvider, Web3Provider, parseUnits } from 
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
-import enLocal from 'src/i18n/locales/en-us.json';
-import chLocal from 'src/i18n/locales/zh-cn.json';
+import enLocal from 'src/i18n/locales/en-US.json';
+import chLocal from 'src/i18n/locales/zh-CN.json';
 
 // Wallet configurations.
 const injected = injectedModule();
@@ -92,13 +92,13 @@ export default function useWalletStore() {
           mobile: { enabled: false },
         },
         i18n: {
-          'en-us': {
+          'en-US': {
             connect: enLocal['connect'],
             modals: enLocal['modals'],
             accountCenter: enLocal['accountCenter'],
             notify: enLocal['notify'],
           },
-          'zh-cn': {
+          'zh-CN': {
             connect: chLocal['connect'],
             modals: chLocal['modals'],
             accountCenter: chLocal['accountCenter'],

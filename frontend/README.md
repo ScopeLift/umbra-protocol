@@ -123,6 +123,6 @@ While embedding longer texts with styles and links inside template section of Vu
 If you want to add a new langauge e.g. French, you need to:
 
 1. Create a new json file in `/i18n/locales/` and name it according to the language code listed [here](https://www.roseindia.net/tutorials/I18N/locales-list.shtml) i.e., `fr.json`. You can also change your browser language in settings and `console.log(locale)` in the `src/boot/i18n.ts` file to see the language code.
-2. Copy the contents of `en-us.json` to your newly created `<language-code>.json` file and translate key values to the corresponding language of your choice.
+2. Copy the contents of `en-US.json` to your newly created `<language-code>.json` file and translate key values to the corresponding language of your choice.
 3. Import the `json` file into the `src/i18n/index.ts` file and export it to be used.
 4. Add the language name and language code to `supportedLanguages` in `src/store/settings.ts`.

@@ -11,7 +11,7 @@ window.logger.info(params.get('locale'));
 export const i18n = createI18n({
   locale,
   globalInjection: true,
-  fallbackLocale: 'en-us',
+  fallbackLocale: 'en-US',
   messages,
 });
 

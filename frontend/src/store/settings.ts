@@ -16,8 +16,8 @@ const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
 const language = ref<Language>({ label: '', value: '' }); //language code
 const supportedLanguages = [
-  { label: 'English', value: 'en-us' },
-  { label: '中文', value: 'zh-cn' },
+  { label: 'English', value: 'en-US' },
+  { label: '中文', value: 'zh-CN' },
 ];
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
@@ -64,7 +64,7 @@ export default function useSettingsStore() {
 
   function setLanguage(newLanguage: Language) {
     language.value = newLanguage;
-    i18n.global.locale = <'en-us' | 'zh-cn'>language.value.value;
+    i18n.global.locale = <'en-US' | 'zh-CN'>language.value.value;
     LocalStorage.set(settings.language, language.value);
   }
 
