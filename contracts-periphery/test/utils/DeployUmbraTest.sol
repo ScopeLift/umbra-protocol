@@ -18,6 +18,7 @@ contract DeployUmbraTest is DSTestPlus {
 
   function setUp() public virtual {
     deployUmbra();
+    vm.label(umbra, "Umbra");
     createMockERC20AndMint(address(this), 1e9 ether);
     vm.deal(address(this), 1e5 ether);
   }
