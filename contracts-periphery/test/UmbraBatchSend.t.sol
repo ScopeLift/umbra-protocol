@@ -15,6 +15,8 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
 
   UmbraBatchSend.SendData[] sendData;
 
+  event BatchSendExecuted(address indexed sender);
+
   error NotSorted();
   error TooMuchEthSent();
 
@@ -43,6 +45,8 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
       address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendData)
     );
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendEth.selector));
+    vm.expectEmit(true, true, true, true);
+    emit BatchSendExecuted(address(this));
     router.batchSend{value: totalAmount}(toll, sendData);
 
     assertEq(alice.balance, amount);
@@ -130,6 +134,8 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     );
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendEth.selector));
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
+    vm.expectEmit(true, true, true, true);
+    emit BatchSendExecuted(address(this));
 
     uint256 totalToll = toll * sendData.length;
 

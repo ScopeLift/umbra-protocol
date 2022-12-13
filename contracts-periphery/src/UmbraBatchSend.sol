@@ -20,17 +20,10 @@ contract UmbraBatchSend is Ownable {
     bytes32 ciphertext; // Encrypted entropy.
   }
 
-  mapping(address => uint256) internal totalTransferAmountPerToken;
-
-  struct TransferSummary {
-    uint256 amount;
-    address tokenAddr;
-  }
+  event BatchSendExecuted(address indexed sender);
 
   error NotSorted();
   error TooMuchEthSent();
-
-  event BatchSendExecuted(address indexed sender);
 
   constructor(IUmbra _umbra) {
     UMBRA = _umbra;
@@ -78,6 +71,7 @@ contract UmbraBatchSend is Ownable {
 
     // If excess ETH was sent, revert.
     if (address(this).balance != _initEthBalance - msg.value) revert TooMuchEthSent();
+    emit BatchSendExecuted(msg.sender);
   }
 
   function _pullToken(address _tokenAddr, uint256 _amount) internal {

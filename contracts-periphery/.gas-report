@@ -73,10 +73,10 @@
 | src/UmbraBatchSend.sol:UmbraBatchSend contract |                 |         |        |         |         |
 |------------------------------------------------|-----------------|---------|--------|---------|---------|
 | Deployment Cost                                | Deployment Size |         |        |         |         |
-| 863858                                         | 4469            |         |        |         |         |
+| 872464                                         | 4512            |         |        |         |         |
 | Function Name                                  | min             | avg     | median | max     | # calls |
 | approveToken                                   | 27428           | 27428   | 27428  | 27428   | 188     |
-| batchSend                                      | 1730            | 1375179 | 361608 | 8477807 | 162     |
+| batchSend                                      | 1730            | 1376239 | 362756 | 8478955 | 162     |
 
 
 | src/UniswapWithdrawHook.sol:UniswapWithdrawHook contract |                 |        |        |        |         |
@@ -85,7 +85,7 @@
 | 796171                                                   | 4124            |        |        |        |         |
 | Function Name                                            | min             | avg    | median | max    | # calls |
 | approveToken                                             | 29851           | 29851  | 29851  | 29851  | 8       |
-| tokensWithdrawn                                          | 140280          | 146204 | 140280 | 176435 | 44      |
+| tokensWithdrawn                                          | 140280          | 148045 | 141121 | 176433 | 44      |
 
 
 
