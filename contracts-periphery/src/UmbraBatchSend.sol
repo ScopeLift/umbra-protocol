@@ -9,7 +9,7 @@ import {IUmbra} from "src/interface/IUmbra.sol";
 contract UmbraBatchSend is Ownable {
   using SafeERC20 for IERC20;
 
-  IUmbra internal immutable umbra;
+  IUmbra internal immutable UMBRA;
 
   /// @param amount Amount of ETH to send per address excluding the toll
   struct SendEth {
@@ -40,7 +40,7 @@ contract UmbraBatchSend is Ownable {
   event BatchSendExecuted(address indexed sender);
 
   constructor(IUmbra _umbra) {
-    umbra = _umbra;
+    UMBRA = _umbra;
   }
 
   function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
@@ -72,7 +72,7 @@ contract UmbraBatchSend is Ownable {
   function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
     uint256 _length = _params.length;
     for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      umbra.sendEth{value: _params[i].amount + _tollCommitment}(
+      UMBRA.sendEth{value: _params[i].amount + _tollCommitment}(
         _params[i].receiver, _tollCommitment, _params[i].pkx, _params[i].ciphertext
       );
     }
@@ -100,7 +100,7 @@ contract UmbraBatchSend is Ownable {
     }
 
     for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      umbra.sendToken{value: _tollCommitment}(
+      UMBRA.sendToken{value: _tollCommitment}(
         _params[i].receiver,
         _params[i].tokenAddr,
         _params[i].amount,
@@ -134,7 +134,7 @@ contract UmbraBatchSend is Ownable {
   /// support
   /// that token in this contract.
   function approveToken(IERC20 _token) external onlyOwner {
-    _token.safeApprove(address(umbra), type(uint256).max);
+    _token.safeApprove(address(UMBRA), type(uint256).max);
   }
 
   function _uncheckedIncrement(uint256 i) internal pure returns (uint256) {
