@@ -93,7 +93,6 @@ module.exports = configure(function (ctx) {
       extendWebpack(cfg) {
         cfg.resolve.alias = {
           ...cfg.resolve.alias, // This adds the existing aliases.
-          '@ledgerhq/devices': '@ledgerhq/devices/lib-es', // https://github.com/LedgerHQ/ledger-live/issues/763#issuecomment-1209204659
         };
       },
     },
