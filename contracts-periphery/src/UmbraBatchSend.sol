@@ -47,23 +47,19 @@ contract UmbraBatchSend is Ownable {
     // First we pull the required token amounts into this contract.
     uint256 _currentAmount;
     uint256 _len = _data.length;
-    for (uint256 i = 0; i < _len; i = _uncheckedIncrement(i)) {
-      // Require that data is sorted by token address.
-      if (i > 0 && _data[i].tokenAddr < _data[i - 1].tokenAddr) revert NotSorted();
+    uint256 _index;
+    address _currentToken;
 
-      if (i == 0) {
-        _currentAmount = _data[i].amount;
-      } else if (i > 0 && _data[i].tokenAddr == _data[i - 1].tokenAddr) {
-        // If the token address is the same, add to the current amount.
-        _currentAmount += _data[i].amount;
-      } else {
-        // If the token address is different, pull in the current amount, then reset it.
-        _pullToken(_data[i - 1].tokenAddr, _currentAmount);
-        _currentAmount = _data[i].amount;
-      }
+    while (_index < _len) {
+      if (_data[_index].tokenAddr < _currentToken) revert NotSorted();
+      _currentToken = _data[_index].tokenAddr;
 
-      // If we're at the last item, pull in the remaining tokens.
-      if (i == _len - 1) _pullToken(_data[i].tokenAddr, _currentAmount);
+      do {
+        _currentAmount += _data[_index].amount;
+        _index = _uncheckedIncrement(_index);
+      } while (_index < _len && _data[_index].tokenAddr == _currentToken);
+
+      _pullToken(_currentToken, _currentAmount);
     }
 
     // Next we send the payments.
