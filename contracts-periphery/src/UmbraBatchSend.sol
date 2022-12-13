@@ -14,7 +14,7 @@ contract UmbraBatchSend is Ownable {
 
   struct SendData {
     address receiver; // Stealth address.
-    address tokenAddr; // Use 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE for ETH.
+    address tokenAddr; // Use 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE for chain's native asset.
     uint256 amount; // Amount of the token to send, excluding the toll.
     bytes32 pkx; // Ephemeral public key x coordinate.
     bytes32 ciphertext; // Encrypted entropy.
@@ -40,7 +40,7 @@ contract UmbraBatchSend is Ownable {
   /// @param _tollCommitment The toll commitment to use for all payments.
   /// @param _data Array of SendData structs, each containing the data for a single payment.
   /// Must be sorted by token address, with 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE used as
-  /// the token address for ETH.
+  /// the token address for the chain's native asset.
   function batchSend(uint256 _tollCommitment, SendData[] calldata _data) external payable {
     uint256 _initEthBalance = address(this).balance; // Includes ETH from msg.value.
 
