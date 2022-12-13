@@ -27,9 +27,9 @@
       @focus="showHint"
       @input="handleInput"
     >
-      <!-- 
+      <!--
       If we have a button, never show the loading slot because it makes the button jump left and right when the
-      loading slot is shown / hidden 
+      loading slot is shown / hidden
     -->
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:loading></template>
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:append>
@@ -76,9 +76,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'BaseInput',
 
   props: {
