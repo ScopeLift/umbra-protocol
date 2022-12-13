@@ -17,7 +17,7 @@
     "precommit": "lint-staged"
   },
   "dependencies": {
-    "@ledgerhq/devices": "^7.0.0",
+    "@ledgerhq/devices": "^7.0.5",
     "@metamask/jazzicon": "^2.0.0",
     "@quasar/extras": "^1.0.0",
     "@umbra/umbra-js": "^0.1.0",

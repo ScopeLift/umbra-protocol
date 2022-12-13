@@ -171,7 +171,7 @@ export default defineComponent({
     const tokenURL = propsRef.activeFee.value.token.logoURI; // URL pointing to image of token logo
 
     // Get properties dependent on those props
-    const etherscanUrl = computed(() => getEtherscanUrl(propsRef.txHash, propsRef.chainId)); // withdrawal tx hash URL
+    const etherscanUrl = computed(() => getEtherscanUrl(propsRef.txHash.value, propsRef.chainId.value)); // withdrawal tx hash URL
 
     // amount being withdrawn, rounded
     const formattedAmount: string = humanizeTokenAmount(amount, propsRef.activeFee.value.token);

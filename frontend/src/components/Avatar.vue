@@ -31,7 +31,8 @@ export default defineComponent({
       };
       avatarImg.id = 'avatar';
       avatarImg.width = 20;
-      avatarImg.src = toRefs(props).avatar;
+      const { avatar } = toRefs(props);
+      avatarImg.src = avatar.value || '';
     }
   },
 });

@@ -1,12 +1,13 @@
 import { boot } from 'quasar/wrappers';
 import { handleError } from 'src/utils/alerts';
 
-export default boot(({ Vue }) => {
+export default boot(({ app }) => {
   // Source: https://stackoverflow.com/questions/52071212/how-to-implement-global-error-handling-in-vue
 
   // `info` is a Vue-specific error info, e.g. which lifecycle hook
   // the error was found in. Only available in 2.2.0+
-  Vue.config.errorHandler = function (err, _vm, info) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  app.config.errorHandler = function (err: any, _vm: any, info: any) {
     console.log('Error info:', info);
     handleError(err); // eslint-disable-line @typescript-eslint/no-unsafe-argument
   };

@@ -563,7 +563,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     } catch (err: unknown) {
       setIsInWithdrawFlow(false);
       console.warn(err);
-      throw new Error(err);
+      throw new Error(<string>err);
     }
   }
 
