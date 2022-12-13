@@ -8,10 +8,10 @@ import {ISwapRouter} from "src/interface/ISwapRouter.sol";
 contract UniswapWithdrawHook is Ownable {
   using SafeERC20 for IERC20;
 
-  ISwapRouter internal immutable swapRouter;
+  ISwapRouter internal immutable SWAP_ROUTER;
 
   constructor(ISwapRouter _swapRouter) {
-    swapRouter = _swapRouter;
+    SWAP_ROUTER = _swapRouter;
   }
 
   /**
@@ -32,7 +32,7 @@ contract UniswapWithdrawHook is Ownable {
   ) external {
     (address _recipient, bytes[] memory _multicallData) = abi.decode(_data, (address, bytes[]));
 
-    swapRouter.multicall(_multicallData);
+    SWAP_ROUTER.multicall(_multicallData);
 
     uint256 _balance = IERC20(_tokenAddr).balanceOf(address(this));
     if (_balance > 0) IERC20(_tokenAddr).safeTransfer(_recipient, _balance);
@@ -41,6 +41,6 @@ contract UniswapWithdrawHook is Ownable {
   /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to
   /// support that token in this contract.
   function approveToken(IERC20 _token) external onlyOwner {
-    _token.safeApprove(address(swapRouter), type(uint256).max);
+    _token.safeApprove(address(SWAP_ROUTER), type(uint256).max);
   }
 }

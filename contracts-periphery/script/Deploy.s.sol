@@ -10,6 +10,6 @@ contract Deploy is Script {
 
   function run() public {
     vm.broadcast();
-    UmbraBatchSend batchSend = new UmbraBatchSend(IUmbra(UMBRA));
+    new UmbraBatchSend(IUmbra(UMBRA));
   }
 }
