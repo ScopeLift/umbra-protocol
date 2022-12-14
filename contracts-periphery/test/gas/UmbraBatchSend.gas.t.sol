@@ -7,15 +7,15 @@ import {IUmbra} from "src/interface/IUmbra.sol";
 import {UmbraBatchSend} from "src/UmbraBatchSend.sol";
 
 abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
+  address internal constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
   UmbraBatchSend router;
 
   uint256 ethBalance;
   uint256 tokenBalance;
   uint256 toll;
 
-  UmbraBatchSend.SendEth[] sendEth;
-  UmbraBatchSend.SendToken[] sendToken;
-  UmbraBatchSend.TransferSummary[] transferSummary;
+  UmbraBatchSend.SendData[] sendData;
 
   enum Send {
     ETH,
@@ -56,31 +56,33 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
 
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += etherAmount + toll;
-        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
+        sendData.push(UmbraBatchSend.SendData(addrs[i], ETH, etherAmount, pkx, ciphertext));
       }
-      router.batchSendEth{value: valueAmount}(toll, sendEth);
+      router.batchSend{value: valueAmount}(toll, sendData);
     } else if (_type == Send.TOKEN) {
       assertTrue(tokenAmount > 0);
-      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += toll;
-        sendToken.push(
-          UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext)
+        sendData.push(
+          UmbraBatchSend.SendData(addrs[i], address(token), tokenAmount, pkx, ciphertext)
         );
       }
-      router.batchSendTokens{value: valueAmount}(toll, sendToken, transferSummary);
+
+      router.batchSend{value: valueAmount}(toll, sendData);
     } else {
       assertTrue(etherAmount > 0 && tokenAmount > 0);
-      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
+
+      valueAmount += etherAmount * numOfAddrs + toll * numOfAddrs * 2;
 
       for (uint256 i = 0; i < numOfAddrs; i++) {
-        valueAmount += etherAmount + toll * 2;
-        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
-        sendToken.push(
-          UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext)
+        sendData.push(
+          UmbraBatchSend.SendData(addrs[i], address(token), tokenAmount, pkx, ciphertext)
         );
       }
-      router.batchSend{value: valueAmount}(toll, sendEth, sendToken, transferSummary);
+      for (uint256 i = 0; i < numOfAddrs; i++) {
+        sendData.push(UmbraBatchSend.SendData(addrs[i], ETH, etherAmount, pkx, ciphertext));
+      }
+      router.batchSend{value: valueAmount}(toll, sendData);
     }
   }
 
