@@ -1,6 +1,6 @@
 <template>
   <base-select
-    v-model="currentNetwork"
+    :value="currentNetwork"
     @input="setNetwork(currentNetwork)"
     dense
     :filled="false"

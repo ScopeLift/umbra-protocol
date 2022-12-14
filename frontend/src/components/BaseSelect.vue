@@ -1,7 +1,7 @@
 <template>
   <div>
     <q-select
-      v-model="content"
+      :model-value="content"
       color="primary"
       class="q-my-sm"
       data-cy="base-select"
@@ -21,11 +21,11 @@
       :rules="[(val) => rules(val)]"
       @blur="hideHint"
       @focus="showHint"
-      @input="handleInput"
+      @update:model-value="handleInput"
     >
       <!-- Show icons when selected or when the slot is provided-->
       <template v-slot:prepend v-if="content && content.logoURI">
-        <img :src="content.logoURI" height="25rem" />
+        <img :src="content.logoURI" style="height: 1.5rem" />
       </template>
       <template v-slot:prepend v-else>
         <slot name="prepend"></slot>
@@ -35,7 +35,7 @@
       <template v-slot:option="scope">
         <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
           <q-item-section avatar v-if="scope.opt.logoURI">
-            <img class="horizontal-center" :src="scope.opt.logoURI" height="25rem" />
+            <img class="horizontal-center" :src="scope.opt.logoURI" style="height: 1.5rem" />
           </q-item-section>
           <q-item-section>
             <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->
@@ -51,7 +51,7 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-  name: 'BaseInput',
+  name: 'BaseSelect',
 
   props: {
     dense: {
@@ -155,7 +155,7 @@ export default defineComponent({
 
   watch: {
     /**
-     * @notice This is required for two-way binding when programtically updating the input
+     * @notice This is required for two-way binding when programmatically updating the input
      * in the parent component using BaseInput
      */
     value(val) {

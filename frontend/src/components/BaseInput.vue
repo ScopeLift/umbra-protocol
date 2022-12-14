@@ -1,7 +1,7 @@
 <template>
   <div>
     <q-input
-      v-model="content"
+      :model-value="content"
       :autofocus="autofocus"
       :autogrow="autogrow"
       :bg-color="bgColor"
@@ -25,7 +25,7 @@
       standout
       @blur="hideHint"
       @focus="showHint"
-      @input="handleInput"
+      @update:model-value="handleInput"
     >
       <!--
       If we have a button, never show the loading slot because it makes the button jump left and right when the
@@ -43,7 +43,7 @@
       </template>
       <template v-else-if="counter && !$q.screen.xs" v-slot:append>
         <q-circular-progress
-          :value="counter"
+          :model-value="counter"
           size="2.75rem"
           :color="counter > 100 ? 'negative' : 'primary'"
           show-value
@@ -64,7 +64,7 @@
     />
     <q-circular-progress
       v-else-if="counter && $q.screen.xs"
-      :value="counter"
+      :model-value="counter"
       size="2.75rem"
       :color="counter > 100 ? 'negative' : 'primary'"
       show-value

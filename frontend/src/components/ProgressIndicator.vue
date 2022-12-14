@@ -2,7 +2,7 @@
   <q-circular-progress
     show-value
     class="text-primary q-mx-auto q-my-xl"
-    :value="percentage"
+    :model-value="percentage"
     size="4rem"
     color="primary"
     track-color="grey-3"
