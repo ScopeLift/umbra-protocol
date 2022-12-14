@@ -109,7 +109,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
 
   // Recover sender's public key
   // Even though the type definitions say v,r,s are optional, they will always be defined: https://github.com/ethers-io/ethers.js/issues/1181
-  const signature = new Signature(BigInt(tx.r), BigInt(tx.s));
+  const signature = new Signature(BigInt(tx.r!), BigInt(tx.s!));
   signature.assertValidity();
   const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;
   const publicKeyNo0xPrefix = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
@@ -335,7 +335,14 @@ export async function getEthSweepGasInfo(
   to: string,
   provider: EthersProvider,
   overrides: Overrides = {}
-) {
+): Promise<{
+  gasPrice: BigNumber;
+  gasLimit: BigNumber;
+  txCost: BigNumber;
+  fromBalance: BigNumber;
+  ethToSend: BigNumber;
+  chainId: number;
+}> {
   const gasLimitOf21k = [1, 4, 5, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
   const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
