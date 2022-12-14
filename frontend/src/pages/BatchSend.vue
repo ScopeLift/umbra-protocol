@@ -1,5 +1,5 @@
 <template>
-  
+
 
   <q-form @submit="onFormSubmit" class="form">
     <h2 class="page-title">Batch Send</h2>
@@ -64,7 +64,7 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
-import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero } from 'src/utils/ethers';
+import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero, BigNumberish } from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 // import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
@@ -74,10 +74,16 @@ import { toAddress } from 'src/utils/address';
 
 
 interface SendBatch {
-      address: string;
-      token: TokenInfoExtended | null;
-      amount: string;
+  token: TokenInfoExtended | null;
+  amount: string;
+  address: string;
 };
+
+interface newSendBatch {
+  token: string;
+  amount: BigNumberish;
+  address: string;
+}
 
 function useBatchSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -94,7 +100,7 @@ function useBatchSendForm() {
     umbra,
     userAddress,
   } = useWalletStore();
-
+  console.log('tokenlist is', tokenList);
   // Helpers
   const isSending = ref(false);
   const vm = getCurrentInstance()!;
@@ -162,65 +168,92 @@ function useBatchSendForm() {
   }
 
 
-  // async function onFormSubmit() {
-  //   try {
-  //     // Form validation
-  //     // if (!recipientId.value || !token.value || !humanAmount.value)
-  //     //   throw new Error(vm.$i18n.tc('Send.please-complete-form'));
-  //     if (!signer.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
-  //     if (!umbra.value) throw new Error('Umbra instance not configured');
+  async function onFormSubmit() {
+    console.log('called onFormSubmit');
+    try {
+      // Form validation
+      for(let i = 0; i < Sends.value.length; i++) {
+        if (!Sends.value[i].address || !Sends.value[i].token || !Sends.value[i].amount)
+        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
+      }
+      if (!signer.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
+      if (!umbra.value) throw new Error('Umbra instance not configured');
 
-  //     // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
-  //     // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
-  //     // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
-  //     const ethersProvider = provider.value as Provider;
-  //     for (let i = 0; i < Sends.value.length; i++) {
-  //       await umbraUtils.lookupRecipient(Sends.value[i].address, ethersProvider, { advanced: shouldUseNormalPubKey.value });
-  //     }
-  //     // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
-  //     // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
-  //     await getTokenBalances();
-  //     const { address: tokenAddress, decimals } = token.value;
-  //     const tokenAmount = parseUnits(humanAmount.value, decimals);
-  //     if (tokenAddress === NATIVE_TOKEN.value.address) {
-  //       // Sending the native token, so check that user has balance of: amount being sent + toll
-  //       const requiredAmount = tokenAmount.add(toll.value);
-  //       if (requiredAmount.gt(balances.value[tokenAddress]))
-  //         throw new Error(`${vm.$i18n.tc('Send.amount-exceeds-balance')}`);
-  //     } else {
-  //       // Sending other tokens, so we need to check both separately
-  //       const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${vm.$i18n.tc('Send.umbra-fee-exceeds-balance')}`;
-  //       if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
-  //       if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(vm.$i18n.tc('Send.amount-exceeds-balance'));
-  //     }
+      // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
+      // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
+      // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
+      const ethersProvider = provider.value as Provider;
+      for (let i = 0; i < Sends.value.length; i++) {
+        await umbraUtils.lookupRecipient(Sends.value[i].address, ethersProvider, { advanced: shouldUseNormalPubKey.value });
+      }
+      // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
+      // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
+      // await getTokenBalances();
 
-  //     // If token, get approval when required
-  //     isSending.value = true;
-  //     if (token.value.symbol !== NATIVE_TOKEN.value.symbol) {
-  //       // Check allowance
-  //       const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
-  //       const umbraAddress = umbra.value.umbraContract.address;
-  //       const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
-  //       // If insufficient allowance, get approval
-  //       if (tokenAmount.gt(allowance)) {
-  //         const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
-  //         void txNotify(approveTx.hash, ethersProvider);
-  //         await approveTx.wait();
-  //       }
-  //     }
+      for(let i = 0; i < Sends.value.length; i++) {
 
-  //     // Send with Umbra
-  //     const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
-  //       advanced: shouldUseNormalPubKey.value,
-  //     });
-  //     void txNotify(tx.hash, ethersProvider);
-  //     await tx.wait();
-  //     resetForm();
-  //   } finally {
-  //     isSending.value = false;
-  //     showAdvancedSendWarning.value = false;
-  //   }
-  // }
+        let token : TokenInfoExtended | null = Sends.value[i].token;
+        if(!token)
+        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
+
+        const { address: tokenAddress, decimals } = token;
+
+        const tokenAmount = parseUnits(Sends.value[i].amount, decimals);
+
+        if (tokenAddress === NATIVE_TOKEN.value.address) {
+          // Sending the native token, so check that user has balance of: amount being sent + toll
+          const requiredAmount = tokenAmount.add(toll.value);
+          if (requiredAmount.gt(balances.value[tokenAddress]))
+            throw new Error(`${vm.$i18n.tc('Send.amount-exceeds-balance')}`);
+        } else {
+          // Sending other tokens, so we need to check both separately
+          const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${vm.$i18n.tc('Send.umbra-fee-exceeds-balance')}`;
+          if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
+          if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(vm.$i18n.tc('Send.amount-exceeds-balance'));
+        }
+
+        // If token, get approval when required
+        isSending.value = true;
+        if (token.symbol !== NATIVE_TOKEN.value.symbol) {
+          // Check allowance
+          const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
+          const umbraAddress = umbra.value.umbraContract.address;
+          const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
+          // If insufficient allowance, get approval
+          if (tokenAmount.gt(allowance)) {
+            const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
+            void txNotify(approveTx.hash, ethersProvider);
+            await approveTx.wait();
+          }
+        }
+      }
+
+      let newSends = <newSendBatch[]>([]);
+      for( let i = 0; i < Sends.value.length; i++) {
+        // const tokenAddress = Sends.value[i].token?.address;
+        let token : TokenInfoExtended | null = Sends.value[i].token;
+        if(!token)
+        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
+        const { address: tokenAddress, decimals } = token;
+        console.log('tokenAddres is ', tokenAddress);
+        const tokenAmount = parseUnits(Sends.value[i].amount, decimals);
+
+        if(tokenAddress)
+        newSends.push({token: tokenAddress, amount: tokenAmount, address: Sends.value[i].address})
+      }
+      // Send with Umbra
+      console.log('batchSend that is sent over to umbra.ts is', newSends);
+      const { tx } = await umbra.value.batchSend(signer.value, newSends, {
+        advanced: shouldUseNormalPubKey.value,
+      });
+      void txNotify(tx.hash, ethersProvider);
+      await tx.wait();
+      // resetForm();
+    } finally {
+      isSending.value = false;
+      // showAdvancedSendWarning.value = false;
+    }
+  }
 
   async function setHumanAmountMax(token: TokenInfoExtended | null | undefined, recipientId: string | undefined, humanAmount: string | undefined) {
     if (!token?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
@@ -258,7 +291,7 @@ function useBatchSendForm() {
     isValidRecipientId,
     isValidTokenAmount,
     NATIVE_TOKEN,
-    // onFormSubmit,
+    onFormSubmit,
     // recipientId,
     // sendAdvancedButton,
     // sendFormRef,
