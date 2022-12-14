@@ -2,6 +2,7 @@
   <div>
     <q-input
       v-model="content"
+      autocomplete="off"
       :autofocus="autofocus"
       :autogrow="autogrow"
       :bg-color="bgColor"
