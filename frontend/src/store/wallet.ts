@@ -288,8 +288,11 @@ export default function useWalletStore() {
       const _isAccountSetup = _stealthKeys !== null;
 
       if (typeof _userEns === 'string') {
-        // ENS address must exist
-        avatar.value = await MAINNET_PROVIDER.getAvatar(_userEns);
+        // ENS address must exist.
+        // We don't await this because IPFS avatars can be slow to load and we don't want to block on this.
+        MAINNET_PROVIDER.getAvatar(_userEns)
+          .then((res) => (avatar.value = res))
+          .catch((e) => window.logger.warn(e));
       }
 
       // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
