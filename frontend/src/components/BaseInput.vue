@@ -1,7 +1,7 @@
 <template>
   <div>
     <q-input
-      :model-value="content"
+      v-model="content"
       :autofocus="autofocus"
       :autogrow="autogrow"
       :bg-color="bgColor"
@@ -30,7 +30,7 @@
       <!--
       If we have a button, never show the loading slot because it makes the button jump left and right when the
       loading slot is shown / hidden
-    -->
+      -->
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:loading></template>
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:append>
         <base-button
@@ -222,13 +222,15 @@ export default defineComponent({
     },
   },
 
+  emits: ['blur', 'click', 'update:model-value'],
+
   methods: {
     handleClick() {
       this.$emit('click');
     },
 
     handleInput() {
-      this.$emit('input', this.content);
+      this.$emit('update:model-value', this.content);
     },
 
     hideHint() {

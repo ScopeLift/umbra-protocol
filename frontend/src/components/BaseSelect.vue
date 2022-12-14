@@ -1,7 +1,7 @@
 <template>
   <div>
     <q-select
-      :model-value="content"
+      v-model="content"
       color="primary"
       class="q-my-sm"
       data-cy="base-select"
@@ -163,9 +163,11 @@ export default defineComponent({
     },
   },
 
+  emits: ['update:model-value'],
+
   methods: {
     handleInput() {
-      this.$emit('input', this.content);
+      this.$emit('update:model-value', this.content);
     },
 
     hideHint() {
