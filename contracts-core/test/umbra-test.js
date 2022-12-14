@@ -42,18 +42,8 @@ describe('Umbra', () => {
   const mintTokenAmount = sumTokenAmounts([totalTokenAmount, tokenAmount, metaTokenTotal]);
 
   before(async () => {
-    [
-      owner,
-      tollCollector,
-      tollReceiver,
-      payer1,
-      receiver1,
-      payer2,
-      receiver2,
-      acceptor,
-      other,
-      relayer,
-    ] = await web3.eth.getAccounts();
+    [owner, tollCollector, tollReceiver, payer1, receiver1, payer2, receiver2, acceptor, other, relayer] =
+      await web3.eth.getAccounts();
     ctx.chainId = await web3.eth.getChainId();
     ctx.umbra = await Umbra.new(deployedToll, tollCollector, tollReceiver, { from: owner });
     ctx.token = await TestToken.new('TestToken', 'TT');

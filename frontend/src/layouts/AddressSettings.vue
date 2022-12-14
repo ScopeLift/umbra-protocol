@@ -36,7 +36,7 @@ export default defineComponent({
   components: { BaseTooltip, ConnectWallet, Avatar, WalletRow },
   props: {
     avatar: {
-      type: (null as unknown) as PropType<string | null>,
+      type: null as unknown as PropType<string | null>,
       required: true,
     },
     userDisplayName: {

@@ -123,10 +123,8 @@ import { Umbra } from "@scopelift/umbra-js";
 import { signer } from "the/users/connected/wallet"; // assume user previously connected wallet and has signer
 
 // Prompt the user for their signature to get their private keys
-const {
-  spendingKeyPair,
-  viewingKeyPair,
-} = await umbra.value.generatePrivateKeys(signer.value);
+const { spendingKeyPair, viewingKeyPair } =
+  await umbra.value.generatePrivateKeys(signer.value);
 
 // Define a custom range of blocks to scan. Leave this parameter out to scan all blocks
 const startBlock = 12290000;
@@ -157,10 +155,8 @@ import { signer } from "the/users/connected/wallet"; // assume user previously c
 const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 // Prompt the user for their signature to get their private keys
-const {
-  spendingKeyPair,
-  viewingKeyPair,
-} = await umbra.value.generatePrivateKeys(signer.value);
+const { spendingKeyPair, viewingKeyPair } =
+  await umbra.value.generatePrivateKeys(signer.value);
 
 // Let's assume we're working with the first announcement outputs from the above snippet
 const announcement = userAnnouncements[0];

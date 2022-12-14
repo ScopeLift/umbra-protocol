@@ -237,7 +237,7 @@ export default defineComponent({
     },
 
     showHint() {
-      this.hintString = ((this as unknown) as { hint: string }).hint;
+      this.hintString = (this as unknown as { hint: string }).hint;
     },
   },
 });

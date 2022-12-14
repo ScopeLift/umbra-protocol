@@ -256,25 +256,10 @@ export default defineComponent({
   name: 'BaseLayout',
   components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
-    const {
-      advancedMode,
-      isDark,
-      language,
-      supportedLanguages,
-      toggleAdvancedMode,
-      setLanguage,
-      toggleDarkMode,
-    } = useSettingsStore();
-    const {
-      avatar,
-      isAccountSetup,
-      isAccountSetupLegacy,
-      isArgent,
-      isLoading,
-      network,
-      userAddress,
-      userDisplayName,
-    } = useWalletStore();
+    const { advancedMode, isDark, language, supportedLanguages, toggleAdvancedMode, setLanguage, toggleDarkMode } =
+      useSettingsStore();
+    const { avatar, isAccountSetup, isAccountSetupLegacy, isArgent, isLoading, network, userAddress, userDisplayName } =
+      useWalletStore();
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);

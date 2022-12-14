@@ -416,7 +416,7 @@ export class Umbra {
     const announcements = await Promise.all(
       announcementEvents.map(async (event) => {
         // Extract out event parameters
-        const announcement = (event.args as unknown) as Announcement;
+        const announcement = event.args as unknown as Announcement;
         const { receiver, amount, token, ciphertext, pkx } = announcement;
 
         const [block, tx] = await Promise.all([event.getBlock(), event.getTransaction()]);

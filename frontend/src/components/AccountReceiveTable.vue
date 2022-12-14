@@ -710,7 +710,7 @@ export default defineComponent({
   },
   props: {
     announcements: {
-      type: (undefined as unknown) as PropType<UserAnnouncement[]>,
+      type: undefined as unknown as PropType<UserAnnouncement[]>,
       required: true,
     },
   },

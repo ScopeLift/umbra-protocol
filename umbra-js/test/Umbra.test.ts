@@ -268,7 +268,9 @@ describe('Umbra class', () => {
       const stealthPrivateKey = Umbra.computeStealthPrivateKey(receiver.privateKey, userAnnouncements[0].randomNumber);
       const { v, r, s } = await Umbra.signWithdraw(
         stealthPrivateKey,
-        (await ethersProvider.getNetwork()).chainId,
+        (
+          await ethersProvider.getNetwork()
+        ).chainId,
         umbra.umbraContract.address,
         destinationWallet.address,
         dai.address,

@@ -102,7 +102,7 @@ export default defineComponent({
       required: true,
     },
     avatar: {
-      type: (null as unknown) as PropType<string | null>,
+      type: null as unknown as PropType<string | null>,
       required: true,
     },
   },

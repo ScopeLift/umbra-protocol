@@ -99,15 +99,8 @@ function useScan() {
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
   // Start and end blocks for advanced mode settings
-  const {
-    advancedMode,
-    startBlock,
-    endBlock,
-    setScanBlocks,
-    setScanPrivateKey,
-    scanPrivateKey,
-    resetScanSettings,
-  } = useSettingsStore();
+  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
+    useSettingsStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();

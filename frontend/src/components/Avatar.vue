@@ -13,7 +13,7 @@ export default defineComponent({
   components: { Jazzicon },
   props: {
     avatar: {
-      type: (null as unknown) as PropType<string | null>,
+      type: null as unknown as PropType<string | null>,
       required: false,
     },
     address: {
