@@ -372,7 +372,7 @@ export async function getEthSweepGasInfo(
     const l1FeeInWei = await gasPriceOracle.getL1Fee(
       serializeTransaction({ to, value: fromBalance, data: '0x', gasLimit, gasPrice, nonce })
     );
-    txCost = txCost.add(l1FeeInWei);
+    txCost = txCost.add(<BigNumber>l1FeeInWei);
   }
 
   // Return the gas price, gas limit, and the transaction cost
@@ -409,6 +409,7 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
   ]);
   const tx = <TransactionResponseExtended>{ ...partialTx };
   const existingFields = new Set(Object.keys(tx));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   Object.keys(fullTx).forEach((key) => {
     // Do nothing if this field already exists (i.e. it was formatted by the ethers formatter).
     if (existingFields.has(key)) return;

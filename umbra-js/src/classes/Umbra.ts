@@ -8,6 +8,7 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
+  ContractInterface,
   ContractTransaction,
   defaultAbiCoder,
   getAddress,
@@ -128,7 +129,11 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(this.chainConfig.umbraAddress, abi, provider) as UmbraContract;
+    this.umbraContract = new Contract(
+      this.chainConfig.umbraAddress,
+      abi as unknown as ContractInterface,
+      provider
+    ) as UmbraContract;
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
