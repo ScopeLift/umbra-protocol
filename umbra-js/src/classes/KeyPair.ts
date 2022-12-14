@@ -223,9 +223,13 @@ export class KeyPair {
    * @param prefix Prefix bit, must be 2 or 3
    */
   static getUncompressedFromX(pkx: BigNumber | string, prefix: number | string | undefined = undefined) {
-    if (!(pkx instanceof BigNumber) && typeof pkx !== 'string') {
-      throw new Error('Compressed public key must be a BigNumber or string');
-    }
+    // Converting `pkx` to a BigNumber will throw if the value cannot be safely converted to a
+    // BigNumber. This means our `BigNumber | string` is technically incorrect as numbers are also
+    // allowed if they are smaller than Number.MAX_SAFE_INTEGER. However, in practice a public key
+    // will never be that small, so we don't want to encourage the use of numbers types as inputs.
+    pkx = BigNumber.from(pkx);
+
+    // pkx was validated, now we decompress it.
     const hexWithoutPrefix = hexZeroPad(BigNumber.from(pkx).toHexString(), 32).slice(2); // pkx as hex string without 0x prefix
     if (!prefix) {
       // Only safe to use this branch when uncompressed key is using for scanning your funds
