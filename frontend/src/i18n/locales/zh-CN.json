@@ -78,7 +78,10 @@
     "amount-exceeds-balance": "钱包金额不足",
     "please-complete-form": "请填写表格",
     "wallet-not-connected": "钱包未连接",
-    "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额"
+    "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额",
+    "advanced-send-warning": "接收者必须将其帐户的私钥输入此应用程序才能提取资金。除非您知道自己在做什么，不要使用此功能",
+    "learn-more": "了解更多信息",
+    "acknowledge-risks": "我承认风险"
   },
   "Receive": {
     "receive": "接收",
@@ -249,7 +252,10 @@
     "signer-or-provider-not-found": "未找到签名者或提供程序：Signer or provider not found",
     "fee-not-set": "费用未设置：Fee is not set",
     "invalid-chain-id": "无效的链 ID：Invalid chainID",
-    "receiver-tool-tip": "收到这些资金的隐形地址看起来像是一个空地址。它不能被追随到您的帐户，但只有您有能力生成其私钥。"
+    "receiver-tool-tip": "收到这些资金的隐形地址看起来像是一个空地址。它不能被追随到您的帐户，但只有您有能力生成其私钥。",
+    "loss-warning": "看起来您正在尝试将资金提取到代币合约中。这很可能不是您的本意，继续操作可能会导致资金损失。除非您确切知道自己在做什么，请不要继续。",
+    "i-know-what": "我知道我在做什么",
+    "danger": "危险"
   },
   "AccountReceiveTableWarning": {
     "withdrawal-warning": "您正在提款到 {0} ，其中包含以下警告：",
@@ -278,6 +284,14 @@
   "ConnectWalletCard": {
     "connect-wallet": "连接钱包"
   },
+  "WalletRow": {
+    "account": "帐户",
+    "disconnect": "断开连接",
+    "address-copied": "地址已复制到剪贴板",
+    "connected-with": "已连接",
+    "copy-address": "复制地址",
+    "view-on-explorer": "在区块链浏览器上查看"
+  },
   "WithdrawForm": {
     "withdraw-address": "输入提款地址",
     "address": "地址",
@@ -300,6 +314,7 @@
       "transaction-failed": "您的交易已失败(Your transaction has failed)"
     },
     "Address": {
+      "might-be-token": "它可能是一个代币合约，例如ERC-20或ERC-721",
       "name-publicly-viewable": "此名称可公开查看",
       "name-resolves-to-ens": "此名称解析为可公开查看的 ENS 名称 ",
       "name-resolves-to-cns": "此名称解析为可公开查看的 CNS 名称 ",
@@ -310,6 +325,9 @@
       "same-addr-as-stealth": "与隐形地址相同",
       "address-it-resolves-to": "它解析为的地址",
       "has-poap-tokens": "具有 POAP 令牌"
+    },
+    "Dialog": {
+      "warning": "警告！"
     }
   },
   "connect": {

@@ -10,6 +10,72 @@
   </q-page>
 
   <q-page v-else padding>
+    <q-dialog v-model="showAdvancedWarning">
+      <q-card class="row justify-center q-my-none q-py-none border-top-thick">
+        <q-card-section>
+          <h5 class="text-bold text-center q-mt-none">
+            <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
+          </h5>
+        </q-card-section>
+        <q-card-section class="q-pb-lg">
+          <div class="row items-center text">
+            <span class="q-pa-sm">
+              {{ $t('Send.advanced-send-warning') }}
+              <router-link
+                class="hyperlink"
+                to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
+                target="_blank"
+              >
+                {{ $t('Send.learn-more') }}
+              </router-link>
+            </span>
+          </div>
+          <q-checkbox v-model="advancedAcknowledged">
+            {{ $t('Send.acknowledge-risks') }}
+          </q-checkbox>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="showAdvancedSendWarning">
+      <q-card class="row justify-center q-my-none q-py-none border-top-thick">
+        <q-card-section>
+          <h5 class="text-bold text-center q-mt-none">
+            <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
+          </h5>
+        </q-card-section>
+        <q-card-section class="q-pb-sm">
+          <div class="row items-center text">
+            <span class="q-pa-sm">
+              {{ $t('Send.advanced-send-warning') }}
+              <router-link
+                class="hyperlink"
+                to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
+                target="_blank"
+              >
+                {{ $t('Send.learn-more') }}
+              </router-link>
+            </span>
+            <q-checkbox v-model="acknowledgeSendRisk">
+              {{ $t('Send.acknowledge-risks') }}
+            </q-checkbox>
+          </div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-sm">
+          <div class="row justify-evenly">
+            <base-button
+              type="submit"
+              @click="onFormSubmit()"
+              :disable="!isValidForm || isSending || !acknowledgeSendRisk"
+              :full-width="true"
+              :label="$t('Send.send')"
+              :loading="isSending"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
     <h2 class="page-title">{{ $t('Send.send') }}</h2>
 
     <!-- User has not connected wallet  -->
@@ -146,6 +212,15 @@
       <!-- Send button -->
       <div>
         <base-button
+          v-if="sendAdvancedButton"
+          :disable="!isValidForm || isSending"
+          :full-width="true"
+          :label="$t('Send.send')"
+          :loading="isSending"
+          @click="showAdvancedSendWarning = true"
+        />
+        <base-button
+          v-if="!sendAdvancedButton"
           :disable="!isValidForm || isSending"
           :full-width="true"
           :label="$t('Send.send')"
@@ -214,11 +289,17 @@ function useSendForm() {
   // Helpers
   const sendFormRef = ref<QForm>();
   const isSending = ref(false);
+  const advancedAcknowledged = ref(false);
+  const showAdvancedSendWarning = ref(false);
+  const acknowledgeSendRisk = ref(false);
+  const vm = getCurrentInstance()!;
 
   // Form parameters
   const recipientId = ref<string>();
   const recipientIdBaseInputRef = ref<any /* Vue */>();
   const useNormalPubKey = ref(false);
+  const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
+  const sendAdvancedButton = computed(() => useNormalPubKey.value && advancedMode.value);
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const token = ref<TokenInfoExtended | null>();
   const tokenBaseInputRef = ref<any /* Vue */>();
@@ -267,6 +348,10 @@ function useSendForm() {
       }
       if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
         await humanAmountInputRef.validate();
+      }
+
+      if (!useNormalPubKey) {
+        advancedAcknowledged.value = false;
       }
 
       // Reset token and amount if token is not supported on the network
@@ -408,6 +493,7 @@ function useSendForm() {
       resetForm();
     } finally {
       isSending.value = false;
+      showAdvancedSendWarning.value = false;
     }
   }
 
@@ -437,7 +523,9 @@ function useSendForm() {
   }
 
   return {
+    acknowledgeSendRisk,
     advancedMode,
+    advancedAcknowledged,
     chainId,
     currentChain,
     humanAmount,
@@ -451,8 +539,11 @@ function useSendForm() {
     NATIVE_TOKEN,
     onFormSubmit,
     recipientId,
+    sendAdvancedButton,
     sendFormRef,
     setHumanAmountMax,
+    showAdvancedWarning,
+    showAdvancedSendWarning,
     token,
     tokenList,
     toll,

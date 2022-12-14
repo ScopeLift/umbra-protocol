@@ -78,7 +78,10 @@
     "amount-exceeds-balance": "Amount exceeds wallet balance",
     "please-complete-form": "Please complete the form",
     "wallet-not-connected": "Wallet not connected",
-    "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance"
+    "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance",
+    "advanced-send-warning": "The receiver will have to enter their account's private key into this app to withdraw the funds. Don't use this feature unless you know what you're doing.",
+    "learn-more": "Learn more",
+    "acknowledge-risks": "I acknowledge the risks"
   },
   "Receive": {
     "receive": "Receive",
@@ -249,7 +252,10 @@
     "signer-or-provider-not-found": "Signer or provider not found",
     "fee-not-set": "Fee is not set",
     "invalid-chain-id": "Invalid chainID",
-    "receiver-tool-tip": "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key."
+    "receiver-tool-tip": "The stealth address which received these funds. It looks like an empty address, and it can't be tied to your account, but only you have the ability to generate its private key.",
+    "loss-warning": "It looks like you're trying to withdraw your funds to a token contract. It is very likely this is not what you intend, and proceeding will likely result in a loss of funds. Do not proceed unless you know exactly what you are doing.",
+    "i-know-what": "I know what I am doing",
+    "danger": "Danger"
   },
   "AccountReceiveTableWarning": {
     "withdrawal-warning": "You are withdrawing to {0}, which has the following warnings:",
@@ -278,6 +284,14 @@
   "ConnectWalletCard": {
     "connect-wallet": "Connect Wallet"
   },
+  "WalletRow": {
+    "account": "Account",
+    "disconnect": "Disconnect",
+    "address-copied": "Address copied to clipboard",
+    "connected-with": "Connected with",
+    "copy-address": "Copy address",
+    "view-on-explorer": "View on explorer"
+  },
   "WithdrawForm": {
     "withdraw-address": "Enter address to withdraw funds to",
     "address": "Address",
@@ -300,6 +314,7 @@
       "transaction-failed": "Your transaction has failed"
     },
     "Address": {
+      "might-be-token": "It might be a token contract, such as an ERC-20 or ERC-721",
       "name-publicly-viewable": "This name is publicly viewable",
       "name-resolves-to-ens": "This name resolves to the publicly viewable ENS name ",
       "name-resolves-to-cns": "This name resolves to the publicly viewable CNS name ",
@@ -310,6 +325,9 @@
       "same-addr-as-stealth": "the same address as the stealth address",
       "address-it-resolves-to": "The address it resolves to",
       "has-poap-tokens": "has POAP tokens"
+    },
+    "Dialog": {
+      "warning": "Warning"
     }
   },
   "connect": {

@@ -138,6 +138,13 @@ export default function useWalletStore() {
 
   watch(lastWallet, async () => {
     if (lastWallet.value && !userAddress.value) {
+      if (lastWallet.value === 'MetaMask') {
+        const unlocked = await window.ethereum._metamask.isUnlocked();
+        if (!unlocked) {
+          setLoading(false);
+          return;
+        }
+      }
       await connectWallet();
     }
   });
@@ -194,7 +201,7 @@ export default function useWalletStore() {
       let connectedWallet;
       if (lastWallet.value) {
         [connectedWallet] = await onboard.value.connectWallet({
-          autoSelect: lastWallet.value,
+          autoSelect: { label: lastWallet.value, disableModals: true },
         });
       } else {
         [connectedWallet] = await onboard.value.connectWallet();
@@ -326,6 +333,14 @@ export default function useWalletStore() {
       setLoading(false);
       throw e;
     }
+  }
+
+  async function disconnectWallet() {
+    if (isLoading.value || !onboard.value) return;
+    const [primaryWallet] = onboard.value.state.get().wallets;
+    await onboard.value.disconnectWallet({ label: primaryWallet.label });
+    resetState();
+    setLastWallet(null);
   }
 
   /**
@@ -501,6 +516,7 @@ export default function useWalletStore() {
     // Methods
     configureProvider,
     connectWallet,
+    disconnectWallet,
     getPrivateKeys,
     getTokenBalances,
     setIsAccountSetup,
@@ -534,6 +550,7 @@ export default function useWalletStore() {
     NATIVE_TOKEN: computed(() => NATIVE_TOKEN.value),
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
+    connectedWalletLabel: computed(() => lastWallet),
   };
 }
 

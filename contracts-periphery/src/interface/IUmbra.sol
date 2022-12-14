@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "src/interface/IUmbraHookReceiver.sol";
+import {IUmbraHookReceiver} from "src/interface/IUmbraHookReceiver.sol";
 
 interface IUmbra {
   /**
    * @notice Public state variable get function
    * @return uint256 toll
    */
-  function toll() external returns(uint256);
+  function toll() external returns (uint256);
 
   /**
    * @notice Admin only function to update the toll
@@ -33,16 +33,19 @@ interface IUmbra {
    */
   function collectTolls() external;
 
-  // ======================================= Send =================================================
+  // ======================
+  // ======== Send ========
+  // ======================
 
   /**
    * @notice Send and announce ETH payment to a stealth address
    * @param _receiver Stealth address receiving the payment
    * @param _tollCommitment Exact toll the sender is paying; should equal contract toll;
-   * the committment is used to prevent frontrunning attacks by the owner;
+   * the commitment is used to prevent frontrunning attacks by the owner;
    * see https://github.com/ScopeLift/umbra-protocol/issues/54 for more information
    * @param _pkx X-coordinate of the ephemeral public key used to encrypt the payload
-   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload extension
+   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload
+   * extension
    */
   function sendEth(
     address payable _receiver,
@@ -57,7 +60,8 @@ interface IUmbra {
    * @param _tokenAddr Address of the ERC20 token being sent
    * @param _amount Amount of the token to send, in its own base units
    * @param _pkx X-coordinate of the ephemeral public key used to encrypt the payload
-   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload extension
+   * @param _ciphertext Encrypted entropy (used to generated the stealth address) and payload
+   * extension
    */
   function sendToken(
     address _receiver,
@@ -67,7 +71,9 @@ interface IUmbra {
     bytes32 _ciphertext
   ) external payable;
 
-  // ======================================= Withdraw =============================================
+  // ==========================
+  // ======== Withdraw ========
+  // ==========================
 
   /**
    * @notice Withdraw an ERC20 token payment sent to a stealth address
@@ -139,5 +145,4 @@ interface IUmbra {
     bytes32 _r,
     bytes32 _s
   ) external;
-
 }

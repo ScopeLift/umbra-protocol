@@ -1,21 +1,24 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "test/utils/DeployUmbraTest.sol";
-import "src/UmbraBatchSend.sol";
+import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {DeployUmbraTest} from "test/utils/DeployUmbraTest.sol";
+import {IUmbra} from "src/interface/IUmbra.sol";
+import {UmbraBatchSend} from "src/UmbraBatchSend.sol";
 
 abstract contract UmbraBatchSendTest is DeployUmbraTest {
   UmbraBatchSend router;
 
   uint256 toll;
   uint256 internal constant WAD = 1e18;
+  address internal constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-  UmbraBatchSend.SendEth[] sendEth;
-  UmbraBatchSend.SendToken[] sendToken;
-  UmbraBatchSend.TransferSummary[] transferSummary;
+  UmbraBatchSend.SendData[] sendData;
 
-  error ValueMismatch();
-  error TransferAmountMismatch();
+  event BatchSendExecuted(address indexed sender);
+
+  error NotSorted();
+  error TooMuchEthSent();
 
   function setUp() public virtual override {
     super.setUp();
@@ -24,7 +27,7 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     router.approveToken(IERC20(address(token2)));
   }
 
-  function testPostSetupState() public {
+  function test_PostSetupState() public {
     uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
   }
@@ -33,135 +36,138 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     amount = bound(amount, toll + 1, 10e20);
     amount2 = bound(amount, toll + 1, 10e20);
 
-    sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
-    sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(alice), ETH, amount, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(bob), ETH, amount2, pkx, ciphertext));
 
-    uint256 totalAmount = amount + amount2 + (toll * sendEth.length);
+    uint256 totalAmount = amount + amount2 + (toll * sendData.length);
 
-    vm.expectCall(address(router), abi.encodeWithSelector(router.batchSendEth.selector, toll, sendEth));
+    vm.expectCall(
+      address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendData)
+    );
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendEth.selector));
-    router.batchSendEth{value: totalAmount}(toll, sendEth);
+    vm.expectEmit(true, true, true, true);
+    emit BatchSendExecuted(address(this));
+    router.batchSend{value: totalAmount}(toll, sendData);
 
     assertEq(alice.balance, amount);
     assertEq(bob.balance, amount2);
   }
 
-  function testExpectRevert_BatchSendEth() public {
-    sendEth.push(UmbraBatchSend.SendEth(payable(alice), 1 ether, pkx, ciphertext));
-    sendEth.push(UmbraBatchSend.SendEth(payable(bob), 1 ether, pkx, ciphertext));
+  function test_RevertIf_TooLittleEthIsSent() public {
+    sendData.push(UmbraBatchSend.SendData(payable(alice), ETH, 1 ether, pkx, ciphertext));
+    vm.expectRevert(); // TODO stricter check on "EvmError: OutOfFund"
+    router.batchSend{value: 1}(toll, sendData);
+  }
 
-    vm.expectRevert(abi.encodeWithSelector(ValueMismatch.selector));
-    router.batchSendEth{value: 1 ether + toll}(toll, sendEth);
+  function test_RevertIf_TooMuchEthIsSent() public {
+    sendData.push(UmbraBatchSend.SendData(payable(alice), ETH, 1 ether, pkx, ciphertext));
+
+    vm.expectRevert(TooMuchEthSent.selector); // TODO stricter check on "EvmError: OutOfFund"
+    router.batchSend{value: address(this).balance}(toll, sendData);
   }
 
   function testFuzz_BatchSendTokens(uint72 amount, uint72 amount2) public {
     uint256 totalAmount = uint256(amount) + amount2;
 
-    transferSummary.push(UmbraBatchSend.TransferSummary(totalAmount, address(token)));
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
-    uint256 totalToll = toll * sendToken.length;
+    sendData.push(UmbraBatchSend.SendData(alice, address(token), amount, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token), amount2, pkx, ciphertext));
+    uint256 totalToll = toll * sendData.length;
     token.approve(address(router), totalAmount);
 
     vm.expectCall(
-      address(router),
-      abi.encodeWithSelector(router.batchSendTokens.selector, toll, sendToken, transferSummary)
+      address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendData)
     );
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
-    router.batchSendTokens{value: totalToll}(toll, sendToken, transferSummary);
+    router.batchSend{value: totalToll}(toll, sendData);
 
     assertEq(token.balanceOf(umbra), totalAmount);
   }
 
-  function testFuzz_BatchSend2Tokens(
-    uint72 amount,
-    uint72 amount2,
-    uint72 amount3,
-    uint72 amount4
-  ) public {
+  function testFuzz_BatchSend2Tokens(uint72 amount, uint72 amount2, uint72 amount3, uint72 amount4)
+    public
+  {
     uint256 totalAmount = uint256(amount) + amount2;
     uint256 totalAmount2 = uint256(amount3) + amount4;
 
-    transferSummary.push(UmbraBatchSend.TransferSummary(totalAmount, address(token)));
-    transferSummary.push(UmbraBatchSend.TransferSummary(totalAmount2, address(token2)));
+    sendData.push(UmbraBatchSend.SendData(alice, address(token), amount, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token), amount2, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(alice, address(token2), amount3, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token2), amount4, pkx, ciphertext));
 
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount2, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token2), amount3, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, address(token2), amount4, pkx, ciphertext));
-
-    uint256 totalToll = toll * sendToken.length;
+    uint256 totalToll = toll * sendData.length;
     token.approve(address(router), totalAmount);
     token2.approve(address(router), totalAmount2);
 
     vm.expectCall(
-      address(router),
-      abi.encodeWithSelector(router.batchSendTokens.selector, toll, sendToken, transferSummary)
+      address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendData)
     );
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
-    router.batchSendTokens{value: totalToll}(toll, sendToken, transferSummary);
+    router.batchSend{value: totalToll}(toll, sendData);
 
     assertEq(token.balanceOf(umbra), totalAmount);
     assertEq(token2.balanceOf(umbra), totalAmount2);
   }
 
-  function testExpectRevert_BatchSendTokens() public {
-    transferSummary.push(UmbraBatchSend.TransferSummary(2.5 ether, address(token)));
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), 1 ether, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), 1 ether, pkx, ciphertext));
-
-    token.approve(address(router), 2 ether);
-    vm.expectRevert(abi.encodeWithSelector(TransferAmountMismatch.selector));
-    router.batchSendTokens{value: toll * sendToken.length}(toll, sendToken, transferSummary);
+  function test_RevertIf_SendDataNotSortedByTokenAddress() public {
+    sendData.push(UmbraBatchSend.SendData(alice, ETH, 1, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token), 1, pkx, ciphertext));
+    vm.expectRevert(NotSorted.selector);
+    router.batchSend(toll, sendData);
   }
 
-  function testFuzz_BatchSend(
-    uint256 amount,
-    uint256 amount2,
-    uint72 amount3,
-    uint72 amount4
-  ) public {
+  function testFuzz_BatchSend(uint256 amount, uint256 amount2, uint72 amount3, uint72 amount4)
+    public
+  {
     amount = bound(amount, toll + 1, 10e20);
     amount2 = bound(amount, toll + 1, 10e20);
     uint256 totalAmount = uint256(amount) + amount2;
     uint256 totalTokenAmount = uint256(amount3) + amount4;
 
-    sendEth.push(UmbraBatchSend.SendEth(payable(alice), amount, pkx, ciphertext));
-    sendEth.push(UmbraBatchSend.SendEth(payable(bob), amount2, pkx, ciphertext));
-
-    transferSummary.push(UmbraBatchSend.TransferSummary(totalTokenAmount, address(token)));
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), amount3, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), amount4, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(alice, address(token), amount3, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token), amount4, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(alice), ETH, amount, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(bob), ETH, amount2, pkx, ciphertext));
     token.approve(address(router), totalTokenAmount);
 
     vm.expectCall(
-      address(router),
-      abi.encodeWithSelector(router.batchSend.selector, toll, sendEth, sendToken, transferSummary)
+      address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendData)
     );
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendEth.selector));
     vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
+    vm.expectEmit(true, true, true, true);
+    emit BatchSendExecuted(address(this));
 
-    uint256 totalToll = toll * sendEth.length + toll * sendToken.length;
+    uint256 totalToll = toll * sendData.length;
 
-    router.batchSend{value: totalAmount + totalToll}(toll, sendEth, sendToken, transferSummary);
+    router.batchSend{value: totalAmount + totalToll}(toll, sendData);
 
     assertEq(alice.balance, amount);
     assertEq(bob.balance, amount2);
     assertEq(token.balanceOf(umbra), totalTokenAmount);
   }
 
-  function testExpectRevert_BatchSend() public {
-    sendEth.push(UmbraBatchSend.SendEth(payable(alice), 1e16, pkx, ciphertext));
-    sendEth.push(UmbraBatchSend.SendEth(payable(bob), 1e16, pkx, ciphertext));
+  function test_RevertIf_TooLittleEthAmountIsSent2() public {
+    sendData.push(UmbraBatchSend.SendData(alice, address(token), 1e17, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token), 1e17, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(alice), ETH, 1e16, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(bob), ETH, 1e16, pkx, ciphertext));
 
-    transferSummary.push(UmbraBatchSend.TransferSummary(1e17 * 2, address(token)));
-    sendToken.push(UmbraBatchSend.SendToken(alice, address(token), 1e17, pkx, ciphertext));
-    sendToken.push(UmbraBatchSend.SendToken(bob, address(token), 1e17, pkx, ciphertext));
     token.approve(address(router), 1e17 * 2);
 
-    uint256 totalToll = toll * sendEth.length + toll * sendToken.length;
-    vm.expectRevert(abi.encodeWithSelector(ValueMismatch.selector));
-    router.batchSend{value: 0}(toll, sendEth, sendToken, transferSummary);
+    vm.expectRevert(); // TODO stricter check on "EvmError: OutOfFund"
+    router.batchSend{value: 0}(toll, sendData);
+  }
+
+  function test_RevertIf_TooMuchEthAmountIsSent2() public {
+    sendData.push(UmbraBatchSend.SendData(alice, address(token), 1e17, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token), 1e17, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(alice), ETH, 1e16, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(payable(bob), ETH, 1e16, pkx, ciphertext));
+
+    token.approve(address(router), 1e17 * 2);
+
+    vm.expectRevert(TooMuchEthSent.selector);
+    router.batchSend{value: address(this).balance}(toll, sendData);
   }
 }
 

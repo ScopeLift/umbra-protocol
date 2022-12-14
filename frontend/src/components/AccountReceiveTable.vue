@@ -5,6 +5,9 @@
       We don't need @show="setIsInWithdrawFlow(true)" because that's set immediately after clicking the
       withdraw button and therefore is already true by the time this modal opens
     -->
+    <q-dialog v-model="showWithdrawLossModal" @hide="setIsInWithdrawFlow(false)">
+      <account-receive-table-loss-warning @acknowledged="confirmWithdraw" class="q-pa-lg" />
+    </q-dialog>
     <q-dialog v-model="showPrivacyModal" @hide="setIsInWithdrawFlow(false)">
       <account-receive-table-warning
         @acknowledged="confirmWithdraw"
@@ -344,13 +347,14 @@ import useStatusesStore from 'src/store/statuses';
 import useWalletStore from 'src/store/wallet';
 import { txNotify, notifyUser } from 'src/utils/alerts';
 import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vue';
+import AccountReceiveTableLossWarning from 'components/AccountReceiveTableLossWarning.vue';
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { FeeEstimateResponse } from 'components/models';
 import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
-import { getEtherscanUrl } from 'src/utils/utils';
+import { getEtherscanUrl, isToken } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
@@ -407,6 +411,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const expanded = ref<string[]>([]); // for managing expansion rows
   const showPrivacyModal = ref(false);
   const showConfirmationModal = ref(false);
+  const showWithdrawLossModal = ref(false);
   const privacyModalAddressWarnings = ref<string[]>([]);
   const destinationAddress = ref('');
   const activeAnnouncement = ref<UserAnnouncement>();
@@ -553,8 +558,13 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
         announcement.receiver,
         provider.value
       );
+      // Check if destination is an ERC-20 or ERC-721 token
+      // one of these addresses will cause a loss of funds vs privacy like in isAddressSafe
+      const desIsToken = await isToken(destinationAddress.value, provider.value);
 
-      if (safe) {
+      if (desIsToken) {
+        showWithdrawLossModal.value = true;
+      } else if (safe) {
         showConfirmationModal.value = true;
       } else {
         showPrivacyModal.value = true;
@@ -574,6 +584,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   function confirmWithdraw() {
     showPrivacyModal.value = false;
     showConfirmationModal.value = true;
+    showWithdrawLossModal.value = false;
   }
 
   type ExecuteWithdrawalOptions = {
@@ -683,13 +694,20 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     privacyModalAddressWarnings,
     showConfirmationModal,
     showPrivacyModal,
+    showWithdrawLossModal,
     txHashIfEth,
   };
 }
 
 export default defineComponent({
   name: 'AccountReceiveTable',
-  components: { AccountReceiveTableWarning, AccountReceiveTableWithdrawConfirmation, BaseTooltip, WithdrawForm },
+  components: {
+    AccountReceiveTableWarning,
+    AccountReceiveTableLossWarning,
+    AccountReceiveTableWithdrawConfirmation,
+    BaseTooltip,
+    WithdrawForm,
+  },
   props: {
     announcements: {
       type: (undefined as unknown) as PropType<UserAnnouncement[]>,

@@ -87,7 +87,11 @@ export default function useSettingsStore() {
     scanPrivateKey.value = key; // we save this in memory for access by components, but do not save it to LocalStorage
   }
 
-  function setLastWallet(walletName: string) {
+  function setLastWallet(walletName: string | null) {
+    if (walletName === null) {
+      LocalStorage.remove(settings.lastWallet);
+      return;
+    }
     lastWallet.value = walletName;
     LocalStorage.set(settings.lastWallet, walletName);
   }

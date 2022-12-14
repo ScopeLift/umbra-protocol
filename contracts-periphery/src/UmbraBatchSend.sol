@@ -1,144 +1,93 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "openzeppelin-contracts/access/Ownable.sol";
-import "openzeppelin-contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-import "src/interface/IUmbra.sol";
+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+import {IUmbra} from "src/interface/IUmbra.sol";
 
 contract UmbraBatchSend is Ownable {
   using SafeERC20 for IERC20;
-  IUmbra internal immutable umbra;
 
-  /// @param amount Amount of ETH to send per address excluding the toll
-  struct SendEth {
-    address payable receiver;
-    uint256 amount;
-    bytes32 pkx;
-    bytes32 ciphertext;
+  address internal constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  IUmbra internal immutable UMBRA;
+
+  struct SendData {
+    address receiver; // Stealth address.
+    address tokenAddr; // Use 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE for chain's native asset.
+    uint256 amount; // Amount of the token to send, excluding the toll.
+    bytes32 pkx; // Ephemeral public key x coordinate.
+    bytes32 ciphertext; // Encrypted entropy.
   }
 
-  struct SendToken {
-    address receiver;
-    address tokenAddr;
-    uint256 amount;
-    bytes32 pkx;
-    bytes32 ciphertext;
-  }
-
-  mapping(address => uint256) internal totalTransferAmountPerToken;
-  struct TransferSummary {
-    uint256 amount;
-    address tokenAddr;
-  }
-
-  error ValueMismatch();
-  error TransferAmountMismatch();
   event BatchSendExecuted(address indexed sender);
 
+  error NotSorted();
+  error TooMuchEthSent();
+
   constructor(IUmbra _umbra) {
-    umbra = _umbra;
+    UMBRA = _umbra;
   }
 
-  function batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) external payable {
-    _checkValueFromSends(msg.value, _tollCommitment, _params, new SendToken[](0));
-    _batchSendEth(_tollCommitment, _params);
-  }
+  /// @notice Batch send ETH and tokens via Umbra.
+  /// @param _tollCommitment The toll commitment to use for all payments.
+  /// @param _data Array of SendData structs, each containing the data for a single payment.
+  /// Must be sorted by token address, with 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE used as
+  /// the token address for the chain's native asset.
+  function batchSend(uint256 _tollCommitment, SendData[] calldata _data) external payable {
+    uint256 _initEthBalance = address(this).balance; // Includes ETH from msg.value.
 
-  function batchSendTokens(
-    uint256 _tollCommitment,
-    SendToken[] calldata _params,
-    TransferSummary[] calldata _transferSummary
-  ) external payable {
-    _checkValueFromSends(msg.value, _tollCommitment, new SendEth[](0), _params);
-    _batchSendTokens(_tollCommitment, _params, _transferSummary);
-  }
+    // First we pull the required token amounts into this contract.
+    uint256 _len = _data.length;
+    uint256 _index;
+    address _currentToken;
 
-  function batchSend(
-    uint256 _tollCommitment,
-    SendEth[] calldata _ethParams,
-    SendToken[] calldata _tokenParams,
-    TransferSummary[] calldata _transferSummary
-  ) external payable {
-    _checkValueFromSends(msg.value, _tollCommitment, _ethParams, _tokenParams);
-    _batchSendEth(_tollCommitment, _ethParams);
-    _batchSendTokens(_tollCommitment, _tokenParams, _transferSummary);
-    emit BatchSendExecuted(msg.sender);
-  }
+    while (_index < _len) {
+      uint256 _amount;
 
-  function _batchSendEth(uint256 _tollCommitment, SendEth[] calldata _params) internal {
-    uint256 _length = _params.length;
-    for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      umbra.sendEth{value: _params[i].amount + _tollCommitment}(
-        _params[i].receiver,
-        _tollCommitment,
-        _params[i].pkx,
-        _params[i].ciphertext
-      );
-    }
-    emit BatchSendExecuted(msg.sender);
-  }
+      if (_data[_index].tokenAddr < _currentToken) revert NotSorted();
+      _currentToken = _data[_index].tokenAddr;
 
-  function _batchSendTokens(
-    uint256 _tollCommitment,
-    SendToken[] calldata _params,
-    TransferSummary[] calldata _transferSummary
-  ) internal {
+      do {
+        _amount += _data[_index].amount;
+        _index = _uncheckedIncrement(_index);
+      } while (_index < _len && _data[_index].tokenAddr == _currentToken);
 
-    uint256 _length = _params.length;
-    for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      // Used later to validate total amounts are correctly provided
-      totalTransferAmountPerToken[_params[i].tokenAddr] += _params[i].amount;
+      _pullToken(_currentToken, _amount);
     }
 
-    uint256 _summaryLength = _transferSummary.length;
-    for (uint256 i = 0; i < _summaryLength; i = _uncheckedIncrement(i)) {
-      IERC20 _token = IERC20(address(_transferSummary[i].tokenAddr));
-
-      if (totalTransferAmountPerToken[_transferSummary[i].tokenAddr] != _transferSummary[i].amount) {
-        revert TransferAmountMismatch();
+    // Next we send the payments.
+    for (uint256 i = 0; i < _len; i = _uncheckedIncrement(i)) {
+      if (_data[i].tokenAddr == ETH) {
+        UMBRA.sendEth{value: _data[i].amount + _tollCommitment}(
+          payable(_data[i].receiver), _tollCommitment, _data[i].pkx, _data[i].ciphertext
+        );
+      } else {
+        UMBRA.sendToken{value: _tollCommitment}(
+          _data[i].receiver, _data[i].tokenAddr, _data[i].amount, _data[i].pkx, _data[i].ciphertext
+        );
       }
-
-      IERC20(_token).safeTransferFrom(msg.sender, address(this), _transferSummary[i].amount);
     }
 
-    for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      umbra.sendToken{value: _tollCommitment}(
-        _params[i].receiver,
-        _params[i].tokenAddr,
-        _params[i].amount,
-        _params[i].pkx,
-        _params[i].ciphertext
-      );
-    }
-
-    for (uint256 i = 0; i < _summaryLength; i = _uncheckedIncrement(i)) {
-      totalTransferAmountPerToken[_transferSummary[i].tokenAddr] = 0;
-    }
+    // If excess ETH was sent, revert.
+    if (address(this).balance != _initEthBalance - msg.value) revert TooMuchEthSent();
     emit BatchSendExecuted(msg.sender);
   }
 
-  function _checkValueFromSends(uint256 _value, uint256 _tollCommitment, SendEth[] memory _ethParams, SendToken[] memory _tokenParams)
-    internal
-    pure
-  {
-    uint256 _valueSentAccumulator;
-    uint256 _length = _ethParams.length;
-    for (uint256 i = 0; i < _length; i = _uncheckedIncrement(i)) {
-      //amount to be sent per receiver
-      _valueSentAccumulator = _valueSentAccumulator + _ethParams[i].amount + _tollCommitment;
-    }
-    _valueSentAccumulator += _tollCommitment * _tokenParams.length;
-    if(_value < _valueSentAccumulator) revert ValueMismatch();
+  function _pullToken(address _tokenAddr, uint256 _amount) internal {
+    if (_tokenAddr != ETH) IERC20(_tokenAddr).safeTransferFrom(msg.sender, address(this), _amount);
   }
 
-  /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to support
+  /// @notice Whenever a new token is added to Umbra, this method must be called by the owner to
+  /// support
   /// that token in this contract.
   function approveToken(IERC20 _token) external onlyOwner {
-    _token.safeApprove(address(umbra), type(uint256).max);
+    _token.safeApprove(address(UMBRA), type(uint256).max);
   }
 
   function _uncheckedIncrement(uint256 i) internal pure returns (uint256) {
-    unchecked { return i + 1; }
+    unchecked {
+      return i + 1;
+    }
   }
 }

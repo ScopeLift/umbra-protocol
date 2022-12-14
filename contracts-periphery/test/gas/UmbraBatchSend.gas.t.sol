@@ -1,25 +1,28 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "test/utils/DeployUmbraTest.sol";
-import "src/UmbraBatchSend.sol";
+import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {DeployUmbraTest} from "test/utils/DeployUmbraTest.sol";
+import {IUmbra} from "src/interface/IUmbra.sol";
+import {UmbraBatchSend} from "src/UmbraBatchSend.sol";
 
 abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
+  address internal constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
   UmbraBatchSend router;
 
   uint256 ethBalance;
   uint256 tokenBalance;
   uint256 toll;
 
-  UmbraBatchSend.SendEth[] sendEth;
-  UmbraBatchSend.SendToken[] sendToken;
-  UmbraBatchSend.TransferSummary[] transferSummary;
+  UmbraBatchSend.SendData[] sendData;
 
   enum Send {
     ETH,
     TOKEN,
     BOTH
   }
+
   address payable[] addrs;
 
   function setUp() public virtual override {
@@ -31,18 +34,15 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
     router.approveToken(IERC20(address(token)));
   }
 
-  function testPostSetupState() public {
+  function test_PostSetupState() public {
     uint256 currentToll = IUmbra(umbra).toll();
     assertEq(toll, currentToll);
     assertTrue(ethBalance > 0 && tokenBalance > 0);
   }
 
-  function executeParams(
-    Send _type,
-    uint256 numOfAddrs,
-    uint256 etherAmount,
-    uint256 tokenAmount
-  ) public {
+  function executeParams(Send _type, uint256 numOfAddrs, uint256 etherAmount, uint256 tokenAmount)
+    public
+  {
     assertTrue(numOfAddrs > 0);
 
     uint256 valueAmount;
@@ -56,27 +56,33 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
 
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += etherAmount + toll;
-        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
+        sendData.push(UmbraBatchSend.SendData(addrs[i], ETH, etherAmount, pkx, ciphertext));
       }
-      router.batchSendEth{value: valueAmount}(toll, sendEth);
+      router.batchSend{value: valueAmount}(toll, sendData);
     } else if (_type == Send.TOKEN) {
       assertTrue(tokenAmount > 0);
-      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
       for (uint256 i = 0; i < numOfAddrs; i++) {
         valueAmount += toll;
-        sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
+        sendData.push(
+          UmbraBatchSend.SendData(addrs[i], address(token), tokenAmount, pkx, ciphertext)
+        );
       }
-      router.batchSendTokens{value: valueAmount}(toll, sendToken, transferSummary);
+
+      router.batchSend{value: valueAmount}(toll, sendData);
     } else {
       assertTrue(etherAmount > 0 && tokenAmount > 0);
-      transferSummary.push(UmbraBatchSend.TransferSummary(tokenAmount * numOfAddrs, address(token)));
+
+      valueAmount += etherAmount * numOfAddrs + toll * numOfAddrs * 2;
 
       for (uint256 i = 0; i < numOfAddrs; i++) {
-        valueAmount += etherAmount + toll * 2;
-        sendEth.push(UmbraBatchSend.SendEth(addrs[i], etherAmount, pkx, ciphertext));
-        sendToken.push(UmbraBatchSend.SendToken(addrs[i], address(token), tokenAmount, pkx, ciphertext));
+        sendData.push(
+          UmbraBatchSend.SendData(addrs[i], address(token), tokenAmount, pkx, ciphertext)
+        );
       }
-      router.batchSend{value: valueAmount}(toll, sendEth, sendToken, transferSummary);
+      for (uint256 i = 0; i < numOfAddrs; i++) {
+        sendData.push(UmbraBatchSend.SendData(addrs[i], ETH, etherAmount, pkx, ciphertext));
+      }
+      router.batchSend{value: valueAmount}(toll, sendData);
     }
   }
 
@@ -89,7 +95,9 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
     } else if (_type == Send.TOKEN) {
       executeParams(Send.TOKEN, numOfAddrs, 0, (tokenBalance / numOfAddrs));
     } else {
-      executeParams(Send.BOTH, numOfAddrs, (ethBalance / numOfAddrs) - toll * 2, (tokenBalance / numOfAddrs));
+      executeParams(
+        Send.BOTH, numOfAddrs, (ethBalance / numOfAddrs) - toll * 2, (tokenBalance / numOfAddrs)
+      );
     }
   }
 
@@ -142,27 +150,27 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
   }
 
   function test_BatchSendTokens_To1Addr() public {
-    executeParams(Send.TOKEN, 1, 0, 10000 ether);
+    executeParams(Send.TOKEN, 1, 0, 10_000 ether);
   }
 
   function test_BatchSendTokens_To100Addrs() public {
-    executeParams(Send.TOKEN, 100, 0, 10000 ether);
+    executeParams(Send.TOKEN, 100, 0, 10_000 ether);
   }
 
   function test_BatchSendTokens_To2Addrs() public {
-    executeParams(Send.TOKEN, 2, 0, 10000 ether);
+    executeParams(Send.TOKEN, 2, 0, 10_000 ether);
   }
 
   function test_BatchSendTokens_To5Addrs() public {
-    executeParams(Send.TOKEN, 5, 0, 10000 ether);
+    executeParams(Send.TOKEN, 5, 0, 10_000 ether);
   }
 
   function test_BatchSendTokens_To10Addrs() public {
-    executeParams(Send.TOKEN, 10, 0, 10000 ether);
+    executeParams(Send.TOKEN, 10, 0, 10_000 ether);
   }
 
   function test_BatchSendTokens_To25Addrs() public {
-    executeParams(Send.TOKEN, 25, 0, 10000 ether);
+    executeParams(Send.TOKEN, 25, 0, 10_000 ether);
   }
 
   function test_BatchSendTokens_MaxBalance_To1Addr() public {
@@ -190,27 +198,27 @@ abstract contract UmbraBatchSendGasTest is DeployUmbraTest {
   }
 
   function test_BatchSend_To1Addr() public {
-    executeParams(Send.BOTH, 100, 10 ether, 10000 ether);
+    executeParams(Send.BOTH, 100, 10 ether, 10_000 ether);
   }
 
   function test_BatchSend_To2Addrs() public {
-    executeParams(Send.BOTH, 2, 10 ether, 10000 ether);
+    executeParams(Send.BOTH, 2, 10 ether, 10_000 ether);
   }
 
   function test_BatchSend_To5Addrs() public {
-    executeParams(Send.BOTH, 5, 10 ether, 10000 ether);
+    executeParams(Send.BOTH, 5, 10 ether, 10_000 ether);
   }
 
   function test_BatchSend_To10Addrs() public {
-    executeParams(Send.BOTH, 10, 10 ether, 10000 ether);
+    executeParams(Send.BOTH, 10, 10 ether, 10_000 ether);
   }
 
   function test_BatchSend_To25Addrs() public {
-    executeParams(Send.BOTH, 25, 10 ether, 10000 ether);
+    executeParams(Send.BOTH, 25, 10 ether, 10_000 ether);
   }
 
   function test_BatchSend_To100Addrs() public {
-    executeParams(Send.BOTH, 100, 10 ether, 10000 ether);
+    executeParams(Send.BOTH, 100, 10 ether, 10_000 ether);
   }
 
   function test_BatchSend_MaxBalance_To1Addr() public {
