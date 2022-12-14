@@ -292,7 +292,6 @@ function useSendForm() {
   const advancedAcknowledged = ref(false);
   const showAdvancedSendWarning = ref(false);
   const acknowledgeSendRisk = ref(false);
-  const vm = getCurrentInstance()!;
 
   // Form parameters
   const recipientId = ref<string>();

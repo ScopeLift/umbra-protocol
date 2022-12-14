@@ -46,9 +46,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onUpdated, computed, getCurrentInstance, PropType } from '@vue/composition-api';
+import { defineComponent, onUpdated, computed, PropType } from 'vue';
 import { copyToClipboard } from 'quasar';
-import Avatar from 'src/components/Avatar.vue';
+import { tc } from 'src/boot/i18n';
 import BaseButton from 'src/components/BaseButton.vue';
 import { toAddress } from 'src/utils/address';
 import { notifyUser } from 'src/utils/alerts';
@@ -58,7 +58,6 @@ import useSettingsStore from 'src/store/settings';
 
 function useWalletRow(userAddress: string) {
   const { provider, currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
-  const vm = getCurrentInstance()!;
 
   /**
    * @notice Copies the address of type to the clipboard
@@ -67,7 +66,7 @@ function useWalletRow(userAddress: string) {
     if (!provider.value) return;
     const mainAddress = await toAddress(address, provider.value);
     await copyToClipboard(mainAddress);
-    notifyUser('success', `${vm.$i18n.tc('WalletRow.address-copied')}`);
+    notifyUser('success', `${tc('WalletRow.address-copied')}`);
   }
   return {
     copyAddress,
@@ -79,7 +78,7 @@ function useWalletRow(userAddress: string) {
 
 export default defineComponent({
   name: 'WalletRow',
-  components: { Avatar, BaseButton },
+  components: { BaseButton },
   props: {
     userDisplayName: {
       type: String,
