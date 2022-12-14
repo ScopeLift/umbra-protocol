@@ -76,7 +76,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'BaseInput',
@@ -205,40 +205,37 @@ export default defineComponent({
     },
   },
 
-  data() {
-    return {
-      content: this.value,
-      hintString: '',
-      hintHack: this.hint(),
-    };
+  setup(props, context) {
+    const content = ref('');
+    const hintString = ref(((props as unknown) as { hint: string }).hint);
+
+    function handleClick() {
+      context.emit('click');
+    }
+
+    function handleInput() {
+      context.emit('input', content.value);
+    }
+
+    function hideHint() {
+      hintString.value = '';
+      context.emit('blur', content.value);
+    }
+
+    function showHint() {
+      hintString.value = ((props as unknown) as { hint: string }).hint;
+    }
+
+    return { content, hintString, handleClick, handleInput, hideHint, showHint };
   },
 
   watch: {
     /**
-     * @notice This is required for two-way binding when programtically updating the input
+     * @notice This is required for two-way binding when programmatically updating the input
      * in the parent component using BaseInput
      */
     value(val) {
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-    },
-  },
-
-  methods: {
-    handleClick() {
-      this.$emit('click');
-    },
-
-    handleInput() {
-      this.$emit('input', this.content);
-    },
-
-    hideHint() {
-      this.hintString = '';
-      this.$emit('blur', this.content);
-    },
-
-    showHint() {
-      this.hintString = this.hintHack;
     },
   },
 });

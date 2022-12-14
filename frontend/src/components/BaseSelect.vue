@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'BaseInput',
@@ -142,39 +142,35 @@ export default defineComponent({
     value: {
       type: undefined,
       required: true,
-      default: undefined,
     },
   },
 
-  data() {
-    return {
-      content: this.value,
-      hintString: '',
-      hintHack: this.hint(),
-    };
+  setup(props, context) {
+    const content = ref('');
+    const hintString = ref(((props as unknown) as { hint: string }).hint);
+
+    function handleInput() {
+      context.emit('input', content.value);
+    }
+
+    function hideHint() {
+      hintString.value = '';
+    }
+
+    function showHint() {
+      hintString.value = ((props as unknown) as { hint: string }).hint;
+    }
+
+    return { handleInput, hideHint, showHint, content, hintString };
   },
 
   watch: {
     /**
-     * @notice This is required for two-way binding when programtically updating the input
+     * @notice This is required for two-way binding when programmatically updating the input
      * in the parent component using BaseInput
      */
     value(val) {
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-    },
-  },
-
-  methods: {
-    handleInput() {
-      this.$emit('input', this.content);
-    },
-
-    hideHint() {
-      this.hintString = '';
-    },
-
-    showHint() {
-      this.hintString = this.hintHack;
     },
   },
 });
