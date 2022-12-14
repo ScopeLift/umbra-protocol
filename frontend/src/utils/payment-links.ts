@@ -1,7 +1,7 @@
 import { copyToClipboard } from 'quasar';
 import { TokenInfoExtended } from 'components/models';
 import { utils as umbraUtils } from '@umbra/umbra-js';
-import useWalletStore from 'src/store/wallet';
+import { providerExport as provider, relayerExport as relayer, tokensExport as tokens } from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
 import { StaticJsonRpcProvider } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
@@ -10,8 +10,7 @@ import { UmbraApi } from 'src/utils/umbra-api';
  * @notice Returns a provider, falling back to a mainnet provider if user's wallet is not connected
  */
 function getProvider() {
-  const { provider } = useWalletStore();
-  return provider.value || new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
+  return provider || new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
 }
 
 /**
@@ -19,8 +18,7 @@ function getProvider() {
  */
 async function getTokens(nativeToken: TokenInfoExtended) {
   // If we have a valid relayer instance and associated token list, return it
-  const { relayer, tokens } = useWalletStore();
-  if (relayer.value && tokens.value) return tokens.value;
+  if (relayer && tokens) return tokens;
 
   // Otherwise, get the default list
   const provider = getProvider();

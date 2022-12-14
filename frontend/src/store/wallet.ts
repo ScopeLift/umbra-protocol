@@ -34,6 +34,7 @@ const walletConnect = walletConnectModule();
 const coinbaseWalletSdk = coinbaseWalletModule();
 const ledger = ledgerModule();
 const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
+
 /**
  * State is handled in reusable components, where each component is its own self-contained
  * file consisting of one function defined used the composition API.
@@ -68,6 +69,14 @@ const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
 const isArgent = ref<boolean>(false); // true if user connected an argent wallet
 const stealthKeys = ref<{ spendingPublicKey: string; viewingPublicKey: string } | null>();
 const avatar = ref<string | null>('');
+
+// A few parts of state are exported directly under an alias, so that they can be accessed in TS
+// files without running the `onMounted` hook below, since lifecycle injection APIs can only be
+// used during execution of setup(), so importing `useWalletStore` in TS files would throw an error.
+// These properties must be updated manually as they are not reactive.
+export let providerExport = provider.value;
+export let relayerExport = relayer.value;
+export let tokensExport: TokenInfoExtended[] = [];
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -223,6 +232,7 @@ export default function useWalletStore() {
       }
 
       provider.value = new Web3Provider((rawProvider.value as unknown) as ExternalProvider, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
+      providerExport = provider.value;
       signer.value = provider.value.getSigner();
 
       // Get user and network information
@@ -293,6 +303,7 @@ export default function useWalletStore() {
       // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
       // parameters, and we want to ensure this method completed successfully before updating the UI
       relayer.value = _relayer;
+      relayerExport = relayer.value;
       userAddress.value = _userAddress;
       userEns.value = _userEns;
       userCns.value = _userCns;
@@ -367,6 +378,7 @@ export default function useWalletStore() {
   // Helper method to clear state. Useful when user switches wallets.
   function resetState() {
     provider.value = undefined;
+    providerExport = undefined;
     signer.value = undefined;
     userAddress.value = undefined;
     userEns.value = undefined;
@@ -378,6 +390,7 @@ export default function useWalletStore() {
     viewingKeyPair.value = undefined;
     balances.value = {};
     relayer.value = undefined;
+    relayerExport = undefined;
     hasEnsKeys.value = false;
     hasCnsKeys.value = false;
     isAccountSetup.value = false;
@@ -431,6 +444,8 @@ export default function useWalletStore() {
   });
 
   const tokens = computed((): TokenInfoExtended[] => {
+    let tokensArray: TokenInfoExtended[] = [];
+
     const sortedTokens = (relayer.value?.tokens || []).sort(
       // sort alphabetically
       (firstToken, secondToken) => firstToken.symbol.localeCompare(secondToken.symbol)
@@ -438,11 +453,14 @@ export default function useWalletStore() {
     const nativeTokenIndex = sortedTokens.map((token) => token.address).indexOf(NATIVE_TOKEN_ADDRESS);
     if (nativeTokenIndex > -1) {
       // native token present
-      return sortedTokens.sort((tok) => Number(tok.address != NATIVE_TOKEN_ADDRESS)); // move native token to front
+      tokensArray = sortedTokens.sort((tok) => Number(tok.address != NATIVE_TOKEN_ADDRESS)); // move native token to front
     } else {
       // add native token to the front of the array
-      return [NATIVE_TOKEN.value, ...sortedTokens];
+      tokensArray = [NATIVE_TOKEN.value, ...sortedTokens];
     }
+
+    tokensExport = tokensArray;
+    return tokensArray;
   });
 
   const userDisplayName = computed(() => {
