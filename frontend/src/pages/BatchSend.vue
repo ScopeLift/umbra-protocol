@@ -1,13 +1,8 @@
 <template>
-
-
   <q-form @submit="onFormSubmit" class="form">
     <h2 class="page-title">Batch Send</h2>
 
-    {{ Sends }}
-
     <div v-for="(Send, index) in Sends" :key="index">
-
       <!-- Identifier -->
       <div>{{ $t('Send.recipient') }}</div>
       <base-input
@@ -40,17 +35,15 @@
         :disable="isSending"
         placeholder="0"
         :appendButtonDisable="!Send.address || !isValidRecipientId"
-        :appendButtonLabel="Send.token && NATIVE_TOKEN && Send.token.address !== NATIVE_TOKEN.address ? $t('Send.max') : ''"
+        :appendButtonLabel="
+          Send.token && NATIVE_TOKEN && Send.token.address !== NATIVE_TOKEN.address ? $t('Send.max') : ''
+        "
         @click="setHumanAmountMax(Send.token, Send.address, Send.amount)"
       />
-
-      <p> {{ index }} {{ Send }} </p>
-
     </div>
 
-    <base-button @click="addFields(Sends)" label="Add fields"/>
+    <base-button @click="addFields(Sends)" label="Add fields" />
     <base-button :full-width="true" :label="$t('Send.send')" :loading="isSending" type="submit" />
-
   </q-form>
 </template>
 
@@ -64,20 +57,27 @@ import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 // --- Other ---
 import { txNotify } from 'src/utils/alerts';
-import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero, BigNumberish } from 'src/utils/ethers';
+import {
+  BigNumber,
+  Contract,
+  getAddress,
+  MaxUint256,
+  parseUnits,
+  formatUnits,
+  Zero,
+  BigNumberish,
+} from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 // import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
 
-
-
 interface SendBatch {
   token: TokenInfoExtended | null;
   amount: string;
   address: string;
-};
+}
 
 interface newSendBatch {
   token: string;
@@ -106,7 +106,7 @@ function useBatchSendForm() {
   const vm = getCurrentInstance()!;
 
   // Form parameters
-  const Sends = ref<SendBatch[]>([{address:'', token:null, amount:''}]);
+  const Sends = ref<SendBatch[]>([{ address: '', token: null, amount: '' }]);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
 
   const useNormalPubKey = ref(false);
@@ -133,10 +133,9 @@ function useBatchSendForm() {
     }
   }
 
-  function addFields(CurrentSends : SendBatch[]) {
-    CurrentSends.push({address: '', token: null, amount: ''});
+  function addFields(CurrentSends: SendBatch[]) {
+    CurrentSends.push({ address: '', token: null, amount: '' });
   }
-
 
   const isNativeToken = (address: string) => getAddress(address) === NATIVE_TOKEN.value.address;
 
@@ -167,14 +166,13 @@ function useBatchSendForm() {
     return true;
   }
 
-
   async function onFormSubmit() {
     console.log('called onFormSubmit');
     try {
       // Form validation
-      for(let i = 0; i < Sends.value.length; i++) {
+      for (let i = 0; i < Sends.value.length; i++) {
         if (!Sends.value[i].address || !Sends.value[i].token || !Sends.value[i].amount)
-        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
+          throw new Error(vm.$i18n.tc('Send.please-complete-form'));
       }
       if (!signer.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
@@ -184,17 +182,17 @@ function useBatchSendForm() {
       // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
       const ethersProvider = provider.value as Provider;
       for (let i = 0; i < Sends.value.length; i++) {
-        await umbraUtils.lookupRecipient(Sends.value[i].address, ethersProvider, { advanced: shouldUseNormalPubKey.value });
+        await umbraUtils.lookupRecipient(Sends.value[i].address, ethersProvider, {
+          advanced: shouldUseNormalPubKey.value,
+        });
       }
       // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
       // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
       // await getTokenBalances();
 
-      for(let i = 0; i < Sends.value.length; i++) {
-
-        let token : TokenInfoExtended | null = Sends.value[i].token;
-        if(!token)
-        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
+      for (let i = 0; i < Sends.value.length; i++) {
+        let token: TokenInfoExtended | null = Sends.value[i].token;
+        if (!token) throw new Error(vm.$i18n.tc('Send.please-complete-form'));
 
         const { address: tokenAddress, decimals } = token;
 
@@ -217,29 +215,30 @@ function useBatchSendForm() {
         if (token.symbol !== NATIVE_TOKEN.value.symbol) {
           // Check allowance
           const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
-          const umbraAddress = umbra.value.umbraContract.address;
-          const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
+          const batchSendAddress = umbra.value.batchSendContract.address;
+          const allowance = await tokenContract.allowance(userAddress.value, batchSendAddress);
           // If insufficient allowance, get approval
           if (tokenAmount.gt(allowance)) {
-            const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
+            console.log('allowence approval should have been called');
+            const approveTx = await tokenContract.approve(batchSendAddress, MaxUint256);
             void txNotify(approveTx.hash, ethersProvider);
             await approveTx.wait();
           }
         }
+
+        console.log('Outside of the allowance approval');
       }
 
-      let newSends = <newSendBatch[]>([]);
-      for( let i = 0; i < Sends.value.length; i++) {
+      let newSends = <newSendBatch[]>[];
+      for (let i = 0; i < Sends.value.length; i++) {
         // const tokenAddress = Sends.value[i].token?.address;
-        let token : TokenInfoExtended | null = Sends.value[i].token;
-        if(!token)
-        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
+        let token: TokenInfoExtended | null = Sends.value[i].token;
+        if (!token) throw new Error(vm.$i18n.tc('Send.please-complete-form'));
         const { address: tokenAddress, decimals } = token;
         console.log('tokenAddres is ', tokenAddress);
         const tokenAmount = parseUnits(Sends.value[i].amount, decimals);
 
-        if(tokenAddress)
-        newSends.push({token: tokenAddress, amount: tokenAmount, address: Sends.value[i].address})
+        if (tokenAddress) newSends.push({ token: tokenAddress, amount: tokenAmount, address: Sends.value[i].address });
       }
       // Send with Umbra
       console.log('batchSend that is sent over to umbra.ts is', newSends);
@@ -255,7 +254,11 @@ function useBatchSendForm() {
     }
   }
 
-  async function setHumanAmountMax(token: TokenInfoExtended | null | undefined, recipientId: string | undefined, humanAmount: string | undefined) {
+  async function setHumanAmountMax(
+    token: TokenInfoExtended | null | undefined,
+    recipientId: string | undefined,
+    humanAmount: string | undefined
+  ) {
     if (!token?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
     if (!recipientId) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
 
@@ -303,21 +306,17 @@ function useBatchSendForm() {
     toll,
     // useNormalPubKey,
     userAddress,
-  }
+  };
 }
-
 
 export default defineComponent({
   name: 'BatchSend',
-  components: {  },
+  components: {},
 
   setup() {
-
-
-
     return { ...useBatchSendForm() };
   },
-})
+});
 </script>
 
 <style lang="sass" scoped>
