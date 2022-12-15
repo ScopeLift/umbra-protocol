@@ -120,4 +120,4 @@ export interface SendBatch {
   address: string;
   token: string;
   amount: string;
-};
+}
