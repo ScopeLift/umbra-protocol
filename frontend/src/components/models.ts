@@ -151,10 +151,10 @@ export type WithdrawalInputs = {
 export type RelayResponse = { relayTransactionHash: string } | ApiError;
 
 export interface SendBatch {
-    address: string;
-    token: TokenInfoExtended | null;
-    amount: string;
-};
+  address: string;
+  token: TokenInfoExtended | null;
+  amount: string;
+}
 
 // Logger type added to window
 declare global {
