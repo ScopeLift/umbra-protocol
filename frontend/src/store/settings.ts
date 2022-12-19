@@ -25,6 +25,7 @@ const scanPrivateKey = ref<string>(); // private key entered when scanning
 const lastWallet = ref<string>(); // name of last wallet used
 const params = new URLSearchParams(window.location.search);
 const paramLocale = params.get('locale') || undefined;
+
 // Composition function for managing state
 export default function useSettingsStore() {
   onMounted(() => {
