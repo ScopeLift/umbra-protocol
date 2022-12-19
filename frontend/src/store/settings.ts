@@ -23,7 +23,8 @@ const startBlock = ref<number | undefined>(undefined); // block number to start 
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
 const scanPrivateKey = ref<string>(); // private key entered when scanning
 const lastWallet = ref<string>(); // name of last wallet used
-
+const params = new URLSearchParams(window.location.search);
+const paramLocale = params.get('locale') || undefined;
 // Composition function for managing state
 export default function useSettingsStore() {
   onMounted(() => {
@@ -33,17 +34,14 @@ export default function useSettingsStore() {
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
-    setLanguage(
-      (LocalStorage.getItem(settings.language) as Language) || { label: getLanguageLabel(), value: i18n.global.locale }
-    );
   });
-
-  if (language.value.label === '') {
-    language.value.value = LocalStorage.getItem(settings.language)
-      ? (LocalStorage.getItem(settings.language) as Language).value
-      : i18n.global.locale;
-    language.value.label = getLanguageLabel();
-  }
+  setLanguage(
+    paramLocale
+      ? { label: getLanguageLabel(paramLocale), value: paramLocale }
+      : LocalStorage.getItem(settings.language)
+      ? (LocalStorage.getItem(settings.language) as Language)
+      : { label: getLanguageLabel(i18n.global.locale), value: i18n.global.locale }
+  );
 
   function setDarkMode(status: boolean) {
     // In addition to Quasars `Dark` param, we use the isDark state value with this setter, so we can reactively track
@@ -73,9 +71,9 @@ export default function useSettingsStore() {
     LocalStorage.set(settings.language, language.value);
   }
 
-  function getLanguageLabel() {
+  function getLanguageLabel(languageValue: string) {
     for (let i = 0; i < supportedLanguages.length; i++) {
-      if (supportedLanguages[i].value === language.value.value) {
+      if (supportedLanguages[i].value === languageValue) {
         return supportedLanguages[i].label;
       }
     }
