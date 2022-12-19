@@ -67,7 +67,7 @@
     "clean": "hardhat clean",
     "build": "hardhat compile",
     "lint": "yarn run lint:sol && yarn run lint:ts && yarn run prettier:list-different",
-    "lint:sol": "solhint --config ./.solhint.json --max-warnings 9 \"contracts/**/*.sol\"",
+    "lint:sol": "solhint --config ./.solhint.json --max-warnings 30 \"contracts/**/*.sol\"",
     "lint:ts": "eslint --ext .js,.ts .",
     "prettier": "prettier --write \"**/*.{js,json,md,sol,ts}\"",
     "prettier:list-different": "prettier --list-different \"**/*.{js,json,md,sol,ts}\"",
