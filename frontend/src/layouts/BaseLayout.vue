@@ -174,8 +174,8 @@
           <!-- Language selection -->
           <base-select
             class="language-selector"
-            v-model="currentLanguage"
-            @input="setLanguage(currentLanguage)"
+            :value="currentLanguage"
+            @update:model-value="setLanguage"
             dense
             options-dense="true"
             :filled="false"
@@ -185,7 +185,7 @@
             :options="supportedLanguages"
             option-label="label"
             rounded
-          ></base-select>
+          />
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
@@ -260,6 +260,7 @@ export default defineComponent({
       useSettingsStore();
     const { avatar, isAccountSetup, isAccountSetupLegacy, isArgent, isLoading, network, userAddress, userDisplayName } =
       useWalletStore();
+
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);

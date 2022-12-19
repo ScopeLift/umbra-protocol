@@ -63,6 +63,11 @@ export default function useSettingsStore() {
   }
 
   function setLanguage(newLanguage: Language) {
+    // xx-yy was changed to xx-YY with the quasar v1 -> v2 upgrade, so we need to handle that.
+    if (newLanguage.value === 'en-us') newLanguage.value = 'en-US';
+    if (newLanguage.value === 'zh-cn') newLanguage.value = 'zh-CN';
+
+    // Now we set the language.
     language.value = newLanguage;
     i18n.global.locale = <'en-US' | 'zh-CN'>language.value.value;
     LocalStorage.set(settings.language, language.value);
