@@ -1,7 +1,7 @@
 <template>
   <base-select
     :value="currentNetwork"
-    @input="setNetwork(currentNetwork)"
+    @update:model-value="setNetwork"
     dense
     :filled="false"
     :hideBottomSpace="true"
