@@ -278,17 +278,23 @@ export class Umbra {
 
   async batchSend(signer: JsonRpcSigner | Wallet, batch: SendBatch[], overrides: SendOverrides = {}) {
     let tokenSum = new Map();
+    let tokens: string[] = [];
     for (let i = 0; i < batch.length; i++) {
       await assertSupportedAddress(batch[i].address);
       const token = batch[i].token;
       const amount = batch[i].amount;
       if (tokenSum.get(token) == undefined) {
         tokenSum.set(token, amount);
+        tokens.push(token);
       } else {
         tokenSum.set(token, tokenSum.get(token).add(amount));
       }
-      // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
-      // method also serves to validate the token input
+    }
+
+    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
+    // method also serves to validate the token input
+    for (let j = 0; j < tokens.length; j++) {
+      const token = tokens[j];
       if (!isEth(token)) {
         const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
         const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
