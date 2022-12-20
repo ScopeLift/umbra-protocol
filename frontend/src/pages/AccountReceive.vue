@@ -74,7 +74,7 @@
 
       <!-- Scanning complete -->
       <div v-else-if="scanStatus === 'complete'" class="text-center">
-        <account-receive-table :announcements="userAnnouncements" @reset="setFormStatus('waiting', '')" />
+        <account-receive-table :announcements="userAnnouncements" @reset="setFormStatus('waiting')" />
       </div>
     </div>
   </q-page>
@@ -124,11 +124,9 @@ function useScan() {
   };
   const isValidStartBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const isValidEndBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
-  const setFormStatus = (scanStatusVal: ScanStatus, scanPrivateKey: string) => {
+  const setFormStatus = (scanStatusVal: ScanStatus) => {
     scanStatus.value = scanStatusVal;
-    if (scanPrivateKey.length === 64) scanPrivateKey = `0x${scanPrivateKey}`;
-    setScanPrivateKey(scanPrivateKey);
-    scanPrivateKeyLocal.value = scanPrivateKey;
+    setScanPrivateKey('');
   };
 
   onMounted(async () => {

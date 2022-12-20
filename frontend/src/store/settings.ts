@@ -83,7 +83,7 @@ export default function useSettingsStore() {
   }
 
   function setScanPrivateKey(key: string) {
-    if (key.length === 64) key = `0x${key}`;
+    if (key !== '' && key.length !== 66) throw new Error(`Invalid private key '${key}' ${key.length}`);
     scanPrivateKey.value = key; // we save this in memory for access by components, but do not save it to LocalStorage
   }
 
