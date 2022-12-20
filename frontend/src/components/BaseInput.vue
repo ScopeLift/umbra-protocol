@@ -23,6 +23,7 @@
       :min="type === 'number' ? 0 : undefined"
       :outlined="outlined"
       :placeholder="placeholder"
+      ref="QInput"
       standout
       @blur="hideHint"
       @focus="showHint"

@@ -17,6 +17,7 @@
       :option-label="optionLabel"
       :outlined="outlined"
       :readonly="readonly"
+      ref="QSelect"
       :rounded="rounded"
       :rules="[(val) => rules(val)]"
       @blur="hideHint"

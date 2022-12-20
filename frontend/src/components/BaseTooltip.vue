@@ -29,6 +29,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
+import { QBtnDropdown, QItem } from 'quasar';
 
 export default defineComponent({
   name: 'BaseTooltip',
@@ -52,8 +53,8 @@ export default defineComponent({
   },
   setup() {
     const isShown = ref(false);
-    const rootRef = ref<any | /* Vue */ null>(null);
-    const tooltipRef = ref<any | /* Vue */ null>(null);
+    const rootRef = ref<InstanceType<typeof QBtnDropdown> | null>(null);
+    const tooltipRef = ref<InstanceType<typeof QItem> | null>(null);
 
     const onRootMouseLeave = (e: MouseEvent) => {
       if (tooltipRef.value?.$el !== e.relatedTarget) {

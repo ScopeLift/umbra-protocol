@@ -99,6 +99,7 @@
         placeholder="vitalik.eth"
         lazy-rules
         :rules="isValidId"
+        ref="recipientIdBaseInputRef"
       />
 
       <!-- Identifier, advanced mode tooltip -->
@@ -135,6 +136,7 @@
         :label="$t('Send.token')"
         :options="tokenList"
         option-label="symbol"
+        ref="tokenBaseSelectRef"
       />
 
       <!-- Amount -->
@@ -150,6 +152,7 @@
         @click="setHumanAmountMax"
         lazy-rules
         :rules="isValidTokenAmount"
+        ref="humanAmountBaseInputRef"
       />
 
       <!-- Toll + summary details -->
@@ -243,9 +246,11 @@
 <script lang="ts">
 // --- External imports ---
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
-import { QForm, QInput } from 'quasar';
+import { QForm, QInput, QSelect } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
+import BaseInput from 'components/BaseInput.vue';
+import BaseSelect from 'components/BaseSelect.vue';
 import BaseTooltip from 'components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 // --- Store ---
@@ -293,20 +298,24 @@ function useSendForm() {
   const showAdvancedSendWarning = ref(false);
   const acknowledgeSendRisk = ref(false);
 
-  // Form parameters
+  // Form refs for triggering validation via form items' `validate()` method.
+  const recipientIdBaseInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
+  const tokenBaseSelectRef = ref<InstanceType<typeof BaseSelect> | null>(null);
+  const humanAmountBaseInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
+
+  // Form parameters.
   const recipientId = ref<string>();
-  const recipientIdBaseInputRef = ref<any /* Vue */>();
   const useNormalPubKey = ref(false);
-  const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
-  const sendAdvancedButton = computed(() => useNormalPubKey.value && advancedMode.value);
-  const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const token = ref<TokenInfoExtended | null>();
-  const tokenBaseInputRef = ref<any /* Vue */>();
   const humanAmount = ref<string>();
-  const humanAmountBaseInputRef = ref<any /* Vue */>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
+
+  // Computed form parameters.
+  const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
+  const sendAdvancedButton = computed(() => useNormalPubKey.value && advancedMode.value);
+  const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
     if (typeof humanAmount.value !== 'string') return '--'; // appease TS
@@ -335,16 +344,17 @@ function useSendForm() {
       toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
 
       // Validates value initially passed through params
-      const recipientIdInputRef = recipientIdBaseInputRef.value?.$children[0] as QInput;
-      const tokenInputRef = tokenBaseInputRef.value?.$children[0] as QInput;
-      const humanAmountInputRef = humanAmountBaseInputRef.value?.$children[0] as QInput;
+      const recipientIdInputRef = recipientIdBaseInputRef.value?.$refs.QInput as QInput;
       if (recipientIdInputRef && recipientIdValue && typeof prevRecipientIdValue === 'undefined') {
         await recipientIdInputRef.validate();
       }
 
+      const tokenInputRef = tokenBaseSelectRef.value?.$refs.QSelect as QSelect;
       if (tokenInputRef && tokenValue && typeof prevTokenValue === 'undefined') {
         await tokenInputRef.validate();
       }
+
+      const humanAmountInputRef = humanAmountBaseInputRef.value?.$refs.QInput as QInput;
       if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
         await humanAmountInputRef.validate();
       }
@@ -523,11 +533,12 @@ function useSendForm() {
 
   return {
     acknowledgeSendRisk,
-    advancedMode,
     advancedAcknowledged,
+    advancedMode,
     chainId,
     currentChain,
     humanAmount,
+    humanAmountBaseInputRef,
     humanToll,
     humanTotalAmount,
     isSending,
@@ -538,12 +549,14 @@ function useSendForm() {
     NATIVE_TOKEN,
     onFormSubmit,
     recipientId,
+    recipientIdBaseInputRef,
     sendAdvancedButton,
     sendFormRef,
     setHumanAmountMax,
-    showAdvancedWarning,
     showAdvancedSendWarning,
+    showAdvancedWarning,
     token,
+    tokenBaseSelectRef,
     tokenList,
     toll,
     useNormalPubKey,
