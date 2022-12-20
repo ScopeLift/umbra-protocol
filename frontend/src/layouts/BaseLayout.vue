@@ -191,9 +191,9 @@
         <!-- Column 2: Built by ScopeLift -->
         <div class="col-xs-12 col-sm-4 q-mt-lg">
           <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.about') }}</p>
-          <i18n path="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
+          <i18n-t keypath="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
             <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
-          </i18n>
+          </i18n-t>
           <p class="">
             <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
           </p>

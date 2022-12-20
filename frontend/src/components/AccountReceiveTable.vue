@@ -46,9 +46,9 @@
         :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
       >
         {{ $t('AccountReceiveTable.configure-umbra') }}<br />
-        <i18n path="AccountReceiveTable.navigate-to-setup" tag="span">
+        <i18n-t path="AccountReceiveTable.navigate-to-setup" tag="span">
           <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountReceiveTable.setup') }}</router-link>
-        </i18n>
+        </i18n-t>
       </div>
       <div
         v-else-if="keysMatch === false"
@@ -56,9 +56,9 @@
         style="border-radius: 15px"
         :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
       >
-        <i18n path="AccountReceiveTable.keys-dont-match" tag="span">
+        <i18n-t path="AccountReceiveTable.keys-dont-match" tag="span">
           <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountReceiveTable.setup') }}</router-link>
-        </i18n>
+        </i18n-t>
         <router-link class="hyperlink" :to="{ name: 'FAQ', hash: '#account-setup' }">{{
           $t('AccountReceiveTable.learn-more')
         }}</router-link
