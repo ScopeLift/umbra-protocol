@@ -164,6 +164,7 @@ function useScan() {
 
     // Save off the scanPrivateKeyLocal to memory if it exists, then scan
     if (scanPrivateKeyLocal.value) {
+      if (scanPrivateKeyLocal.value.length === 64) scanPrivateKeyLocal.value = `0x${scanPrivateKeyLocal.value}`;
       await utils.assertSupportedAddress(computeAddress(scanPrivateKeyLocal.value));
       setScanPrivateKey(scanPrivateKeyLocal.value);
     }
