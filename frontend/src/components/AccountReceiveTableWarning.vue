@@ -11,10 +11,10 @@
     </q-card-section>
 
     <q-card-section>
-      <i18n path="AccountReceiveTableWarning.withdrawal-warning" tag="p">
+      <i18n-t keypath="AccountReceiveTableWarning.withdrawal-warning" tag="p">
         <span class="code">{{ destinationAddress }}</span
         >"
-      </i18n>
+      </i18n-t>
       <ul>
         <li v-html="warning" v-for="(warning, index) in warnings" :key="index" class="q-my-sm" />
       </ul>

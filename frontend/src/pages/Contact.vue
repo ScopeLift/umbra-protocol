@@ -2,9 +2,9 @@
   <q-page padding>
     <h2 class="page-title">{{ $t('Contact.contact') }}</h2>
 
-    <i18n path="Contact.paragraph" tag="p" class="horizontal-center q-pb-lg" style="max-width: 400px">
+    <i18n-t keypath="Contact.paragraph" tag="p" class="horizontal-center q-pb-lg" style="max-width: 400px">
       <router-link class="hyperlink" :to="{ name: 'FAQ' }">{{ $t('Contact.faq') }}</router-link>
-    </i18n>
+    </i18n-t>
 
     <p class="horizontal-center" style="max-width: 400px">
       <q-list>
@@ -15,11 +15,11 @@
           </q-item-section>
 
           <q-item-section class="text-left">
-            <i18n path="Contact.discord" tag="span">
+            <i18n-t keypath="Contact.discord" tag="span">
               <a class="hyperlink" href="https://discord.com/invite/uw4y5J2p7C" target="_blank">{{
                 $t('Contact.join-us')
               }}</a>
-            </i18n>
+            </i18n-t>
           </q-item-section>
         </q-item>
 
@@ -30,9 +30,9 @@
           </q-item-section>
 
           <q-item-section class="text-left">
-            <i18n path="Contact.twitter" tag="span">
+            <i18n-t keypath="Contact.twitter" tag="span">
               <a class="hyperlink" href="https://twitter.com/UmbraCash" target="_blank">{{ $t('Contact.follow') }}</a>
-            </i18n>
+            </i18n-t>
           </q-item-section>
         </q-item>
 
@@ -43,9 +43,9 @@
           </q-item-section>
 
           <q-item-section class="text-left">
-            <i18n path="Contact.email" tag="div">
+            <i18n-t keypath="Contact.email" tag="div">
               <a class="hyperlink" href="mailto:support@umbra.cash">support@umbra.cash</a>
-            </i18n>
+            </i18n-t>
           </q-item-section>
         </q-item>
       </q-list>
