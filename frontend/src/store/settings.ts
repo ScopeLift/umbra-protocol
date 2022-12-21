@@ -84,7 +84,10 @@ export default function useSettingsStore() {
   }
 
   function setScanPrivateKey(key: string) {
-    if ((key !== '' && key.length !== 66) || !isHexString(key)) throw new Error(`Invalid private key '${key}'`);
+    const check1 = key === '';
+    const check2 = key.length === 66 && isHexString(key);
+    const isValid = check1 || check2;
+    if (!isValid) throw new Error(`Invalid private key '${key}'`);
     scanPrivateKey.value = key; // we save this in memory for access by components, but do not save it to LocalStorage
   }
 
