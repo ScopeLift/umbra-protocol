@@ -167,7 +167,7 @@
     "audit-answer-contract": "The {contracts} have been audited by ConsenSys Diligence, and the audit report can be found {here}.",
     "audit-contracts": "contracts",
     "audit-here": "here",
-    "audit-answer-umrba-js": "The {umbrajs} {library} responsible for handling the required off-chain logic and elliptic curve operations—has been audited by Least Authority, and the audit report can be found {here}.",
+    "audit-answer-umbra-js": "The {umbrajs} {library} responsible for handling the required off-chain logic and elliptic curve operations—has been audited by Least Authority, and the audit report can be found {here}.",
     "audit-library": "library",
     "audit-answer-umbra-off-chain": "Off-chain elliptic curve operations are a core part of Umbra’s business logic, so we rely on {PaulMillers}'s simple, zero-dependency {nobleSecp256k1} library to handle this. Thanks to the {community}, we were able to raise enough funds to pay for an audit of this library with Cure53. You can read the audit report {here}.",
     "audit-community": "community",

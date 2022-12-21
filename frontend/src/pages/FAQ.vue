@@ -243,7 +243,7 @@
             </template>
           </i18n-t>
 
-          <i18n-t keypath="FAQ.audit-answer-umrba-js" tag="p">
+          <i18n-t keypath="FAQ.audit-answer-umbra-js" tag="p">
             <template v-slot:umbrajs> <span class="code">umbra-js</span>&#32; </template>
             <template v-slot:library>
               <a

@@ -168,7 +168,7 @@
     "audit-answer-contract": "这些{contracts}已通过 ConsenSys Diligence 审计，可在{here}查阅审计报告。",
     "audit-contracts": "合约",
     "audit-here": "这里",
-    "audit-answer-umrba-js": " {umbrajs} {library} —负责处理所需的链下逻辑和椭圆曲线操作—已通过Least Authority审计，审计报告可查看 {here}。",
+    "audit-answer-umbra-js": " {umbrajs} {library} —负责处理所需的链下逻辑和椭圆曲线操作—已通过Least Authority审计，审计报告可查看 {here}。",
     "audit-library": "库",
     "audit-answer-umbra-off-chain": "链下椭圆曲线操作是 Umbra 业务逻辑的核心部分，所以我们依赖 {PaulMillers} 的简单，零依赖的 {noble-secp256k1} 库来处理。非常感谢{community}的帮助，我们能够筹集到足够的资金来支付Cure53 对该库进行审计的费用。您可以在{here}。",
     "audit-community": "社区",
