@@ -126,6 +126,7 @@ function useScan() {
   const isValidEndBlock = (val: string) => !val || Number(val) > 0 || 'Please enter a valid start block';
   const setFormStatus = (scanStatusVal: ScanStatus) => {
     scanStatus.value = scanStatusVal;
+    scanPrivateKeyLocal.value = '';
     setScanPrivateKey('');
   };
 
