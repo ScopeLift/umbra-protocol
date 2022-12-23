@@ -115,9 +115,3 @@ export interface UserAnnouncement {
   token: string; // token address
   txHash: string;
 }
-
-export interface SendBatch {
-  address: string;
-  token: string;
-  amount: string;
-}

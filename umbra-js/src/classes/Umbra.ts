@@ -27,19 +27,14 @@ import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
-import { UmbraBatchSend as BatchSendContract } from '@umbra/contracts-core/periphery-typechain';
 import { ERC20_ABI } from '../utils/constants';
-import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail} from '../types'; // prettier-ignore
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
-const {
-  abi: batchSendAbi,
-} = require('@umbra/contracts-core/periphery-artifacts/UmbraBatchSend.sol/UmbraBatchSend.json');
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
-const batchSendAddress = '0x0d81Df222BB44b883265538586829715CF157163'; // Goerli test address
 const subgraphs = {
   1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
   5: 'https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli',
@@ -47,20 +42,6 @@ const subgraphs = {
   137: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
   42161: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone',
 };
-
-interface SendBatch {
-  token: string;
-  amount: BigNumberish;
-  address: string;
-}
-
-interface SendData {
-  receiver: string;
-  tokenAddr: string;
-  amount: BigNumberish;
-  pkx: string;
-  ciphertext: string;
-}
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
@@ -134,7 +115,6 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
 export class Umbra {
   readonly chainConfig: ChainConfig;
   readonly umbraContract: UmbraContract;
-  readonly batchSendContract: BatchSendContract;
   // Fallback provider, used when a user's provider rejects the transaction. This may happen if the provider from
   // the user's wallet rejects transactions from accounts not associated with that user's wallet (in this case, that
   // means transactions from stealth addresses would be rejected). More info: https://github.com/coinbase/coinbase-wallet-sdk/issues/580
@@ -149,7 +129,6 @@ export class Umbra {
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
     this.umbraContract = new Contract(this.chainConfig.umbraAddress, abi, provider) as UmbraContract;
-    this.batchSendContract = new Contract(batchSendAddress, batchSendAbi, provider) as BatchSendContract;
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
@@ -254,113 +233,6 @@ export class Umbra {
 
     // We do not wait for the transaction to be mined before returning it
     return { tx, stealthKeyPair };
-  }
-
-  async batchSend(signer: JsonRpcSigner | Wallet, batch: SendBatch[], overrides: SendOverrides = {}) {
-    let tokenSum = new Map();
-    for (let i = 0; i < batch.length; i++) {
-      await assertSupportedAddress(batch[i].address);
-      const token = batch[i].token;
-      const amount = batch[i].amount;
-      if (tokenSum.get(token) == undefined) {
-        tokenSum.set(token, amount);
-      } else {
-        tokenSum.set(token, tokenSum.get(token).add(amount));
-      }
-      // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
-      // method also serves to validate the token input
-      if (!isEth(token)) {
-        const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
-        const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
-        if (tokenBalance.lt(tokenSum.get(token))) {
-          const providedAmount = BigNumber.from(tokenSum.get(token)).toString();
-          const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
-          throw new Error(`Insufficient balance to complete transfer. ${details}`);
-        }
-      }
-    }
-
-    const txSigner = this.getConnectedSigner(signer); // signer input validated
-
-    // Get toll amount from contract
-    const toll = await this.umbraContract.toll();
-
-    // Parse provided overrides
-    const localOverrides = { ...overrides }; // avoid mutating the object passed in
-    const advanced = localOverrides?.advanced || false;
-    const supportPubKey = localOverrides?.supportPubKey || false;
-    const supportTxHash = localOverrides?.supportTxHash || false;
-    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
-
-    delete localOverrides.advanced;
-    delete localOverrides.supportPubKey;
-    delete localOverrides.supportTxHash;
-
-    let sendData: SendData[] = [];
-    let valueAmount: BigNumber = BigNumber.from('0');
-    let stealthKeyPairs: KeyPair[] = [];
-
-    for (let i = 0; i < batch.length; i++) {
-      // Lookup recipient's public key
-      const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(
-        batch[i].address,
-        this.provider,
-        lookupOverrides
-      );
-      if (!spendingPublicKey || !viewingPublicKey) {
-        throw new Error(`Could not retrieve public keys for recipient ID ${batch[i].address}`);
-      }
-
-      const token = batch[i].token;
-      const amount = batch[i].amount;
-
-      const spendingKeyPair = new KeyPair(spendingPublicKey);
-      const viewingKeyPair = new KeyPair(viewingPublicKey);
-
-      // Generate random number
-      const randomNumber = new RandomNumber();
-
-      // Encrypt random number with recipient's public key
-      const encrypted = viewingKeyPair.encrypt(randomNumber);
-
-      // Get x,y coordinates of ephemeral private key
-      const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
-
-      // Compute stealth address
-      const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
-      stealthKeyPairs.push(stealthKeyPair);
-
-      // Ensure that the stealthKeyPair's address is not on the block list
-      if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
-
-      // Sum valueAmount
-      if (isEth(token)) {
-        valueAmount = valueAmount.add(toll.add(amount));
-      } else {
-        valueAmount = toll.add(valueAmount);
-      }
-      sendData.push({
-        receiver: stealthKeyPair.address,
-        tokenAddr: token,
-        amount: amount,
-        pkx: pubKeyXCoordinate,
-        ciphertext: encrypted.ciphertext,
-      });
-    }
-
-    // Sort by token addresses
-    const sortedData: SendData[] = sendData.sort((n1, n2) => {
-      return n1.tokenAddr.localeCompare(n2.tokenAddr);
-    });
-
-    // Send transaction
-    let tx: ContractTransaction;
-    const txOverrides = { ...localOverrides, value: valueAmount, gasLimit: 5000000 };
-
-    tx = await this.batchSendContract.connect(txSigner).batchSend(toll, sortedData, txOverrides);
-
-    // We do not wait for the transaction to be mined before returning it
-    return { tx, stealthKeyPairs };
   }
 
   /**
