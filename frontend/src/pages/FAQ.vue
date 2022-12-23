@@ -551,45 +551,38 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import FAQItem from 'components/FAQItem.vue';
 import { copyToClipboard, scroll } from 'quasar';
 import { notifyUser } from 'src/utils/alerts';
 import { getEtherscanUrl } from 'src/utils/utils';
 
-function useScrollToElement() {
-  const { setVerticalScrollPosition } = scroll;
-  scroll.setVerticalScrollPosition;
+function useScrollToElement(route: RouteLocationNormalizedLoaded) {
+  const { getScrollTarget, setVerticalScrollPosition } = scroll;
   const selectedId = ref('');
-  // Helper methods
-  const getElementIdFromUrl = () => useRoute().hash.slice(1); // .slice(1) to remove '#'
 
   const expandAndScrollToElement = (elementId: string) => {
     // Get element
     const el = document.getElementById(elementId);
-    console.log(el);
     if (!el) return;
     selectedId.value = elementId;
 
-    // Scroll to element
-    const offset = el.offsetTop;
-    const duration = 500; // duration of scroll
-    setVerticalScrollPosition(el, offset, duration);
+    // Scroll to element target and offset with specified animation duration.
+    setVerticalScrollPosition(getScrollTarget(el), el.offsetTop, 500);
   };
 
   // Copy the URL to go directly to the clicked element and update URL in navigation bar
   const copyUrl = async (e: MouseEvent) => {
     const el = e.currentTarget as HTMLElement;
-    const elementId = el.id;
-    const slug = useRoute().path; // includes the leading forward slash
-    const page = `${slug}#${elementId}`;
+    const page = `${route.path}#${el.id}`; // `route.path` includes the leading forward slash
     await copyToClipboard(`${window.location.origin}${page}`);
     if (el.getAttribute('isHeader')) notifyUser('success', 'URL successfully copied to clipboard');
     window.history.pushState('', '', page); // updates URL in navigation bar
   };
 
   // Scrolls to element, and when applicable clicks the expansion item to open it
-  onMounted(() => expandAndScrollToElement(getElementIdFromUrl()));
+  const elementId = route.hash.slice(1); // .slice(1) to remove '#'
+  onMounted(() => expandAndScrollToElement(elementId));
 
   return { selectedId, expandAndScrollToElement, copyUrl };
 }
@@ -602,7 +595,8 @@ export default defineComponent({
       umbra: '0xFb2dc580Eed955B528407b4d36FfaFe3da685401',
       registry: '0x31fe56609C65Cd0C510E7125f051D440424D38f3',
     };
-    return { ...useScrollToElement(), deployments, getEtherscanUrl };
+    const route = useRoute();
+    return { ...useScrollToElement(route), deployments, getEtherscanUrl };
   },
 });
 </script>
