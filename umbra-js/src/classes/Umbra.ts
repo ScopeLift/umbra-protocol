@@ -27,7 +27,7 @@ import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
-import { UmbraBatchSend as BatchSendContract } from '@umbra/contracts-core/periphery-typechain';
+import { UmbraBatchSend as BatchSendContract } from '@umbra/contracts-core/periphery-typechain/UmbraBatchSend';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail} from '../types'; // prettier-ignore
 
@@ -35,7 +35,7 @@ import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOver
 const { abi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
 const {
   abi: batchSendAbi,
-} = require('@umbra/contracts-core/periphery-artifacts/UmbraBatchSend.sol/UmbraBatchSend.json');
+} = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
