@@ -28,7 +28,7 @@ import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
-import { UmbraBatchSend as BatchSendContract } from '@umbra/contracts-core/periphery-typechain';
+import { UmbraBatchSend as BatchSendContract } from '@umbra/contracts-core/periphery-typechain/UmbraBatchSend';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail} from '../types'; // prettier-ignore
 
