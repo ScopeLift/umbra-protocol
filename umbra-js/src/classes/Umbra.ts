@@ -33,9 +33,7 @@ import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOver
 
 // Umbra.sol ABI
 const { abi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
-const {
-  abi: batchSendAbi,
-} = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
+const { abi: batchSendAbi } = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
