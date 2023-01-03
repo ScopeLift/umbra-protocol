@@ -32,7 +32,7 @@ import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail} from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
-const { abi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
+const { abi: umbraAbi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
 const { abi: batchSendAbi } = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
 
 // Mapping from chainId to contract information
@@ -61,12 +61,12 @@ interface SendData {
 }
 
 const chainConfigs: Record<number, ChainConfig> = {
-  1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
-  5: { chainId: 5, umbraAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
-  10: { chainId: 10, umbraAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
-  1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
-  42161: { chainId: 42161, umbraAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
+  1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
+  5: { chainId: 5, umbraAddress, batchSendAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
+  10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
+  137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
+  1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
+  42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
 };
 
 /**
@@ -88,7 +88,7 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
   }
 
   // Otherwise verify the user's provided chain config is valid and return it
-  const { chainId, startBlock, subgraphUrl, umbraAddress } = chainConfig;
+  const { chainId, startBlock, subgraphUrl, umbraAddress, batchSendAddress } = chainConfig;
   const isValidStartBlock = typeof startBlock === 'number' && startBlock >= 0;
 
   if (!isValidStartBlock) {
@@ -101,7 +101,13 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
     throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${String(subgraphUrl)}'`);
   }
 
-  return { umbraAddress: getAddress(umbraAddress), startBlock, chainId, subgraphUrl };
+  return {
+    umbraAddress: getAddress(umbraAddress),
+    batchSendAddress: getAddress(batchSendAddress),
+    startBlock,
+    chainId,
+    subgraphUrl,
+  };
 };
 
 /**
@@ -146,8 +152,12 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(this.chainConfig.umbraAddress, abi, provider) as UmbraContract;
-    this.batchSendContract = new Contract(batchSendAddress, batchSendAbi, provider) as BatchSendContract;
+    this.umbraContract = new Contract(this.chainConfig.umbraAddress, umbraAbi, provider) as UmbraContract;
+    this.batchSendContract = new Contract(
+      this.chainConfig.batchSendAddress,
+      batchSendAbi,
+      provider
+    ) as BatchSendContract;
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
