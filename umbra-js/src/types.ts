@@ -1,5 +1,6 @@
 import {
   BigNumber,
+  BigNumberish,
   ExternalProvider as EthersExternalProvider,
   JsonRpcFetchFunc,
   StaticJsonRpcProvider,
@@ -118,7 +119,15 @@ export interface UserAnnouncement {
 }
 
 export interface SendBatch {
-  address: string;
   token: string;
-  amount: string;
+  amount: BigNumberish;
+  address: string;
+}
+
+export interface SendData {
+  receiver: string;
+  tokenAddr: string;
+  amount: BigNumberish;
+  pkx: string;
+  ciphertext: string;
 }
