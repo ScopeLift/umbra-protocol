@@ -29,7 +29,7 @@ import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSup
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { UmbraBatchSend as BatchSendContract } from '@umbra/contracts-core/periphery-typechain/UmbraBatchSend';
 import { ERC20_ABI } from '../utils/constants';
-import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail} from '../types'; // prettier-ignore
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
 const { abi: umbraAbi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
@@ -45,20 +45,6 @@ const subgraphs = {
   137: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
   42161: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone',
 };
-
-interface SendBatch {
-  token: string;
-  amount: BigNumberish;
-  address: string;
-}
-
-interface SendData {
-  receiver: string;
-  tokenAddr: string;
-  amount: BigNumberish;
-  pkx: string;
-  ciphertext: string;
-}
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
