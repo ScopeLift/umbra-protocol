@@ -183,17 +183,8 @@ export class Umbra {
     await assertSupportedAddress(recipientId);
     const txSigner = this.getConnectedSigner(signer); // signer input validated
 
-    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
-    // method also serves to validate the token input
-    if (!isEth(token)) {
-      const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
-      const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
-      if (tokenBalance.lt(amount)) {
-        const providedAmount = BigNumber.from(amount).toString();
-        const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
-        throw new Error(`Insufficient balance to complete transfer. ${details}`);
-      }
-    }
+    // Check that the sender has sufficient balance
+    await assertSufficientBalance(signer, token, BigNumber.from(amount));
 
     // Get toll amount from contract
     const toll = await this.umbraContract.toll();
@@ -250,34 +241,24 @@ export class Umbra {
     return { tx, stealthKeyPair };
   }
 
-  async batchSend(signer: JsonRpcSigner | Wallet, batch: SendBatch[], overrides: SendOverrides = {}) {
-    let tokenSum = new Map();
-    let tokens: string[] = [];
-    for (let i = 0; i < batch.length; i++) {
-      await assertSupportedAddress(batch[i].address);
-      const token = batch[i].token;
-      const amount = batch[i].amount;
-      if (tokenSum.get(token) == undefined) {
-        tokenSum.set(token, amount);
-        tokens.push(token);
-      } else {
-        tokenSum.set(token, tokenSum.get(token).add(amount));
-      }
+  async batchSend(signer: JsonRpcSigner | Wallet, sends: SendBatch[], overrides: SendOverrides = {}) {
+    const recipients = new Set(sends.map((send) => send.address));
+    // Check that all recipients are valid
+    for (const recipient of recipients) {
+      await assertSupportedAddress(recipient);
     }
 
-    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
-    // method also serves to validate the token input
-    for (let j = 0; j < tokens.length; j++) {
-      const token = tokens[j];
-      if (!isEth(token)) {
-        const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
-        const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
-        if (tokenBalance.lt(tokenSum.get(token))) {
-          const providedAmount = BigNumber.from(tokenSum.get(token)).toString();
-          const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
-          throw new Error(`Insufficient balance to complete transfer. ${details}`);
-        }
-      }
+    // Calculate the total amount of each token to be sent
+    let tokenSum = new Map<string, BigNumber>();
+    for (const send of sends) {
+      const token = send.token;
+      const amount = BigNumber.from(send.amount);
+      tokenSum.set(token, tokenSum.get(token)?.add(amount) || amount);
+    }
+
+    // Check that the sender has sufficient balance for all tokens
+    for (const token of tokenSum.keys()) {
+      await assertSufficientBalance(signer, token, tokenSum.get(token) as BigNumber);
     }
 
     const txSigner = this.getConnectedSigner(signer); // signer input validated
@@ -300,19 +281,19 @@ export class Umbra {
     let valueAmount: BigNumber = BigNumber.from('0');
     let stealthKeyPairs: KeyPair[] = [];
 
-    for (let i = 0; i < batch.length; i++) {
+    for (let i = 0; i < sends.length; i++) {
       // Lookup recipient's public key
       const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(
-        batch[i].address,
+        sends[i].address,
         this.provider,
         lookupOverrides
       );
       if (!spendingPublicKey || !viewingPublicKey) {
-        throw new Error(`Could not retrieve public keys for recipient ID ${batch[i].address}`);
+        throw new Error(`Could not retrieve public keys for recipient ID ${sends[i].address}`);
       }
 
-      const token = batch[i].token;
-      const amount = batch[i].amount;
+      const token = sends[i].token;
+      const amount = sends[i].amount;
 
       const spendingKeyPair = new KeyPair(spendingPublicKey);
       const viewingKeyPair = new KeyPair(viewingPublicKey);
@@ -824,5 +805,19 @@ async function tryEthWithdraw(
     console.log('e', e);
     console.warn(`failed with "insufficient funds for gas * price + value", retry attempt ${retryCount}...`);
     return await tryEthWithdraw(signer, from, to, overrides, retryCount + 1);
+  }
+}
+
+async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: string, tokenAmount: BigNumber) {
+  // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
+  // method also serves to validate the token input
+  if (!isEth(token)) {
+    const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
+    const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
+    if (tokenBalance.lt(tokenAmount)) {
+      const providedAmount = tokenAmount.toString();
+      const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
+      throw new Error(`Insufficient balance to complete transfer. ${details}`);
+    }
   }
 }
