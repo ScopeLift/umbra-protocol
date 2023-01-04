@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, markRaw, ref, watch } from 'vue';
 
 import Onboard, { OnboardAPI } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
@@ -265,7 +265,10 @@ export default function useWalletStore() {
       }
 
       // Set Umbra and StealthKeyRegistry classes
-      umbra.value = new Umbra(provider.value, newChainId);
+      // We have to use markRaw here to prevent Vue from making our ethers objects into proxies:
+      //   https://github.com/vuejs/core/issues/3024
+      //   https://github.com/dcgtc/dgrants/blob/2732f3107fd497b8c7f6ba7a13fcfb9f9f0e89e9/app/src/store/wallet.ts#L8-L20
+      umbra.value = markRaw(new Umbra(provider.value, newChainId));
       stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
 
       // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
