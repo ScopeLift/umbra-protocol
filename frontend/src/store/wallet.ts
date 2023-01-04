@@ -269,7 +269,7 @@ export default function useWalletStore() {
       //   https://github.com/vuejs/core/issues/3024
       //   https://github.com/dcgtc/dgrants/blob/2732f3107fd497b8c7f6ba7a13fcfb9f9f0e89e9/app/src/store/wallet.ts#L8-L20
       umbra.value = markRaw(new Umbra(provider.value, newChainId));
-      stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
+      stealthKeyRegistry.value = markRaw(new StealthKeyRegistry(signer.value));
 
       // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
       // When using Argent, a user's funds are secured by the contract wallet, not by a private key. As a result:
