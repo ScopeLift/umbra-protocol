@@ -216,9 +216,7 @@ export class Umbra {
   async batchSend(signer: JsonRpcSigner | Wallet, sends: SendBatch[], overrides: SendOverrides = {}) {
     const recipients = new Set(sends.map((send) => send.address));
     // Check that all recipients are valid
-    for (const recipient of recipients) {
-      await assertSupportedAddress(recipient);
-    }
+    await Promise.all([...recipients].map(assertSupportedAddress));
 
     // Calculate the total amount of each token to be sent
     const tokenSum = new Map<string, BigNumber>();
@@ -229,9 +227,11 @@ export class Umbra {
     }
 
     // Check that the sender has sufficient balance for all tokens
-    for (const token of tokenSum.keys()) {
-      await assertSufficientBalance(signer, token, tokenSum.get(token) as BigNumber);
-    }
+    await Promise.all(
+      [...tokenSum.keys()].map((token) => {
+        return assertSufficientBalance(signer, token, tokenSum.get(token) as BigNumber);
+      })
+    );
 
     const txSigner = this.getConnectedSigner(signer); // signer input validated
 
@@ -804,6 +804,7 @@ async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: st
       throw new Error(`Insufficient balance to complete transfer. ${details}`);
     }
   }
+  return true;
 }
 
 function assertValidStealthAddress(stealthAddress: string) {
