@@ -192,28 +192,8 @@ export class Umbra {
     // Parse provided overrides
     const { localOverrides, lookupOverrides } = Umbra.parseOverrides({ ...overrides });
 
-    // Lookup recipient's public key
-    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
-    if (!spendingPublicKey || !viewingPublicKey) {
-      throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
-    }
-    const spendingKeyPair = new KeyPair(spendingPublicKey);
-    const viewingKeyPair = new KeyPair(viewingPublicKey);
-
-    // Generate random number
-    const randomNumber = new RandomNumber();
-
-    // Encrypt random number with recipient's public key
-    const encrypted = viewingKeyPair.encrypt(randomNumber);
-
-    // Get x,y coordinates of ephemeral private key
-    const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
-
-    // Compute stealth address
-    const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
-
-    // Ensure that the stealthKeyPair's address is not on the block list
-    if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
+    const { stealthKeyPair, pubKeyXCoordinate, encrypted } = await this.prepareSend(recipientId, lookupOverrides);
+    assertValidStealthAddress(stealthKeyPair.address);
 
     // Send transaction
     let tx: ContractTransaction;
@@ -261,49 +241,25 @@ export class Umbra {
     // Parse provided overrides
     const { localOverrides, lookupOverrides } = Umbra.parseOverrides({ ...overrides });
 
+    // Prepare data for each send
     const sendData: SendData[] = [];
-    let valueAmount: BigNumber = BigNumber.from('0');
+    let valueAmount = BigNumber.from('0');
     const stealthKeyPairs: KeyPair[] = [];
 
-    for (let i = 0; i < sends.length; i++) {
-      // Lookup recipient's public key
-      const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(
-        sends[i].address,
-        this.provider,
-        lookupOverrides
-      );
-      if (!spendingPublicKey || !viewingPublicKey) {
-        throw new Error(`Could not retrieve public keys for recipient ID ${sends[i].address}`);
-      }
+    for (const send of sends) {
+      const { stealthKeyPair, pubKeyXCoordinate, encrypted } = await this.prepareSend(send.address, lookupOverrides);
+      assertValidStealthAddress(stealthKeyPair.address);
 
-      const token = sends[i].token;
-      const amount = sends[i].amount;
-
-      const spendingKeyPair = new KeyPair(spendingPublicKey);
-      const viewingKeyPair = new KeyPair(viewingPublicKey);
-
-      // Generate random number
-      const randomNumber = new RandomNumber();
-
-      // Encrypt random number with recipient's public key
-      const encrypted = viewingKeyPair.encrypt(randomNumber);
-
-      // Get x,y coordinates of ephemeral private key
-      const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
-
-      // Compute stealth address
-      const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
       stealthKeyPairs.push(stealthKeyPair);
-
-      // Ensure that the stealthKeyPair's address is not on the block list
-      if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
+      const token = send.token;
+      const amount = BigNumber.from(send.amount);
 
       // Sum valueAmount
+      valueAmount = valueAmount.add(toll);
       if (isEth(token)) {
-        valueAmount = valueAmount.add(toll.add(amount));
-      } else {
-        valueAmount = toll.add(valueAmount);
+        valueAmount = valueAmount.add(amount);
       }
+
       sendData.push({
         receiver: stealthKeyPair.address,
         tokenAddr: token,
@@ -319,7 +275,7 @@ export class Umbra {
     });
 
     // Send transaction
-    const txOverrides = { ...localOverrides, value: valueAmount, gasLimit: 5000000 };
+    const txOverrides = { ...localOverrides, value: valueAmount };
     const tx: ContractTransaction = await this.batchSendContract
       .connect(txSigner)
       .batchSend(toll, sortedData, txOverrides);
@@ -637,6 +593,30 @@ export class Umbra {
     return { spendingKeyPair, viewingKeyPair };
   }
 
+  async prepareSend(recipientId: string, lookupOverrides: SendOverrides = {}) {
+    // Lookup recipient's public key
+    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
+    if (!spendingPublicKey || !viewingPublicKey) {
+      throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
+    }
+    const spendingKeyPair = new KeyPair(spendingPublicKey);
+    const viewingKeyPair = new KeyPair(viewingPublicKey);
+
+    // Generate random number
+    const randomNumber = new RandomNumber();
+
+    // Encrypt random number with recipient's public key
+    const encrypted = viewingKeyPair.encrypt(randomNumber);
+
+    // Get x,y coordinates of ephemeral private key
+    const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
+
+    // Compute stealth address
+    const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
+
+    return { stealthKeyPair, pubKeyXCoordinate, encrypted };
+  }
+
   // ==================================== STATIC HELPER METHODS ====================================
 
   /**
@@ -653,6 +633,12 @@ export class Umbra {
     return stealthFromPrivate.privateKeyHex;
   }
 
+  /**
+   * @notice Helper method to return parsed localOverrides and LookupOverrides
+   * @param overrides Override the gas limit, gas price, nonce, or advanced mode.
+   * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
+   * them from on-chain transaction when true
+   */
   static parseOverrides(overrides: SendOverrides = {}) {
     const localOverrides = { ...overrides }; // avoid mutating the object passed in
     const advanced = localOverrides?.advanced || false;
@@ -818,4 +804,9 @@ async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: st
       throw new Error(`Insufficient balance to complete transfer. ${details}`);
     }
   }
+}
+
+function assertValidStealthAddress(stealthAddress: string) {
+  // Ensure that the stealthKeyPair's address is not on the block list
+  if (blockedStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
 }
