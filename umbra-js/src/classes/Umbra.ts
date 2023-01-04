@@ -212,15 +212,7 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Parse provided overrides
-    const localOverrides = { ...overrides }; // avoid mutating the object passed in
-    const advanced = localOverrides?.advanced || false;
-    const supportPubKey = localOverrides?.supportPubKey || false;
-    const supportTxHash = localOverrides?.supportTxHash || false;
-    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
-
-    delete localOverrides.advanced;
-    delete localOverrides.supportPubKey;
-    delete localOverrides.supportTxHash;
+    const { localOverrides, lookupOverrides } = Umbra.parseOverrides({ ...overrides });
 
     // Lookup recipient's public key
     const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
@@ -271,7 +263,7 @@ export class Umbra {
     }
 
     // Calculate the total amount of each token to be sent
-    let tokenSum = new Map<string, BigNumber>();
+    const tokenSum = new Map<string, BigNumber>();
     for (const send of sends) {
       const token = send.token;
       const amount = BigNumber.from(send.amount);
@@ -289,19 +281,11 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Parse provided overrides
-    const localOverrides = { ...overrides }; // avoid mutating the object passed in
-    const advanced = localOverrides?.advanced || false;
-    const supportPubKey = localOverrides?.supportPubKey || false;
-    const supportTxHash = localOverrides?.supportTxHash || false;
-    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
+    const { localOverrides, lookupOverrides } = Umbra.parseOverrides({ ...overrides });
 
-    delete localOverrides.advanced;
-    delete localOverrides.supportPubKey;
-    delete localOverrides.supportTxHash;
-
-    let sendData: SendData[] = [];
+    const sendData: SendData[] = [];
     let valueAmount: BigNumber = BigNumber.from('0');
-    let stealthKeyPairs: KeyPair[] = [];
+    const stealthKeyPairs: KeyPair[] = [];
 
     for (let i = 0; i < sends.length; i++) {
       // Lookup recipient's public key
@@ -362,10 +346,10 @@ export class Umbra {
     });
 
     // Send transaction
-    let tx: ContractTransaction;
     const txOverrides = { ...localOverrides, value: valueAmount, gasLimit: 5000000 };
-
-    tx = await this.batchSendContract.connect(txSigner).batchSend(toll, sortedData, txOverrides);
+    const tx: ContractTransaction = await this.batchSendContract
+      .connect(txSigner)
+      .batchSend(toll, sortedData, txOverrides);
 
     // We do not wait for the transaction to be mined before returning it
     return { tx, stealthKeyPairs };
@@ -694,6 +678,20 @@ export class Umbra {
       throw new Error('Stealth key pair must have a private key: this should never occur');
     }
     return stealthFromPrivate.privateKeyHex;
+  }
+
+  static parseOverrides(overrides: SendOverrides = {}) {
+    const localOverrides = { ...overrides }; // avoid mutating the object passed in
+    const advanced = localOverrides?.advanced || false;
+    const supportPubKey = localOverrides?.supportPubKey || false;
+    const supportTxHash = localOverrides?.supportTxHash || false;
+    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
+
+    delete localOverrides.advanced;
+    delete localOverrides.supportPubKey;
+    delete localOverrides.supportTxHash;
+
+    return { localOverrides, lookupOverrides };
   }
 
   /**
