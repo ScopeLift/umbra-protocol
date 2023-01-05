@@ -13,6 +13,7 @@ export const filterUserAnnouncements = (
   const userAnnouncements: UserAnnouncement[] = [];
 
   if (!window.Worker) {
+    console.log('no worker');
     // Current browser does not support web worker, so we gracefully degrade the scanning algorithm
     // to former one (i.e. setInterval()).
     const chunk = 10;
@@ -39,6 +40,7 @@ export const filterUserAnnouncements = (
 
     doChunk();
   } else {
+    console.log('with worker');
     // Current browser supports web worker, will will employ multiple workers to collaboratively completing the
     // scanning task. The basic usage of web worker can be found at:
     // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers

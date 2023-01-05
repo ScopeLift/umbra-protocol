@@ -77,7 +77,7 @@
         :grid="$q.screen.xs"
         card-container-class="col q-col-gutter-md"
         :columns="mainTableColumns"
-        :data="formattedAnnouncements"
+        :rows="formattedAnnouncements"
         v-model:expanded="expanded"
         :no-data-label="$t('AccountReceiveTable.account-empty')"
         :pagination="paginationConfig"

@@ -179,7 +179,7 @@ function useScan() {
     try {
       allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
     } catch (e) {
-      scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch anouncements
+      scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
       throw e;
     }
 
@@ -188,7 +188,6 @@ function useScan() {
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
 
-    // TODO: This is what we need to move to the webworker instead of chunking
     filterUserAnnouncements(
       spendingPubKey,
       viewingPrivKey,
