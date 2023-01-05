@@ -242,17 +242,21 @@ export class Umbra {
     const { localOverrides, lookupOverrides } = Umbra.parseOverrides({ ...overrides });
 
     // Prepare data for each send
+    const sendInfo = await Promise.all(
+      sends.map((send) => {
+        return this.prepareSend(send.address, lookupOverrides);
+      })
+    );
+
+    const stealthKeyPairs = sendInfo.map((info) => info.stealthKeyPair);
     const sendData: SendData[] = [];
     let valueAmount = BigNumber.from('0');
-    const stealthKeyPairs: KeyPair[] = [];
 
-    for (const send of sends) {
-      const { stealthKeyPair, pubKeyXCoordinate, encrypted } = await this.prepareSend(send.address, lookupOverrides);
-      assertValidStealthAddress(stealthKeyPair.address);
-
-      stealthKeyPairs.push(stealthKeyPair);
-      const token = send.token;
-      const amount = BigNumber.from(send.amount);
+    sendInfo.map((info, index) => {
+      const receiver = info.stealthKeyPair.address;
+      const token = sends[index].token;
+      const amount = BigNumber.from(sends[index].amount);
+      assertValidStealthAddress(receiver);
 
       // Sum valueAmount
       valueAmount = valueAmount.add(toll);
@@ -261,13 +265,13 @@ export class Umbra {
       }
 
       sendData.push({
-        receiver: stealthKeyPair.address,
+        receiver: receiver,
         tokenAddr: token,
         amount: amount,
-        pkx: pubKeyXCoordinate,
-        ciphertext: encrypted.ciphertext,
+        pkx: info.pubKeyXCoordinate,
+        ciphertext: info.encrypted.ciphertext,
       });
-    }
+    });
 
     // Sort by token addresses
     const sortedData: SendData[] = sendData.sort((n1, n2) => {
