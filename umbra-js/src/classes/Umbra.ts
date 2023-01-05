@@ -27,7 +27,6 @@ import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
-import { UmbraBatchSend as BatchSendContract } from '@umbra/contracts-core/periphery-typechain/UmbraBatchSend';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
@@ -124,7 +123,7 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
 export class Umbra {
   readonly chainConfig: ChainConfig;
   readonly umbraContract: UmbraContract;
-  readonly batchSendContract: BatchSendContract;
+  readonly batchSendContract;
   // Fallback provider, used when a user's provider rejects the transaction. This may happen if the provider from
   // the user's wallet rejects transactions from accounts not associated with that user's wallet (in this case, that
   // means transactions from stealth addresses would be rejected). More info: https://github.com/coinbase/coinbase-wallet-sdk/issues/580
@@ -139,11 +138,7 @@ export class Umbra {
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
     this.umbraContract = new Contract(this.chainConfig.umbraAddress, umbraAbi, provider) as UmbraContract;
-    this.batchSendContract = new Contract(
-      this.chainConfig.batchSendAddress,
-      batchSendAbi,
-      provider
-    ) as BatchSendContract;
+    this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, batchSendAbi, provider);
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
