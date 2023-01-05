@@ -152,12 +152,6 @@ export type RelayerStatusResponse =
   | { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt }
   | ApiError;
 
-export interface SendBatch {
-  address: string;
-  token: TokenInfoExtended | null;
-  amount: string;
-}
-
 // Logger type added to window
 declare global {
   interface Window {

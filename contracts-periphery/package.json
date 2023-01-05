@@ -2,11 +2,20 @@
   "name": "@umbra/contracts-periphery",
   "version": "0.0.1",
   "license": "MIT",
+  "files": [
+    "typechain"
+  ],
   "scripts": {
     "install": "make install",
-    "build": "make build",
+    "build": "make build && yarn run typechain --target ethers-v5 --out-dir ./typechain './out/UmbraBatchSend.sol/UmbraBatchSend.json'",
     "test": "make test",
     "lint": "forge fmt --check",
-    "coverage": "make coverage"
+    "coverage": "make coverage",
+    "prepare": "yarn run typechain --target ethers-v5 --out-dir ./typechain './out/UmbraBatchSend.sol/UmbraBatchSend.json'"
+  },
+  "devDependencies": {
+    "@typechain/ethers-v5": "^10.1.0",
+    "typechain": "^8.1.0",
+    "typescript": "4.5.2"
   }
 }

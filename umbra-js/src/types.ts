@@ -1,5 +1,6 @@
 import {
   BigNumber,
+  BigNumberish,
   ExternalProvider as EthersExternalProvider,
   JsonRpcFetchFunc,
   StaticJsonRpcProvider,
@@ -39,6 +40,7 @@ export interface TransactionResponseExtended extends TransactionResponse {
 export interface ChainConfig {
   chainId: number; // Chain ID of the deployed contract
   umbraAddress: string; // address of Umbra contract
+  batchSendAddress: string; // address of UmbraBatchSend contract
   startBlock: number; // block Umbra contract was deployed at
   subgraphUrl: string | false; // URL of the subgraph used to fetch Announcement events, or false to not use a subgraph
 }
@@ -114,4 +116,18 @@ export interface UserAnnouncement {
   timestamp: string;
   token: string; // token address
   txHash: string;
+}
+
+export interface SendBatch {
+  token: string;
+  amount: BigNumberish;
+  address: string;
+}
+
+export interface SendData {
+  receiver: string;
+  tokenAddr: string;
+  amount: BigNumberish;
+  pkx: string;
+  ciphertext: string;
 }
