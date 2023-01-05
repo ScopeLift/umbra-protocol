@@ -264,10 +264,21 @@ export default function useWalletStore() {
         return;
       }
 
-      // Set Umbra and StealthKeyRegistry classes
-      // We have to use markRaw here to prevent Vue from making our ethers objects into proxies:
-      //   https://github.com/vuejs/core/issues/3024
-      //   https://github.com/dcgtc/dgrants/blob/2732f3107fd497b8c7f6ba7a13fcfb9f9f0e89e9/app/src/store/wallet.ts#L8-L20
+      // Set Umbra and StealthKeyRegistry classes.
+      //
+      // When assigning ethers objects as refs, we must wrap the object in `markRaw` for assignment. This wasn't required
+      // by Vue 2's reactivity system based on Object.defineProperty, but is required for Vue 3's reactivity system based
+      // on ES6 proxies. The Vue 3 reactivity system does not work well with non-configurable, non-writable properties on
+      // objects, and many ethers classes, such as providers and networks, use non-configurable or non-writable properties.
+      // Therefore we wrap the object in `markRaw` to prevent it from being converted to a Proxy. If you do not do this,
+      // you'll see errors like this when using ethers objects as refs:
+      //     Uncaught (in promise) TypeError: 'get' on proxy: property 'interface' is a read-only and non-configurable data
+      //     property on the proxy target but the proxy did not return its actual value (expected '#<Object>' but got
+      //     '[object Object]')
+      // Read more here:
+      //     - https://github.com/vuejs/vue-next/issues/3024
+      //     - https://stackoverflow.com/questions/65693108/threejs-component-working-in-vuejs-2-but-not-3
+      //     - https://v3.vuejs.org/api/basic-reactivity.html#markraw
       umbra.value = markRaw(new Umbra(provider.value, newChainId));
       stealthKeyRegistry.value = markRaw(new StealthKeyRegistry(signer.value));
 
