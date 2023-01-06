@@ -86,11 +86,23 @@ jobs:
       - name: Filter directories
         run: |
           lcov --remove ./lcov.info 'contracts-periphery/test/*' 'contracts-periphery/script/*'
-      - name: Verify coverage level
+
+      # This action is used to fail coverage if the specified coverage threshold is not met.
+      # Although this action can post a comment (when it's `github-token` is specified) the below
+      # step posts a much more useful comment. That below action does not fail CI if a minimum
+      # coverage threshold is not met, which is why we use both in this way.
+      - name: Verify minimum coverage
         uses: zgosalvez/github-actions-report-lcov@v2
         with:
           coverage-files: ./lcov.info
           minimum-coverage: 70 # Set coverage threshold.
+
+      - name: Post coverage report
+        if: always()
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          delete-old-comments: true
+          lcov-file: ./lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }} # Adds a coverage summary comment to the PR.
 
   lint:
