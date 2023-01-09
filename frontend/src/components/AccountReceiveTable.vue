@@ -311,7 +311,7 @@
                 @initializeWithdraw="initializeWithdraw(props.row)"
                 @togglePrivateKey="togglePrivateKey(props.row)"
                 @copyPrivateKey="copyPrivateKey(spendingPrivateKey)"
-                @updateDestinationAddress="destinationAddress = arguments[0]"
+                @updateDestinationAddress="onUpdateDestinationAddress"
                 :destinationAddress="destinationAddress"
                 :isWithdrawn="props.row.isWithdrawn"
                 :isWithdrawInProgress="isWithdrawInProgress"
@@ -540,6 +540,10 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     return getEtherscanUrl(address, chainId);
   }
 
+  function onUpdateDestinationAddress(addr: string) {
+    destinationAddress.value = addr;
+  }
+
   /**
    * @notice Initialize the withdraw process
    * @param announcement Announcement to withdraw
@@ -688,6 +692,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     isLoading,
     isWithdrawInProgress,
     mainTableColumns,
+    onUpdateDestinationAddress,
     openInEtherscan,
     getSenderOrReceiverEtherscanUrl,
     paginationConfig,

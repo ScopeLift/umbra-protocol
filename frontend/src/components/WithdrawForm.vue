@@ -13,7 +13,7 @@
         <div>{{ $t('WithdrawForm.withdraw-address') }}</div>
         <base-input
           v-model="content"
-          @input="emit('updateDestinationAddress', content)"
+          @update:model-value="emitUpdateDestinationAddress"
           @click="
             emit('initializeWithdraw');
             setIsInWithdrawFlow(true);
@@ -126,10 +126,16 @@ export default defineComponent({
     const { setIsInWithdrawFlow, isInWithdrawFlow } = useStatusesStore();
     const content = ref<string>(data.destinationAddress || '');
     const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
+
+    function emitUpdateDestinationAddress(val: string) {
+      emit('updateDestinationAddress', val);
+    }
+
     return {
       formatUnits,
       humanizeTokenAmount,
       emit,
+      emitUpdateDestinationAddress,
       content,
       nativeTokenSymbol,
       isInWithdrawFlow,
