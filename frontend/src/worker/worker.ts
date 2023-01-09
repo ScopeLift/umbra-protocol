@@ -1,7 +1,5 @@
 import { AnnouncementDetail, UserAnnouncement, Umbra } from '@umbra/umbra-js';
 import { getAddress } from 'src/utils/ethers';
-// Here we use `worker-loader` to load worker, remember worker is not a module.
-import Worker from 'worker-loader!./filter.worker';
 
 export const filterUserAnnouncements = (
   spendingPublicKey: string,
@@ -43,7 +41,8 @@ export const filterUserAnnouncements = (
     console.log('with worker');
     // Current browser supports web worker, will will employ multiple workers to collaboratively completing the
     // scanning task. The basic usage of web worker can be found at:
-    // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+    //   - https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+    //   - https://webpack.js.org/guides/web-workers/
     // In a nutshell, this file (worker.ts) will act as a worker controller that controls real workers, including
     // initializing, passing message, receiving message and terminating.
 
@@ -67,7 +66,7 @@ export const filterUserAnnouncements = (
     // Here we will initialize `nCores` workers by constructing `Worker()` imported from worker script `filter.worker.ts`
     for (let index = 0; index < nCores; index++) {
       progressRecorder.push(0);
-      workers.push(new Worker());
+      workers.push(new Worker(new URL('./filter.worker.ts', import.meta.url)));
       // Here we add event listener to each worker to handle the case where it sends message to controller (i.e. worker.ts)
       workers[index].addEventListener('message', function (e: MessageEvent) {
         const worker_id = e.data.worker_id;
