@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, toRefs } from 'vue';
+import { defineComponent, PropType, watch } from 'vue';
 import Jazzicon from 'src/components/Jazzicon.vue';
 
 export default defineComponent({
@@ -22,18 +22,23 @@ export default defineComponent({
     },
   },
   setup: (props) => {
-    if (props.avatar) {
-      // load the avatar image async and display the jazzicon while waiting
-      const avatarImg = new Image();
-      avatarImg.onload = () => {
-        document.querySelector('#jazzicon')?.remove();
-        document.querySelector('#avatar-container')?.appendChild(avatarImg);
-      };
-      avatarImg.id = 'avatar';
-      avatarImg.width = 20;
-      const { avatar } = toRefs(props);
-      avatarImg.src = avatar.value || '';
-    }
+    // We don't have an avatar when the component is first mounted, so we display the jazzicon,
+    // watch the avatar prop for changes, and replace the jazzicon if/when we get an avatar.
+    watch(
+      () => props.avatar,
+      (newAvatar) => {
+        if (newAvatar) {
+          const avatarImg = new Image();
+          avatarImg.onload = () => {
+            document.querySelector('#jazzicon')?.remove();
+            document.querySelector('#avatar-container')?.appendChild(avatarImg);
+          };
+          avatarImg.id = 'avatar';
+          avatarImg.width = 20;
+          avatarImg.src = newAvatar;
+        }
+      }
+    );
   },
 });
 </script>
