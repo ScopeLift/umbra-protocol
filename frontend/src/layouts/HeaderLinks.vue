@@ -1,25 +1,22 @@
 <template>
   <div>
     <router-link
-      active-class="text-bold"
+      exactActiveClass="text-bold"
       :class="{ 'no-text-decoration': true, 'dark-toggle': true, 'text-subtitle1': isDrawer, 'q-pa-sm': isDrawer }"
-      exact
       :to="{ name: 'home' }"
     >
       {{ $t('Header-Links.home') }}
     </router-link>
     <router-link
-      active-class="text-bold"
+      exactActiveClass="text-bold"
       :class="{ 'no-text-decoration': true, 'dark-toggle': true, 'text-subtitle1': isDrawer, 'q-pa-sm': isDrawer }"
-      exact
       :to="{ name: 'FAQ' }"
     >
       {{ $t('Header-Links.FAQ') }}
     </router-link>
     <router-link
-      active-class="text-bold"
+      exactActiveClass="text-bold"
       :class="{ 'no-text-decoration': true, 'dark-toggle': true, 'text-subtitle1': isDrawer, 'q-pa-sm': isDrawer }"
-      exact
       :to="{ name: 'contact' }"
     >
       {{ $t('Header-Links.contact') }}
