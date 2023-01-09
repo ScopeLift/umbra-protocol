@@ -3,10 +3,13 @@ import { createI18n } from 'vue-i18n';
 import messages from 'src/i18n';
 
 export const i18n = createI18n({
-  locale: 'en-US',
-  globalInjection: true,
   fallbackLocale: 'en-US',
+  globalInjection: true,
+  locale: 'en-US',
   messages,
+  // Disable v-html warnings: https://vue-i18n.intlify.dev/guide/migration/breaking.html#change-warnhtmlinmessage-option-default-value
+  warnHtmlInMessage: 'off',
+  warnHtmlMessage: false,
 });
 
 export const { tc } = i18n.global;
