@@ -1,5 +1,6 @@
 import { computed, onMounted, ref } from 'vue';
 import { Dark, LocalStorage } from 'quasar';
+import { isHexString } from 'src/utils/ethers';
 import { i18n } from '../boot/i18n';
 
 // Local storage key names
@@ -87,7 +88,10 @@ export default function useSettingsStore() {
   }
 
   function setScanPrivateKey(key: string) {
-    if (key.length === 64) key = `0x${key}`;
+    const check1 = key === '';
+    const check2 = key.length === 66 && isHexString(key);
+    const isValid = check1 || check2;
+    if (!isValid) throw new Error(`Invalid private key '${key}'`);
     scanPrivateKey.value = key; // we save this in memory for access by components, but do not save it to LocalStorage
   }
 
