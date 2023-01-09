@@ -5,7 +5,8 @@ import { UmbraLogger } from 'components/logger';
 import { ETH_NETWORK_LOGO } from 'src/utils/constants';
 
 export type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
-export { BigNumber, Network, TransactionResponse } from 'src/utils/ethers';
+export { BigNumber } from 'src/utils/ethers';
+export type { Network, TransactionResponse } from 'src/utils/ethers';
 export type Signer = JsonRpcSigner;
 export type Provider = Web3Provider;
 
