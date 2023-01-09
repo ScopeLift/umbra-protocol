@@ -1,6 +1,6 @@
 <template>
   <q-expansion-item
-    :model-value="expanded"
+    :modelValue="expanded"
     class="q-py-sm"
     group="faq"
     header-style="font-size: 1.1em;"

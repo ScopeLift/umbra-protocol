@@ -22,7 +22,7 @@
       :rules="[(val) => rules(val)]"
       @blur="hideHint"
       @focus="showHint"
-      @update:model-value="handleInput"
+      @update:modelValue="handleInput"
     >
       <!-- Show icons when selected or when the slot is provided-->
       <template v-slot:prepend v-if="content && content.logoURI">
@@ -103,6 +103,12 @@ export default defineComponent({
       default: 'ondemand',
     },
 
+    modelValue: {
+      type: undefined,
+      required: true,
+      default: undefined,
+    },
+
     options: {
       type: Array,
       required: true,
@@ -139,17 +145,11 @@ export default defineComponent({
         return true;
       },
     },
-
-    value: {
-      type: undefined,
-      required: true,
-      default: undefined,
-    },
   },
 
   data() {
     return {
-      content: this.value,
+      content: this.modelValue,
       hintString: '',
     };
   },
@@ -159,16 +159,16 @@ export default defineComponent({
      * @notice This is required for two-way binding when programmatically updating the input
      * in the parent component using BaseInput
      */
-    value(val) {
+    modelValue(val) {
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     },
   },
 
-  emits: ['update:model-value'],
+  emits: ['update:modelValue'],
 
   methods: {
     handleInput() {
-      this.$emit('update:model-value', this.content);
+      this.$emit('update:modelValue', this.content);
     },
 
     hideHint() {

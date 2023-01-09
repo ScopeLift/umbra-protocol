@@ -27,7 +27,7 @@
       standout
       @blur="hideHint"
       @focus="showHint"
-      @update:model-value="handleInput"
+      @update:modelValue="handleInput"
     >
       <!--
       If we have a button, never show the loading slot because it makes the button jump left and right when the
@@ -45,7 +45,7 @@
       </template>
       <template v-else-if="counter && !$q.screen.xs" v-slot:append>
         <q-circular-progress
-          :model-value="counter"
+          :value="counter"
           size="2.75rem"
           :color="counter > 100 ? 'negative' : 'primary'"
           show-value
@@ -66,7 +66,7 @@
     />
     <q-circular-progress
       v-else-if="counter && $q.screen.xs"
-      :model-value="counter"
+      :value="counter"
       size="2.75rem"
       :color="counter > 100 ? 'negative' : 'primary'"
       show-value
@@ -168,6 +168,12 @@ export default defineComponent({
       default: 'ondemand',
     },
 
+    modelValue: {
+      type: undefined,
+      required: true,
+      default: undefined,
+    },
+
     placeholder: {
       type: undefined,
       required: false,
@@ -199,17 +205,11 @@ export default defineComponent({
       required: false,
       default: true,
     },
-
-    value: {
-      type: undefined,
-      required: true,
-      default: undefined,
-    },
   },
 
   data() {
     return {
-      content: this.value,
+      content: this.modelValue,
       hintString: '',
     };
   },
@@ -219,12 +219,12 @@ export default defineComponent({
      * @notice This is required for two-way binding when programtically updating the input
      * in the parent component using BaseInput
      */
-    value(val) {
+    modelValue(val) {
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     },
   },
 
-  emits: ['blur', 'click', 'update:model-value'],
+  emits: ['blur', 'click', 'update:modelValue'],
 
   methods: {
     handleClick() {
@@ -232,7 +232,7 @@ export default defineComponent({
     },
 
     handleInput() {
-      this.$emit('update:model-value', this.content);
+      this.$emit('update:modelValue', this.content);
     },
 
     hideHint() {
