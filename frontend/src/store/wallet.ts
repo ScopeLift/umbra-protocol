@@ -73,7 +73,8 @@ const avatar = ref<string | null>('');
 // A few parts of state are exported directly under an alias, so that they can be accessed in TS
 // files without running the `onMounted` hook below, since lifecycle injection APIs can only be
 // used during execution of setup(), so importing `useWalletStore` in TS files would throw an error.
-// These properties must be updated manually as they are not reactive.
+// These properties must be updated manually as they are not reactive. We refresh the page on
+// network change, so this is ok, but if that ever changes we'll need to modify this.
 export let providerExport = provider.value;
 export let relayerExport = relayer.value;
 export let tokensExport: TokenInfoExtended[] = [];

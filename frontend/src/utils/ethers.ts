@@ -14,13 +14,7 @@ export { namehash } from '@ethersproject/hash';
 export { keccak256 } from '@ethersproject/keccak256';
 export { Logger, LogLevel } from '@ethersproject/logger';
 export { JsonRpcSigner, StaticJsonRpcProvider, Web3Provider } from '@ethersproject/providers';
-export type {
-  Block,
-  ExternalProvider,
-  Network,
-  TransactionReceipt,
-  TransactionResponse,
-} from '@ethersproject/providers';
+export type { Block, ExternalProvider, Network, TransactionReceipt, TransactionResponse, } from '@ethersproject/providers'; // prettier-ignore
 export { toUtf8Bytes } from '@ethersproject/strings';
 export { computeAddress } from '@ethersproject/transactions';
 export { parseUnits, formatUnits } from '@ethersproject/units';
