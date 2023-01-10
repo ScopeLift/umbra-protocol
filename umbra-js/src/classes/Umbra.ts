@@ -32,7 +32,7 @@ import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
-const umbraAbi = [
+const umbraAbi: ContractInterface = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
   'event Announcement(address indexed receiver, uint256 amount, address indexed token, bytes32 pkx, bytes32 ciphertext)',
   'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
@@ -151,11 +151,7 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(
-      this.chainConfig.umbraAddress,
-      umbraAbi as unknown as ContractInterface,
-      provider
-    ) as UmbraContract;
+    this.umbraContract = new Contract(this.chainConfig.umbraAddress, umbraAbi, provider) as UmbraContract;
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );

@@ -107,7 +107,7 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   const rawTx = serializeTransaction(resolvedTx);
   const msgHash = keccak256(rawTx);
 
-  // Recover sender's public key
+  // Recover sender's public key.
   // Even though the type definitions say v,r,s are optional, they will always be defined: https://github.com/ethers-io/ethers.js/issues/1181
   const signature = new Signature(BigInt(tx.r!), BigInt(tx.s!));
   signature.assertValidity();
