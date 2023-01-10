@@ -24,7 +24,7 @@
 
       <div @click="copyUrl" id="can-you-walk-me-through-an-example">
         <f-a-q-item :expanded="selectedId === 'can-you-walk-me-through-an-example'" :question="$t('FAQ.an-example')">
-          <div v-html="$t('FAQ.an-exmaple-answer')"></div>
+          <div v-html="$t('FAQ.an-example-answer')"></div>
         </f-a-q-item>
       </div>
 
@@ -39,7 +39,7 @@
           <div v-html="$t('FAQ.how-does-it-work-answer')"></div>
           <i18n-t scope="global" keypath="FAQ.how-does-it-work-see-the" tag="p">
             <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')">{{
-              $t('FAQ.how-does-it-work-technical-dtails')
+              $t('FAQ.how-does-it-work-technical-details')
             }}</span>
           </i18n-t>
         </f-a-q-item>
@@ -251,7 +251,7 @@
                 href="https://github.com/ScopeLift/umbra-protocol/tree/master/umbra-js"
                 target="_blank"
                 >{{ $t('FAQ.audit-library') }}</a
-              >
+              >&mdash;
             </template>
             <template v-slot:here>
               <a

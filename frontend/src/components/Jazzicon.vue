@@ -7,7 +7,7 @@ import { defineComponent, onMounted } from 'vue';
 import jazzicon from '@metamask/jazzicon';
 
 export default defineComponent({
-  name: 'Jazzicon-Component',
+  name: 'JazziconComponent',
   props: {
     address: { type: String, required: true },
   },

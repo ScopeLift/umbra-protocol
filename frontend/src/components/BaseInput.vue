@@ -216,7 +216,7 @@ export default defineComponent({
 
   watch: {
     /**
-     * @notice This is required for two-way binding when programtically updating the input
+     * @notice This is required for two-way binding when programmatically updating the input
      * in the parent component using BaseInput
      */
     modelValue(val) {
