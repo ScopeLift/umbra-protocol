@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import hardhatConfig from '../hardhat.config';
 import { Umbra } from '../src/classes/Umbra';
-import { BigNumberish, BigNumber, StaticJsonRpcProvider, Wallet } from '../src/ethers';
+import { BigNumberish, BigNumber, StaticJsonRpcProvider, Wallet, Contract } from '../src/ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
 import { expect } from 'chai';
@@ -15,6 +15,7 @@ import {
   UmbraFactory as Umbra__factory,
 } from '@umbra/contracts-core/typechain';
 
+const { abi: batchSendAbi } = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
 const jsonRpcProvider = new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
@@ -67,6 +68,7 @@ describe('Umbra class', () => {
     const umbraFactory = new Umbra__factory(deployer);
     const umbraContract = (await umbraFactory.deploy(toll, tollCollector, tollReceiver)) as UmbraContract;
     await umbraContract.deployTransaction.wait();
+    const batchSendContract = new Contract('0x0d81Df222BB44b883265538586829715CF157163', batchSendAbi, ethersProvider);
 
     // Deploy mock tokens
     const daiFactory = new ERC20__factory(deployer);
@@ -78,6 +80,7 @@ describe('Umbra class', () => {
     chainConfig = {
       chainId: (await ethersProvider.getNetwork()).chainId,
       umbraAddress: umbraContract.address,
+      batchSendAddress: batchSendContract.address,
       startBlock: lastBlockNumber,
       subgraphUrl: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
     };
@@ -92,6 +95,7 @@ describe('Umbra class', () => {
       const umbra1 = new Umbra(jsonRpcProvider, chainConfig);
       expect(umbra1.provider._isProvider).to.be.true;
       expect(umbra1.chainConfig.umbraAddress).to.equal(chainConfig.umbraAddress);
+      expect(umbra1.chainConfig.batchSendAddress).to.equal(chainConfig.batchSendAddress);
       expect(umbra1.chainConfig.startBlock).to.equal(chainConfig.startBlock);
       expect(umbra1.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
 
@@ -99,6 +103,7 @@ describe('Umbra class', () => {
       const umbra2 = new Umbra(ethersProvider, chainConfig);
       expect(umbra2.provider._isProvider).to.be.true;
       expect(umbra2.chainConfig.umbraAddress).to.equal(chainConfig.umbraAddress);
+      expect(umbra2.chainConfig.batchSendAddress).to.equal(chainConfig.batchSendAddress);
       expect(umbra2.chainConfig.startBlock).to.equal(chainConfig.startBlock);
       expect(umbra2.chainConfig.subgraphUrl).to.equal(chainConfig.subgraphUrl);
     });
@@ -108,42 +113,49 @@ describe('Umbra class', () => {
       // URL provider
       const umbra1 = new Umbra(jsonRpcProvider, 1337);
       expect(umbra1.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra1.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra1.chainConfig.startBlock).to.equal(8505089);
       expect(umbra1.chainConfig.subgraphUrl).to.equal(false);
 
       // Web3 provider
       const umbra2 = new Umbra(ethersProvider, 1337);
       expect(umbra2.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra2.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra2.chainConfig.startBlock).to.equal(8505089);
       expect(umbra2.chainConfig.subgraphUrl).to.equal(false);
 
       // --- Goerli ---
       const umbra3 = new Umbra(jsonRpcProvider, 5);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra3.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra3.chainConfig.startBlock).to.equal(7718444);
       expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli');
 
       // --- Mainnet ---
       const umbra4 = new Umbra(jsonRpcProvider, 1);
       expect(umbra4.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra4.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra4.chainConfig.startBlock).to.equal(12343914);
       expect(umbra4.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet');
 
       // --- Optimism ---
       const umbra5 = new Umbra(jsonRpcProvider, 10);
       expect(umbra5.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra5.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra5.chainConfig.startBlock).to.equal(4069556);
       expect(umbra5.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbraoptimism'); // prettier-ignore
 
       // --- Polygon ---
       const umbra6 = new Umbra(jsonRpcProvider, 137);
       expect(umbra6.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra6.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra6.chainConfig.startBlock).to.equal(20717318);
       expect(umbra6.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon');
 
       // --- Arbitrum ---
       const umbra7 = new Umbra(jsonRpcProvider, 42161);
       expect(umbra7.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra7.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra7.chainConfig.startBlock).to.equal(7285883);
       expect(umbra7.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone'); // prettier-ignore
     });
