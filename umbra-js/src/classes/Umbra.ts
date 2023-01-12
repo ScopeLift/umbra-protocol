@@ -244,28 +244,23 @@ export class Umbra {
     );
 
     const stealthKeyPairs = sendInfo.map((info) => info.stealthKeyPair);
-    const sendData: SendData[] = [];
-    let valueAmount = BigNumber.from('0');
+    const valueAmount = toll
+      .mul(sendInfo.length)
+      .add(tokenSum.get('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') || BigNumber.from('0'));
 
-    sendInfo.map((info, index) => {
+    const sendData: SendData[] = sendInfo.map((info, index) => {
       const receiver = info.stealthKeyPair.address;
       const token = sends[index].token;
       const amount = BigNumber.from(sends[index].amount);
       assertValidStealthAddress(receiver);
 
-      // Sum valueAmount
-      valueAmount = valueAmount.add(toll);
-      if (isEth(token)) {
-        valueAmount = valueAmount.add(amount);
-      }
-
-      sendData.push({
+      return {
         receiver: receiver,
         tokenAddr: token,
         amount: amount,
         pkx: info.pubKeyXCoordinate,
         ciphertext: info.encrypted.ciphertext,
-      });
+      };
     });
 
     // Sort by token addresses
