@@ -31,7 +31,29 @@ import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
-const { abi: umbraAbi } = require('@umbra/contracts-core/artifacts/contracts/Umbra.sol/Umbra.json');
+const umbraAbi = [
+  'constructor(uint256 toll, address tollCollector, address tollReceiver)',
+  'event Announcement(address indexed receiver, uint256 amount, address indexed token, bytes32 pkx, bytes32 ciphertext)',
+  'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
+  'event TokenWithdrawal(address indexed receiver, address indexed acceptor, uint256 amount, address indexed token)',
+  'function collectTolls()',
+  'function owner() view returns (address)',
+  'function renounceOwnership()',
+  'function sendEth(address receiver, uint256 tollCommitment, bytes32 pkx, bytes32 ciphertext) payable',
+  'function sendToken(address receiver, address tokenAddr, uint256 amount, bytes32 pkx, bytes32 ciphertext) payable',
+  'function setToll(uint256 newToll)',
+  'function setTollCollector(address newTollCollector)',
+  'function setTollReceiver(address newTollReceiver)',
+  'function tokenPayments(address, address) view returns (uint256)',
+  'function toll() view returns (uint256)',
+  'function tollCollector() view returns (address)',
+  'function tollReceiver() view returns (address)',
+  'function transferOwnership(address newOwner)',
+  'function withdrawToken(address acceptor, address tokenAddr)',
+  'function withdrawTokenAndCall(address acceptor, address tokenAddr, address hook, bytes data)',
+  'function withdrawTokenAndCallOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, address hook, bytes data, uint8 v, bytes32 r, bytes32 s)',
+  'function withdrawTokenOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, uint8 v, bytes32 r, bytes32 s)',
+];
 const { abi: batchSendAbi } = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
 
 // Mapping from chainId to contract information
