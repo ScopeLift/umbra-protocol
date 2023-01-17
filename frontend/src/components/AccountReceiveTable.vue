@@ -81,7 +81,6 @@
         v-model:expanded="expanded"
         :no-data-label="$t('AccountReceiveTable.account-empty')"
         :pagination="paginationConfig"
-        v-model:pagination="paginationConfig"
         row-key="randomNumber"
         :title="$t('AccountReceiveTable.received-funds')"
       >
