@@ -76,7 +76,7 @@ export const supportedChains: Array<Chain> = [
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
-      symbol: 'OETH',
+      symbol: 'ETH',
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
@@ -106,7 +106,7 @@ export const supportedChains: Array<Chain> = [
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
-      symbol: 'AETH',
+      symbol: 'ETH',
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
