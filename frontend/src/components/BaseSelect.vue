@@ -34,7 +34,7 @@
 
       <!-- Show icons in dropdown list -->
       <template v-slot:option="scope">
-        <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
+        <q-item v-bind="scope.itemProps" v-on="scope.itemProps">
           <q-item-section avatar v-if="scope.opt.logoURI">
             <img class="horizontal-center" :src="scope.opt.logoURI" style="height: 1.5rem" />
           </q-item-section>
