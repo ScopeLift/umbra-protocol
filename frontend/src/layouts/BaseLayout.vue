@@ -1,243 +1,259 @@
 <template>
-  <q-layout view="hhh lpr ffr" style="z-index: 0">
-    <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
-      <div class="column all-content-format">
-        <!-- Main header -->
-        <div class="row justify-between items-center no-wrap">
-          <div class="col-sm-auto">
-            <div class="row justify-start items-center">
-              <!-- LOGO AND TITLE -->
-              <div class="row items-center cursor-pointer">
-                <div class="row items-center">
-                  <img
-                    @click="$router.push({ name: 'home' })"
-                    alt="Umbra logo"
-                    src="~assets/app-logo-128x128.png"
-                    style="max-width: 50px"
-                    class="q-ml-md"
-                  />
-                  <div v-if="$q.screen.gt.sm" @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
-                    <span class="primary header-black q-ml-md">Umbra</span>
-                  </div>
-                  <div v-else-if="$q.screen.xs">
-                    <div v-if="isLoading" class="q-ml-md row">
-                      <q-spinner color="primary" size="1em" />
+  <div>
+    <div class="alert-banner text-bold text-center q-py-md">
+      Umbra is part of Gitcoin's Alpha matching round. Please consider
+      <a
+        class="alert-banner-hyperlink"
+        href="https://grant-explorer.gitcoin.co/#/round/1/0xd95a1969c41112cee9a2c931e849bcef36a16f4c/0x9fb5b0d0698dc64cbd3a01c5205ebc5ef609e7d20c21ce20ee2c73905a8309a0-0xd95a1969c41112cee9a2c931e849bcef36a16f4c"
+        target="_blank"
+      >
+        supporting
+      </a>
+      development.
+      <a class="alert-banner-hyperlink" href="https://twitter.com/UmbraCash/status/1615833060385370112" target="_blank">
+        Learn more.
+      </a>
+    </div>
+    <q-layout view="hhh lpr ffr" style="z-index: 0">
+      <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
+        <div class="column all-content-format">
+          <!-- Main header -->
+          <div class="row justify-between items-center no-wrap">
+            <div class="col-sm-auto">
+              <div class="row justify-start items-center">
+                <!-- LOGO AND TITLE -->
+                <div class="row items-center cursor-pointer">
+                  <div class="row items-center">
+                    <img
+                      @click="$router.push({ name: 'home' })"
+                      alt="Umbra logo"
+                      src="~assets/app-logo-128x128.png"
+                      style="max-width: 50px"
+                      class="q-ml-md"
+                    />
+                    <div v-if="$q.screen.gt.sm" @click="$router.push({ name: 'home' })" class="text-h5 dark-toggle">
+                      <span class="primary header-black q-ml-md">Umbra</span>
                     </div>
-                    <address-settings
-                      v-else-if="!isLoading && (userDisplayName || network)"
-                      :avatar="avatar"
-                      :userAddress="userAddress"
-                      :userDisplayName="userDisplayName"
-                      :advancedMode="advancedMode"
-                      class="q-ml-md row"
+                    <div v-else-if="$q.screen.xs">
+                      <div v-if="isLoading" class="q-ml-md row">
+                        <q-spinner color="primary" size="1em" />
+                      </div>
+                      <address-settings
+                        v-else-if="!isLoading && (userDisplayName || network)"
+                        :avatar="avatar"
+                        :userAddress="userAddress"
+                        :userDisplayName="userDisplayName"
+                        :advancedMode="advancedMode"
+                        class="q-ml-md row"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- NAVIGATION LINKS -->
+                  <div v-if="!$q.screen.xs">
+                    <header-links
+                      :class="{
+                        col: true,
+                        'justify-center': true,
+                        'q-ml-xs': true,
+                        'q-col-gutter-x-xl': $q.screen.gt.sm,
+                        'q-col-gutter-x-md': $q.screen.lt.md,
+                      }"
                     />
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <!-- NAVIGATION LINKS -->
-                <div v-if="!$q.screen.xs">
-                  <header-links
-                    :class="{
-                      col: true,
-                      'justify-center': true,
-                      'q-ml-xs': true,
-                      'q-col-gutter-x-xl': $q.screen.gt.sm,
-                      'q-col-gutter-x-md': $q.screen.lt.md,
-                    }"
+            <!-- HAMBURGER MENU -->
+            <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
+            <!-- ADDRESS AND SETTINGS AND NETWORK SELECTOR -->
+            <div v-else class="col-sm-auto">
+              <div v-if="isLoading" class="row justify-end items-center">
+                <q-spinner color="primary" size="1em" />
+              </div>
+              <div v-else-if="!isLoading && (userDisplayName || network)" class="row justify-end items-center no-wrap">
+                <div class="q-mr-md">
+                  <address-settings
+                    :avatar="avatar"
+                    :userAddress="userAddress"
+                    :userDisplayName="userDisplayName"
+                    :advancedMode="advancedMode"
+                    class="row"
                   />
                 </div>
+                <network-dropdown />
               </div>
+              <connect-wallet v-else-if="!isLoading">
+                <div class="row justify-end items-center">
+                  <connect-wallet>
+                    <base-button
+                      class="cursor-pointer"
+                      color="primary"
+                      label="Connect a wallet"
+                      :outline="true"
+                      :rounded="true"
+                    />
+                  </connect-wallet>
+                </div>
+              </connect-wallet>
             </div>
           </div>
-
-          <!-- HAMBURGER MENU -->
-          <q-btn v-if="$q.screen.xs" flat @click="drawerRight = !drawerRight" icon="fas fa-bars" class="darkgrey" />
-          <!-- ADDRESS AND SETTINGS AND NETWORK SELECTOR -->
-          <div v-else class="col-sm-auto">
-            <div v-if="isLoading" class="row justify-end items-center">
-              <q-spinner color="primary" size="1em" />
-            </div>
-            <div v-else-if="!isLoading && (userDisplayName || network)" class="row justify-end items-center no-wrap">
-              <div class="q-mr-md">
-                <address-settings
-                  :avatar="avatar"
-                  :userAddress="userAddress"
-                  :userDisplayName="userDisplayName"
-                  :advancedMode="advancedMode"
-                  class="row"
-                />
-              </div>
-              <network-dropdown />
-            </div>
-            <connect-wallet v-else-if="!isLoading">
-              <div class="row justify-end items-center">
-                <connect-wallet>
-                  <base-button
-                    class="cursor-pointer"
-                    color="primary"
-                    label="Connect a wallet"
-                    :outline="true"
-                    :rounded="true"
-                  />
-                </connect-wallet>
-              </div>
-            </connect-wallet>
+          <!-- Legacy warning -->
+          <div
+            v-if="!isAccountSetup && isAccountSetupLegacy"
+            class="dark-toggle text-center text-bold q-my-md q-pa-md"
+            style="border-radius: 15px"
+            :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
+          >
+            🚨🚨🚨 We've upgraded our name resolution system. Use the
+            <router-link class="hyperlink" :to="{ name: 'setup' }">Setup</router-link> page to submit one transaction
+            which migrates you to the updated system. You won't be able to receive Umbra transactions until you've done
+            so.
+            <router-link class="hyperlink" :to="{ path: '/faq#why-do-i-need-to-setup-my-account-again' }"
+              >Learn more</router-link
+            >. 🚨🚨🚨
           </div>
         </div>
-        <!-- Legacy warning -->
-        <div
-          v-if="!isAccountSetup && isAccountSetupLegacy"
-          class="dark-toggle text-center text-bold q-my-md q-pa-md"
-          style="border-radius: 15px"
-          :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
-        >
-          🚨🚨🚨 We've upgraded our name resolution system. Use the
-          <router-link class="hyperlink" :to="{ name: 'setup' }">Setup</router-link> page to submit one transaction
-          which migrates you to the updated system. You won't be able to receive Umbra transactions until you've done
-          so.
-          <router-link class="hyperlink" :to="{ path: '/faq#why-do-i-need-to-setup-my-account-again' }"
-            >Learn more</router-link
-          >. 🚨🚨🚨
+      </q-header>
+
+      <!-- Mobile drawer -->
+      <q-drawer side="right" v-model="drawerRight" behavior="mobile" elevated :width="200" class="bg-grey-3">
+        <div class="row justify-end">
+          <q-btn
+            v-if="$q.screen.xs"
+            flat
+            @click="drawerRight = !drawerRight"
+            icon="fas fa-times"
+            class="q-mt-md q-pr-md darkgrey"
+            style="height: 50px"
+          />
         </div>
-      </div>
-    </q-header>
+        <div class="col q-col-gutter-y-sm q-px-md">
+          <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
+        </div>
+        <div v-if="!isLoading && userDisplayName" class="row q-pt-sm q-px-md full-width">
+          <network-dropdown />
+        </div>
+        <connect-wallet v-else-if="!isLoading">
+          <base-button
+            class="q-ml-md cursor-pointer"
+            color="primary"
+            label="Connect a wallet"
+            :outline="true"
+            :rounded="true"
+          />
+        </connect-wallet>
+      </q-drawer>
 
-    <!-- Mobile drawer -->
-    <q-drawer side="right" v-model="drawerRight" behavior="mobile" elevated :width="200" class="bg-grey-3">
-      <div class="row justify-end">
-        <q-btn
-          v-if="$q.screen.xs"
-          flat
-          @click="drawerRight = !drawerRight"
-          icon="fas fa-times"
-          class="q-mt-md q-pr-md darkgrey"
-          style="height: 50px"
-        />
-      </div>
-      <div class="col q-col-gutter-y-sm q-px-md">
-        <header-links :isDrawer="true" class="column q-col-gutter-y-sm" />
-      </div>
-      <div v-if="!isLoading && userDisplayName" class="row q-pt-sm q-px-md full-width">
-        <network-dropdown />
-      </div>
-      <connect-wallet v-else-if="!isLoading">
-        <base-button
-          class="q-ml-md cursor-pointer"
-          color="primary"
-          label="Connect a wallet"
-          :outline="true"
-          :rounded="true"
-        />
-      </connect-wallet>
-    </q-drawer>
+      <q-page-container>
+        <router-view />
+      </q-page-container>
 
-    <q-page-container>
-      <router-view />
-    </q-page-container>
+      <q-footer class="q-mx-md q-mb-md q-pt-xl" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
+        <div class="row self-start justify-between all-content-format">
+          <!-- Column 1: User settings -->
+          <div class="col-xs-12 col-sm-4 q-mt-lg">
+            <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.settings') }}</p>
+            <!-- Dark mode toggle -->
+            <p class="dark-toggle">
+              <q-icon v-if="!$q.dark.isActive" @click="toggleDarkMode" class="cursor-pointer icon" name="fas fa-moon" />
+              <q-icon v-else @click="toggleDarkMode" class="dark-toggle cursor-pointer icon" name="fas fa-sun" />
+              <span class="text-caption q-ml-md"
+                >{{ $t('Base-Layout.dark-mode') }}
+                {{ $q.dark.isActive ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
+              >
+            </p>
 
-    <q-footer class="q-mx-md q-mb-md q-pt-xl" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
-      <div class="row self-start justify-between all-content-format">
-        <!-- Column 1: User settings -->
-        <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.settings') }}</p>
-          <!-- Dark mode toggle -->
-          <p class="dark-toggle">
-            <q-icon v-if="!$q.dark.isActive" @click="toggleDarkMode" class="cursor-pointer icon" name="fas fa-moon" />
-            <q-icon v-else @click="toggleDarkMode" class="dark-toggle cursor-pointer icon" name="fas fa-sun" />
-            <span class="text-caption q-ml-md"
-              >{{ $t('Base-Layout.dark-mode') }}
-              {{ $q.dark.isActive ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
-            >
-          </p>
-
-          <!-- Advanced mode toggle -->
-          <p>
-            <q-toggle
-              @input="toggleAdvancedMode"
-              :value="advancedMode"
-              class="icon"
-              color="primary"
+            <!-- Advanced mode toggle -->
+            <p>
+              <q-toggle
+                @input="toggleAdvancedMode"
+                :value="advancedMode"
+                class="icon"
+                color="primary"
+                dense
+                icon="fas fa-cog"
+              />
+              <span class="dark-toggle text-caption q-ml-md"
+                >{{ $t('Base-Layout.advanced-mode') }}
+                {{ advancedMode ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
+              >
+              <span>
+                <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+                  {{ $t('Base-Layout.advanced-mode-description') }}
+                  <span class="text-bold">{{ $t('Base-Layout.caution') }}</span>
+                </base-tooltip>
+              </span>
+            </p>
+            <!-- Language selection -->
+            <base-select
+              class="language-selector"
+              v-model="currentLanguage"
+              @input="setLanguage(currentLanguage)"
               dense
-              icon="fas fa-cog"
-            />
-            <span class="dark-toggle text-caption q-ml-md"
-              >{{ $t('Base-Layout.advanced-mode') }}
-              {{ advancedMode ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
-            >
-            <span>
-              <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
-                {{ $t('Base-Layout.advanced-mode-description') }}
-                <span class="text-bold">{{ $t('Base-Layout.caution') }}</span>
-              </base-tooltip>
-            </span>
-          </p>
-          <!-- Language selection -->
-          <base-select
-            class="language-selector"
-            v-model="currentLanguage"
-            @input="setLanguage(currentLanguage)"
-            dense
-            options-dense="true"
-            :filled="false"
-            :hideBottomSpace="true"
-            outlined
-            label="Language"
-            :options="supportedLanguages"
-            option-label="label"
-            rounded
-          ></base-select>
-        </div>
+              options-dense="true"
+              :filled="false"
+              :hideBottomSpace="true"
+              outlined
+              label="Language"
+              :options="supportedLanguages"
+              option-label="label"
+              rounded
+            ></base-select>
+          </div>
 
-        <!-- Column 2: Built by ScopeLift -->
-        <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.about') }}</p>
-          <i18n path="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
-            <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
-          </i18n>
-          <p class="">
-            <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
-          </p>
-          <p class="">
-            <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">Privacy Policy</router-link>
-          </p>
-        </div>
+          <!-- Column 2: Built by ScopeLift -->
+          <div class="col-xs-12 col-sm-4 q-mt-lg">
+            <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.about') }}</p>
+            <i18n path="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
+              <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
+            </i18n>
+            <p class="">
+              <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
+            </p>
+            <p class="">
+              <router-link class="hyperlink text-caption" :to="{ name: 'privacy' }">Privacy Policy</router-link>
+            </p>
+          </div>
 
-        <!-- Column 3: Links -->
-        <div class="col-xs-12 col-sm-4 q-mt-lg">
-          <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.links') }}</p>
-          <p>
-            <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
-              <q-icon class="dark-toggle q-mr-md" name="fab fa-twitter" size="xs" />
-              <span class="hyperlink text-caption">Twitter</span>
-            </a>
-          </p>
-          <p>
-            <a href="https://discord.com/invite/uw4y5J2p7C" target="_blank" class="no-text-decoration">
-              <q-icon class="dark-toggle q-mr-md" name="fab fa-discord" size="xs" />
-              <span class="hyperlink text-caption">Discord</span>
-            </a>
-          </p>
-          <p>
-            <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="no-text-decoration">
-              <q-icon class="dark-toggle q-mr-md" name="fab fa-github" size="xs" />
-              <span class="hyperlink text-caption">GitHub</span>
-            </a>
-          </p>
-          <p>
-            <a href="mailto:support@umbra.cash" target="_blank" class="no-text-decoration">
-              <q-icon class="dark-toggle q-mr-md" name="fas fa-envelope" size="xs" />
-              <span class="hyperlink text-caption">support@umbra.cash</span>
-            </a>
-          </p>
+          <!-- Column 3: Links -->
+          <div class="col-xs-12 col-sm-4 q-mt-lg">
+            <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.links') }}</p>
+            <p>
+              <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
+                <q-icon class="dark-toggle q-mr-md" name="fab fa-twitter" size="xs" />
+                <span class="hyperlink text-caption">Twitter</span>
+              </a>
+            </p>
+            <p>
+              <a href="https://discord.com/invite/uw4y5J2p7C" target="_blank" class="no-text-decoration">
+                <q-icon class="dark-toggle q-mr-md" name="fab fa-discord" size="xs" />
+                <span class="hyperlink text-caption">Discord</span>
+              </a>
+            </p>
+            <p>
+              <a href="https://github.com/ScopeLift/umbra-protocol" target="_blank" class="no-text-decoration">
+                <q-icon class="dark-toggle q-mr-md" name="fab fa-github" size="xs" />
+                <span class="hyperlink text-caption">GitHub</span>
+              </a>
+            </p>
+            <p>
+              <a href="mailto:support@umbra.cash" target="_blank" class="no-text-decoration">
+                <q-icon class="dark-toggle q-mr-md" name="fas fa-envelope" size="xs" />
+                <span class="hyperlink text-caption">support@umbra.cash</span>
+              </a>
+            </p>
+          </div>
         </div>
-      </div>
-    </q-footer>
+      </q-footer>
 
-    <!-- Argent warning modal -->
-    <q-dialog v-model="showArgentModal">
-      <argent-warning-modal @acknowledged="argentModalDismissed = true" class="q-pa-lg" />
-    </q-dialog>
-  </q-layout>
+      <!-- Argent warning modal -->
+      <q-dialog v-model="showArgentModal">
+        <argent-warning-modal @acknowledged="argentModalDismissed = true" class="q-pa-lg" />
+      </q-dialog>
+    </q-layout>
+  </div>
 </template>
 
 <script lang="ts">
