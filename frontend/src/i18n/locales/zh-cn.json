@@ -11,7 +11,9 @@
       "sending-funds": "发送资金",
       "send-first": "获取您要向其汇款的人员的地址、ENS 或 CNS 姓名",
       "send-second": "填写<span class=\"text-bold\">发送</span>页面上的表单"
-    }
+    },
+    "banner": "Umbra正在Gitcoin Alpha轮里匹配捐赠。请考虑{0}。了解更多。",
+    "banner-link": "支持开发"
   },
   "Home-action-card": {
     "send": "发送",
