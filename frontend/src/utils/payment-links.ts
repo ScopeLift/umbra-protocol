@@ -3,7 +3,7 @@ import { TokenInfoExtended } from 'components/models';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 import { providerExport as provider, relayerExport as relayer, tokensExport as tokens } from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
-import { StaticJsonRpcProvider } from 'src/utils/ethers';
+import { BigNumber, StaticJsonRpcProvider } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 
 /**
@@ -72,18 +72,30 @@ export async function parsePaymentLink(nativeToken: TokenInfoExtended) {
     amount: null,
   };
 
-  // Parse query parameters
+  // First we assign the `to` and `amount` fields.
   const params = new URLSearchParams(window.location.search);
-  for (const [key, value] of params) {
-    // For `to` and `amount`, assign them directly
-    if (key === 'to' || key === 'amount') {
-      paymentData[key] = value;
-      continue;
-    }
+  paymentData['to'] = params.get('to');
+  paymentData['amount'] = params.get('amount');
 
-    // Otherwise, parse the token symbol into it's TokenInfoExtended object
-    const tokens = await getTokens(nativeToken); // get list of supported tokens
-    paymentData['token'] = tokens.filter((token) => token.symbol.toLowerCase() === value.toLowerCase())[0];
+  // If no `token` symbol was given, we can return with the payment data.
+  let tokenSymbol = params.get('token')?.toLowerCase();
+  if (!tokenSymbol) return paymentData;
+
+  // Parsing the `token` symbol has some additional logic.
+  const tokens = await getTokens(nativeToken); // Get list of supported tokens.
+  const chainId = BigNumber.from(nativeToken.chainId || 1).toNumber();
+
+  if (tokenSymbol === 'eth' && chainId === 137) {
+    // If the token is ETH, and we're on Polygon, use WETH, since the native token is MATIC.
+    tokenSymbol = 'weth';
+    paymentData['token'] = tokens.filter((token) => token.symbol.toLowerCase() === tokenSymbol)[0];
+  } else if (tokenSymbol === 'matic' && chainId !== 137) {
+    // If the token is MATIC, and we're not on polygon, clear token and amount.
+    paymentData['token'] = null;
+    paymentData['amount'] = null;
+  } else {
+    // Otherwise, find the matching `TokenInfoExtended` object
+    paymentData['token'] = tokens.filter((token) => token.symbol.toLowerCase() === tokenSymbol)[0];
   }
 
   return paymentData;

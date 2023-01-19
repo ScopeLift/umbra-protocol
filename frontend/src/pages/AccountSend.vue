@@ -335,10 +335,17 @@ function useSendForm() {
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
     // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
     // async validation rules
-    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, tokenList],
+    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, NATIVE_TOKEN],
     async (
-      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue],
-      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue]
+      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue, nativeTokenValue],
+      [
+        prevIsLoadingValue,
+        prevUseNormalPubKey,
+        prevRecipientIdValue,
+        prevTokenValue,
+        prevHumanAmountValue,
+        prevNativeTokenValue,
+      ]
     ) => {
       // Fetch toll
       toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
@@ -363,13 +370,8 @@ function useSendForm() {
         advancedAcknowledged.value = false;
       }
 
-      // Reset token and amount if token is not supported on the network
-      if (
-        tokenList.value.length &&
-        !tokenList.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfoExtended)?.symbol)
-      ) {
-        token.value = tokenList.value[0];
-        humanAmount.value = undefined;
+      if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId) {
+        await setPaymentLinkData();
       }
 
       // Revalidates form
@@ -390,7 +392,10 @@ function useSendForm() {
   );
 
   onMounted(async () => {
-    // Check for query parameters on load
+    await setPaymentLinkData();
+  });
+
+  async function setPaymentLinkData() {
     const { to, token: paymentToken, amount } = await parsePaymentLink(NATIVE_TOKEN.value);
     if (to) recipientId.value = to;
     if (amount) humanAmount.value = amount;
@@ -398,7 +403,7 @@ function useSendForm() {
     // For token, we always default to the chain's native token if none was selected
     if (paymentToken?.symbol) token.value = paymentToken;
     else token.value = tokenList.value[0];
-  });
+  }
 
   // Validators
   async function isValidId(val: string | undefined) {
@@ -423,7 +428,11 @@ function useSendForm() {
 
   const getMinSendAmount = (tokenAddress: string): number => {
     const tokenInfo = tokenList.value.filter((token) => token.address === tokenAddress)[0];
-    if (!tokenInfo) throw new Error(`token info unavailable for ${tokenAddress}`); // this state should not be possible
+
+    // This can happen when parsing a payment link and the token list has not loaded yet. In that
+    // case, we just return a very high number so the user can't send anything.
+    if (!tokenInfo) return Number.POSITIVE_INFINITY;
+
     const tokenMinSendInWei = parseUnits(tokenInfo.minSendAmount, 'wei');
     // We don't need to worry about fallbacks: native tokens have hardcoded fallbacks
     // defined in the wallet store. For any other tokens, we wouldn't have info about them
