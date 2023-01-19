@@ -1,18 +1,24 @@
 <template>
   <div>
     <div class="alert-banner text-bold text-center q-py-md">
-      Umbra is part of Gitcoin's Alpha matching round. Please consider
-      <a
-        class="alert-banner-hyperlink"
-        href="https://grant-explorer.gitcoin.co/#/round/1/0xd95a1969c41112cee9a2c931e849bcef36a16f4c/0x9fb5b0d0698dc64cbd3a01c5205ebc5ef609e7d20c21ce20ee2c73905a8309a0-0xd95a1969c41112cee9a2c931e849bcef36a16f4c"
-        target="_blank"
-      >
-        supporting
-      </a>
-      development.
-      <a class="alert-banner-hyperlink" href="https://twitter.com/UmbraCash/status/1615833060385370112" target="_blank">
-        Learn more.
-      </a>
+      <i18n path="Home.banner" tag="span">
+        <template v-slot:supporting>
+          <a
+            class="alert-banner-hyperlink"
+            href="https://grant-explorer.gitcoin.co/#/round/1/0xd95a1969c41112cee9a2c931e849bcef36a16f4c/0x9fb5b0d0698dc64cbd3a01c5205ebc5ef609e7d20c21ce20ee2c73905a8309a0-0xd95a1969c41112cee9a2c931e849bcef36a16f4c"
+            target="_blank"
+            >{{ $t('Home.supporting') }}</a
+          >
+        </template>
+        <template v-slot:LearnMore>
+          <a
+            class="alert-banner-hyperlink"
+            href="https://twitter.com/UmbraCash/status/1615833060385370112"
+            target="_blank"
+            >{{ $t('Home.learn-more') }}</a
+          >
+        </template>
+      </i18n>
     </div>
     <q-layout view="hhh lpr ffr" style="z-index: 0">
       <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
