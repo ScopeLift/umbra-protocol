@@ -12,8 +12,9 @@
       "send-first": "Get the address, ENS, or CNS name of the person you're sending funds to",
       "send-second": "Complete the form on the <span class=\"text-bold\">Send</span> page"
     },
-    "banner": "Umbra is part of Gitcoin's Alpha matching round. Please consider {0} development. Learn more.",
-    "banner-link": "supporting"
+    "banner": "Umbra is part of Gitcoin's Alpha matching round. Please consider {supporting} development. {LearnMore}",
+    "supporting": "supporting",
+    "learn-more": "Learn More."
   },
   "Home-action-card": {
     "send": "Send",
