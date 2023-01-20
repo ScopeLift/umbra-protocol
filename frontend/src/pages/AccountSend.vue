@@ -342,52 +342,42 @@ function useSendForm() {
         prevIsLoadingValue,
         prevUseNormalPubKey,
         prevRecipientIdValue,
-        prevTokenValue,
+        _prevTokenValue,
         prevHumanAmountValue,
         prevNativeTokenValue,
       ]
     ) => {
-      // Fetch toll
-      toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
+      _prevTokenValue; // Silence unused var warning.
 
-      // Validates value initially passed through params
-      const recipientIdInputRef = recipientIdBaseInputRef.value?.$refs.QInput as QInput;
-      if (recipientIdInputRef && recipientIdValue && typeof prevRecipientIdValue === 'undefined') {
-        await recipientIdInputRef.validate();
-      }
+      // Fetch toll.
+      umbra.value?.umbraContract
+        .toll()
+        .then((tollValue) => {
+          toll.value = tollValue;
+        })
+        .catch((e) => {
+          throw new Error(`Error fetching toll: ${JSON.stringify(e)}`);
+        });
 
-      const tokenInputRef = tokenBaseSelectRef.value?.$refs.QSelect as QSelect;
-      if (tokenInputRef && tokenValue && typeof prevTokenValue === 'undefined') {
-        await tokenInputRef.validate();
-      }
-
-      const humanAmountInputRef = humanAmountBaseInputRef.value?.$refs.QInput as QInput;
-      if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
-        await humanAmountInputRef.validate();
-      }
-
+      // Reset acknowledgement if user changes the public key type.
       if (!useNormalPubKey) {
         advancedAcknowledged.value = false;
       }
 
-      if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId) {
-        await setPaymentLinkData();
+      // Perform minimal required validation based on what changed.
+      if (useNormalPubKey !== prevUseNormalPubKey || recipientIdValue !== prevRecipientIdValue) {
+        const recipientIdInputRef = recipientIdBaseInputRef.value?.$refs.QInput as QInput;
+        isValidRecipientId.value = await recipientIdInputRef?.validate();
+      } else if (humanAmountValue !== prevHumanAmountValue && tokenValue && humanAmountValue) {
+        const tokenInputRef = tokenBaseSelectRef.value?.$refs.QSelect as QSelect;
+        await tokenInputRef?.validate();
+      } else if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId || isLoadingValue !== prevIsLoadingValue) {
+        // When network finally connects after page load, we need to re-parse the payment link data.
+        await setPaymentLinkData(); // Handles validations.
       }
 
-      // Revalidates form
-      if (
-        // on network change
-        useNormalPubKey !== prevUseNormalPubKey ||
-        isLoadingValue !== prevIsLoadingValue ||
-        // when both token and value are present
-        (tokenValue && humanAmountValue)
-      ) {
-        void sendFormRef.value?.validate();
-      }
-      const validId = Boolean(recipientIdValue) && (await isValidId(recipientIdValue as string)) === true;
-      isValidRecipientId.value = validId;
       const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
-      isValidForm.value = validId && Boolean(tokenValue) && validAmount;
+      isValidForm.value = isValidRecipientId.value && Boolean(tokenValue) && validAmount;
     }
   );
 
@@ -403,6 +393,9 @@ function useSendForm() {
     // For token, we always default to the chain's native token if none was selected
     if (paymentToken?.symbol) token.value = paymentToken;
     else token.value = tokenList.value[0];
+
+    // Validate the form
+    await sendFormRef.value?.validate();
   }
 
   // Validators
