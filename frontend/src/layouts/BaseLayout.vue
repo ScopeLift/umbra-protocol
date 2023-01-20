@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="alert-banner text-bold text-center q-py-md">
-      <i18n path="Home.banner" tag="span">
+      <i18n-t scope="global" keypath="Home.banner" tag="span">
         <template v-slot:supporting>
           <a
             class="alert-banner-hyperlink"
@@ -18,7 +18,7 @@
             >{{ $t('Home.learn-more') }}</a
           >
         </template>
-      </i18n>
+      </i18n-t>
     </div>
     <q-layout view="hhh lpr ffr" style="z-index: 0">
       <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
