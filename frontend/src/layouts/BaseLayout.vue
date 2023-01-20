@@ -186,6 +186,7 @@
             option-label="label"
             rounded
           />
+          <p class="text-caption dark-toggle" style="font-size: 0.65rem">version {{ version }}</p>
         </div>
 
         <!-- Column 2: Built by ScopeLift -->
@@ -264,25 +265,27 @@ export default defineComponent({
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
+    const version = window.logger.version;
     return {
-      avatar,
       advancedMode,
       argentModalDismissed,
+      avatar,
+      currentLanguage,
       drawerRight: ref(false),
       isAccountSetup,
       isAccountSetupLegacy,
       isDark,
-      language,
-      currentLanguage,
-      supportedLanguages,
       isLoading,
+      language,
       network,
-      showArgentModal,
-      toggleAdvancedMode,
       setLanguage,
+      showArgentModal,
+      supportedLanguages,
+      toggleAdvancedMode,
       toggleDarkMode,
       userAddress,
       userDisplayName,
+      version,
     };
   },
 });
