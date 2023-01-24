@@ -57,7 +57,7 @@ Consider another example: Liza runs a website that asks for donations. If everyo
 3. A payer uses your address, ENS, or CNS name to look up your two public keys. Separately, the payer generates a random number.
 4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The viewing public key is used to encrypt the random number.
 5. Using the Umbra contract, the payer sends funds to the stealth address and the stealth address and encrypted random number are emitted as an Announcement event.
-6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Annoucement, this payment was for the receiver
+6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Announcement, this payment was for the receiver
 7. The receiver can now use the spending private key to either directly send the transaction required to withdraw funds to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
 
 See the [Technical Details: How does it work?](https://app.umbra.cash/faq#how-does-it-work-technical) for more details.
@@ -68,7 +68,7 @@ Umbra offers a limited set of privacy guarantees and it’s important to underst
 
 It’s important to understand that poor hygiene by the receiver— for example, sending the funds directly to a publicly known address— reduces the privacy benefits for both the sender and receiver.
 
-The privacy properties of Umbra can also be diminished if an observer can narrow down the set of potential recipients for a given a transaction. Any valid public key can be used as a recipient, and anyone who has sent a transaction on Ethereum has a publicly available public key. Therefore, by default, the "anonymity set"—the set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
+The privacy properties of Umbra can also be diminished if an observer can narrow down the set of potential recipients for a given transaction. Any valid public key can be used as a recipient, and anyone who has sent a transaction on Ethereum has a publicly available public key. Therefore, by default, the "anonymity set"—the set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
 
 In practice this isn’t necessarily the case, and an observer may be able to narrow down the list of recipients in a few ways:
 
