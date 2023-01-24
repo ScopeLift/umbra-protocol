@@ -37,13 +37,13 @@ For an introduction and background on elliptic curve cryptography, see the refer
 
 When ETH is sent, it's transferred directly to the recipient's stealth address, but when tokens are sent they are held by the contract until the recipient withdraws them. ETH is always needed to send the transaction required to move funds, so sending ETH directly to a stealth address provides no issues and funds can easily be transferred out of the stealth address to another address.
 
-But sending tokens directly to a stealth address would pose some difficulties. The stealth address would have no ETH to pay for the transaction to transfer the tokens, and getting ETH into the address without compromising privacy is it's own challenge. The easiest and cheapest solution to this issue is to have tokens instead held by the contract, and support withdrawal of the tokens using meta-transactions that only require a signature from the stealth address. This lets the recipient pay the gas fee for the withdrawal transaction in tokens, and the relayer will pay the ETH fee
+But sending tokens directly to a stealth address would pose some difficulties. The stealth address would have no ETH to pay for the transaction to transfer the tokens, and getting ETH into the address without compromising privacy is its own challenge. The easiest and cheapest solution to this issue is to have tokens instead held by the contract, and support withdrawal of the tokens using meta-transactions that only require a signature from the stealth address. This lets the recipient pay the gas fee for the withdrawal transaction in tokens, and the relayer will pay the ETH fee
 
 ### Random Numbers and Payload Extension
 
-The shared secret used to encrypt the random number is 256 bits, so we XOR that with a random 256 bit number to generate the 256 bit ciphertext emitted in `Annoucement` events. But because the strength of elliptic curves is roughly equal to [half the size](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography#Key_sizes) of the prime field, that means the secp256k1 curve used by Ethereum only provides ~128 bits of security, not 256 bits. As a result, a 128 bit random number would be just as secure as a 256 bit random number.
+The shared secret used to encrypt the random number is 256 bits, so we XOR that with a random 256 bit number to generate the 256 bit ciphertext emitted in `Announcement` events. But because the strength of elliptic curves is roughly equal to [half the size](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography#Key_sizes) of the prime field, that means the secp256k1 curve used by Ethereum only provides ~128 bits of security, not 256 bits. As a result, a 128 bit random number would be just as secure as a 256 bit random number.
 
-Since the XOR of these two parameters results in a 256 bit ciphertext of the same strength regardless of whether the random number is 128 bits or 256 bits, the `RandomNumber` class only generates a 128 bit random number, and lets the user provide the other 128 bits. This "free" 128 bits of data is known as the _payload extension_, and can be used to send short memos, recognize app-specific transactions, or whatever else developers can thing of.
+Since the XOR of these two parameters results in a 256 bit ciphertext of the same strength regardless of whether the random number is 128 bits or 256 bits, the `RandomNumber` class only generates a 128 bit random number, and lets the user provide the other 128 bits. This "free" 128 bits of data is known as the _payload extension_, and can be used to send short memos, recognize app-specific transactions, or whatever else developers can think of.
 
 The corresponding FAQ question can be found [here](https://app.umbra.cash/faq#what-is-the-payload-extension-and-how-do-i-use-it).
 
@@ -57,7 +57,7 @@ Since Umbra supports separate spending and viewing keys (see below), the `r` and
 
 ### Spending and Viewing Keys
 
-Borrowing the [nomenclature](https://electriccoin.co/blog/explaining-viewing-keys/) from Zcash, Umbra allows, but does not require, users to use different private keys for the "encrypt random number" and “compute stealth address” steps. This is the default behavior of the Umbra app, but it can be overriden by using Advanced Mode.
+Borrowing the [nomenclature](https://electriccoin.co/blog/explaining-viewing-keys/) from Zcash, Umbra allows, but does not require, users to use different private keys for the "encrypt random number" and “compute stealth address” steps. This is the default behavior of the Umbra app, but it can be overridden by using Advanced Mode.
 
 This allows users to give their viewing key to third party scanning services that can alert them of received funds, but without giving those services access to their funds.
 
@@ -67,7 +67,7 @@ The corresponding FAQ question can be found [here](https://app.umbra.cash/faq#wh
 
 If you’re familiar with [ERC-777](https://eips.ethereum.org/EIPS/eip-777) or other similar standards, you are already familiar with the concept of hooks. Hooks let the caller perform other actions in addition to the core logic of the method being called. In the case of ERC-777, a transfer hook can be used to call a method on a contract after transferring tokens to that contract.
 
-Umbra works simiarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into a DeFi protocol or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.umbra.cash/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `Umbra.sol` for more information on hwo to use hooks.
+Umbra works similarly&mdash;when withdrawing funds from the contract, users might want to deposit them straight into a DeFi protocol or swap their DAI for ETH. Hooks let you do this. See the corresponding [FAQ question](https://app.umbra.cash/faq#what-are-hooks-and-how-do-i-use-them) and the implementation in `Umbra.sol` for more information on how to use hooks.
 
 ## Usage Example
 
