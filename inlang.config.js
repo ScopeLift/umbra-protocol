@@ -6,7 +6,7 @@ export async function initializeConfig(env) {
     );
   
     const pluginConfig = {
-      pathPattern: "./{language}.json",
+      pathPattern: "./frontend/src/i18n/locales/{language}.json",
     };
   
     return {
