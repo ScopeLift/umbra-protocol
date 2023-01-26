@@ -133,6 +133,12 @@ yarn test # run only the contract tests
 
 Contributions to Umbra are welcome! Fork the project, create a new branch from master, and open a PR. Ensure the project can be fast-forward merged by rebasing if necessary.
 
+#### Translation 
+Contribute translations via inlang https://inlang.com/editor/github.com/jannesblobel/umbra-protocol
+
+
+
+
 ## License
 
 Umbra is available under the [MIT](LICENSE.txt) license.
