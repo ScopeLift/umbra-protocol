@@ -136,7 +136,11 @@ Contributions to Umbra are welcome! Fork the project, create a new branch from m
 #### Translation 
 Contribute translations via inlang https://inlang.com/editor/github.com/jannesblobel/umbra-protocol
 
+### Want to translate gmpublisher to your language?
 
+1. Create an empty JSON in https://github.com/ScopeLift/umbra-protocol/frontend/src/i18n/locales/
+2. Update the [inlang.config.js](./inlang.config.js) file to include the new language. 
+3. Open https://inlang.com/editor/github.com/ScopeLift/umbra-protocol
 
 
 ## License
