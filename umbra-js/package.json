@@ -1,11 +1,12 @@
 {
-  "name": "@umbra/umbra-js",
+  "name": "@umbracash/umbra-js",
   "version": "0.1.0",
   "description": "Send and receive stealth payments",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "files": [
-    "build"
+    "build",
+    "src"
   ],
   "scripts": {
     "test": "yarn build && yarn hardhat test",
@@ -20,8 +21,8 @@
     "precommit": "lint-staged",
     "docs": "typedoc src/"
   },
-  "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",
-  "license": "ISC",
+  "author": "ScopeLift <support@umbra.cash>",
+  "license": "MIT",
   "dependencies": {
     "@unstoppabledomains/resolution": "8.3.1",
     "ethers": "5.6.9",
