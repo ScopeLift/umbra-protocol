@@ -418,7 +418,7 @@ describe('Umbra class', () => {
       verifyEqualValues(await getEthBalance(stealthKeyPairs[stealthKeyPairIndex].address), 0);
       verifyEqualValues(
         await getEthBalance(destinationWallet.address),
-        BigNumber.from(initialEthBalance).sub(withdrawTokenTxCost)
+        BigNumber.from(initialEthBalance).sub(withdrawTokenTxCost).add(expectedAmountReceived)
       );
     };
 
@@ -551,7 +551,7 @@ describe('Umbra class', () => {
     it('Without payload extension: send eth and tokens to 2 different addresses, scan for them, withdraw them', async () => {
       // SENDER
       // Mint Dai to sender, and approve the Umbra contract to spend their DAI
-      await mintAndApproveDai(sender, sender.address, quantity.mul(2));
+      await mintAndApproveDai(sender, sender.address, quantity);
 
       // Send funds with Umbra
       const { tx, stealthKeyPairs } = await umbra.batchSend(
@@ -559,7 +559,7 @@ describe('Umbra class', () => {
         [
           {
             token: ETH_ADDRESS,
-            amount: parseEther('1'),
+            amount: quantity,
             address: receiver!.publicKey,
           },
           {
@@ -571,7 +571,6 @@ describe('Umbra class', () => {
         overrides
       );
       await tx.wait();
-      verifyEqualValues(await getEthBalance(stealthKeyPairs[0].address), parseEther('1'));
 
       // RECEIVER
       // Receiver scans for funds sent to them
@@ -584,26 +583,33 @@ describe('Umbra class', () => {
       );
       expect(secondUserAnnouncements.length).to.be.greaterThan(0);
 
-      // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
-      // Destination wallet should have a balance equal to amount sent
+      const stealthPrivateKey = Umbra.computeStealthPrivateKey(receiver.privateKey, userAnnouncements[0].randomNumber);
+      const destinationWallet = ethers.Wallet.createRandom();
+      const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
+      await withdrawTx.wait();
+      const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
+      const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
+      verifyEqualValues(await getEthBalance(destinationWallet.address), quantity.sub(txCost));
+      verifyEqualValues(await getEthBalance(stealthKeyPairs[0].address), 0);
 
       // First we send ETH to the stealth address
-      await sender.sendTransaction({ to: stealthKeyPairs[0].address, value: parseEther('1') });
       await sender.sendTransaction({ to: stealthKeyPairs[1].address, value: parseEther('1') });
 
-      const receiversAndAnnouncements = [
-        { receiver: receiver, announcement: userAnnouncements, expectedEthAmount: parseEther('1') },
-        { receiver: secondReceiver, announcement: secondUserAnnouncements, expectedEthAmount: parseEther('0') },
-      ];
-
-      for (const [index, eachReceiverAndAnnouncement] of receiversAndAnnouncements.entries()) {
-        const receiver = eachReceiverAndAnnouncement.receiver;
-        const userAnnouncement = eachReceiverAndAnnouncement.announcement;
-        const expectedEthAmount = eachReceiverAndAnnouncement.expectedEthAmount;
-
-        // await withdrawTokenAndVerifyBalance(receiver, userAnnouncement, stealthKeyPairs, index);
-        await withdrawETHAndVerifyBalance(receiver, expectedEthAmount, userAnnouncement, stealthKeyPairs, index);
-      }
+      // Now we withdraw the tokens
+      const secondStealthPrivateKey = Umbra.computeStealthPrivateKey(
+        secondReceiver.privateKey,
+        secondUserAnnouncements[0].randomNumber
+      );
+      const secondDestinationWallet = ethers.Wallet.createRandom();
+      verifyEqualValues(await dai.balanceOf(secondDestinationWallet.address), 0);
+      const withdrawTxToken = await umbra.withdraw(
+        secondStealthPrivateKey,
+        dai.address,
+        secondDestinationWallet.address
+      );
+      await withdrawTxToken.wait();
+      verifyEqualValues(await dai.balanceOf(secondDestinationWallet.address), quantity);
+      verifyEqualValues(await dai.balanceOf(stealthKeyPairs[1].address), 0);
     });
 
     it('With payload extension: send tokens, scan for them, withdraw them', async () => {
