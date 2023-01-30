@@ -1,4 +1,4 @@
-import { AnnouncementDetail, UserAnnouncement, Umbra } from '@umbra/umbra-js';
+import { AnnouncementDetail, UserAnnouncement, Umbra } from '@umbracash/umbra-js';
 import { getAddress } from 'src/utils/ethers';
 
 export const filterUserAnnouncements = (

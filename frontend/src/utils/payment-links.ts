@@ -1,6 +1,6 @@
 import { copyToClipboard } from 'quasar';
 import { TokenInfoExtended } from 'components/models';
-import { utils as umbraUtils } from '@umbra/umbra-js';
+import { utils as umbraUtils } from '@umbracash/umbra-js';
 import { providerExport as provider, relayerExport as relayer, tokensExport as tokens } from 'src/store/wallet';
 import { notifyUser } from 'src/utils/alerts';
 import { BigNumber, StaticJsonRpcProvider } from 'src/utils/ethers';

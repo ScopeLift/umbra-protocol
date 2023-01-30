@@ -3,7 +3,7 @@
  */
 
 import { Provider } from 'components/models';
-import { utils } from '@umbra/umbra-js';
+import { utils } from '@umbracash/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getAddress, Web3Provider, isHexString } from 'src/utils/ethers';
 import { getChainById } from 'src/utils/utils';
