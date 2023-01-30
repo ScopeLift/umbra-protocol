@@ -118,7 +118,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref, toRefs } from 'vue';
-import { utils as umbraUtils, UserAnnouncement } from '@umbra/umbra-js';
+import { utils as umbraUtils, UserAnnouncement } from '@umbracash/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatNameOrAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';

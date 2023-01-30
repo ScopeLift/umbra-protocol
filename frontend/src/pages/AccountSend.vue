@@ -247,7 +247,7 @@
 // --- External imports ---
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm, QInput, QSelect } from 'quasar';
-import { utils as umbraUtils } from '@umbra/umbra-js';
+import { utils as umbraUtils } from '@umbracash/umbra-js';
 // --- Components ---
 import BaseInput from 'components/BaseInput.vue';
 import BaseSelect from 'components/BaseSelect.vue';
