@@ -339,7 +339,7 @@
 import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
 import { date, copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
-import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbra/umbra-js';
+import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
 import { tc } from 'src/boot/i18n';
 import useSettingsStore from 'src/store/settings';
 import useStatusesStore from 'src/store/statuses';

@@ -1,7 +1,7 @@
 // This is a worker script that can be controlled by `worker.ts`
 // Be aware that this is not a module script, it is a *worker* script.
 
-import { Announcement, Umbra } from '@umbra/umbra-js';
+import { Announcement, Umbra } from '@umbracash/umbra-js';
 import { getAddress } from 'src/utils/ethers';
 
 // https://github.com/webpack-contrib/worker-loader#integrating-with-typescript
