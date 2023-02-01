@@ -1,11 +1,12 @@
 import { BigNumber } from 'src/utils/ethers';
-import { TransactionReceipt, JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
+import { JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
 import type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 import { UmbraLogger } from 'components/logger';
 import { ETH_NETWORK_LOGO } from 'src/utils/constants';
 
 export type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
-export { BigNumber, Network, TransactionResponse } from 'src/utils/ethers';
+export { BigNumber } from 'src/utils/ethers';
+export type { Network, TransactionResponse } from 'src/utils/ethers';
 export type Signer = JsonRpcSigner;
 export type Provider = Web3Provider;
 
@@ -35,7 +36,7 @@ export type Chain = {
   // logoURI is not part of EIP-3085, but is added for convenience because that is what our BaseSelect component
   // uses to display images form the chain objects it recevies. It's not required because we always want a chain
   // logo to be showin in the network selector dropdown
-  logoURI: string;
+  logoURI?: string; // Must be optional so it can be deleted before calling `wallet_addEthereumChain`.
 };
 
 export const supportedChains: Array<Chain> = [
@@ -75,7 +76,7 @@ export const supportedChains: Array<Chain> = [
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
-      symbol: 'OETH',
+      symbol: 'ETH',
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
@@ -105,7 +106,7 @@ export const supportedChains: Array<Chain> = [
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
-      symbol: 'AETH',
+      symbol: 'ETH',
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
@@ -148,9 +149,6 @@ export type WithdrawalInputs = {
   sponsorFee: string;
 };
 export type RelayResponse = { relayTransactionHash: string } | ApiError;
-export type RelayerStatusResponse =
-  | { receivedTime: string; broadcasts?: any[]; receipt?: TransactionReceipt }
-  | ApiError;
 
 // Logger type added to window
 declare global {

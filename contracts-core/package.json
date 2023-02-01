@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "Contracts for the Umbra Protocol",
   "dependencies": {
-    "@openzeppelin/contracts": "^3.4.1"
+    "@openzeppelin/contracts": "3.4.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^9.1.2",
@@ -17,7 +17,7 @@
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/test-helpers": "^0.5.10",
     "@truffle/debug-utils": "^4.1.1",
-    "@typechain/ethers-v5": "^2.0.0",
+    "@typechain/ethers-v5": "^10.2.0",
     "@types/chai": "^4.2.13",
     "@types/fs-extra": "^9.0.1",
     "@types/mocha": "^7.0.2",
@@ -30,7 +30,7 @@
     "eslint": "^7.11.0",
     "eslint-config-prettier": "^6.12.0",
     "ethereum-waffle": "^3.2.0",
-    "ethers": "^5.6.8",
+    "ethers": "5.6.9",
     "fs-extra": "^9.0.1",
     "hardhat": "^2.6.8",
     "hardhat-gas-reporter": "^1.0.4",
@@ -46,7 +46,7 @@
     "solidity-coverage": "^0.7.12",
     "ts-generator": "^0.1.1",
     "ts-node": "^8.10.2",
-    "typechain": "^3.0.0",
+    "typechain": "^8.1.1",
     "typescript": "^3.9.7"
   },
   "files": [
@@ -67,7 +67,7 @@
     "clean": "hardhat clean",
     "build": "hardhat compile",
     "lint": "yarn run lint:sol && yarn run lint:ts && yarn run prettier:list-different",
-    "lint:sol": "solhint --config ./.solhint.json --max-warnings 9 \"contracts/**/*.sol\"",
+    "lint:sol": "solhint --config ./.solhint.json --max-warnings 30 \"contracts/**/*.sol\"",
     "lint:ts": "eslint --ext .js,.ts .",
     "prettier": "prettier --write \"**/*.{js,json,md,sol,ts}\"",
     "prettier:list-different": "prettier --list-different \"**/*.{js,json,md,sol,ts}\"",

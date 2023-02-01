@@ -56,8 +56,8 @@ For more details on the internationalization approach and usage see [Quasar I18n
 
 - Inside templates: `{{ $t('key-name') }}`
 - Inside attributes: `:label="$t('key-name')"`
-- Inside scripts, import `getCurrentInstance()` from `@vue/composition-api` and create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.tc('AccountReceiveTable.date-received')`
-- Inside `.ts` files, `import { i18n } from "../boot/i18n";` and use `i18n.tc('key-name')`.
+- Inside scripts, import `getCurrentInstance()` from `'vue'` and create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.tc('AccountReceiveTable.date-received')`
+- Inside `.ts` files, `import { tc } from "../boot/i18n";` and use `tc('key-name')`.
 
 While embedding longer texts with styles and links inside template section of Vue components, there are a few options:
 
@@ -123,6 +123,6 @@ While embedding longer texts with styles and links inside template section of Vu
 If you want to add a new langauge e.g. French, you need to:
 
 1. Create a new json file in `/i18n/locales/` and name it according to the language code listed [here](https://www.roseindia.net/tutorials/I18N/locales-list.shtml) i.e., `fr.json`. You can also change your browser language in settings and `console.log(locale)` in the `src/boot/i18n.ts` file to see the language code.
-2. Copy the contents of `en-us.json` to your newly created `<language-code>.json` file and translate key values to the corresponding language of your choice.
+2. Copy the contents of `en-US.json` to your newly created `<language-code>.json` file and translate key values to the corresponding language of your choice.
 3. Import the `json` file into the `src/i18n/index.ts` file and export it to be used.
 4. Add the language name and language code to `supportedLanguages` in `src/store/settings.ts`.

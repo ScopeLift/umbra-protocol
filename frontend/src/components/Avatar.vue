@@ -5,15 +5,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType, watch } from 'vue';
 import Jazzicon from 'src/components/Jazzicon.vue';
 
 export default defineComponent({
-  name: 'Avatar',
+  name: 'AvatarComponent',
   components: { Jazzicon },
   props: {
     avatar: {
-      type: (null as unknown) as PropType<string | null>,
+      type: null as unknown as PropType<string | null>,
       required: false,
     },
     address: {
@@ -22,17 +22,23 @@ export default defineComponent({
     },
   },
   setup: (props) => {
-    if (props.avatar) {
-      // load the avatar image async and display the jazzicon while waiting
-      const avatarImg = new Image();
-      avatarImg.onload = () => {
-        document.querySelector('#jazzicon')?.remove();
-        document.querySelector('#avatar-container')?.appendChild(avatarImg);
-      };
-      avatarImg.id = 'avatar';
-      avatarImg.width = 20;
-      avatarImg.src = props.avatar;
-    }
+    // We don't have an avatar when the component is first mounted, so we display the jazzicon,
+    // watch the avatar prop for changes, and replace the jazzicon if/when we get an avatar.
+    watch(
+      () => props.avatar,
+      (newAvatar) => {
+        if (newAvatar) {
+          const avatarImg = new Image();
+          avatarImg.onload = () => {
+            document.querySelector('#jazzicon')?.remove();
+            document.querySelector('#avatar-container')?.appendChild(avatarImg);
+          };
+          avatarImg.id = 'avatar';
+          avatarImg.width = 20;
+          avatarImg.src = newAvatar;
+        }
+      }
+    );
   },
 });
 </script>

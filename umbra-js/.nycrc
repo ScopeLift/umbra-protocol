@@ -1,13 +1,8 @@
 {
   "cache": false,
   "check-coverage": false,
-  "extension": [
-    ".ts"
-  ],
-  "include": [
-    "**/*.js",
-    "**/*.ts"
-  ],
+  "extension": [".ts"],
+  "include": ["**/*.js", "**/*.ts"],
   "exclude": [
     "coverage/**",
     "node_modules/**",
@@ -21,12 +16,7 @@
     "hardhat.config.ts"
   ],
   "sourceMap": true,
-  "reporter": [
-    "html",
-    "text",
-    "text-summary",
-    "lcov"
-  ],
+  "reporter": ["html", "text", "text-summary", "lcov"],
   "all": true,
   "instrument": true
 }

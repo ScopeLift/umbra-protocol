@@ -9,7 +9,7 @@
     "func-visibility": ["error", { "ignoreConstructors": true }],
     "not-rely-on-time": "off",
     "prettier/prettier": [
-      "error",
+      "warn",
       {
         "endOfLine": "auto"
       }

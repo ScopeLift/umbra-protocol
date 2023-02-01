@@ -32,15 +32,15 @@
       <h5 class="q-my-md q-pt-none">
         <q-icon color="positive" class="q-mr-sm" name="fas fa-check" />{{ $t('Setup.complete') }}
       </h5>
-      <i18n path="Setup.return-to-home" tag="p" class="q-mt-md">
+      <i18n-t keypath="Setup.return-to-home" tag="p" class="q-mt-md">
         <router-link class="hyperlink" :to="{ name: 'home' }">{{ $t('Setup.return-home') }}</router-link>
-      </i18n>
+      </i18n-t>
     </div>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, ref } from 'vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import { Provider } from 'components/models';
 import useWalletStore from 'src/store/wallet';

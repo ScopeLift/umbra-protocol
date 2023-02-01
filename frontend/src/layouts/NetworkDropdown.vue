@@ -1,7 +1,7 @@
 <template>
   <base-select
-    v-model="currentNetwork"
-    @input="setNetwork(currentNetwork)"
+    :modelValue="currentNetwork"
+    @update:modelValue="setNetwork"
     dense
     :filled="false"
     :hideBottomSpace="true"
@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watchEffect } from '@vue/composition-api';
+import { computed, defineComponent, ref, watchEffect } from 'vue';
 import { Chain, supportedChains } from 'src/components/models';
 import useWalletStore from 'src/store/wallet';
 import { getChainById } from 'src/utils/utils';

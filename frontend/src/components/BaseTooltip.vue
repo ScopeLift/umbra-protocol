@@ -1,7 +1,7 @@
 <template>
   <q-btn-dropdown
-    @mouseover.native="isShown = true"
-    @mouseleave.native="onRootMouseLeave"
+    @mouseover="isShown = true"
+    @mouseleave="onRootMouseLeave"
     ref="rootRef"
     v-model="isShown"
     :dropdown-icon="icon"
@@ -17,7 +17,7 @@
     :class="{ 'without-icon': icon === ' ' }"
   >
     <q-item
-      @mouseleave.native="onTooltipMouseLeave"
+      @mouseleave="onTooltipMouseLeave"
       ref="tooltipRef"
       class="bg-muted dark-toggle shadow-2 q-pa-md"
       style="max-width: 14rem; font-size: 10px; display: inline-block"
@@ -28,8 +28,8 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, ref } from 'vue';
+import { QBtnDropdown, QItem } from 'quasar';
 
 export default defineComponent({
   name: 'BaseTooltip',
@@ -53,8 +53,8 @@ export default defineComponent({
   },
   setup() {
     const isShown = ref(false);
-    const rootRef = ref<Vue | null>(null);
-    const tooltipRef = ref<Vue | null>(null);
+    const rootRef = ref<InstanceType<typeof QBtnDropdown> | null>(null);
+    const tooltipRef = ref<InstanceType<typeof QItem> | null>(null);
 
     const onRootMouseLeave = (e: MouseEvent) => {
       if (tooltipRef.value?.$el !== e.relatedTarget) {

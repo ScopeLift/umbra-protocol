@@ -41,7 +41,7 @@ export async function getPublicKeys(name: string, provider: EthersProvider, reso
     throw new Error(`Public keys not found for ${name}. User must setup their Umbra account`);
   }
   // Return uncompressed public keys
-  const spendingPublicKey = `0x${Point.fromHex(compressedSpendingPublicKey.slice(2)).toHex()}`;
-  const viewingPublicKey = `0x${Point.fromHex(compressedViewingPublicKey.slice(2)).toHex()}`;
+  const spendingPublicKey = `0x${Point.fromHex(<string>compressedSpendingPublicKey.slice(2)).toHex()}`;
+  const viewingPublicKey = `0x${Point.fromHex(<string>compressedViewingPublicKey.slice(2)).toHex()}`;
   return { spendingPublicKey, viewingPublicKey };
 }

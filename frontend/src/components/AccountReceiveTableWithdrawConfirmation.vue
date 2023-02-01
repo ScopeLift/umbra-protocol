@@ -117,7 +117,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, PropType, ref } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, PropType, ref, toRefs } from 'vue';
 import { utils as umbraUtils, UserAnnouncement } from '@umbra/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatNameOrAddress, toAddress } from 'src/utils/address';
@@ -164,16 +164,17 @@ export default defineComponent({
   setup(props, context) {
     // Parse the provided props
     const { NATIVE_TOKEN, network, provider } = useWalletStore();
-    const isNativeToken = props.activeFee.token.symbol === NATIVE_TOKEN.value.symbol;
-    const amount = props.activeAnnouncement.amount; // amount being withdrawn
-    const symbol = props.activeFee.token.symbol; // token symbol
-    const tokenURL = props.activeFee.token.logoURI; // URL pointing to image of token logo
+    const propsRef = toRefs(props);
+    const isNativeToken = propsRef.activeFee.value.token.symbol === NATIVE_TOKEN.value.symbol;
+    const amount = propsRef.activeAnnouncement.value.amount; // amount being withdrawn
+    const symbol = propsRef.activeFee.value.token.symbol; // token symbol
+    const tokenURL = propsRef.activeFee.value.token.logoURI; // URL pointing to image of token logo
 
     // Get properties dependent on those props
-    const etherscanUrl = computed(() => getEtherscanUrl(props.txHash, props.chainId)); // withdrawal tx hash URL
+    const etherscanUrl = computed(() => getEtherscanUrl(propsRef.txHash.value, propsRef.chainId.value)); // withdrawal tx hash URL
 
     // amount being withdrawn, rounded
-    const formattedAmount: string = humanizeTokenAmount(amount, props.activeFee.token);
+    const formattedAmount: string = humanizeTokenAmount(amount, propsRef.activeFee.value.token);
 
     function isValidFeeAmount(val: string) {
       if (!val || !(Number(val) > 0)) return 'Please enter an amount';
@@ -198,7 +199,9 @@ export default defineComponent({
       return BigNumber.from(customGasInGwei).mul(10 ** 9);
     });
     const customTxFeeInWei = computed(() => gasLimit.value.mul(customGasPriceInWei.value));
-    const formattedCustomTxCostEth = computed(() => humanizeTokenAmount(customTxFeeInWei.value, props.activeFee.token));
+    const formattedCustomTxCostEth = computed(() =>
+      humanizeTokenAmount(customTxFeeInWei.value, propsRef.activeFee.value.token)
+    );
 
     // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
     async function tryGetGasPrice() {
@@ -214,8 +217,8 @@ export default defineComponent({
       if (isNativeToken) {
         // Flooring this because the string we get back from formatUnits is a decimal.
         const formattedCost = (gasPrice: BigNumber) => String(Math.floor(Number(formatUnits(gasPrice, 'gwei'))));
-        const from = props.activeAnnouncement.receiver;
-        const to = await toAddress(props.destinationAddress, provider.value!);
+        const from = propsRef.activeAnnouncement.value.receiver;
+        const to = await toAddress(propsRef.destinationAddress.value, provider.value!);
 
         // On Optimism, we use Umbra's getEthSweepGasInfo method to ensure L1 fees are accounted for.
         // Otherwise we use the standard gasPrice * gasLimit as the default.
@@ -235,7 +238,7 @@ export default defineComponent({
           formattedCustomTxCostGwei.value = formattedCost(gasPrice!);
         }
       } else {
-        fee.value = props.activeFee.fee;
+        fee.value = propsRef.activeFee.value.fee;
       }
       loaded.value = true;
     });
@@ -246,8 +249,8 @@ export default defineComponent({
 
     // transaction fee, rounded
     const formattedDefaultTxCost = computed(() => {
-      const txFee = isNativeToken ? fee.value : props.activeFee.fee;
-      return humanizeTokenAmount(txFee, props.activeFee.token);
+      const txFee = isNativeToken ? fee.value : propsRef.activeFee.value.fee;
+      return humanizeTokenAmount(txFee, propsRef.activeFee.value.token);
     });
 
     // amount user will receive, rounded
@@ -258,7 +261,7 @@ export default defineComponent({
         // we want to base this on what the user *sees*, i.e. the formatted fees, since
         // they are what the user will be checking our calculations against
         [formattedAmount, formattedFee.value],
-        props.activeFee.token
+        propsRef.activeFee.value.token
       );
     });
 

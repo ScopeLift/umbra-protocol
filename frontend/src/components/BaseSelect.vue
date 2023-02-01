@@ -17,15 +17,16 @@
       :option-label="optionLabel"
       :outlined="outlined"
       :readonly="readonly"
+      ref="QSelect"
       :rounded="rounded"
       :rules="[(val) => rules(val)]"
       @blur="hideHint"
       @focus="showHint"
-      @input="handleInput"
+      @update:modelValue="handleInput"
     >
       <!-- Show icons when selected or when the slot is provided-->
       <template v-slot:prepend v-if="content && content.logoURI">
-        <img :src="content.logoURI" height="25rem" />
+        <img :src="content.logoURI" style="height: 1.5rem" />
       </template>
       <template v-slot:prepend v-else>
         <slot name="prepend"></slot>
@@ -33,11 +34,12 @@
 
       <!-- Show icons in dropdown list -->
       <template v-slot:option="scope">
-        <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
+        <q-item v-bind="scope.itemProps" v-on="scope.itemProps">
           <q-item-section avatar v-if="scope.opt.logoURI">
-            <img class="horizontal-center" :src="scope.opt.logoURI" height="25rem" />
+            <img class="horizontal-center" :src="scope.opt.logoURI" style="height: 1.5rem" />
           </q-item-section>
           <q-item-section>
+            <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->
             <q-item-label v-html="scope.opt[optionLabel]" />
           </q-item-section>
         </q-item>
@@ -47,10 +49,10 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
-  name: 'BaseInput',
+export default defineComponent({
+  name: 'BaseSelect',
 
   props: {
     dense: {
@@ -101,6 +103,12 @@ export default Vue.extend({
       default: 'ondemand',
     },
 
+    modelValue: {
+      type: undefined,
+      required: true,
+      default: undefined,
+    },
+
     options: {
       type: Array,
       required: true,
@@ -137,34 +145,30 @@ export default Vue.extend({
         return true;
       },
     },
-
-    value: {
-      type: undefined,
-      required: true,
-      default: undefined,
-    },
   },
 
   data() {
     return {
-      content: this.value,
+      content: this.modelValue,
       hintString: '',
     };
   },
 
   watch: {
     /**
-     * @notice This is required for two-way binding when programtically updating the input
+     * @notice This is required for two-way binding when programmatically updating the input
      * in the parent component using BaseInput
      */
-    value(val) {
+    modelValue(val) {
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     },
   },
 
+  emits: ['update:modelValue'],
+
   methods: {
     handleInput() {
-      this.$emit('input', this.content);
+      this.$emit('update:modelValue', this.content);
     },
 
     hideHint() {
@@ -172,7 +176,7 @@ export default Vue.extend({
     },
 
     showHint() {
-      this.hintString = this.hint;
+      this.hintString = (this as unknown as { hint: string }).hint;
     },
   },
 });
