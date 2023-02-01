@@ -30,7 +30,7 @@ import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSup
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
-
+import { abi as batchSendAbi } from '@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json';
 // Umbra.sol ABI
 const umbraAbi = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
@@ -55,7 +55,6 @@ const umbraAbi = [
   'function withdrawTokenAndCallOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, address hook, bytes data, uint8 v, bytes32 r, bytes32 s)',
   'function withdrawTokenOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, uint8 v, bytes32 r, bytes32 s)',
 ];
-const { abi: batchSendAbi } = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
