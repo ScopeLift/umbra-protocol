@@ -107,9 +107,9 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   const rawTx = serializeTransaction(resolvedTx);
   const msgHash = keccak256(rawTx);
 
-  // Recover sender's public key
+  // Recover sender's public key.
   // Even though the type definitions say v,r,s are optional, they will always be defined: https://github.com/ethers-io/ethers.js/issues/1181
-  const signature = new Signature(BigInt(tx.r), BigInt(tx.s));
+  const signature = new Signature(BigInt(tx.r!), BigInt(tx.s!));
   signature.assertValidity();
   const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;
   const publicKeyNo0xPrefix = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
@@ -335,7 +335,14 @@ export async function getEthSweepGasInfo(
   to: string,
   provider: EthersProvider,
   overrides: Overrides = {}
-) {
+): Promise<{
+  gasPrice: BigNumber;
+  gasLimit: BigNumber;
+  txCost: BigNumber;
+  fromBalance: BigNumber;
+  ethToSend: BigNumber;
+  chainId: number;
+}> {
   const gasLimitOf21k = [1, 4, 5, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
   const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
@@ -372,7 +379,7 @@ export async function getEthSweepGasInfo(
     const l1FeeInWei = await gasPriceOracle.getL1Fee(
       serializeTransaction({ to, value: fromBalance, data: '0x', gasLimit, gasPrice, nonce })
     );
-    txCost = txCost.add(l1FeeInWei);
+    txCost = txCost.add(<BigNumber>l1FeeInWei);
   }
 
   // Return the gas price, gas limit, and the transaction cost
@@ -409,6 +416,7 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
   ]);
   const tx = <TransactionResponseExtended>{ ...partialTx };
   const existingFields = new Set(Object.keys(tx));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   Object.keys(fullTx).forEach((key) => {
     // Do nothing if this field already exists (i.e. it was formatted by the ethers formatter).
     if (existingFields.has(key)) return;

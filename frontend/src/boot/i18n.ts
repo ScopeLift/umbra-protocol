@@ -1,25 +1,20 @@
 import { boot } from 'quasar/wrappers';
+import { createI18n } from 'vue-i18n';
 import messages from 'src/i18n';
-import Vue from 'vue';
-import VueI18n from 'vue-i18n';
-import Quasar from 'quasar';
 
-Vue.use(VueI18n);
-const locale = Quasar.lang.getLocale();
-
-export const i18n = new VueI18n({
-  locale: locale,
-  fallbackLocale: 'en-us',
+export const i18n = createI18n({
+  fallbackLocale: 'en-US',
+  globalInjection: true,
+  locale: 'en-US',
   messages,
+  // Disable v-html warnings: https://vue-i18n.intlify.dev/guide/migration/breaking.html#change-warnhtmlinmessage-option-default-value
+  warnHtmlInMessage: 'off',
+  warnHtmlMessage: false,
 });
+
+export const { tc } = i18n.global;
 
 export default boot(({ app }) => {
-  // Set i18n instance on app
-  app.i18n = i18n;
+  // Tell app to use the I18n instance.
+  app.use(i18n);
 });
-
-const params = new URLSearchParams(window.location.search);
-if (params.has('locale')) {
-  i18n.locale = params.get('locale')!;
-  window.logger.info(params.get('locale'));
-}

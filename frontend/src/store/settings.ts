@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from '@vue/composition-api';
+import { computed, onMounted, ref } from 'vue';
 import { Dark, LocalStorage } from 'quasar';
 import { isHexString } from 'src/utils/ethers';
 import { i18n } from '../boot/i18n';
@@ -17,13 +17,15 @@ const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
 const language = ref<Language>({ label: '', value: '' }); //language code
 const supportedLanguages = [
-  { label: 'English', value: 'en-us' },
-  { label: '中文', value: 'zh-cn' },
+  { label: 'English', value: 'en-US' },
+  { label: '中文', value: 'zh-CN' },
 ];
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
 const scanPrivateKey = ref<string>(); // private key entered when scanning
 const lastWallet = ref<string>(); // name of last wallet used
+const params = new URLSearchParams(window.location.search);
+const paramLocale = params.get('locale') || undefined;
 
 // Composition function for managing state
 export default function useSettingsStore() {
@@ -34,17 +36,14 @@ export default function useSettingsStore() {
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
-    setLanguage(
-      (LocalStorage.getItem(settings.language) as Language) || { label: getLanguageLabel(), value: i18n.locale }
-    );
   });
-
-  if (language.value.label === '') {
-    language.value.value = LocalStorage.getItem(settings.language)
-      ? (LocalStorage.getItem(settings.language) as Language).value
-      : i18n.locale;
-    language.value.label = getLanguageLabel();
-  }
+  setLanguage(
+    paramLocale
+      ? { label: getLanguageLabel(paramLocale), value: paramLocale }
+      : LocalStorage.getItem(settings.language)
+      ? (LocalStorage.getItem(settings.language) as Language)
+      : { label: getLanguageLabel(i18n.global.locale), value: i18n.global.locale }
+  );
 
   function setDarkMode(status: boolean) {
     // In addition to Quasars `Dark` param, we use the isDark state value with this setter, so we can reactively track
@@ -64,14 +63,19 @@ export default function useSettingsStore() {
   }
 
   function setLanguage(newLanguage: Language) {
+    // xx-yy was changed to xx-YY with the quasar v1 -> v2 upgrade, so we need to handle that.
+    if (newLanguage.value === 'en-us') newLanguage.value = 'en-US';
+    else if (newLanguage.value === 'zh-cn') newLanguage.value = 'zh-CN';
+
+    // Now we set the language.
     language.value = newLanguage;
-    i18n.locale = language.value.value;
+    i18n.global.locale = <'en-US' | 'zh-CN'>language.value.value;
     LocalStorage.set(settings.language, language.value);
   }
 
-  function getLanguageLabel() {
+  function getLanguageLabel(languageValue: string) {
     for (let i = 0; i < supportedLanguages.length; i++) {
-      if (supportedLanguages[i].value === language.value.value) {
+      if (supportedLanguages[i].value === languageValue) {
         return supportedLanguages[i].label;
       }
     }

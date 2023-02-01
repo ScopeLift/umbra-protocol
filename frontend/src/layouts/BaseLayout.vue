@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="alert-banner text-bold text-center q-py-md">
-      <i18n path="Home.banner" tag="span">
+      <i18n-t scope="global" keypath="Home.banner" tag="span">
         <template v-slot:supporting>
           <a
             class="alert-banner-hyperlink"
@@ -18,7 +18,7 @@
             >{{ $t('Home.learn-more') }}</a
           >
         </template>
-      </i18n>
+      </i18n-t>
     </div>
     <q-layout view="hhh lpr ffr" style="z-index: 0">
       <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
@@ -174,8 +174,8 @@
             <!-- Advanced mode toggle -->
             <p>
               <q-toggle
-                @input="toggleAdvancedMode"
-                :value="advancedMode"
+                @update:modelValue="toggleAdvancedMode"
+                :modelValue="advancedMode"
                 class="icon"
                 color="primary"
                 dense
@@ -195,8 +195,8 @@
             <!-- Language selection -->
             <base-select
               class="language-selector"
-              v-model="currentLanguage"
-              @input="setLanguage(currentLanguage)"
+              :modelValue="currentLanguage"
+              @update:modelValue="setLanguage"
               dense
               options-dense="true"
               :filled="false"
@@ -206,15 +206,16 @@
               :options="supportedLanguages"
               option-label="label"
               rounded
-            ></base-select>
+            />
+            <p class="text-caption dark-toggle" style="font-size: 0.65rem">version {{ version }}</p>
           </div>
 
           <!-- Column 2: Built by ScopeLift -->
           <div class="col-xs-12 col-sm-4 q-mt-lg">
             <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.about') }}</p>
-            <i18n path="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
+            <i18n-t scope="global" keypath="Base-Layout.built-by" tag="p" class="dark-toggle text-caption">
               <a href="https://www.scopelift.co/" target="_blank" class="hyperlink">ScopeLift</a>
-            </i18n>
+            </i18n-t>
             <p class="">
               <router-link class="hyperlink text-caption" :to="{ name: 'terms' }">Terms of Service</router-link>
             </p>
@@ -263,7 +264,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from '@vue/composition-api';
+import { computed, defineComponent, ref } from 'vue';
 import ArgentWarningModal from 'components/ArgentWarningModal.vue';
 import BaseButton from 'src/components/BaseButton.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
@@ -278,47 +279,35 @@ export default defineComponent({
   name: 'BaseLayout',
   components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
-    const {
-      advancedMode,
-      isDark,
-      language,
-      supportedLanguages,
-      toggleAdvancedMode,
-      setLanguage,
-      toggleDarkMode,
-    } = useSettingsStore();
-    const {
-      avatar,
-      isAccountSetup,
-      isAccountSetupLegacy,
-      isArgent,
-      isLoading,
-      network,
-      userAddress,
-      userDisplayName,
-    } = useWalletStore();
+    const { advancedMode, isDark, language, supportedLanguages, toggleAdvancedMode, setLanguage, toggleDarkMode } =
+      useSettingsStore();
+    const { avatar, isAccountSetup, isAccountSetupLegacy, isArgent, isLoading, network, userAddress, userDisplayName } =
+      useWalletStore();
+
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
+    const version = window.logger.version;
     return {
-      avatar,
       advancedMode,
       argentModalDismissed,
+      avatar,
+      currentLanguage,
       drawerRight: ref(false),
       isAccountSetup,
       isAccountSetupLegacy,
       isDark,
-      language,
-      currentLanguage,
-      supportedLanguages,
       isLoading,
+      language,
       network,
-      showArgentModal,
-      toggleAdvancedMode,
       setLanguage,
+      showArgentModal,
+      supportedLanguages,
+      toggleAdvancedMode,
       toggleDarkMode,
       userAddress,
       userDisplayName,
+      version,
     };
   },
 });

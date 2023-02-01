@@ -13,7 +13,7 @@
         <div>{{ $t('WithdrawForm.withdraw-address') }}</div>
         <base-input
           v-model="content"
-          @input="emit('updateDestinationAddress', content)"
+          @update:modelValue="emitUpdateDestinationAddress"
           @click="
             emit('initializeWithdraw');
             setIsInWithdrawFlow(true);
@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { defineComponent, PropType, ref } from 'vue';
 import { FeeEstimateResponse } from './models';
 import { formatUnits } from 'src/utils/ethers';
 import { humanizeTokenAmount } from 'src/utils/utils';
@@ -121,15 +121,21 @@ export default defineComponent({
       required: true,
     },
   },
-  setup({ destinationAddress }, { emit }) {
+  setup(data, { emit }) {
     const { NATIVE_TOKEN } = useWalletStore();
     const { setIsInWithdrawFlow, isInWithdrawFlow } = useStatusesStore();
-    const content = ref<string>(destinationAddress || '');
+    const content = ref<string>(data.destinationAddress || '');
     const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
+
+    function emitUpdateDestinationAddress(val: string) {
+      emit('updateDestinationAddress', val);
+    }
+
     return {
       formatUnits,
       humanizeTokenAmount,
       emit,
+      emitUpdateDestinationAddress,
       content,
       nativeTokenSymbol,
       isInWithdrawFlow,

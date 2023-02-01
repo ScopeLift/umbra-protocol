@@ -8,6 +8,7 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
+  ContractInterface,
   ContractTransaction,
   defaultAbiCoder,
   getAddress,
@@ -31,7 +32,7 @@ import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
 
 // Umbra.sol ABI
-const umbraAbi = [
+const umbraAbi: ContractInterface = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
   'event Announcement(address indexed receiver, uint256 amount, address indexed token, bytes32 pkx, bytes32 ciphertext)',
   'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
@@ -438,7 +439,7 @@ export class Umbra {
     const announcements = await Promise.all(
       announcementEvents.map(async (event) => {
         // Extract out event parameters
-        const announcement = (event.args as unknown) as Announcement;
+        const announcement = event.args as unknown as Announcement;
         const { receiver, amount, token, ciphertext, pkx } = announcement;
 
         const [block, tx] = await Promise.all([event.getBlock(), event.getTransaction()]);

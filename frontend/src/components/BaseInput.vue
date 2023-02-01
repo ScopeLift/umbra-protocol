@@ -2,6 +2,7 @@
   <div>
     <q-input
       v-model="content"
+      autocomplete="off"
       :autofocus="autofocus"
       :autogrow="autogrow"
       :bg-color="bgColor"
@@ -22,15 +23,16 @@
       :min="type === 'number' ? 0 : undefined"
       :outlined="outlined"
       :placeholder="placeholder"
+      ref="QInput"
       standout
       @blur="hideHint"
       @focus="showHint"
-      @input="handleInput"
+      @update:modelValue="handleInput"
     >
-      <!-- 
+      <!--
       If we have a button, never show the loading slot because it makes the button jump left and right when the
-      loading slot is shown / hidden 
-    -->
+      loading slot is shown / hidden
+      -->
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:loading></template>
       <template v-if="appendButtonLabel && !$q.screen.xs" v-slot:append>
         <base-button
@@ -76,9 +78,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
   name: 'BaseInput',
 
   props: {
@@ -166,6 +168,12 @@ export default Vue.extend({
       default: 'ondemand',
     },
 
+    modelValue: {
+      type: undefined,
+      required: true,
+      default: undefined,
+    },
+
     placeholder: {
       type: undefined,
       required: false,
@@ -197,30 +205,26 @@ export default Vue.extend({
       required: false,
       default: true,
     },
-
-    value: {
-      type: undefined,
-      required: true,
-      default: undefined,
-    },
   },
 
   data() {
     return {
-      content: this.value,
+      content: this.modelValue,
       hintString: '',
     };
   },
 
   watch: {
     /**
-     * @notice This is required for two-way binding when programtically updating the input
+     * @notice This is required for two-way binding when programmatically updating the input
      * in the parent component using BaseInput
      */
-    value(val) {
+    modelValue(val) {
       this.content = val; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     },
   },
+
+  emits: ['blur', 'click', 'update:modelValue'],
 
   methods: {
     handleClick() {
@@ -228,7 +232,7 @@ export default Vue.extend({
     },
 
     handleInput() {
-      this.$emit('input', this.content);
+      this.$emit('update:modelValue', this.content);
     },
 
     hideHint() {
@@ -237,7 +241,7 @@ export default Vue.extend({
     },
 
     showHint() {
-      this.hintString = this.hint;
+      this.hintString = (this as unknown as { hint: string }).hint;
     },
   },
 });

@@ -36,7 +36,8 @@ const chainIds = {
 // optional so that typechain can still build its types without hard failing on this.
 let mnemonic = '';
 if (!process.env.MNEMONIC) {
-  console.warn('Please set your MNEMONIC in a .env file');
+  console.warn('MNEMONIC not found in .env file, using default mnemonic');
+  mnemonic = 'test test test test test test test test test test test junk';
 } else {
   mnemonic = process.env.MNEMONIC;
 }

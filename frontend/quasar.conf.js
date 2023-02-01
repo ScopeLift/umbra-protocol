@@ -8,13 +8,18 @@
 /* eslint-env node */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { configure } = require('quasar/wrappers');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const path = require('path');
 
 module.exports = configure(function (ctx) {
   return {
     // https://quasar.dev/quasar-cli/supporting-ts
     supportTS: {
       tsCheckerConfig: {
-        eslint: true,
+        eslint: {
+          enabled: true,
+          files: './src/**/*.{ts,js,vue}',
+        },
       },
     },
 
@@ -24,7 +29,7 @@ module.exports = configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/boot-files
-    boot: ['composition-api', 'components', 'error-handler', 'logger', 'i18n'],
+    boot: ['components', 'error-handler', 'logger', 'i18n'],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: ['app.sass'],
@@ -63,29 +68,31 @@ module.exports = configure(function (ctx) {
       // Options below are automatically set depending on the env, set them if you want to override
       // extractCSS: false,
 
-      // https://quasar.dev/quasar-cli/handling-webpack
-      extendWebpack(cfg) {
-        // linting is slow in TS projects, we execute it only for production builds
-        if (ctx.prod) {
-          cfg.module.rules.push({
-            enforce: 'pre',
-            test: /\.(js|vue)$/,
-            loader: 'eslint-loader',
-            exclude: /node_modules/,
-          });
-        }
+      chainWebpack: (chain) => {
+        chain.module
+          .rule('i18n-resource')
+          .test(/\.(json5?|ya?ml)$/)
+          .include.add(path.resolve(__dirname, './src/i18n'))
+          .end()
+          .type('javascript/auto')
+          .use('i18n-resource')
+          .loader('@intlify/vue-i18n-loader');
+        chain.module
+          .rule('i18n')
+          .resourceQuery(/blockType=i18n/)
+          .type('javascript/auto')
+          .use('i18n')
+          .loader('@intlify/vue-i18n-loader');
       },
-      extendWebpack(cfg) {
-        cfg.module.rules.push({
-          resourceQuery: /blockType=i18n/,
-          type: 'javascript/auto',
-          use: [{ loader: '@kazupon/vue-i18n-loader' }, { loader: 'yaml-loader' }],
-        });
+
+      chainWebpack(chain) {
+        const nodePolyfillWebpackPlugin = require('node-polyfill-webpack-plugin');
+        chain.plugin('node-polyfill').use(nodePolyfillWebpackPlugin);
+        chain.plugin('eslint-webpack-plugin').use(ESLintPlugin, [{ extensions: ['js', 'ts', 'vue'] }]);
       },
       extendWebpack(cfg) {
         cfg.resolve.alias = {
           ...cfg.resolve.alias, // This adds the existing aliases.
-          '@ledgerhq/devices': '@ledgerhq/devices/lib-es', // https://github.com/LedgerHQ/ledger-live/issues/763#issuecomment-1209204659
         };
       },
     },
@@ -100,7 +107,7 @@ module.exports = configure(function (ctx) {
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
     framework: {
       iconSet: 'fontawesome-v5', // Quasar icon set
-      lang: 'en-us', // Quasar language pack
+      lang: 'en-US', // Quasar language pack
       config: {},
 
       // Possible values for "importStrategy":

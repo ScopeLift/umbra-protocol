@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm } from 'quasar';
 import { UserAnnouncement, KeyPair, AnnouncementDetail, utils } from '@umbra/umbra-js';
 import { BigNumber, computeAddress, isHexString } from 'src/utils/ethers';
@@ -99,15 +99,8 @@ function useScan() {
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
   // Start and end blocks for advanced mode settings
-  const {
-    advancedMode,
-    startBlock,
-    endBlock,
-    setScanBlocks,
-    setScanPrivateKey,
-    scanPrivateKey,
-    resetScanSettings,
-  } = useSettingsStore();
+  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
+    useSettingsStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
@@ -186,7 +179,7 @@ function useScan() {
     try {
       allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
     } catch (e) {
-      scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch anouncements
+      scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
       throw e;
     }
 
@@ -195,7 +188,6 @@ function useScan() {
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
 
-    // TODO: This is what we need to move to the webworker instead of chunking
     filterUserAnnouncements(
       spendingPubKey,
       viewingPrivKey,

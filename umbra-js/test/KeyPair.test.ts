@@ -372,7 +372,15 @@ describe('KeyPair class', () => {
 
     it('throws when getUncompressedFromX is provided bad inputs', async () => {
       // @ts-expect-error
-      expect(() => KeyPair.getUncompressedFromX(1)).to.throw('Compressed public key must be a BigNumber or string');
+      expect(() => KeyPair.getUncompressedFromX(Number.MAX_SAFE_INTEGER)).to.throw(
+        'overflow [ See: https://links.ethers.org/v5-errors-NUMERIC_FAULT-overflow ] (fault="overflow", operation="BigNumber.from", value=9007199254740991, code=NUMERIC_FAULT, version=bignumber/5.6.2)'
+      );
+      expect(() => KeyPair.getUncompressedFromX('0x')).to.throw(
+        'invalid BigNumber string (argument="value", value="0x", code=INVALID_ARGUMENT, version=bignumber/5.6.2)'
+      );
+      expect(() => KeyPair.getUncompressedFromX('abc')).to.throw(
+        'invalid BigNumber string (argument="value", value="abc", code=INVALID_ARGUMENT, version=bignumber/5.6.2)'
+      );
     });
   });
 });

@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch } from '@vue/composition-api';
+import { computed, onMounted, markRaw, ref, watch } from 'vue';
 
 import Onboard, { OnboardAPI } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
@@ -21,12 +21,12 @@ import {
 } from 'components/models';
 import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
 import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
-import { BigNumber, Contract, Web3Provider, parseUnits } from 'src/utils/ethers';
+import { BigNumber, Contract, ExternalProvider, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
-import enLocal from 'src/i18n/locales/en-us.json';
-import chLocal from 'src/i18n/locales/zh-cn.json';
+import enLocal from 'src/i18n/locales/en-US.json';
+import chLocal from 'src/i18n/locales/zh-CN.json';
 
 // Wallet configurations.
 const injected = injectedModule();
@@ -34,6 +34,7 @@ const walletConnect = walletConnectModule();
 const coinbaseWalletSdk = coinbaseWalletModule();
 const ledger = ledgerModule();
 const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
+
 /**
  * State is handled in reusable components, where each component is its own self-contained
  * file consisting of one function defined used the composition API.
@@ -69,6 +70,15 @@ const isArgent = ref<boolean>(false); // true if user connected an argent wallet
 const stealthKeys = ref<{ spendingPublicKey: string; viewingPublicKey: string } | null>();
 const avatar = ref<string | null>('');
 
+// A few parts of state are exported directly under an alias, so that they can be accessed in TS
+// files without running the `onMounted` hook below, since lifecycle injection APIs can only be
+// used during execution of setup(), so importing `useWalletStore` in TS files would throw an error.
+// These properties must be updated manually as they are not reactive. We refresh the page on
+// network change, so this is ok, but if that ever changes we'll need to modify this.
+export let providerExport = provider.value;
+export let relayerExport = relayer.value;
+export let tokensExport: TokenInfoExtended[] = [];
+
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
   const { lastWallet, setLastWallet } = useSettingsStore();
@@ -92,13 +102,13 @@ export default function useWalletStore() {
           mobile: { enabled: false },
         },
         i18n: {
-          'en-us': {
+          'en-US': {
             connect: enLocal['connect'],
             modals: enLocal['modals'],
             accountCenter: enLocal['accountCenter'],
             notify: enLocal['notify'],
           },
-          'zh-cn': {
+          'zh-CN': {
             connect: chLocal['connect'],
             modals: chLocal['modals'],
             accountCenter: chLocal['accountCenter'],
@@ -229,7 +239,8 @@ export default function useWalletStore() {
         return;
       }
 
-      provider.value = new Web3Provider(rawProvider.value, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
+      provider.value = new Web3Provider(rawProvider.value as unknown as ExternalProvider, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
+      providerExport = provider.value;
       signer.value = provider.value.getSigner();
 
       // Get user and network information
@@ -254,9 +265,23 @@ export default function useWalletStore() {
         return;
       }
 
-      // Set Umbra and StealthKeyRegistry classes
-      umbra.value = new Umbra(provider.value, newChainId);
-      stealthKeyRegistry.value = new StealthKeyRegistry(signer.value);
+      // Set Umbra and StealthKeyRegistry classes.
+      //
+      // When assigning ethers objects as refs, we must wrap the object in `markRaw` for assignment. This wasn't required
+      // by Vue 2's reactivity system based on Object.defineProperty, but is required for Vue 3's reactivity system based
+      // on ES6 proxies. The Vue 3 reactivity system does not work well with non-configurable, non-writable properties on
+      // objects, and many ethers classes, such as providers and networks, use non-configurable or non-writable properties.
+      // Therefore we wrap the object in `markRaw` to prevent it from being converted to a Proxy. If you do not do this,
+      // you'll see errors like this when using ethers objects as refs:
+      //     Uncaught (in promise) TypeError: 'get' on proxy: property 'interface' is a read-only and non-configurable data
+      //     property on the proxy target but the proxy did not return its actual value (expected '#<Object>' but got
+      //     '[object Object]')
+      // Read more here:
+      //     - https://github.com/vuejs/vue-next/issues/3024
+      //     - https://stackoverflow.com/questions/65693108/threejs-component-working-in-vuejs-2-but-not-3
+      //     - https://v3.vuejs.org/api/basic-reactivity.html#markraw
+      umbra.value = markRaw(new Umbra(provider.value, newChainId));
+      stealthKeyRegistry.value = markRaw(new StealthKeyRegistry(signer.value));
 
       // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
       // When using Argent, a user's funds are secured by the contract wallet, not by a private key. As a result:
@@ -285,8 +310,11 @@ export default function useWalletStore() {
       const _isAccountSetup = _stealthKeys !== null;
 
       if (typeof _userEns === 'string') {
-        // ENS address must exist
-        avatar.value = await MAINNET_PROVIDER.getAvatar(_userEns);
+        // ENS address must exist.
+        // We don't await this because IPFS avatars can be slow to load and we don't want to block on this.
+        MAINNET_PROVIDER.getAvatar(_userEns)
+          .then((res) => (avatar.value = res))
+          .catch((e) => window.logger.warn(e));
       }
 
       // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
@@ -300,6 +328,7 @@ export default function useWalletStore() {
       // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
       // parameters, and we want to ensure this method completed successfully before updating the UI
       relayer.value = _relayer;
+      relayerExport = relayer.value;
       userAddress.value = _userAddress;
       userEns.value = _userEns;
       userCns.value = _userCns;
@@ -364,7 +393,7 @@ export default function useWalletStore() {
       // This error code indicates that the chain has not been added to MetaMask.
       if (code === 4902) {
         try {
-          const eip3085Chain = <any>{ ...chain }; // without casting to any, TS errors on `delete` since we're deleting a required property
+          const eip3085Chain = <Chain>{ ...chain }; // without casting to any, TS errors on `delete` since we're deleting a required property
           delete eip3085Chain.logoURI; // if you don't remove extraneous fields, adding the chain will error
           await provider.value?.send('wallet_addEthereumChain', [eip3085Chain]);
         } catch (addError) {
@@ -382,6 +411,7 @@ export default function useWalletStore() {
   // Helper method to clear state. Useful when user switches wallets.
   function resetState() {
     provider.value = undefined;
+    providerExport = undefined;
     signer.value = undefined;
     userAddress.value = undefined;
     userEns.value = undefined;
@@ -393,6 +423,7 @@ export default function useWalletStore() {
     viewingKeyPair.value = undefined;
     balances.value = {};
     relayer.value = undefined;
+    relayerExport = undefined;
     hasEnsKeys.value = false;
     hasCnsKeys.value = false;
     isAccountSetup.value = false;
@@ -446,6 +477,8 @@ export default function useWalletStore() {
   });
 
   const tokens = computed((): TokenInfoExtended[] => {
+    let tokensArray: TokenInfoExtended[] = [];
+
     const sortedTokens = (relayer.value?.tokens || []).sort(
       // sort alphabetically
       (firstToken, secondToken) => firstToken.symbol.localeCompare(secondToken.symbol)
@@ -453,11 +486,14 @@ export default function useWalletStore() {
     const nativeTokenIndex = sortedTokens.map((token) => token.address).indexOf(NATIVE_TOKEN_ADDRESS);
     if (nativeTokenIndex > -1) {
       // native token present
-      return sortedTokens.sort((tok) => Number(tok.address != NATIVE_TOKEN_ADDRESS)); // move native token to front
+      tokensArray = sortedTokens.sort((tok) => Number(tok.address != NATIVE_TOKEN_ADDRESS)); // move native token to front
     } else {
       // add native token to the front of the array
-      return [NATIVE_TOKEN.value, ...sortedTokens];
+      tokensArray = [NATIVE_TOKEN.value, ...sortedTokens];
     }
+
+    tokensExport = tokensArray;
+    return tokensArray;
   });
 
   const userDisplayName = computed(() => {

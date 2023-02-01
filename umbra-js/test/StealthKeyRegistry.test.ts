@@ -35,7 +35,7 @@ describe('StealthKeyRegistry class', () => {
   it('sets and gets stealth keys', async () => {
     // Generate keys
     const [user] = await ethers.getSigners(); // type SignerWithAddress
-    const userSigner = (user as unknown) as JsonRpcSigner; // type cast to avoid TS errors
+    const userSigner = user as unknown as JsonRpcSigner; // type cast to avoid TS errors
     const umbra = new Umbra(ethers.provider, 5);
     const { spendingKeyPair: spendKey, viewingKeyPair: viewKey } = await umbra.generatePrivateKeys(userSigner);
 

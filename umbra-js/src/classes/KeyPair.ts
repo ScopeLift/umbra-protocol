@@ -3,7 +3,7 @@
  */
 
 import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from 'noble-secp256k1';
-import { computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
+import { BigNumberish, computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
 import { RandomNumber } from './RandomNumber';
 import { assertValidPoint, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
@@ -222,10 +222,12 @@ export class KeyPair {
    * @param pkx x-coordinate of compressed public key, as BigNumber or hex string
    * @param prefix Prefix bit, must be 2 or 3
    */
-  static getUncompressedFromX(pkx: BigNumber | string, prefix: number | string | undefined = undefined) {
-    if (!(pkx instanceof BigNumber) && typeof pkx !== 'string') {
-      throw new Error('Compressed public key must be a BigNumber or string');
-    }
+  static getUncompressedFromX(pkx: BigNumberish, prefix: number | string | undefined = undefined) {
+    // Converting `pkx` to a BigNumber will throw if the value cannot be safely converted to a BigNumber, i.e. if the
+    // value is of type Number and larger than Number.MAX_SAFE_INTEGER.
+    pkx = BigNumber.from(pkx);
+
+    // pkx was validated, now we decompress it.
     const hexWithoutPrefix = hexZeroPad(BigNumber.from(pkx).toHexString(), 32).slice(2); // pkx as hex string without 0x prefix
     if (!prefix) {
       // Only safe to use this branch when uncompressed key is using for scanning your funds

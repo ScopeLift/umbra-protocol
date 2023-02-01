@@ -99,6 +99,7 @@
         placeholder="vitalik.eth"
         lazy-rules
         :rules="isValidId"
+        ref="recipientIdBaseInputRef"
       />
 
       <!-- Identifier, advanced mode tooltip -->
@@ -135,6 +136,7 @@
         :label="$t('Send.token')"
         :options="tokenList"
         option-label="symbol"
+        ref="tokenBaseSelectRef"
       />
 
       <!-- Amount -->
@@ -150,6 +152,7 @@
         @click="setHumanAmountMax"
         lazy-rules
         :rules="isValidTokenAmount"
+        ref="humanAmountBaseInputRef"
       />
 
       <!-- Toll + summary details -->
@@ -242,18 +245,30 @@
 
 <script lang="ts">
 // --- External imports ---
-import { computed, defineComponent, getCurrentInstance, onMounted, ref, watch } from '@vue/composition-api';
-import { QForm, QInput } from 'quasar';
+import { computed, defineComponent, onMounted, ref, watch } from 'vue';
+import { QForm, QInput, QSelect } from 'quasar';
 import { utils as umbraUtils } from '@umbra/umbra-js';
 // --- Components ---
+import BaseInput from 'components/BaseInput.vue';
+import BaseSelect from 'components/BaseSelect.vue';
 import BaseTooltip from 'components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 // --- Store ---
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 // --- Other ---
+import { tc } from 'src/boot/i18n';
 import { txNotify } from 'src/utils/alerts';
-import { BigNumber, Contract, getAddress, MaxUint256, parseUnits, formatUnits, Zero } from 'src/utils/ethers';
+import {
+  BigNumber,
+  Contract,
+  formatUnits,
+  getAddress,
+  MaxUint256,
+  parseUnits,
+  TransactionResponse,
+  Zero,
+} from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended } from 'components/models';
@@ -282,22 +297,25 @@ function useSendForm() {
   const advancedAcknowledged = ref(false);
   const showAdvancedSendWarning = ref(false);
   const acknowledgeSendRisk = ref(false);
-  const vm = getCurrentInstance()!;
 
-  // Form parameters
+  // Form refs for triggering validation via form items' `validate()` method.
+  const recipientIdBaseInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
+  const tokenBaseSelectRef = ref<InstanceType<typeof BaseSelect> | null>(null);
+  const humanAmountBaseInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
+
+  // Form parameters.
   const recipientId = ref<string>();
-  const recipientIdBaseInputRef = ref<Vue>();
   const useNormalPubKey = ref(false);
-  const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
-  const sendAdvancedButton = computed(() => useNormalPubKey.value && advancedMode.value);
-  const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const token = ref<TokenInfoExtended | null>();
-  const tokenBaseInputRef = ref<Vue>();
   const humanAmount = ref<string>();
-  const humanAmountBaseInputRef = ref<Vue>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
+
+  // Computed form parameters.
+  const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
+  const sendAdvancedButton = computed(() => useNormalPubKey.value && advancedMode.value);
+  const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const humanTotalAmount = computed(() => {
     if (typeof humanAmount.value !== 'string') return '--'; // appease TS
@@ -317,61 +335,57 @@ function useSendForm() {
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
     // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
     // async validation rules
-    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, tokenList],
+    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, NATIVE_TOKEN],
     async (
-      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue],
-      [prevIsLoadingValue, prevUseNormalPubKey, prevRecipientIdValue, prevTokenValue, prevHumanAmountValue]
+      [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue, nativeTokenValue],
+      [
+        prevIsLoadingValue,
+        prevUseNormalPubKey,
+        prevRecipientIdValue,
+        _prevTokenValue,
+        prevHumanAmountValue,
+        prevNativeTokenValue,
+      ]
     ) => {
-      // Fetch toll
-      toll.value = <BigNumber>await umbra.value?.umbraContract.toll();
+      _prevTokenValue; // Silence unused var warning.
 
-      // Validates value initially passed through params
-      const recipientIdInputRef = recipientIdBaseInputRef.value?.$children[0] as QInput;
-      const tokenInputRef = tokenBaseInputRef.value?.$children[0] as QInput;
-      const humanAmountInputRef = humanAmountBaseInputRef.value?.$children[0] as QInput;
-      if (recipientIdInputRef && recipientIdValue && typeof prevRecipientIdValue === 'undefined') {
-        await recipientIdInputRef.validate();
-      }
+      // Fetch toll.
+      umbra.value?.umbraContract
+        .toll()
+        .then((tollValue) => {
+          toll.value = tollValue;
+        })
+        .catch((e) => {
+          throw new Error(`Error fetching toll: ${JSON.stringify(e)}`);
+        });
 
-      if (tokenInputRef && tokenValue && typeof prevTokenValue === 'undefined') {
-        await tokenInputRef.validate();
-      }
-      if (humanAmountInputRef && humanAmountValue && typeof prevHumanAmountValue === 'undefined') {
-        await humanAmountInputRef.validate();
-      }
-
+      // Reset acknowledgement if user changes the public key type.
       if (!useNormalPubKey) {
         advancedAcknowledged.value = false;
       }
 
-      // Reset token and amount if token is not supported on the network
-      if (
-        tokenList.value.length &&
-        !tokenList.value.some((tokenOption) => tokenOption.symbol === (tokenValue as TokenInfoExtended)?.symbol)
-      ) {
-        token.value = tokenList.value[0];
-        humanAmount.value = undefined;
+      // Perform minimal required validation based on what changed.
+      if (useNormalPubKey !== prevUseNormalPubKey || recipientIdValue !== prevRecipientIdValue) {
+        const recipientIdInputRef = recipientIdBaseInputRef.value?.$refs.QInput as QInput;
+        isValidRecipientId.value = await recipientIdInputRef?.validate();
+      } else if (humanAmountValue !== prevHumanAmountValue && tokenValue && humanAmountValue) {
+        const tokenInputRef = tokenBaseSelectRef.value?.$refs.QSelect as QSelect;
+        await tokenInputRef?.validate();
+      } else if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId || isLoadingValue !== prevIsLoadingValue) {
+        // When network finally connects after page load, we need to re-parse the payment link data.
+        await setPaymentLinkData(); // Handles validations.
       }
 
-      // Revalidates form
-      if (
-        // on network change
-        useNormalPubKey !== prevUseNormalPubKey ||
-        isLoadingValue !== prevIsLoadingValue ||
-        // when both token and value are present
-        (tokenValue && humanAmountValue)
-      ) {
-        void sendFormRef.value?.validate();
-      }
-      const validId = Boolean(recipientIdValue) && (await isValidId(recipientIdValue as string)) === true;
-      isValidRecipientId.value = validId;
       const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
-      isValidForm.value = validId && Boolean(tokenValue) && validAmount;
+      isValidForm.value = isValidRecipientId.value && Boolean(tokenValue) && validAmount;
     }
   );
 
   onMounted(async () => {
-    // Check for query parameters on load
+    await setPaymentLinkData();
+  });
+
+  async function setPaymentLinkData() {
     const { to, token: paymentToken, amount } = await parsePaymentLink(NATIVE_TOKEN.value);
     if (to) recipientId.value = to;
     if (amount) humanAmount.value = amount;
@@ -379,7 +393,10 @@ function useSendForm() {
     // For token, we always default to the chain's native token if none was selected
     if (paymentToken?.symbol) token.value = paymentToken;
     else token.value = tokenList.value[0];
-  });
+
+    // Validate the form
+    await sendFormRef.value?.validate();
+  }
 
   // Validators
   async function isValidId(val: string | undefined) {
@@ -392,10 +409,11 @@ function useSendForm() {
         advanced: shouldUseNormalPubKey.value,
       });
       return true;
-    } catch (e) {
+    } catch (e: unknown) {
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
-      if (e.reason) return toSentenceCase(e.reason);
-      return toSentenceCase(e.message);
+      if (e instanceof Error && e.message) return toSentenceCase(e.message);
+      if ((e as { reason: string }).reason) return toSentenceCase((e as { reason: string }).reason);
+      return JSON.stringify(e);
     }
   }
 
@@ -403,7 +421,11 @@ function useSendForm() {
 
   const getMinSendAmount = (tokenAddress: string): number => {
     const tokenInfo = tokenList.value.filter((token) => token.address === tokenAddress)[0];
-    if (!tokenInfo) throw new Error(`token info unavailable for ${tokenAddress}`); // this state should not be possible
+
+    // This can happen when parsing a payment link and the token list has not loaded yet. In that
+    // case, we just return a very high number so the user can't send anything.
+    if (!tokenInfo) return Number.POSITIVE_INFINITY;
+
     const tokenMinSendInWei = parseUnits(tokenInfo.minSendAmount, 'wei');
     // We don't need to worry about fallbacks: native tokens have hardcoded fallbacks
     // defined in the wallet store. For any other tokens, we wouldn't have info about them
@@ -414,17 +436,17 @@ function useSendForm() {
 
   function isValidTokenAmount(val: string | undefined) {
     if (val === undefined) return true; // don't show error on empty field
-    if (!val || !(Number(val) > 0)) return vm.$i18n.tc('Send.enter-an-amount');
-    if (!token.value) return vm.$i18n.tc('Send.select-a-token');
+    if (!val || !(Number(val) > 0)) return tc('Send.enter-an-amount');
+    if (!token.value) return tc('Send.select-a-token');
 
     const { address: tokenAddress, decimals } = token.value;
     const minAmt = getMinSendAmount(tokenAddress);
-    if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `${vm.$i18n.tc('Send.send-at-least')} ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
-    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${vm.$i18n.tc('Send.send-at-least')} ${minAmt} ${token.value.symbol}`; // prettier-ignore
+    if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
+    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${token.value.symbol}`; // prettier-ignore
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
-    if (amount.gt(balances.value[tokenAddress])) return `${vm.$i18n.tc('Send.amount-exceeds-balance')}`;
+    if (amount.gt(balances.value[tokenAddress])) return `${tc('Send.amount-exceeds-balance')}`;
     return true;
   }
 
@@ -432,9 +454,8 @@ function useSendForm() {
   async function onFormSubmit() {
     try {
       // Form validation
-      if (!recipientId.value || !token.value || !humanAmount.value)
-        throw new Error(vm.$i18n.tc('Send.please-complete-form'));
-      if (!signer.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
+      if (!recipientId.value || !token.value || !humanAmount.value) throw new Error(tc('Send.please-complete-form'));
+      if (!signer.value) throw new Error(tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
@@ -451,13 +472,12 @@ function useSendForm() {
       if (tokenAddress === NATIVE_TOKEN.value.address) {
         // Sending the native token, so check that user has balance of: amount being sent + toll
         const requiredAmount = tokenAmount.add(toll.value);
-        if (requiredAmount.gt(balances.value[tokenAddress]))
-          throw new Error(`${vm.$i18n.tc('Send.amount-exceeds-balance')}`);
+        if (requiredAmount.gt(balances.value[tokenAddress])) throw new Error(`${tc('Send.amount-exceeds-balance')}`);
       } else {
         // Sending other tokens, so we need to check both separately
-        const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${vm.$i18n.tc('Send.umbra-fee-exceeds-balance')}`;
+        const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${tc('Send.umbra-fee-exceeds-balance')}`;
         if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
-        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(vm.$i18n.tc('Send.amount-exceeds-balance'));
+        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(tc('Send.amount-exceeds-balance'));
       }
 
       // If token, get approval when required
@@ -466,10 +486,10 @@ function useSendForm() {
         // Check allowance
         const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
         const umbraAddress = umbra.value.umbraContract.address;
-        const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
+        const allowance = <BigNumber>await tokenContract.allowance(userAddress.value, umbraAddress);
         // If insufficient allowance, get approval
         if (tokenAmount.gt(allowance)) {
-          const approveTx = await tokenContract.approve(umbraAddress, MaxUint256);
+          const approveTx = <TransactionResponse>await tokenContract.approve(umbraAddress, MaxUint256);
           void txNotify(approveTx.hash, ethersProvider);
           await approveTx.wait();
         }
@@ -496,11 +516,11 @@ function useSendForm() {
   }
 
   async function setHumanAmountMax() {
-    if (!token.value?.address) throw new Error(vm.$i18n.tc('Send.select-a-token'));
-    if (!recipientId.value) throw new Error(vm.$i18n.tc('Send.enter-a-recipient'));
+    if (!token.value?.address) throw new Error(tc('Send.select-a-token'));
+    if (!recipientId.value) throw new Error(tc('Send.enter-a-recipient'));
 
     if (NATIVE_TOKEN.value?.address === token.value?.address) {
-      if (!userAddress.value || !provider.value) throw new Error(vm.$i18n.tc('Send.wallet-not-connected'));
+      if (!userAddress.value || !provider.value) throw new Error(tc('Send.wallet-not-connected'));
       const fromAddress = userAddress.value;
       const recipientAddress = await toAddress(recipientId.value, provider.value);
       const { ethToSend } = await umbraUtils.getEthSweepGasInfo(fromAddress, recipientAddress, provider.value);
@@ -515,11 +535,12 @@ function useSendForm() {
 
   return {
     acknowledgeSendRisk,
-    advancedMode,
     advancedAcknowledged,
+    advancedMode,
     chainId,
     currentChain,
     humanAmount,
+    humanAmountBaseInputRef,
     humanToll,
     humanTotalAmount,
     isSending,
@@ -530,12 +551,14 @@ function useSendForm() {
     NATIVE_TOKEN,
     onFormSubmit,
     recipientId,
+    recipientIdBaseInputRef,
     sendAdvancedButton,
     sendFormRef,
     setHumanAmountMax,
-    showAdvancedWarning,
     showAdvancedSendWarning,
+    showAdvancedWarning,
     token,
+    tokenBaseSelectRef,
     tokenList,
     toll,
     useNormalPubKey,

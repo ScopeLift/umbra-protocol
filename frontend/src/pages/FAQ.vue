@@ -24,7 +24,7 @@
 
       <div @click="copyUrl" id="can-you-walk-me-through-an-example">
         <f-a-q-item :expanded="selectedId === 'can-you-walk-me-through-an-example'" :question="$t('FAQ.an-example')">
-          <div v-html="$t('FAQ.an-exmaple-answer')"></div>
+          <div v-html="$t('FAQ.an-example-answer')"></div>
         </f-a-q-item>
       </div>
 
@@ -37,11 +37,11 @@
       <div @click="copyUrl" id="how-does-it-work">
         <f-a-q-item :expanded="selectedId === 'how-does-it-work'" :question="$t('FAQ.how-does-it-work')">
           <div v-html="$t('FAQ.how-does-it-work-answer')"></div>
-          <i18n path="FAQ.how-does-it-work-see-the" tag="p">
+          <i18n-t scope="global" keypath="FAQ.how-does-it-work-see-the" tag="p">
             <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')">{{
-              $t('FAQ.how-does-it-work-technical-dtails')
+              $t('FAQ.how-does-it-work-technical-details')
             }}</span>
-          </i18n>
+          </i18n-t>
         </f-a-q-item>
       </div>
 
@@ -87,11 +87,11 @@
           :question="$t('FAQ.why-setup-again')"
         >
           <div v-html="$t('FAQ.why-setup-again-answer')"></div>
-          <i18n path="FAQ.why-setup-again-answer-issue" tag="p">
+          <i18n-t scope="global" keypath="FAQ.why-setup-again-answer-issue" tag="p">
             <a href="https://github.com/ScopeLift/umbra-protocol/issues/214" class="hyperlink" target="_blank">{{
               $t('FAQ.why-setup-again-answer-this-issue')
             }}</a>
-          </i18n>
+          </i18n-t>
         </f-a-q-item>
       </div>
 
@@ -185,7 +185,7 @@
           :question="$t('FAQ.scan-time')"
         >
           <div v-html="$t('FAQ.scan-time-answer')"></div>
-          <i18n path="FAQ.scan-time-answer-issue" tag="p">
+          <i18n-t scope="global" keypath="FAQ.scan-time-answer-issue" tag="p">
             <template v-slot:one>
               <a
                 class="hyperlink"
@@ -197,7 +197,7 @@
             <template v-slot:two>
               <a class="hyperlink" href="https://eprint.iacr.org/2021/089.pdf\" target="_blank">2</a>
             </template>
-          </i18n>
+          </i18n-t>
         </f-a-q-item>
       </div>
 
@@ -224,7 +224,7 @@
 
       <div @click="copyUrl" id="has-umbra-been-audited">
         <f-a-q-item :expanded="selectedId === 'has-umbra-been-audited'" :question="$t('FAQ.audit')">
-          <i18n path="FAQ.audit-answer-contract" tag="p">
+          <i18n-t scope="global" keypath="FAQ.audit-answer-contract" tag="p">
             <template v-slot:contracts>
               <a
                 class="hyperlink"
@@ -241,10 +241,10 @@
                 >{{ $t('FAQ.audit-here') }}</a
               >
             </template>
-          </i18n>
+          </i18n-t>
 
-          <i18n path="FAQ.audit-answer-umrba-js" tag="p">
-            <template v-slot:umbra-js> <span class="code">umbra-js</span>&#32; </template>
+          <i18n-t scope="global" keypath="FAQ.audit-answer-umbra-js" tag="p">
+            <template v-slot:umbrajs> <span class="code">umbra-js</span>&#32; </template>
             <template v-slot:library>
               <a
                 class="hyperlink"
@@ -261,13 +261,13 @@
                 >{{ $t('FAQ.audit-here') }}</a
               >
             </template>
-          </i18n>
+          </i18n-t>
 
-          <i18n path="FAQ.audit-answer-umbra-off-chain" tag="p">
+          <i18n-t scope="global" keypath="FAQ.audit-answer-umbra-off-chain" tag="p">
             <template v-slot:PaulMillers>
               <a class="hyperlink" href="https://paulmillr.com/" target="_blank">Paul Miller</a>
             </template>
-            <template v-slot:noble-secp256k1>
+            <template v-slot:nobleSecp256k1>
               <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank"
                 >noble-secp256k1</a
               >
@@ -285,7 +285,7 @@
                 $t('FAQ.audit-here')
               }}</a>
             </template>
-          </i18n>
+          </i18n-t>
         </f-a-q-item>
       </div>
 
@@ -297,13 +297,13 @@
 
       <div @click="copyUrl" id="is-cryptography-in-javascript-secure">
         <f-a-q-item :expanded="selectedId === 'is-cryptography-in-javascript-secure'" :question="$t('FAQ.crypto-js')">
-          <i18n path="FAQ.crypto-js-answer" tag="p">
-            <template v-slot:timing-attacks>
+          <i18n-t scope="global" keypath="FAQ.crypto-js-answer" tag="p">
+            <template v-slot:timingAttacks>
               <a class="hyperlink" href="https://en.wikipedia.org/wiki/Timing_attack" target="_blank">{{
                 $t('FAQ.crypto-js-timing-attacks')
               }}</a>
             </template>
-            <template v-slot:noble-secp256k1>
+            <template v-slot:nobleSecp256k1>
               <a class="hyperlink" href="https://github.com/paulmillr/noble-secp256k1" target="_blank"
                 >noble-secp256k1</a
               >
@@ -313,7 +313,7 @@
                 $t('FAQ.crypto-js-here')
               }}</a>
             </template>
-          </i18n>
+          </i18n-t>
           <div v-html="$t('FAQ.crypto-js-answer-rest')"></div>
         </f-a-q-item>
       </div>
@@ -336,11 +336,11 @@
           :question="$t('FAQ.network-addrs')"
         >
           <ul>
-            <i18n path="FAQ.network-addrs-core" tag="li">
+            <i18n-t scope="global" keypath="FAQ.network-addrs-core" tag="li">
               <template v-slot:umbra>
                 <span class="code">Umbra</span>
               </template>
-              <template v-slot:umbra-addr>
+              <template v-slot:umbraAddr>
                 <span class="code">{{ deployments.umbra }}</span>
               </template>
               <template v-slot:mainnet>
@@ -358,8 +358,8 @@
               <template v-slot:arbitrum>
                 <a :href="getEtherscanUrl(deployments.umbra, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
               </template>
-            </i18n>
-            <i18n path="FAQ.network-addrs-registry" tag="li">
+            </i18n-t>
+            <i18n-t scope="global" keypath="FAQ.network-addrs-registry" tag="li">
               <template v-slot:stealthRegistry>
                 <span class="code">StealthKeyRegistry</span>
               </template>
@@ -381,7 +381,7 @@
               <template v-slot:arbitrum>
                 <a :href="getEtherscanUrl(deployments.registry, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
               </template>
-            </i18n>
+            </i18n-t>
           </ul>
         </f-a-q-item>
       </div>
@@ -390,7 +390,7 @@
         <f-a-q-item :expanded="selectedId === 'how-does-it-work-technical'" :question="$t('FAQ.how-it-works')">
           <div v-html="$t('FAQ.how-it-works-answer')"></div>
 
-          <i18n path="FAQ.how-it-works-answer-ECDH" tag="p">
+          <i18n-t scope="global" keypath="FAQ.how-it-works-answer-ECDH" tag="p">
             <template v-slot:ECDH>
               <a
                 class="hyperlink"
@@ -402,27 +402,27 @@
             <template v-slot:c>
               <span class="code">c</span>
             </template>
-            <template v-slot:a-stealth>
+            <template v-slot:aStealth>
               <span class="code">a_stealth</span>
             </template>
             <template v-slot:announcement>
               <span class="code">Announcement</span>
             </template>
-            <template v-slot:P-ephemeral>
+            <template v-slot:PEphemeral>
               <span class="code">P_ephemeral</span>
             </template>
-          </i18n>
+          </i18n-t>
 
           <div v-html="$t('FAQ.how-it-works-answer-part-2')"></div>
 
-          <i18n path="FAQ.how-it-works-answer-option-3" tag="p">
+          <i18n-t scope="global" keypath="FAQ.how-it-works-answer-option-3" tag="p">
             <template v-slot:loopring>
               <a class="hyperlink" href="https://loopring.org/" target="_blank">Loopring</a>
             </template>
             <template v-slot:zksync>
               <a class="hyperlink" href="https://zksync.io/" target="_blank">zkSync</a>
             </template>
-          </i18n>
+          </i18n-t>
 
           <div v-html="$t('FAQ.how-it-works-answer-end')"></div>
         </f-a-q-item>
@@ -433,17 +433,17 @@
           :expanded="selectedId === 'what-are-spending-and-viewing-keys'"
           :question="$t('FAQ.spend-view-keys')"
         >
-          <i18n path="FAQ.spend-view-keys-answer-1" tag="p">
+          <i18n-t scope="global" keypath="FAQ.spend-view-keys-answer-1" tag="p">
             <a class="hyperlink" href="https://electriccoin.co/blog/explaining-viewing-keys/\" target="_blank">{{
               $t('FAQ.nomenclature')
             }}</a>
-          </i18n>
+          </i18n-t>
 
-          <i18n path="FAQ.spend-view-keys-answer-2" tag="p">
+          <i18n-t scope="global" keypath="FAQ.spend-view-keys-answer-2" tag="p">
             <span class="hyperlink" @click="expandAndScrollToElement('how-does-it-work-technical')">{{
               $t('FAQ.spend-view-keys-technical-details')
             }}</span>
-          </i18n>
+          </i18n-t>
         </f-a-q-item>
       </div>
 
@@ -530,18 +530,18 @@
 
       <div @click="copyUrl" id="what-are-hooks-and-how-do-i-use-them">
         <f-a-q-item :expanded="selectedId === 'what-are-hooks-and-how-do-i-use-them'" :question="$t('FAQ.hooks')">
-          <i18n path="FAQ.hooks-answer" tag="p">
+          <i18n-t scope="global" keypath="FAQ.hooks-answer" tag="p">
             <a class="hyperlink" href="https://eips.ethereum.org/EIPS/eip-777" target="_blank">ERC-777</a>
-          </i18n>
+          </i18n-t>
           <div v-html="$t('FAQ.hooks-answer-rest')"></div>
-          <i18n path="FAQ.hooks-answer-encode-data" tag="p">
+          <i18n-t scope="global" keypath="FAQ.hooks-answer-encode-data" tag="p">
             <a
               class="hyperlink"
               href="https://docs.ethers.io/v5/single-page/#/v5/api/utils/abi/interface/-%23-Interface--encoding"
               target="_blank"
               >{{ $t('FAQ.hooks-answer-encoding-data') }}</a
             >
-          </i18n>
+          </i18n-t>
           <div v-html="$t('FAQ.hooks-answer-end')"></div>
         </f-a-q-item>
       </div>
@@ -550,46 +550,39 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, SetupContext } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from 'vue';
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import FAQItem from 'components/FAQItem.vue';
 import { copyToClipboard, scroll } from 'quasar';
 import { notifyUser } from 'src/utils/alerts';
 import { getEtherscanUrl } from 'src/utils/utils';
 
-function useScrollToElement(context: SetupContext) {
-  const { getScrollTarget, setScrollPosition } = scroll;
+function useScrollToElement(route: RouteLocationNormalizedLoaded) {
+  const { getScrollTarget, setVerticalScrollPosition } = scroll;
   const selectedId = ref('');
-
-  // Hepler methods
-  const getElementIdFromUrl = () => context.root.$router.currentRoute.hash.slice(1); // .slice(1) to remove '#'
 
   const expandAndScrollToElement = (elementId: string) => {
     // Get element
     const el = document.getElementById(elementId);
-    console.log(el);
     if (!el) return;
     selectedId.value = elementId;
 
-    // Scroll to element
-    const target = getScrollTarget(el);
-    const offset = el.offsetTop;
-    const duration = 500; // duration of scroll
-    setScrollPosition(target, offset, duration);
+    // Scroll to element target and offset with specified animation duration.
+    setVerticalScrollPosition(getScrollTarget(el), el.offsetTop, 500);
   };
 
   // Copy the URL to go directly to the clicked element and update URL in navigation bar
   const copyUrl = async (e: MouseEvent) => {
     const el = e.currentTarget as HTMLElement;
-    const elementId = el.id;
-    const slug = context.root.$router.currentRoute.path; // includes the leading forward slash
-    const page = `${slug}#${elementId}`;
+    const page = `${route.path}#${el.id}`; // `route.path` includes the leading forward slash
     await copyToClipboard(`${window.location.origin}${page}`);
     if (el.getAttribute('isHeader')) notifyUser('success', 'URL successfully copied to clipboard');
     window.history.pushState('', '', page); // updates URL in navigation bar
   };
 
   // Scrolls to element, and when applicable clicks the expansion item to open it
-  onMounted(() => expandAndScrollToElement(getElementIdFromUrl()));
+  const elementId = route.hash.slice(1); // .slice(1) to remove '#'
+  onMounted(() => expandAndScrollToElement(elementId));
 
   return { selectedId, expandAndScrollToElement, copyUrl };
 }
@@ -597,12 +590,13 @@ function useScrollToElement(context: SetupContext) {
 export default defineComponent({
   name: 'PageFAQ',
   components: { FAQItem },
-  setup(_props, context) {
+  setup() {
     const deployments = {
       umbra: '0xFb2dc580Eed955B528407b4d36FfaFe3da685401',
       registry: '0x31fe56609C65Cd0C510E7125f051D440424D38f3',
     };
-    return { ...useScrollToElement(context), deployments, getEtherscanUrl };
+    const route = useRoute();
+    return { ...useScrollToElement(route), deployments, getEtherscanUrl };
   },
 });
 </script>

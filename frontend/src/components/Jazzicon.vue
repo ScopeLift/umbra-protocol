@@ -3,11 +3,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from '@vue/composition-api';
+import { defineComponent, onMounted } from 'vue';
 import jazzicon from '@metamask/jazzicon';
 
 export default defineComponent({
-  name: 'Jazzicon',
+  name: 'JazziconComponent',
   props: {
     address: { type: String, required: true },
   },

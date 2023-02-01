@@ -16,7 +16,6 @@
       :size="size"
       :text-color="textColor"
       :type="type"
-      @click="handleClick"
     >
       <q-icon v-if="icon" right size="0.875rem" :name="icon" />
     </q-btn>
@@ -24,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'BaseButton',
 
@@ -111,13 +110,6 @@ export default defineComponent({
       required: false,
       default: 'button',
     },
-  },
-
-  setup(props, context) {
-    function handleClick() {
-      context.emit('click');
-    }
-    return { handleClick, props };
   },
 });
 </script>
