@@ -30,7 +30,7 @@ import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSup
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
-import { abi as batchSendAbi } from 'src/abi/UmbraBatchSend.sol/UmbraBatchSend.json';
+import { abi as batchSendAbi } from '../abi/UmbraBatchSend.sol/UmbraBatchSend.json';
 // Umbra.sol ABI
 const umbraAbi: ContractInterface = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
