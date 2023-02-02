@@ -7,6 +7,7 @@
     "build": "make build",
     "test": "make test",
     "lint": "forge fmt --check",
-    "coverage": "make coverage"
+    "coverage": "make coverage",
+    "prepare": "make build"
   }
 }
