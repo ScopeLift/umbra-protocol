@@ -15,7 +15,7 @@ import {
   UmbraFactory as Umbra__factory,
 } from '@umbra/contracts-core/typechain';
 
-const { abi: batchSendAbi } = require('@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json');
+import { abi as batchSendAbi } from '../src/abi/UmbraBatchSend.sol/UmbraBatchSend.json';
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
 const jsonRpcProvider = new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
@@ -649,7 +649,9 @@ describe('Umbra class', () => {
       const stealthPrivateKey = Umbra.computeStealthPrivateKey(receiver.privateKey, userAnnouncements[0].randomNumber);
       const { v, r, s } = await Umbra.signWithdraw(
         stealthPrivateKey,
-        (await ethersProvider.getNetwork()).chainId,
+        (
+          await ethersProvider.getNetwork()
+        ).chainId,
         umbra.umbraContract.address,
         destinationWallet.address,
         dai.address,
