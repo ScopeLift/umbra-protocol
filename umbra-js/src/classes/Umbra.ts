@@ -8,7 +8,6 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
-  ContractInterface,
   ContractTransaction,
   defaultAbiCoder,
   getAddress,
