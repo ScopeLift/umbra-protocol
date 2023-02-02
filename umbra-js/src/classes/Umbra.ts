@@ -207,7 +207,7 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Parse provided overrides
-    const { localOverrides, lookupOverrides } = Umbra.parseOverrides({ ...overrides });
+    const { localOverrides, lookupOverrides } = parseOverrides({ ...overrides });
 
     const { stealthKeyPair, pubKeyXCoordinate, encrypted } = await this.prepareSend(recipientId, lookupOverrides);
     assertValidStealthAddress(stealthKeyPair.address);
@@ -256,7 +256,7 @@ export class Umbra {
     const toll = await this.umbraContract.toll();
 
     // Parse provided overrides
-    const { localOverrides, lookupOverrides } = Umbra.parseOverrides({ ...overrides });
+    const { localOverrides, lookupOverrides } = parseOverrides({ ...overrides });
 
     // Prepare data for each send
     const sendInfo = await Promise.all(
@@ -650,26 +650,6 @@ export class Umbra {
   }
 
   /**
-   * @notice Helper method to return parsed localOverrides and LookupOverrides
-   * @param overrides Override the gas limit, gas price, nonce, or advanced mode.
-   * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
-   * them from on-chain transaction when true
-   */
-  static parseOverrides(overrides: SendOverrides = {}) {
-    const localOverrides = { ...overrides }; // avoid mutating the object passed in
-    const advanced = localOverrides?.advanced || false;
-    const supportPubKey = localOverrides?.supportPubKey || false;
-    const supportTxHash = localOverrides?.supportTxHash || false;
-    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
-
-    delete localOverrides.advanced;
-    delete localOverrides.supportPubKey;
-    delete localOverrides.supportTxHash;
-
-    return { localOverrides, lookupOverrides };
-  }
-
-  /**
    * @notice Sign a transaction to be used with withdrawTokenOnBehalf
    * @dev Return type is an ethers Signature: { r: string; s: string; _vs: string, recoveryParam: number; v: number; }
    * @param spendingPrivateKey Receiver's spending private key that is doing the signing
@@ -826,4 +806,24 @@ async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: st
 function assertValidStealthAddress(stealthAddress: string) {
   // Ensure that the stealthKeyPair's address is not on the block list
   if (blockedStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
+}
+
+/**
+ * @notice Helper method to return parsed localOverrides and LookupOverrides
+ * @param overrides Override the gas limit, gas price, nonce, or advanced mode.
+ * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
+ * them from on-chain transaction when true
+ */
+function parseOverrides(overrides: SendOverrides = {}) {
+  const localOverrides = { ...overrides }; // avoid mutating the object passed in
+  const advanced = localOverrides?.advanced || false;
+  const supportPubKey = localOverrides?.supportPubKey || false;
+  const supportTxHash = localOverrides?.supportTxHash || false;
+  const lookupOverrides = { advanced, supportPubKey, supportTxHash };
+
+  delete localOverrides.advanced;
+  delete localOverrides.supportPubKey;
+  delete localOverrides.supportTxHash;
+
+  return { localOverrides, lookupOverrides };
 }
