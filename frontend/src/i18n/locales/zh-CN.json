@@ -13,9 +13,9 @@
       "send-second": "填写<span class=\"text-bold\">发送</span>页面上的表单"
     },
     "banner-donate": "Umbra正在Gitcoin Alpha轮里匹配捐赠。请考虑{supporting}开发。{LearnMore}。",
-    "banner-passport": "TODO",
+    "banner-passport": "如果您有在Gitcoin回合中给Umbra捐款，您需要{configurePassport}以获得匹配资格。{LearnMore}。",
     "supporting": "支持",
-    "configure-passport": "TODO",
+    "configure-passport": "配置‘护照‘",
     "learn-more": "了解更多"
   },
   "Home-action-card": {
