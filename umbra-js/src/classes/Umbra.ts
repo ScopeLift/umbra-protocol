@@ -8,6 +8,7 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
+  ContractInterface,
   ContractTransaction,
   defaultAbiCoder,
   getAddress,
@@ -31,7 +32,7 @@ import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 import { abi as batchSendAbi } from '@umbra/contracts-periphery/out/UmbraBatchSend.sol/UmbraBatchSend.json';
 // Umbra.sol ABI
-const umbraAbi = [
+const umbraAbi: ContractInterface = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
   'event Announcement(address indexed receiver, uint256 amount, address indexed token, bytes32 pkx, bytes32 ciphertext)',
   'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
