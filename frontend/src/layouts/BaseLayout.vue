@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="alert-banner text-bold text-center q-py-md">
+    <div v-if="false" class="alert-banner text-bold text-center q-py-md">
       <i18n-t scope="global" keypath="Home.banner" tag="span">
         <template v-slot:supporting>
           <a
