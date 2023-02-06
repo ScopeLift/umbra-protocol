@@ -2,7 +2,7 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from 'noble-secp256k1';
+import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from '@noble/secp256k1';
 import { BigNumberish, computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
 import { RandomNumber } from './RandomNumber';
 import { assertValidPoint, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';

@@ -1,7 +1,7 @@
 /**
  * @dev Functions for interacting with the Unstoppable Domains Crypto Name Service (CNS)
  */
-import { Point } from 'noble-secp256k1';
+import { Point } from '@noble/secp256k1';
 import { default as Resolution, NamingServiceName } from '@unstoppabledomains/resolution';
 import type { EthersProvider } from '../types';
 import { CNS_RESOLVER_ABI } from './constants';

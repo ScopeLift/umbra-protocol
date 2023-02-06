@@ -4,7 +4,7 @@
  */
 
 import { BigNumber, hexZeroPad } from '../ethers';
-import { utils } from 'noble-secp256k1';
+import { utils } from '@noble/secp256k1';
 
 export class RandomNumber {
   readonly sizeInBytes = 32; // generated random number will always be 32 bytes
