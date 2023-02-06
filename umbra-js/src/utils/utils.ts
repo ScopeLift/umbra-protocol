@@ -19,7 +19,7 @@ import {
   StaticJsonRpcProvider,
   UnsignedTransaction,
 } from '../ethers';
-import { Point, Signature, recoverPublicKey } from 'noble-secp256k1';
+import { Point, Signature, recoverPublicKey } from '@noble/secp256k1';
 import { ens, cns } from '..';
 import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
