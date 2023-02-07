@@ -39,8 +39,12 @@
             <img class="horizontal-center" :src="scope.opt.logoURI" style="height: 1.5rem" />
           </q-item-section>
           <q-item-section>
-            <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->
-            <q-item-label v-html="scope.opt[optionLabel]" />
+            <q-item-label>{{ scope.opt[optionLabel] }}</q-item-label>
+          </q-item-section>
+          <q-item-section v-if="tokenBalances">
+            <q-item-label class="text-right">
+              {{ humanizeTokenAmount(tokenBalances[scope.opt.address], scope.opt) }}
+            </q-item-label>
           </q-item-section>
         </q-item>
       </template>
@@ -50,6 +54,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { humanizeTokenAmount } from 'src/utils/utils';
 
 export default defineComponent({
   name: 'BaseSelect',
@@ -145,12 +150,19 @@ export default defineComponent({
         return true;
       },
     },
+
+    // If provided, assumes the list given is a token list and shows token balances in the dropdown.
+    tokenBalances: {
+      type: Object,
+      required: false,
+    },
   },
 
   data() {
     return {
       content: this.modelValue,
       hintString: '',
+      humanizeTokenAmount,
     };
   },
 
