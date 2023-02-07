@@ -137,6 +137,7 @@
         :options="tokenList"
         option-label="symbol"
         ref="tokenBaseSelectRef"
+        :token-balances="balances"
       />
 
       <!-- Amount -->
@@ -537,6 +538,7 @@ function useSendForm() {
     acknowledgeSendRisk,
     advancedAcknowledged,
     advancedMode,
+    balances,
     chainId,
     currentChain,
     humanAmount,
