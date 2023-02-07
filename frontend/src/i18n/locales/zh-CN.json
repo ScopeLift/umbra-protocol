@@ -32,6 +32,7 @@
     "contact": "联系"
   },
   "Base-Layout": {
+    "connect-wallet": "连接钱包",
     "settings": "设置",
     "dark-mode": "深色模式",
     "advanced-mode": "高级模式",

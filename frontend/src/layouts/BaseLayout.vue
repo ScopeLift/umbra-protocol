@@ -93,7 +93,7 @@
                     <base-button
                       class="cursor-pointer"
                       color="primary"
-                      label="Connect a wallet"
+                      :label="$t('Base-Layout.connect-wallet')"
                       :outline="true"
                       :rounded="true"
                     />
