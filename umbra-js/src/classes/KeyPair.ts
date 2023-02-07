@@ -2,7 +2,7 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import { getSharedSecret as secpGetSharedSecret, utils, getPublicKey, Point, CURVE } from '@noble/secp256k1';
+import { getSharedSecret as secpGetSharedSecret, utils as nobleUtils, getPublicKey, Point, CURVE } from '@noble/secp256k1';
 import { BigNumberish, computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
 import { RandomNumber } from './RandomNumber';
 import { assertValidPoint, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
@@ -22,6 +22,7 @@ const blockedKeys = [
  * @returns 32-byte shared secret as 66 character hex string
  */
 function getSharedSecret(privateKey: string, publicKey: string) {
+
   assertValidPoint(publicKey);
   if (privateKey.length !== lengths.privateKey || !isHexString(privateKey)) throw new Error('Invalid private key');
   if (publicKey.length !== lengths.publicKey || !isHexString(publicKey)) throw new Error('Invalid public key');
@@ -100,7 +101,7 @@ export class KeyPair {
       throw new Error('Must provide instance of RandomNumber');
     }
     // Get shared secret to use as encryption key
-    const ephemeralPrivateKey = hexlify(utils.randomPrivateKey()); // private key as hex with 0x prefix
+    const ephemeralPrivateKey = hexlify(nobleUtils.randomPrivateKey()); // private key as hex with 0x prefix
     const ephemeralPublicKey = `0x${getPublicKey(ephemeralPrivateKey.slice(2))}`; // public key as hex with 0x prefix
     const sharedSecret = getSharedSecret(ephemeralPrivateKey, this.publicKeyHex);
 
