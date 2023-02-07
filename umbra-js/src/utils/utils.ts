@@ -19,7 +19,7 @@ import {
   StaticJsonRpcProvider,
   UnsignedTransaction,
 } from '../ethers';
-import { Point, Signature, recoverPublicKey } from '@noble/secp256k1';
+import { Point, Signature, utils as nobleUtils } from '@noble/secp256k1';
 import { ens, cns } from '..';
 import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
@@ -112,15 +112,15 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   const signature = new Signature(BigInt(tx.r!), BigInt(tx.s!));
   signature.assertValidity();
   const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;
-  const publicKeyNo0xPrefix = recoverPublicKey(msgHash.slice(2), signature.toHex(), recoveryParam); // without 0x prefix
-  if (!publicKeyNo0xPrefix) throw new Error('Could not recover public key');
+  const publicKey = Point.fromSignature(msgHash.slice(2), signature, recoveryParam);
+  publicKey.assertValidity();
 
-  // Verify that recovered public key derives to the transaction from address
-  const publicKey = `0x${publicKeyNo0xPrefix}`;
-  if (computeAddress(publicKey) !== tx.from) {
+  // Verify that recovered public key derives to the transaction from address.
+  const publicKeyHex = `0x${publicKey.toHex()}`;
+  if (computeAddress(publicKeyHex) !== tx.from) {
     throw new Error('Public key not recovered properly');
   }
-  return publicKey;
+  return publicKeyHex;
 }
 
 /**
@@ -241,11 +241,25 @@ export function createContract(address: string, abi: ContractInterface, provider
  * @param point Uncompressed public key as hex string
  */
 export function assertValidPoint(point: string) {
-  if (typeof point !== 'string' || (point.length !== 130 && point.length !== 132)) {
-    throw new Error('Must provide uncompressed public key as hex string');
-  }
-  if (point.length === 130) Point.fromHex(point);
-  if (point.length === 132) Point.fromHex(point.slice(2)); // trim 0x prefix
+  const isCorrectLength = point.length === 130 || point.length === 132;
+  const isCorrectFormat = typeof point === 'string' && isCorrectLength;
+  if (!isCorrectFormat) throw new Error('Must provide uncompressed public key as hex string');
+
+  const pointInstance = Point.fromHex(point.length === 130 ? point : point.slice(2));
+  pointInstance.assertValidity();
+}
+
+/**
+ * @notice Throws if provided private key is not valid
+ * @param point Private key as hex string
+ */
+export function assertValidPrivateKey(key: string) {
+  const isCorrectLength = key.length === 64 || key.length === 66;
+  const isCorrectFormat = typeof key === 'string' && isCorrectLength;
+  if (!isCorrectFormat) throw new Error('Must provide private key as hex string');
+
+  if (key.length === 66) key = key.slice(2);
+  if (!nobleUtils.isValidPrivateKey(key)) throw new Error('Invalid private key');
 }
 
 /**

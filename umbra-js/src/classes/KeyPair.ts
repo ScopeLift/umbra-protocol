@@ -2,10 +2,16 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import { getSharedSecret as secpGetSharedSecret, utils as nobleUtils, getPublicKey, Point, CURVE } from '@noble/secp256k1';
-import { BigNumberish, computeAddress, hexlify, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
+import {
+  getSharedSecret as nobleGetSharedSecret,
+  utils as nobleUtils,
+  getPublicKey,
+  Point,
+  CURVE,
+} from '@noble/secp256k1';
+import { BigNumberish, computeAddress, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
 import { RandomNumber } from './RandomNumber';
-import { assertValidPoint, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
+import { assertValidPoint, assertValidPrivateKey, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
 
 // List of private or public keys that we disallow initializing a KeyPair instance with, since they will lead to
@@ -22,16 +28,17 @@ const blockedKeys = [
  * @returns 32-byte shared secret as 66 character hex string
  */
 function getSharedSecret(privateKey: string, publicKey: string) {
-
-  assertValidPoint(publicKey);
   if (privateKey.length !== lengths.privateKey || !isHexString(privateKey)) throw new Error('Invalid private key');
   if (publicKey.length !== lengths.publicKey || !isHexString(publicKey)) throw new Error('Invalid public key');
+  assertValidPoint(publicKey);
+  assertValidPrivateKey(privateKey);
 
   // We use sharedSecret.slice(2) to ensure the shared secret is not dependent on the prefix, which enables
   // us to uncompress ephemeralPublicKey from Umbra.sol logs as explained in comments of getUncompressedFromX.
   // Note that a shared secret is really just a point on the curve, so it's an uncompressed public key
-  const sharedSecret = secpGetSharedSecret(privateKey.slice(2), publicKey.slice(2), true) as string; // has 04 prefix but not 0x
-  return sha256(`0x${sharedSecret.slice(2)}`);
+  const sharedSecret = nobleGetSharedSecret(privateKey.slice(2), publicKey.slice(2), true);
+  const sharedSecretHex = nobleUtils.bytesToHex(sharedSecret); // Has 04 prefix but not 0x.
+  return sha256(`0x${sharedSecretHex.slice(2)}`); // TODO Update to use noble-hashes?
 }
 
 export class KeyPair {
@@ -43,7 +50,6 @@ export class KeyPair {
    * @param key Can be either (1) hex public key with 0x04 prefix, or (2) hex private key with 0x prefix
    */
   constructor(key: string) {
-    // Input checks
     if (typeof key !== 'string' || !isHexString(key)) {
       throw new Error('Key must be a string in hex format with 0x prefix');
     }
@@ -51,12 +57,12 @@ export class KeyPair {
       throw new Error('Cannot initialize KeyPair with the provided key');
     }
 
-    // Handle input
     if (key.length === lengths.privateKey) {
       // Private key provided
+      assertValidPrivateKey(key);
       this.privateKeyHex = key;
-      const publicKey = getPublicKey(this.privateKeyHexSlim as string); // hex without 0x prefix but with 04 prefix
-      this.publicKeyHex = `0x${publicKey}`; // Save off version with 0x prefix, other forms computed as getters
+      const publicKey: Uint8Array = getPublicKey(this.privateKeyHexSlim as string);
+      this.publicKeyHex = `0x${nobleUtils.bytesToHex(publicKey)}`; // Has 0x04 prefix, other forms computed as getters.
     } else if (key.length === lengths.publicKey) {
       // Public key provided
       assertValidPoint(key); // throw if point is not on curve
@@ -100,15 +106,18 @@ export class KeyPair {
     if (!(number instanceof RandomNumber)) {
       throw new Error('Must provide instance of RandomNumber');
     }
+
     // Get shared secret to use as encryption key
-    const ephemeralPrivateKey = hexlify(nobleUtils.randomPrivateKey()); // private key as hex with 0x prefix
-    const ephemeralPublicKey = `0x${getPublicKey(ephemeralPrivateKey.slice(2))}`; // public key as hex with 0x prefix
-    const sharedSecret = getSharedSecret(ephemeralPrivateKey, this.publicKeyHex);
+    const ephemeralPrivateKey = nobleUtils.randomPrivateKey();
+    const ephemeralPublicKey = Point.fromPrivateKey(ephemeralPrivateKey);
+    const ephemeralPrivateKeyHex = `0x${nobleUtils.bytesToHex(ephemeralPrivateKey)}`;
+    const ephemeralPublicKeyHex = `0x${ephemeralPublicKey.toHex()}`;
+    const sharedSecret = getSharedSecret(ephemeralPrivateKeyHex, this.publicKeyHex);
 
     // XOR random number with shared secret to get encrypted value
     const ciphertextBN = number.value.xor(sharedSecret);
     const ciphertext = hexZeroPad(ciphertextBN.toHexString(), 32); // 32 byte hex string with 0x prefix
-    return { ephemeralPublicKey, ciphertext };
+    return { ephemeralPublicKey: ephemeralPublicKeyHex, ciphertext };
   }
 
   /**
