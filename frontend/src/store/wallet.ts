@@ -477,21 +477,20 @@ export default function useWalletStore() {
   });
 
   const tokens = computed((): TokenInfoExtended[] => {
-    let tokensArray: TokenInfoExtended[] = [];
+    // Sort alphabetically.
+    const initialTokens = relayer.value?.tokens || [];
+    let tokensArray = initialTokens.sort((a, b) => a.symbol.localeCompare(b.symbol));
+    const nativeTokenIndex = tokensArray.findIndex((token) => token.address == NATIVE_TOKEN_ADDRESS);
 
-    const sortedTokens = (relayer.value?.tokens || []).sort(
-      // sort alphabetically
-      (firstToken, secondToken) => firstToken.symbol.localeCompare(secondToken.symbol)
-    );
-    const nativeTokenIndex = sortedTokens.map((token) => token.address).indexOf(NATIVE_TOKEN_ADDRESS);
+    // Remove native token if present, and use that instead of our own to use it's minSendAmount.
     if (nativeTokenIndex > -1) {
-      // native token present
-      tokensArray = sortedTokens.sort((tok) => Number(tok.address != NATIVE_TOKEN_ADDRESS)); // move native token to front
+      const nativeToken = tokensArray.splice(nativeTokenIndex, 1)[0];
+      tokensArray = [nativeToken, ...tokensArray];
     } else {
-      // add native token to the front of the array
-      tokensArray = [NATIVE_TOKEN.value, ...sortedTokens];
+      tokensArray = [NATIVE_TOKEN.value, ...tokensArray];
     }
 
+    // Add native token to beginning of array.
     tokensExport = tokensArray;
     return tokensArray;
   });
