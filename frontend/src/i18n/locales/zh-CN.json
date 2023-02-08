@@ -68,6 +68,7 @@
     "question-circle-warning": "除非您知道自己在做什么，不要使用此功能。",
     "learn-more": "了解更多",
     "select-token": "选择要发送的代币",
+    "slippage-exceeded": "由于费用价格的变化，实际发送量将与估计值有很大差异。请重试。",
     "token": "代币",
     "amount": "汇款金额",
     "summary": "总结",

@@ -68,6 +68,7 @@
     "question-circle-warning": "Don't use this feature unless you know what you're doing.",
     "learn-more": "Learn more",
     "select-token": "Select token to send",
+    "slippage-exceeded": "Actual send amount would materially differ from the estimate due to changing gas prices. Please try again.",
     "token": "Token",
     "amount": "Amount to send",
     "summary": "Summary",
