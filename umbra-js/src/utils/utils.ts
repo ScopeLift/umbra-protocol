@@ -350,6 +350,10 @@ export async function getEthSweepGasInfo(
     provider.getCode(to),
     provider.getNetwork(),
     provider.getBalance(from),
+    // getGasPrice is officially deprecated in favor of getFeeData, as the
+    // former uses pre-1559 gas pricing. But we use it anyway because it makes
+    // it easier to calculate a price to sweep the account (1599 factors in
+    // refunds that we don't care about).
     provider.getGasPrice(),
   ]);
   const isEoa = toAddressCode === '0x';
