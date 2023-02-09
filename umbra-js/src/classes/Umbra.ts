@@ -30,7 +30,6 @@ import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSup
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
-import { abi as batchSendAbi } from '../abi/UmbraBatchSend.sol/UmbraBatchSend.json';
 // Umbra.sol ABI
 const umbraAbi: ContractInterface = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
@@ -54,6 +53,19 @@ const umbraAbi: ContractInterface = [
   'function withdrawTokenAndCall(address acceptor, address tokenAddr, address hook, bytes data)',
   'function withdrawTokenAndCallOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, address hook, bytes data, uint8 v, bytes32 r, bytes32 s)',
   'function withdrawTokenOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, uint8 v, bytes32 r, bytes32 s)',
+];
+// UmbraBatchSend.sol ABI
+const batchSendAbi: ContractInterface = [
+  'constructor(address _umbra)',
+  'error NotSorted()',
+  'error TooMuchEthSent()',
+  'event BatchSendExecuted(address indexed sender)',
+  'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
+  'function approveToken(address _token)',
+  'function batchSend(uint256 _tollCommitment, tuple(address receiver, address tokenAddr, uint256 amount, bytes32 pkx, bytes32 ciphertext)[] _data) payable',
+  'function owner() view returns (address)',
+  'function renounceOwnership()',
+  'function transferOwnership(address newOwner)',
 ];
 
 // Mapping from chainId to contract information
