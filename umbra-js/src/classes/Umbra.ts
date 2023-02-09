@@ -814,7 +814,10 @@ function assertValidStealthAddress(stealthAddress: string) {
  * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
  * them from on-chain transaction when true
  */
-function parseOverrides(overrides: SendOverrides = {}) {
+export function parseOverrides(overrides: SendOverrides = {}): {
+  localOverrides: SendOverrides;
+  lookupOverrides: Pick<SendOverrides, 'advanced' | 'supportPubKey' | 'supportTxHash'>;
+} {
   const localOverrides = { ...overrides }; // avoid mutating the object passed in
   const advanced = localOverrides?.advanced || false;
   const supportPubKey = localOverrides?.supportPubKey || false;
