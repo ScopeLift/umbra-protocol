@@ -176,7 +176,7 @@
     "audit-here": "这里",
     "audit-answer-umbra-js": " {umbrajs} {library} —负责处理所需的链下逻辑和椭圆曲线操作—已通过Least Authority审计，审计报告可查看 {here}。",
     "audit-library": "库",
-    "audit-answer-umbra-off-chain": "链下椭圆曲线操作是 Umbra 业务逻辑的核心部分，所以我们依赖 {PaulMillers} 的简单，零依赖的 {noble-secp256k1} 库来处理。非常感谢{community}的帮助，我们能够筹集到足够的资金来支付Cure53 对该库进行审计的费用。您可以在{here}。",
+    "audit-answer-umbra-off-chain": "链下椭圆曲线操作是 Umbra 业务逻辑的核心部分，所以我们依赖 {PaulMillers} 的简单，零依赖的 {nobleSecp256k1} 库来处理。非常感谢{community}的帮助，我们能够筹集到足够的资金来支付Cure53 对该库进行审计的费用。您可以在{here}。",
     "audit-community": "社区",
     "umbra-risk": "Umbra 的风险是什么？",
     "umbra-risk-answer": "<p> 和其他货币生态系统中的软件一样，使用 Umbra 也存在风险。这包括严重的软件漏洞，黑客攻击、或其他恶意行为者攻击的风险。任何或所有这些情况都可能导致资金损失。 </p> <p>更具体地说，以下是我们过去在其他项目中看到的一些风险：</p> <ol> <li>合同漏洞使攻击者窃取合同资金或使资金冻结</li> <li>我们的链下代码中的一个错误导致资金被发送到一个不可恢复的地址</li> <li>DNS被劫持以窃取用户的私钥</li> <li>前端代码供应链攻击窃取用户私钥</li> </ol> <p> 我们正在努力防止这些风险，但这并不意味着我们会成功。Umbra 不提供任何担保，您应自担风险下使用它。 </p>",
