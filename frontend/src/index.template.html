@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= productName %></title>
+
+    <meta property="og:title" content="Umbra" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://app.umbra.cash" />
+    <meta
+      property="og:image"
+      content="data:image/png;base64,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"
+    />
+    <meta property="og:image:alt" content="Umbra logo" />
+    <meta
+      property="og:description"
+      content="Send stealth payments where only the sender and recipient know who received funds"
+    />
+
+    <meta charset="utf-8" />
+    <meta name="description" content="<%= productDescription %>" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta
+      name="viewport"
+      content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, viewport-fit=cover<% } %>"
+    />
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="icons/favicon-128x128.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="icons/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="icons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="icons/favicon-16x16.png"
+    />
+    <link rel="icon" type="image/ico" href="favicon.ico" />
+  </head>
+  <body>
+    <!-- DO NOT touch the following DIV -->
+    <div id="q-app"></div>
+  </body>
+</html>

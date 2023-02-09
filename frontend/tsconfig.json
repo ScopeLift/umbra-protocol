@@ -1,0 +1,26 @@
+{
+  // "extends": "@quasar/app/tsconfig-preset",
+  "extends": "../tsconfig.settings.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "composite": true,
+    "esModuleInterop": true,
+    "outDir": "build",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "module": "es2020",
+    "moduleResolution": "node",
+    "paths": {
+      "src/*": ["src/*"],
+      "app/*": ["*"],
+      "components/*": ["src/components/*"],
+      "layouts/*": ["src/layouts/*"],
+      "pages/*": ["src/pages/*"],
+      "assets/*": ["src/assets/*"],
+      "boot/*": ["src/boot/*"],
+      "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
+    }
+  },
+  "include": ["src", "test/*", "src/**/*.json"],
+  "exclude": ["build/*"]
+}

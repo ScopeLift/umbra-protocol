@@ -1,0 +1,91 @@
+| Dai contract    |                 |       |        |       |         |
+|-----------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost | Deployment Size |       |        |       |         |
+| 0               | 0               |       |        |       |         |
+| Function Name   | min             | avg   | median | max   | # calls |
+| allowance       | 2677            | 2677  | 2677   | 2677  | 1       |
+| approve         | 22414           | 22604 | 22414  | 24514 | 11      |
+| balanceOf       | 602             | 715   | 602    | 2602  | 53      |
+| transfer        | 18700           | 19580 | 20300  | 20300 | 20      |
+| transferFrom    | 3818            | 12291 | 14179  | 25180 | 20      |
+
+
+| Quoter contract       |                 |       |        |       |         |
+|-----------------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost       | Deployment Size |       |        |       |         |
+| 0                     | 0               |       |        |       |         |
+| Function Name         | min             | avg   | median | max   | # calls |
+| quoteExactInput       | 46542           | 49082 | 46542  | 71942 | 10      |
+| uniswapV3SwapCallback | 2313            | 2313  | 2313   | 2313  | 10      |
+
+
+| SwapRouter02 contract |                 |        |        |        |         |
+|-----------------------|-----------------|--------|--------|--------|---------|
+| Deployment Cost       | Deployment Size |        |        |        |         |
+| 0                     | 0               |        |        |        |         |
+| Function Name         | min             | avg    | median | max    | # calls |
+| exactInput            | 56711           | 59681  | 56711  | 86411  | 10      |
+| multicall             | 120574          | 123544 | 120574 | 150274 | 10      |
+| receive               | 83              | 83     | 83     | 83     | 10      |
+| uniswapV3SwapCallback | 7895            | 8375   | 7895   | 12695  | 10      |
+| unwrapWETH9WithFee    | 64579           | 64579  | 64579  | 64579  | 10      |
+
+
+| Umbra contract  |                 |       |        |       |         |
+|-----------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost | Deployment Size |       |        |       |         |
+| 0               | 0               |       |        |       |         |
+| Function Name   | min             | avg   | median | max   | # calls |
+| sendEth         | 37476           | 37496 | 37476  | 39476 | 100     |
+| toll            | 321             | 1321  | 1321   | 2321  | 2       |
+
+
+| UniswapV3Pool contract |                 |       |        |       |         |
+|------------------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost        | Deployment Size |       |        |       |         |
+| 0                      | 0               |       |        |       |         |
+| Function Name          | min             | avg   | median | max   | # calls |
+| swap                   | 42786           | 49675 | 51305  | 81005 | 20      |
+
+
+| WETH9 contract  |                 |       |        |       |         |
+|-----------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost | Deployment Size |       |        |       |         |
+| 0               | 0               |       |        |       |         |
+| Function Name   | min             | avg   | median | max   | # calls |
+| balanceOf       | 534             | 534   | 534    | 534   | 10      |
+| transfer        | 23162           | 24742 | 25162  | 29962 | 20      |
+| withdraw        | 7379            | 7379  | 7379   | 7379  | 10      |
+
+
+| lib/solmate/src/test/utils/mocks/MockERC20.sol:MockERC20 contract |                 |       |        |       |         |
+|-------------------------------------------------------------------|-----------------|-------|--------|-------|---------|
+| Deployment Cost                                                   | Deployment Size |       |        |       |         |
+| 759913                                                            | 4914            |       |        |       |         |
+| Function Name                                                     | min             | avg   | median | max   | # calls |
+| allowance                                                         | 2757            | 2757  | 2757   | 2757  | 188     |
+| approve                                                           | 22422           | 23387 | 22422  | 24522 | 348     |
+| balanceOf                                                         | 530             | 530   | 530    | 530   | 156     |
+| mint                                                              | 24739           | 42834 | 46639  | 46639 | 426     |
+| transferFrom                                                      | 2628            | 4850  | 3285   | 31985 | 2814    |
+
+
+| src/UmbraBatchSend.sol:UmbraBatchSend contract |                 |         |        |         |         |
+|------------------------------------------------|-----------------|---------|--------|---------|---------|
+| Deployment Cost                                | Deployment Size |         |        |         |         |
+| 872464                                         | 4512            |         |        |         |         |
+| Function Name                                  | min             | avg     | median | max     | # calls |
+| approveToken                                   | 27428           | 27428   | 27428  | 27428   | 188     |
+| batchSend                                      | 1730            | 1376239 | 362756 | 8478955 | 162     |
+
+
+| src/UniswapWithdrawHook.sol:UniswapWithdrawHook contract |                 |        |        |        |         |
+|----------------------------------------------------------|-----------------|--------|--------|--------|---------|
+| Deployment Cost                                          | Deployment Size |        |        |        |         |
+| 796171                                                   | 4124            |        |        |        |         |
+| Function Name                                            | min             | avg    | median | max    | # calls |
+| approveToken                                             | 29851           | 29851  | 29851  | 29851  | 8       |
+| tokensWithdrawn                                          | 140280          | 148045 | 141121 | 176433 | 44      |
+
+
+

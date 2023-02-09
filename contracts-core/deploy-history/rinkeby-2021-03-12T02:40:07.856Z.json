@@ -1,0 +1,17 @@
+{
+  "admin": "0x91C727F6E9feA86A8DC968333c16f615c5603c8a",
+  "contracts": {
+    "Umbra": "0xf5e6B5D161d603e67196B8269c6de3Fb7492A8fF",
+    "UmbraForwarder": "0x897c801362a69795fe90C89fe674c1e62E004036",
+    "UmbraRelayRecipient": "0x932735aa34c68a0b6D20D47bC3CCDBf673881aCE",
+    "UmbraPaymaster": "0xcE5A3Ae0EFa0c0E2D1Bc41a2538E0E1217545e84"
+  },
+  "actions": {
+    "DeployingContractsToNetwork": "rinkeby",
+    "SetPaymasterRelayHub": "0x53C88539C65E0350408a2294C4A85eB3d8ce8789",
+    "SetPaymasterRelayHubTxHash": "0x9da1e4683b128f23518ab621cd983a68d44cde4f6accc60d2407bb96c599357a",
+    "SetTrustedForwarder": "0x897c801362a69795fe90C89fe674c1e62E004036",
+    "SetTrustedForwarderTxHash": "0xd2ce0ba1c7f6dd6bceb324a9490b4c2c7c81251e1634472f7ce4d42cc3e20b14",
+    "SendPaymasterFundsTx": "0x4361c7b803c6dc625ee9a54774b096b2690ce381111e7d5816585f2f71606a3d"
+  }
+}

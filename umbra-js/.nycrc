@@ -1,0 +1,22 @@
+{
+  "cache": false,
+  "check-coverage": false,
+  "extension": [".ts"],
+  "include": ["**/*.js", "**/*.ts"],
+  "exclude": [
+    "coverage/**",
+    "node_modules/**",
+    "**/*.d.ts",
+    "**/*.test.ts",
+    "src/index.ts",
+    "types/contracts/**",
+    ".eslintrc.js",
+    ".lintstagedrc.js",
+    ".prettierrc.js",
+    "hardhat.config.ts"
+  ],
+  "sourceMap": true,
+  "reporter": ["html", "text", "text-summary", "lcov"],
+  "all": true,
+  "instrument": true
+}

@@ -1,0 +1,61 @@
+{
+  "name": "@umbra/umbra-js",
+  "version": "0.1.0",
+  "description": "Send and receive stealth payments",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "test": "yarn build && yarn hardhat test",
+    "coverage": "yarn clean && yarn build && nyc yarn hardhat test && sed -i'.bak' 's/SF:/SF:umbra-js\\//gI' ./coverage/lcov.info",
+    "lint": "eslint --ext .js,.ts ./",
+    "prettier": "prettier --write .",
+    "watch": "tsc --watch",
+    "build": "tsc --build",
+    "clean": "rimraf build coverage .nyc_output cache",
+    "prepare": "yarn build",
+    "prepublishOnly": "yarn lint && yarn test",
+    "precommit": "lint-staged",
+    "docs": "typedoc src/"
+  },
+  "author": "Matt Solomon <matt@mattsolomon.dev>, Ben DiFrancesco <ben@scopelift.co>",
+  "license": "ISC",
+  "dependencies": {
+    "@unstoppabledomains/resolution": "8.3.1",
+    "ethers": "5.6.9",
+    "noble-secp256k1": "^1.2.5"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.0",
+    "@types/bn.js": "^5.1.0",
+    "@types/chai": "^4.2.16",
+    "@types/mocha": "^8.2.2",
+    "@umbra/contracts-core": "^0.0.2",
+    "chai": "^4.3.4",
+    "dotenv": "^8.2.0",
+    "eslint-config-prettier": "^8.2.0",
+    "eslint-plugin-chai-friendly": "^0.6.0",
+    "eslint-plugin-import": "^2.20.2",
+    "hardhat": "^2.12.4",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "ts-node": "^9.0.0",
+    "typedoc": "^0.20.35"
+  },
+  "keywords": [
+    "ethereum",
+    "privacy",
+    "payments",
+    "web3"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ScopeLift/umbra.git"
+  },
+  "volta": {
+    "extends": "../package.json"
+  }
+}

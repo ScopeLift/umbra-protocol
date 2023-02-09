@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "contracts-core" },
+    { "path": "contracts-periphery" },
+    { "path": "frontend" },
+    { "path": "umbra-js" }
+  ],
+  "exclude": ["node_modules"]
+}

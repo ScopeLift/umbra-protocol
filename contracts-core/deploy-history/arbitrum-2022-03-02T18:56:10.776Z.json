@@ -1,0 +1,8 @@
+{
+  "deployer": "0x2217432e5E0e2D77576461662d267bd293820811",
+  "contracts": {
+    "Umbra": "0x2C943761FEA42Eaca0AfE6064A6daB935fB5b18a",
+    "StealthKeyRegistry": "0x5C1e1Ad150cDAA78cCa0972f5Ffd4f043baaC27B"
+  },
+  "actions": { "DeployingContractsToNetwork": "arbitrum" }
+}

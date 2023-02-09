@@ -1,0 +1,12 @@
+[submodule "contracts-periphery/lib/ds-test"]
+	path = contracts-periphery/lib/ds-test
+	url = https://github.com/dapphub/ds-test
+[submodule "contracts-periphery/lib/openzeppelin-contracts"]
+	path = contracts-periphery/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/OpenZeppelin-contracts
+[submodule "contracts-periphery/lib/solmate"]
+	path = contracts-periphery/lib/solmate
+	url = https://github.com/transmissions11/solmate
+[submodule "contracts-periphery/lib/forge-std"]
+	path = contracts-periphery/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

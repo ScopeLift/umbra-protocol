@@ -1,0 +1,18 @@
+{
+  "localhost": {
+    "expectedDeployer": "0x2c399eD6c510C89793C90f7A186FDd2bD1Fd6AdD",
+    "expectedNonce": 0
+  },
+  "rinkeby": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "expectedNonce": 5
+  },
+  "mainnet": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "expectedNonce": 5
+  },
+  "polygon": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "expectedNonce": 5
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "deployer": "0x91C727F6E9feA86A8DC968333c16f615c5603c8a",
+  "contracts": {
+    "Umbra": "0x264063408fD1bdC703083AE083c813240A024B7f",
+    "StealthKeyRegistry": "0x05026d4A4338bb3918152ce333431B7A473d1da5"
+  },
+  "actions": {
+    "DeployingContractsToNetwork": "rinkarby"
+  }
+}

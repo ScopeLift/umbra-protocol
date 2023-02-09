@@ -1,0 +1,12 @@
+{
+  "name": "@umbra/contracts-periphery",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "install": "make install",
+    "build": "make build",
+    "test": "make test",
+    "lint": "forge fmt --check",
+    "coverage": "make coverage"
+  }
+}

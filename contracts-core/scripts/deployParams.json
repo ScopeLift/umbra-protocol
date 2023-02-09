@@ -1,0 +1,44 @@
+{
+  "localhost": {
+    "expectedDeployer": "0x2c399eD6c510C89793C90f7A186FDd2bD1Fd6AdD",
+    "toll": 2,
+    "tollCollector": "0x53C88539C65E0350408a2294C4A85eB3d8ce8789",
+    "tollReceiver": "0x53C88539C65E0350408a2294C4A85eB3d8ce8789",
+    "expectedRegistryNonce": 5
+  },
+  "rinkarby": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "toll": "30000000000000",
+    "tollCollector": "0x12aE679061C58e9f7660A2f7e6f06573014d2615",
+    "tollReceiver": "0xb4435399AB53D6136C9AEEBb77a0120620b117F9",
+    "expectedRegistryNonce": 5
+  },
+  "arbitrum": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "toll": "30000000000000",
+    "tollCollector": "0x12aE679061C58e9f7660A2f7e6f06573014d2615",
+    "tollReceiver": "0xb4435399AB53D6136C9AEEBb77a0120620b117F9",
+    "expectedRegistryNonce": 5
+  },
+  "optimistic_kovan": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "toll": "30000000000000",
+    "tollCollector": "0x12aE679061C58e9f7660A2f7e6f06573014d2615",
+    "tollReceiver": "0xb4435399AB53D6136C9AEEBb77a0120620b117F9",
+    "expectedRegistryNonce": 5
+  },
+  "optimism": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "toll": "30000000000000",
+    "tollCollector": "0x12aE679061C58e9f7660A2f7e6f06573014d2615",
+    "tollReceiver": "0xb4435399AB53D6136C9AEEBb77a0120620b117F9",
+    "expectedRegistryNonce": 5
+  },
+  "goerli": {
+    "expectedDeployer": "0x5777Aa6F437399Af6cef2Fce0BE8D4B4eD7C7232",
+    "toll": "30000000000000",
+    "tollCollector": "0x12aE679061C58e9f7660A2f7e6f06573014d2615",
+    "tollReceiver": "0xb4435399AB53D6136C9AEEBb77a0120620b117F9",
+    "expectedRegistryNonce": 5
+  }
+}
