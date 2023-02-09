@@ -483,6 +483,7 @@ export default function useWalletStore() {
     const nativeTokenIndex = tokensArray.findIndex((token) => token.address == NATIVE_TOKEN_ADDRESS);
 
     // Remove native token if present, and use that instead of our own to use it's minSendAmount.
+    // The native token is always placed at the beginning of the array.
     if (nativeTokenIndex > -1) {
       const nativeToken = tokensArray.splice(nativeTokenIndex, 1)[0];
       tokensArray = [nativeToken, ...tokensArray];
@@ -490,7 +491,6 @@ export default function useWalletStore() {
       tokensArray = [NATIVE_TOKEN.value, ...tokensArray];
     }
 
-    // Add native token to beginning of array.
     tokensExport = tokensArray;
     return tokensArray;
   });
