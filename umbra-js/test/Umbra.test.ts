@@ -14,7 +14,7 @@ import {
   TestTokenFactory as ERC20__factory,
   UmbraFactory as Umbra__factory,
 } from '@umbra/contracts-core/typechain';
-
+import { parseOverrides } from '../src/classes/Umbra';
 import { abi as batchSendAbi } from '../src/abi/UmbraBatchSend.sol/UmbraBatchSend.json';
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
@@ -846,6 +846,51 @@ describe('Umbra class', () => {
         ),
         'Data string must be null or in hex format with 0x prefix'
       );
+    });
+  });
+
+  describe('ParseOverrides without mutation', () => {
+    it.only('should not mutate the original overrides', async () => {
+      // Original
+      let testOverrides = {
+        advanced: true,
+        supportPubKey: true,
+        supportTxHash: true,
+        type: 1,
+        ccipReadEnabled: true,
+      };
+
+      const { localOverrides, lookupOverrides } = parseOverrides(testOverrides);
+
+      // Update
+      testOverrides = {
+        advanced: false,
+        supportPubKey: false,
+        supportTxHash: false,
+        type: 2,
+        ccipReadEnabled: false,
+      };
+
+      // Check update success
+      expect(testOverrides).to.deep.equal({
+        advanced: false,
+        supportPubKey: false,
+        supportTxHash: false,
+        type: 2,
+        ccipReadEnabled: false,
+      });
+
+      // Should not be mutated
+      expect(localOverrides).to.deep.equal({
+        type: 1,
+        ccipReadEnabled: true,
+      });
+
+      expect(lookupOverrides).to.deep.equal({
+        advanced: true,
+        supportPubKey: true,
+        supportTxHash: true,
+      });
     });
   });
 });
