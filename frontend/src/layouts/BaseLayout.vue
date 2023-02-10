@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="alert-banner text-bold text-center q-py-md">
+    <div v-if="false" class="alert-banner text-bold text-center q-py-md">
       <i18n-t scope="global" keypath="Home.banner-passport" tag="span">
         <template v-slot:configurePassport>
           <a class="alert-banner-hyperlink" href="https://passport.gitcoin.co" target="_blank">{{
