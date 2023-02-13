@@ -250,7 +250,7 @@ export function assertValidPoint(point: string) {
 }
 
 /**
- * @notice Throws if provided private key is not valid
+ * @notice Throws if provided private key is not valid.
  * @param point Private key as hex string
  */
 export function assertValidPrivateKey(key: string) {
@@ -263,7 +263,7 @@ export function assertValidPrivateKey(key: string) {
 }
 
 /**
- * @notice Returns the public keys associated with the provided name, using the legacy lookup approach
+ * @notice Returns the public keys associated with the provided name, using the legacy lookup approach.
  * @param name Name or domain to test
  * @param provider ethers provider instance
  */
