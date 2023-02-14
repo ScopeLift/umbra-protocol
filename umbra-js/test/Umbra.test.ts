@@ -225,7 +225,7 @@ describe('Umbra class', () => {
       // `insufficient funds for gas * price + value`
     });
 
-    it('Without payload extension: send tokens, scan for them, withdraw them', async () => {
+    it('Send tokens, scan for them, withdraw them (direct withdraw)', async () => {
       // SENDER
       // Mint Dai to sender, and approve the Umbra contract to spend their DAI
       await mintAndApproveDai(sender, sender.address, quantity);
@@ -240,14 +240,14 @@ describe('Umbra class', () => {
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
-      // Destination wallet should have a balance equal to amount sent
+      // Destination wallet should have a balance equal to amount sent.
+      const destinationWallet = ethers.Wallet.createRandom();
 
-      // First we send ETH to the stealth address
+      // Fund stealth address to can pay for gas.
       await sender.sendTransaction({ to: stealthKeyPair.address, value: parseEther('1') });
 
       // Now we withdraw the tokens
       const stealthPrivateKey = Umbra.computeStealthPrivateKey(receiver.privateKey, userAnnouncements[0].randomNumber);
-      const destinationWallet = ethers.Wallet.createRandom();
       verifyEqualValues(await dai.balanceOf(destinationWallet.address), 0);
       const withdrawTxToken = await umbra.withdraw(stealthPrivateKey, dai.address, destinationWallet.address);
       await withdrawTxToken.wait();
@@ -267,7 +267,7 @@ describe('Umbra class', () => {
       );
     });
 
-    it('With payload extension: send tokens, scan for them, withdraw them', async () => {
+    it('Send tokens, scan for them, withdraw them (relayer withdraw)', async () => {
       // SENDER
       // Mint Dai to sender, and approve the Umbra contract to spend their DAI
       await mintAndApproveDai(sender, sender.address, quantity);
@@ -287,7 +287,7 @@ describe('Umbra class', () => {
       const sponsorWallet = ethers.Wallet.createRandom();
       const sponsorFee = '2500';
 
-      // Fund relayer
+      // Fund relayer to pay for gas.
       await sender.sendTransaction({ to: relayerWallet.address, value: parseEther('1') });
 
       // Get signature
@@ -321,7 +321,7 @@ describe('Umbra class', () => {
       verifyEqualValues(await dai.balanceOf(sponsorWallet.address), sponsorFee);
     });
 
-    it('Without payload extension: send ETH, scan for it, withdraw it', async () => {
+    it('Send ETH, scan for it, withdraw it (direct withdraw)', async () => {
       // SENDER
       // Send funds with Umbra
       const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver!.publicKey, overrides);
@@ -334,9 +334,10 @@ describe('Umbra class', () => {
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal)
+      const destinationWallet = ethers.Wallet.createRandom();
+
       // Destination wallet should have a balance equal to amount sent minus gas cost
       const stealthPrivateKey = Umbra.computeStealthPrivateKey(receiver.privateKey, userAnnouncements[0].randomNumber);
-      const destinationWallet = ethers.Wallet.createRandom();
       const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
       const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
@@ -345,7 +346,7 @@ describe('Umbra class', () => {
       verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
     });
 
-    it('With payload extension: send ETH, scan for it, withdraw it', async () => {
+    it('Send ETH, scan for it, withdraw it (relayer withdraw)', async () => {
       // SENDER
       // Send funds with Umbra
       const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver.publicKey, overrides);
@@ -357,9 +358,10 @@ describe('Umbra class', () => {
       expect(userAnnouncements.length).to.be.greaterThan(0);
 
       // Withdraw (test regular withdrawal)
+      const destinationWallet = ethers.Wallet.createRandom();
+
       // Destination wallet should have a balance equal to amount sent minus gas cost
       const stealthPrivateKey = Umbra.computeStealthPrivateKey(receiver.privateKey, userAnnouncements[0].randomNumber);
-      const destinationWallet = ethers.Wallet.createRandom();
       const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
       await withdrawTx.wait();
       const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
