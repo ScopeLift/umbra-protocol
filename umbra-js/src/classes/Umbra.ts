@@ -8,7 +8,6 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
-  ContractInterface,
   ContractTransaction,
   defaultAbiCoder,
   getAddress,
@@ -28,45 +27,8 @@ import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
-import { ERC20_ABI } from '../utils/constants';
+import { ERC20_ABI, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
-// Umbra.sol ABI
-const umbraAbi: ContractInterface = [
-  'constructor(uint256 toll, address tollCollector, address tollReceiver)',
-  'event Announcement(address indexed receiver, uint256 amount, address indexed token, bytes32 pkx, bytes32 ciphertext)',
-  'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
-  'event TokenWithdrawal(address indexed receiver, address indexed acceptor, uint256 amount, address indexed token)',
-  'function collectTolls()',
-  'function owner() view returns (address)',
-  'function renounceOwnership()',
-  'function sendEth(address receiver, uint256 tollCommitment, bytes32 pkx, bytes32 ciphertext) payable',
-  'function sendToken(address receiver, address tokenAddr, uint256 amount, bytes32 pkx, bytes32 ciphertext) payable',
-  'function setToll(uint256 newToll)',
-  'function setTollCollector(address newTollCollector)',
-  'function setTollReceiver(address newTollReceiver)',
-  'function tokenPayments(address, address) view returns (uint256)',
-  'function toll() view returns (uint256)',
-  'function tollCollector() view returns (address)',
-  'function tollReceiver() view returns (address)',
-  'function transferOwnership(address newOwner)',
-  'function withdrawToken(address acceptor, address tokenAddr)',
-  'function withdrawTokenAndCall(address acceptor, address tokenAddr, address hook, bytes data)',
-  'function withdrawTokenAndCallOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, address hook, bytes data, uint8 v, bytes32 r, bytes32 s)',
-  'function withdrawTokenOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, uint8 v, bytes32 r, bytes32 s)',
-];
-// UmbraBatchSend.sol ABI
-const batchSendAbi: ContractInterface = [
-  'constructor(address _umbra)',
-  'error NotSorted()',
-  'error TooMuchEthSent()',
-  'event BatchSendExecuted(address indexed sender)',
-  'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
-  'function approveToken(address _token)',
-  'function batchSend(uint256 _tollCommitment, tuple(address receiver, address tokenAddr, uint256 amount, bytes32 pkx, bytes32 ciphertext)[] _data) payable',
-  'function owner() view returns (address)',
-  'function renounceOwnership()',
-  'function transferOwnership(address newOwner)',
-];
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
@@ -171,8 +133,8 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(this.chainConfig.umbraAddress, umbraAbi, provider) as UmbraContract;
-    this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, batchSendAbi, provider);
+    this.umbraContract = new Contract(this.chainConfig.umbraAddress, UMBRA_ABI, provider) as UmbraContract;
+    this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, UMBRA_BATCH_SEND_ABI, provider);
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
