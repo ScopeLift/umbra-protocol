@@ -1,3 +1,5 @@
+export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
 export const UMBRA_ABI = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
   'event Announcement(address indexed receiver, uint256 amount, address indexed token, bytes32 pkx, bytes32 ciphertext)',

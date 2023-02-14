@@ -22,12 +22,13 @@ import {
   toUtf8Bytes,
   TransactionResponse,
   Wallet,
+  Zero,
 } from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
-import { ERC20_ABI, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
+import { ERC20_ABI, ETH_ADDRESS, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
 // Mapping from chainId to contract information
@@ -99,7 +100,7 @@ const isEth = (token: string) => {
   if (token === 'ETH') {
     return true;
   }
-  return getAddress(token) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'; // throws if `token` is not a valid address
+  return getAddress(token) === ETH_ADDRESS; // throws if `token` is not a valid address
 };
 
 /**
@@ -171,22 +172,24 @@ export class Umbra {
     recipientId: string,
     overrides: SendOverrides = {}
   ) {
+    // Check that recipient is valid.
     await assertSupportedAddress(recipientId);
-    const txSigner = this.getConnectedSigner(signer); // signer input validated
 
-    // Check that the sender has sufficient balance
+    // Check that the sender has sufficient balance.
     await assertSufficientBalance(signer, token, BigNumber.from(amount));
 
-    // Get toll amount from contract
+    // Get toll amount from contract.
     const toll = await this.umbraContract.toll();
 
-    // Parse provided overrides
-    const { localOverrides, lookupOverrides } = parseOverrides({ ...overrides });
+    // Parse provided overrides.
+    const { localOverrides, lookupOverrides } = parseOverrides(overrides);
 
+    // Prepare data for the send.
     const { stealthKeyPair, pubKeyXCoordinate, encrypted } = await this.prepareSend(recipientId, lookupOverrides);
     assertValidStealthAddress(stealthKeyPair.address);
 
-    // Send transaction
+    // Send transaction.
+    const txSigner = this.getConnectedSigner(signer); // signer input validated
     let tx: ContractTransaction;
     if (isEth(token)) {
       const txOverrides = { ...localOverrides, value: toll.add(amount) };
@@ -205,11 +208,11 @@ export class Umbra {
   }
 
   async batchSend(signer: JsonRpcSigner | Wallet, sends: SendBatch[], overrides: SendOverrides = {}) {
+    // Check that all recipients are valid.
     const recipients = new Set(sends.map((send) => send.address));
-    // Check that all recipients are valid
     await Promise.all([...recipients].map(assertSupportedAddress));
 
-    // Calculate the total amount of each token to be sent
+    // Check that the sender has sufficient balance for all tokens.
     const tokenSum = new Map<string, BigNumber>();
     for (const send of sends) {
       const token = send.token;
@@ -217,33 +220,21 @@ export class Umbra {
       tokenSum.set(token, tokenSum.get(token)?.add(amount) || amount);
     }
 
-    // Check that the sender has sufficient balance for all tokens
     await Promise.all(
-      [...tokenSum.keys()].map((token) => {
-        return assertSufficientBalance(signer, token, tokenSum.get(token) as BigNumber);
-      })
+      [...tokenSum.keys()].map((token) => assertSufficientBalance(signer, token, tokenSum.get(token) as BigNumber))
     );
 
-    const txSigner = this.getConnectedSigner(signer); // signer input validated
-
-    // Get toll amount from contract
+    // Get toll amount from contract.
     const toll = await this.umbraContract.toll();
 
-    // Parse provided overrides
-    const { localOverrides, lookupOverrides } = parseOverrides({ ...overrides });
+    // Parse provided overrides.
+    const { localOverrides, lookupOverrides } = parseOverrides(overrides);
 
-    // Prepare data for each send
-    const sendInfo = await Promise.all(
-      sends.map((send) => {
-        return this.prepareSend(send.address, lookupOverrides);
-      })
-    );
+    // Prepare data for each send.
+    const sendInfo = await Promise.all(sends.map((send) => this.prepareSend(send.address, lookupOverrides)));
 
-    const stealthKeyPairs = sendInfo.map((info) => info.stealthKeyPair);
-    const valueAmount = toll
-      .mul(sendInfo.length)
-      .add(tokenSum.get('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') || BigNumber.from('0'));
-
+    // Send transaction.
+    const valueAmount = toll.mul(sendInfo.length).add(tokenSum.get(ETH_ADDRESS) || Zero);
     const sendData: SendData[] = sendInfo.map((info, index) => {
       const receiver = info.stealthKeyPair.address;
       const token = sends[index].token;
@@ -260,18 +251,16 @@ export class Umbra {
     });
 
     // Sort by token addresses
-    const sortedData: SendData[] = sendData.sort((n1, n2) => {
-      return n1.tokenAddr.localeCompare(n2.tokenAddr);
-    });
+    const sortedData: SendData[] = sendData.sort((a, b) => a.tokenAddr.localeCompare(b.tokenAddr));
 
     // Send transaction
     const txOverrides = { ...localOverrides, value: valueAmount };
     const tx: ContractTransaction = await this.batchSendContract
-      .connect(txSigner)
+      .connect(this.getConnectedSigner(signer))
       .batchSend(toll, sortedData, txOverrides);
 
     // We do not wait for the transaction to be mined before returning it
-    return { tx, stealthKeyPairs };
+    return { tx, stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair) };
   }
 
   /**
