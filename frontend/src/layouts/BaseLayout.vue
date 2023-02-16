@@ -193,7 +193,7 @@
             <base-select
               class="language-selector"
               :modelValue="currentLanguage"
-              @update:modelValue="setLanguage"
+              @update:modelValue="changeLanguage"
               dense
               options-dense="true"
               :filled="false"
@@ -278,13 +278,27 @@ export default defineComponent({
   setup() {
     const { advancedMode, isDark, language, supportedLanguages, toggleAdvancedMode, setLanguage, toggleDarkMode } =
       useSettingsStore();
-    const { avatar, isAccountSetup, isAccountSetupLegacy, isArgent, isLoading, network, userAddress, userDisplayName } =
-      useWalletStore();
+    const {
+      avatar,
+      isAccountSetup,
+      isAccountSetupLegacy,
+      isArgent,
+      isLoading,
+      network,
+      userAddress,
+      userDisplayName,
+      setLanguage: setWalletLanguage,
+    } = useWalletStore();
 
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
     const version = window.logger.version;
+
+    const changeLanguage = (language: { label: string; value: string }) => {
+      setLanguage(language);
+      setWalletLanguage(language.value);
+    };
     return {
       advancedMode,
       argentModalDismissed,
@@ -297,7 +311,7 @@ export default defineComponent({
       isLoading,
       language,
       network,
-      setLanguage,
+      changeLanguage,
       showArgentModal,
       supportedLanguages,
       toggleAdvancedMode,

@@ -358,6 +358,11 @@ export default function useWalletStore() {
     setLastWallet(null);
   }
 
+  function setLanguage(language: string) {
+    if (!onboard.value) return;
+    onboard.value.state.actions.setLocale(language);
+  }
+
   /**
    * @notice Prompts user for a signature to generate Umbra-specific private keys
    */
@@ -533,6 +538,7 @@ export default function useWalletStore() {
     getPrivateKeys,
     getTokenBalances,
     setIsAccountSetup,
+    setLanguage,
     setProvider,
     setNetwork,
     setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status), // LEGACY
