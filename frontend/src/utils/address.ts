@@ -124,7 +124,6 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
   // Check if address owns any POAPs
   const hasPOAPsCheck = async () => {
     const has = await hasPOAPs(destinationAddress);
-    console.log(has);
     if (has) reasons.push(`${isDomain ? tc('Utils.Address.address-it-resolves-to') : tc('Utils.Address.it')} ${tc('Utils.Address.has-poap-tokens')}`); // prettier-ignore
   };
   promises.push(hasPOAPsCheck());
@@ -146,11 +145,12 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
   };
   promises.push(contractENSCheck());
 
-  try {
-    await Promise.all(promises);
-  } catch (err) {
-    console.error(err);
-  }
+  const results = await Promise.allSettled(promises);
+  results.forEach((res) => {
+    if (res.status === 'rejected') {
+      console.error(res?.reason);
+    }
+  });
 
   return { safe: reasons.length === 0, reasons };
 };
