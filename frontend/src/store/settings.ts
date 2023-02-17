@@ -2,6 +2,7 @@ import { computed, onMounted, ref } from 'vue';
 import { Dark, LocalStorage } from 'quasar';
 import { isHexString } from 'src/utils/ethers';
 import { i18n } from '../boot/i18n';
+import { Language } from '../components/models';
 
 // Local storage key names
 const settings = {
@@ -12,7 +13,6 @@ const settings = {
 };
 
 // Shared state between instances
-type Language = { label: string; value: string };
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
 const language = ref<Language>({ label: '', value: '' }); //language code

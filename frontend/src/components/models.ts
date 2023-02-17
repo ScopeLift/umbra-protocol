@@ -156,3 +156,5 @@ declare global {
     logger: UmbraLogger;
   }
 }
+
+export type Language = { label: string; value: string };

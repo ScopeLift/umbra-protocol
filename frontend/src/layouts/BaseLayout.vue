@@ -271,6 +271,7 @@ import useWalletStore from 'src/store/wallet';
 import AddressSettings from './AddressSettings.vue';
 import HeaderLinks from './HeaderLinks.vue';
 import NetworkDropdown from './NetworkDropdown.vue';
+import { Language } from './components/models';
 
 export default defineComponent({
   name: 'BaseLayout',
@@ -295,7 +296,7 @@ export default defineComponent({
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
     const version = window.logger.version;
 
-    const changeLanguage = (language: { label: string; value: string }) => {
+    const changeLanguage = (language: Language) => {
       setLanguage(language);
       setWalletLanguage(language.value);
     };
