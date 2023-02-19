@@ -290,27 +290,17 @@
     "acknowledge-risks": "我承认此操作有风险"
   },
   "AccountSendTable": {
-    "address-copied": "接收方地址复制到剪贴板",
     "account-empty": "此浏览器中未发送任何资金",
     "address": "收件人地址",
     "amount": "量",
     "date-sent": "发送日期",
-    "hash": "交易哈希",
     "receiver": "接收器",
     "received": "收到",
-    "sent-funds": "已发送资金",
-    "wallet-not-connected": "钱包未连接。尝试刷新页面并连接您的钱包"
+    "sent-funds": "已发送资金"
   },
   "AccountSent": {
     "connect-wallet": "连接钱包",
-    "connect-your-wallet": "连接您的钱包以发送资金",
-    "need-signature": "此应用程序需要您的签名才能扫描您收到的资金",
-    "scan": "扫描",
-    "scan-funds": "点击下方扫描您收到的资金",
-    "scanning": "正在扫描资金...",
-    "sign": "标志",
-    "wait": "这可能需要几分钟，具体取决于您的连接和设备。这是正常的 - 请耐心等待。",
-    "valid-private-key-missing": "未提供有效的私钥。无法获取已发送的事务"
+    "connect-your-wallet": "连接您的钱包以发送资金"
   },
   "ConnectWalletCard": {
     "connect-wallet": "连接钱包"
@@ -321,6 +311,7 @@
     "address-copied": "地址已复制到剪贴板",
     "connected-with": "已连接",
     "copy-address": "复制地址",
+    "send-history": "发送历史记录",
     "view-on-explorer": "在区块链浏览器上查看"
   },
   "WithdrawForm": {

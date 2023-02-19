@@ -43,36 +43,23 @@
       </div>
     </div>
     <div class="q-py-sm q-mt-md row justify-center items-center bg-grey-2 cursor">
-      <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }"
-        >Send History</router-link
-      >
+      <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">{{
+        $t('WalletRow.send-history')
+      }}</router-link>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onUpdated, computed, PropType } from 'vue';
-import { copyToClipboard } from 'quasar';
-import { tc } from 'src/boot/i18n';
 import BaseButton from 'src/components/BaseButton.vue';
-import { toAddress } from 'src/utils/address';
-import { notifyUser } from 'src/utils/alerts';
 import useWalletStore from 'src/store/wallet';
 import jazzicon from '@metamask/jazzicon';
 import useSettingsStore from 'src/store/settings';
 
 function useWalletRow(userAddress: string) {
-  const { provider, currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
+  const { currentChain, connectedWalletLabel, disconnectWallet, copyAddress } = useWalletStore();
 
-  /**
-   * @notice Copies the address of type to the clipboard
-   */
-  async function copyAddress(address: string) {
-    if (!provider.value) return;
-    const mainAddress = await toAddress(address, provider.value);
-    await copyToClipboard(mainAddress);
-    notifyUser('success', `${tc('WalletRow.address-copied')}`);
-  }
   return {
     copyAddress,
     blockExplorerUrl: computed(() => `${currentChain.value?.blockExplorerUrls![0] || ''}/address/${userAddress}`),

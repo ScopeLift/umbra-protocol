@@ -88,10 +88,6 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import { copyToClipboard } from 'quasar';
-import { notifyUser } from 'src/utils/alerts';
-import { toAddress } from 'src/utils/address';
-import { getEtherscanUrl } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 import { tc } from 'src/boot/i18n';
 
@@ -115,19 +111,8 @@ export default defineComponent({
     },
   },
   setup(props, context) {
-    const { provider, chainId } = useWalletStore();
+    const { copyAddress, openInEtherscan } = useWalletStore();
     const paginationConfig = { rowsPerPage: 25 };
-    async function copyAddress(address: string) {
-      if (!provider.value) throw new Error(tc('AccountSendTable.wallet-not-connected'));
-      const mainAddress = await toAddress(address, provider.value);
-      await copyToClipboard(mainAddress);
-      notifyUser('success', `${tc('AccountSendTable.address-copied')}`);
-    }
-    function openInEtherscan(hash: string) {
-      if (!provider.value) throw new Error(tc('AccountSendTable.wallet-not-connected'));
-      // Assume mainnet if we don't have a provider with a valid chainId
-      window.open(getEtherscanUrl(hash, chainId.value || 1));
-    }
     const mainTableColumns = [
       {
         align: 'left',
@@ -151,7 +136,6 @@ export default defineComponent({
         sortable: true,
       },
     ];
-    console.log(props.sendMetadata[0]);
     return {
       context,
       paginationConfig,

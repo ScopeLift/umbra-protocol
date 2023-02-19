@@ -337,7 +337,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
-import { date, copyToClipboard } from 'quasar';
+import { copyToClipboard } from 'quasar';
 import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
 import { tc } from 'src/boot/i18n';
@@ -353,7 +353,15 @@ import WithdrawForm from 'components/WithdrawForm.vue';
 import { FeeEstimateResponse } from 'components/models';
 import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
-import { getEtherscanUrl, isToken } from 'src/utils/utils';
+import {
+  getEtherscanUrl,
+  isToken,
+  formatDate,
+  formatAmount,
+  formatTime,
+  getTokenSymbol,
+  getTokenLogoUri,
+} from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
   const { startBlock, endBlock, scanPrivateKey } = useSettingsStore();
@@ -404,7 +412,8 @@ interface ReceiveTableAnnouncement extends UserAnnouncement {
 }
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
-  const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
+  const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens, copyAddress } =
+    useWalletStore();
   const { setIsInWithdrawFlow } = useStatusesStore();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows
@@ -471,22 +480,11 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   };
 
   // Table formatters and helpers
-  const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
-  const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
   const isNativeToken = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
   const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
     if (isNativeToken(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
     return (await umbra.value?.umbraContract.tokenPayments(userAddress, tokenAddress)) as BigNumber;
-  };
-  const getTokenSymbol = (tokenAddress: string) => getTokenInfo(tokenAddress).symbol;
-  const getTokenLogoUri = (tokenAddress: string) => getTokenInfo(tokenAddress).logoURI;
-  const formatAmount = (amount: BigNumber, tokenAddress: string) => {
-    const decimals = getTokenInfo(tokenAddress).decimals;
-    return Number(formatUnits(amount, decimals)).toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 10,
-    });
   };
 
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
@@ -511,16 +509,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     });
     isLoading.value = false;
   });
-
-  /**
-   * @notice Copies the address of type to the clipboard
-   */
-  async function copyAddress(address: string, type: 'Sender' | 'Receiver') {
-    if (!provider.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
-    const mainAddress = await toAddress(address, provider.value);
-    await copyToClipboard(mainAddress);
-    notifyUser('success', `${type} ${tc('AccountReceiveTable.address-copied')}`);
-  }
 
   /**
    * @notice Opens the transaction in etherscan

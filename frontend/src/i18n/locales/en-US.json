@@ -289,27 +289,17 @@
     "acknowledge-risks": "I acknowledge the risks"
   },
   "AccountSendTable": {
-    "address-copied": "Receiver address copied to clipboard",
     "account-empty": "No funds sent in this browser",
     "address": "Recipient address",
     "amount": "Amount",
     "date-sent": "Date sent",
-    "hash": "Transaction hash",
     "receiver": "Receiver",
     "received": "Received",
-    "sent-funds": "Sent funds",
-    "wallet-not-connected": "Wallet not connected. Try refreshing the page and connect your wallet"
+    "sent-funds": "Sent funds"
   },
   "AccountSent": {
     "connect-wallet": "Connect Wallet",
-    "connect-your-wallet": "Connect your wallet to send funds",
-    "need-signature": "This app needs your signature to scan for funds you've received",
-    "scan": "Scan",
-    "scan-funds": "Click below to scan for funds you've received",
-    "scanning": "Scanning for funds...",
-    "sign": "Sign",
-    "wait": "This may take a couple of minutes depending on your connection and device. This is normal&mdash; please be patient.",
-    "valid-private-key-missing": "No valid private key was provided. Cannot fetch sent transactions"
+    "connect-your-wallet": "Connect your wallet to send funds"
   },
   "ConnectWalletCard": {
     "connect-wallet": "Connect Wallet"
@@ -320,6 +310,7 @@
     "address-copied": "Address copied to clipboard",
     "connected-with": "Connected with",
     "copy-address": "Copy address",
+    "send-history": "Send history",
     "view-on-explorer": "View on explorer"
   },
   "WithdrawForm": {

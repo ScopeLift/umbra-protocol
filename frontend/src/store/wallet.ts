@@ -6,6 +6,11 @@ import walletConnectModule from '@web3-onboard/walletconnect';
 import coinbaseWalletModule from '@web3-onboard/coinbase';
 import ledgerModule from '@web3-onboard/ledger';
 import trezorModule from '@web3-onboard/trezor';
+import { copyToClipboard } from 'quasar';
+import { toAddress } from 'src/utils/address';
+import { notifyUser } from 'src/utils/alerts';
+import { getEtherscanUrl } from 'src/utils/utils';
+import { tc } from 'src/boot/i18n';
 
 import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbracash/umbra-js';
 import {
@@ -538,6 +543,22 @@ export default function useWalletStore() {
     return null;
   });
 
+  /**
+   * @notice Copies the address of type to the clipboard
+   */
+  async function copyAddress(address: string) {
+    if (!provider.value) return;
+    const mainAddress = await toAddress(address, provider.value);
+    await copyToClipboard(mainAddress);
+    notifyUser('success', `${tc('WalletRow.address-copied')}`);
+  }
+
+  function openInEtherscan(hash: string) {
+    if (!provider.value) throw new Error(tc('AccountSendTable.wallet-not-connected'));
+    // Assume mainnet if we don't have a provider with a valid chainId
+    window.open(getEtherscanUrl(hash, chainId.value || 1));
+  }
+
   // ------------------------------------- Exposed parameters --------------------------------------
   // Define computed properties and parts of store that should be exposed. Everything exposed is a
   // computed property to facilitate reactivity and avoid accidental state mutations
@@ -581,6 +602,8 @@ export default function useWalletStore() {
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
     connectedWalletLabel: computed(() => lastWallet),
+    copyAddress,
+    openInEtherscan,
   };
 }
 

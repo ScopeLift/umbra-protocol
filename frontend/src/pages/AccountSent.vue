@@ -58,13 +58,6 @@ function useAccountSent() {
         hash: '0xabeea5720640859db6dc46caae44fe34449469bfae8e3e930d9f59abbf50ed50',
       },
     ];
-    //	  type SendMetadataDecrypted = {
-    //  amount: string;
-    //  address: string;
-    //  dateSent: Date;
-    //  hash: string;
-    //  tokenAddress: string;
-    //};
 
     for (const row of data) {
       formattedRows.push({
@@ -81,7 +74,6 @@ function useAccountSent() {
         tokenSymbol: getTokenSymbol(row.tokenAddress, tokens.value),
       });
     }
-    console.log(formattedRows);
     sendMetadata.value = formattedRows;
   } catch (err) {
     console.error(err);
