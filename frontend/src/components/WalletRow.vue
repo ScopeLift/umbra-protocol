@@ -1,12 +1,12 @@
 <template>
   <div v-if="display" class="walletRow-container q-menu" :class="isDark ? 'q-dark' : ''">
-    <div class="row justify-between items-center q-mb-sm">
+    <div class="row justify-between items-center gutter-margin q-py-sm">
       <div>{{ $t('WalletRow.account') }}</div>
       <div @click="setDisplayWalletRow(false)">
         <q-icon class="copy-icon q-pr-xs cursor-pointer" name="fas fa-times" />
       </div>
     </div>
-    <div class="column inner-container">
+    <div class="gutter-margin column inner-container">
       <div class="row justify-between items-center">
         <div class="text-xxs">{{ $t('WalletRow.connected-with') }} {{ connectedWalletLabel }}</div>
         <base-button
@@ -41,6 +41,11 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="q-py-sm q-mt-md row justify-center items-center bg-grey-2 cursor">
+      <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }"
+        >Send History</router-link
+      >
     </div>
   </div>
 </template>
@@ -160,10 +165,10 @@ export default defineComponent({
   margin-top: 40px
   position: absolute !important
   width: 290px
-  height: 150px
+  height: auto
   z-index: 1
   border-radius: 15px
-  padding: 15px
+
 
   @media screen and (max-width: $breakpoint-xs-max)
     left: -40px
@@ -178,6 +183,9 @@ export default defineComponent({
 
 .external-link-parent:hover
   color: $primary
+
+.gutter-margin
+  margin: 0px 15px 0px 15px
 
 .text-xxs
   font-size: 10px

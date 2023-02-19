@@ -1,6 +1,8 @@
 import { supportedChains, TokenInfo, Provider } from 'src/components/models';
 import { ERC20_ABI } from './constants';
 import { BigNumber, BigNumberish, Contract, hexValue, parseUnits, formatUnits, isHexString } from './ethers';
+import { TokenInfoExtended } from 'components/models';
+import { date } from 'quasar';
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` or `address and `chainId`
  */
@@ -152,3 +154,25 @@ export const isToken = async (address: string, provider: Provider) => {
     return false;
   }
 };
+
+// Data format utils
+export const getTokenInfo = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  tokens.filter((token) => token.address === tokenAddress)[0];
+
+export const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
+
+export const formatAmount = (amount: BigNumber, tokenAddress: string, tokens: TokenInfoExtended[]) => {
+  const decimals = getTokenInfo(tokenAddress, tokens).decimals;
+  return Number(formatUnits(amount, decimals)).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 10,
+  });
+};
+
+export const getTokenLogoUri = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  getTokenInfo(tokenAddress, tokens).logoURI;
+
+export const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
+
+export const getTokenSymbol = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  getTokenInfo(tokenAddress, tokens).symbol;
