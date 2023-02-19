@@ -88,25 +88,15 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
+import { SendTableMetadataRow } from 'components/models';
 import useWalletStore from 'src/store/wallet';
 import { tc } from 'src/boot/i18n';
 
-type SendTableMetdataRow = {
-  dateSent: string;
-  dateSentUnix: number;
-  dateSentTime: string;
-  amount: string;
-  address: string;
-  hash: string;
-  tokenLogo?: string;
-  tokenAddress: string;
-  tokenSymbol: string;
-};
 export default defineComponent({
   name: 'AccountSendTable',
   props: {
     sendMetadata: {
-      type: undefined as unknown as PropType<SendTableMetdataRow[]>,
+      type: undefined as unknown as PropType<SendTableMetadataRow[]>,
       required: true,
     },
   },

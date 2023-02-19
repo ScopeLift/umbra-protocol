@@ -22,31 +22,17 @@ import useWallet from 'src/store/wallet';
 import useWalletStore from 'src/store/wallet';
 import AccountSendTable from 'components/AccountSendTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
+import { SendTableMetadataRow } from 'components/models';
 import { BigNumber } from 'src/utils/ethers';
 import { formatNameOrAddress } from 'src/utils/address';
 import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri } from 'src/utils/utils';
 import { NATIVE_TOKEN_ADDRESS } from 'components/models';
 
-type SendTableMetdataRow = {
-  dateSent: string;
-  dateSentUnix: number;
-  dateSentTime: string;
-  amount: string;
-  address: string;
-  addressShortened: string;
-  hash: string;
-  tokenLogo?: string;
-  tokenAddress: string;
-  tokenSymbol: string;
-};
-// TODO: When interacting with real data we will want to add scanning
-
 function useAccountSent() {
   const { userAddress } = useWallet();
   const { tokens } = useWalletStore();
-  const sendMetadata = ref<SendTableMetdataRow[]>([]);
+  const sendMetadata = ref<SendTableMetadataRow[]>([]);
 
-  // Get user's signature if required
   try {
     const formattedRows = [];
     const data = [
