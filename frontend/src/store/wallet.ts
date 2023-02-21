@@ -358,6 +358,8 @@ export default function useWalletStore() {
     setLastWallet(null);
   }
 
+  // WARNING: Only call this method at the same time as the `setLanguage` method in `settings.ts` to
+  // ensure the language settings stay in sync.
   function setLanguage(language: string) {
     if (!onboard.value) return;
     onboard.value.state.actions.setLocale(language);
