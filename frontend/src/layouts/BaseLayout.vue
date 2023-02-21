@@ -269,9 +269,9 @@ import ConnectWallet from 'src/components/ConnectWallet.vue';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import AddressSettings from './AddressSettings.vue';
-import HeaderLinks from './HeaderLinks.vue';
-import NetworkDropdown from './NetworkDropdown.vue';
-import { Language } from './components/models';
+import HeaderLinks from 'src/layouts/HeaderLinks.vue';
+import NetworkDropdown from 'src/layouts/NetworkDropdown.vue';
+import { Language } from 'src/components/models';
 
 export default defineComponent({
   name: 'BaseLayout',
