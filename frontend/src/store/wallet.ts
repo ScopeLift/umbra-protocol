@@ -187,7 +187,16 @@ export default function useWalletStore() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function setProvider(p: any) {
-    rawProvider.value = p;
+    // As mentioned in the other comment within the `configureProvider` function, Vue 3's reactivity
+    // system is based on ES6 proxies. ES6 proxies break `this` binding, which caused issues with
+    // Brave wallet. The solution is to use `markRaw` to prevent Vue from wrapping the value in a
+    // Proxy. Out of an abundance of caution, we refresh the page on account or network change, so
+    // we don't need to worry about reactivity of the provider and signer, which is why this
+    // solution is ok. Read more here:
+    //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy#no_private_property_forwarding
+    //   - https://stackoverflow.com/questions/66358449/why-does-proxy-break-this-binding
+    //   - https://vuejs.org/api/reactivity-advanced.html#markraw
+    rawProvider.value = markRaw(p);
   }
 
   function setLoading(status: boolean) {
@@ -239,9 +248,9 @@ export default function useWalletStore() {
         return;
       }
 
-      provider.value = new Web3Provider(rawProvider.value as unknown as ExternalProvider, 'any'); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
+      provider.value = markRaw(new Web3Provider(rawProvider.value as unknown as ExternalProvider, 'any')); // the "any" network will allow spontaneous network changes: https://docs.ethers.io/v5/single-page/#/v5/concepts/best-practices/-%23-best-practices--network-changes
       providerExport = provider.value;
-      signer.value = provider.value.getSigner();
+      signer.value = markRaw(provider.value.getSigner());
 
       // Get user and network information
       const [_userAddress, _network, _relayer] = await Promise.all([
@@ -279,7 +288,7 @@ export default function useWalletStore() {
       // Read more here:
       //     - https://github.com/vuejs/vue-next/issues/3024
       //     - https://stackoverflow.com/questions/65693108/threejs-component-working-in-vuejs-2-but-not-3
-      //     - https://v3.vuejs.org/api/basic-reactivity.html#markraw
+      //     - https://vuejs.org/api/reactivity-advanced.html#markraw
       umbra.value = markRaw(new Umbra(provider.value, newChainId));
       stealthKeyRegistry.value = markRaw(new StealthKeyRegistry(signer.value));
 
