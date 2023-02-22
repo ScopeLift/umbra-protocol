@@ -32,7 +32,7 @@
           </div>
 
           <div class="row justify-between items-center text-caption text-grey">
-            <div>{{ $t('AccountSendTable.received') }}</div>
+            <div>{{ $t('AccountSendTable.date-sent') }}</div>
             <div>
               {{ props.row.dateSent }}
               {{ props.row.dateSentTime }}

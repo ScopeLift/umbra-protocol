@@ -44,7 +44,7 @@
     </div>
     <div class="q-py-sm q-mt-md row justify-center items-center bg-grey-2 cursor">
       <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">{{
-        $t('WalletRow.send-history')
+        $t('WalletRow.view-send-history')
       }}</router-link>
     </div>
   </div>

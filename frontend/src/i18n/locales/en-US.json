@@ -294,7 +294,6 @@
     "amount": "Amount",
     "date-sent": "Date sent",
     "receiver": "Receiver",
-    "received": "Received",
     "sent-funds": "Sent funds"
   },
   "AccountSent": {
@@ -310,7 +309,7 @@
     "address-copied": "Address copied to clipboard",
     "connected-with": "Connected with",
     "copy-address": "Copy address",
-    "send-history": "Send history",
+    "view-send-history": "View send history",
     "view-on-explorer": "View on explorer"
   },
   "WithdrawForm": {

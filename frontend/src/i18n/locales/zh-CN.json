@@ -295,7 +295,6 @@
     "amount": "金额",
     "date-sent": "发送日期",
     "receiver": "收款人",
-    "received": "已收到",
     "sent-funds": "已发送的资金"
   },
   "AccountSent": {
@@ -311,7 +310,7 @@
     "address-copied": "地址已复制到剪贴板",
     "connected-with": "已连接",
     "copy-address": "复制地址",
-    "send-history": "发送历史",
+    "view-send-history": "查看发送历史",
     "view-on-explorer": "在区块链浏览器上查看"
   },
   "WithdrawForm": {
