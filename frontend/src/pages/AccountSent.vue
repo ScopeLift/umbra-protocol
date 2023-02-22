@@ -18,7 +18,6 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import useWallet from 'src/store/wallet';
 import useWalletStore from 'src/store/wallet';
 import AccountSendTable from 'components/AccountSendTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
@@ -29,8 +28,7 @@ import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri }
 import { NATIVE_TOKEN_ADDRESS } from 'components/models';
 
 function useAccountSent() {
-  const { userAddress } = useWallet();
-  const { tokens } = useWalletStore();
+  const { tokens, userAddress } = useWalletStore();
   const sendMetadata = ref<SendTableMetadataRow[]>([]);
 
   try {
