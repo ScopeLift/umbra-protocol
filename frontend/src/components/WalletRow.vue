@@ -42,11 +42,11 @@
         </div>
       </div>
     </div>
-    <div class="q-py-sm q-mt-md row justify-center items-center bg-grey-2 cursor">
-      <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">{{
-        $t('WalletRow.view-send-history')
-      }}</router-link>
-    </div>
+    <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+      <div class="q-py-sm q-mt-md row justify-center items-center bg-grey-2 cursor border-color-primary">
+        {{ $t('WalletRow.view-send-history') }}
+      </div>
+    </router-link>
   </div>
 </template>
 
@@ -172,6 +172,14 @@ export default defineComponent({
 
 .gutter-margin
   margin: 0px 15px 0px 15px
+
+
+.border-color-primary
+
+.border-color-primary:hover
+  border: 1px solid $primary
+  border-radius: 0 0 15px 15px
+  color: $primary
 
 .text-xxs
   font-size: 10px
