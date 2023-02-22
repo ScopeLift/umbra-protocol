@@ -291,12 +291,12 @@
   },
   "AccountSendTable": {
     "account-empty": "此浏览器中未发送任何资金",
-    "address": "收件人地址",
-    "amount": "量",
+    "address": "收款人地址",
+    "amount": "金额",
     "date-sent": "发送日期",
-    "receiver": "接收器",
-    "received": "收到",
-    "sent-funds": "已发送资金"
+    "receiver": "收款人",
+    "received": "已收到",
+    "sent-funds": "已发送的资金"
   },
   "AccountSent": {
     "connect-wallet": "连接钱包",
@@ -311,7 +311,7 @@
     "address-copied": "地址已复制到剪贴板",
     "connected-with": "已连接",
     "copy-address": "复制地址",
-    "send-history": "发送历史记录",
+    "send-history": "发送历史",
     "view-on-explorer": "在区块链浏览器上查看"
   },
   "WithdrawForm": {
