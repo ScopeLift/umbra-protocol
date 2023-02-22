@@ -155,7 +155,6 @@ export default defineComponent({
   z-index: 1
   border-radius: 15px
 
-
   @media screen and (max-width: $breakpoint-xs-max)
     left: -40px
 
@@ -172,9 +171,6 @@ export default defineComponent({
 
 .gutter-margin
   margin: 0px 15px 0px 15px
-
-
-.border-color-primary
 
 .border-color-primary:hover
   border: 1px solid $primary
