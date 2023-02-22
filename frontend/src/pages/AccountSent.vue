@@ -11,7 +11,7 @@
       </div>
     </div>
     <div v-else class="q-mx-auto" style="max-width: 800px">
-      <account-send-table :sendMetadata="sendMetadata" />
+      <account-sent-table :sendMetadata="sendMetadata" />
     </div>
   </q-page>
 </template>
@@ -19,7 +19,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import useWalletStore from 'src/store/wallet';
-import AccountSendTable from 'components/AccountSendTable.vue';
+import AccountSentTable from 'components/AccountSentTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import { SendTableMetadataRow } from 'components/models';
 import { BigNumber } from 'src/utils/ethers';
@@ -63,7 +63,7 @@ function useAccountSent() {
 }
 export default defineComponent({
   name: 'PageSent',
-  components: { AccountSendTable, ConnectWallet },
+  components: { AccountSentTable, ConnectWallet },
   setup(context) {
     return { context, ...useAccountSent() };
   },

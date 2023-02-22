@@ -94,7 +94,7 @@ import { copyAddress, openInEtherscan } from 'src/utils/utils';
 import { tc } from 'src/boot/i18n';
 
 export default defineComponent({
-  name: 'AccountSendTable',
+  name: 'AccountSentTable',
   props: {
     sendMetadata: {
       type: undefined as unknown as PropType<SendTableMetadataRow[]>,
