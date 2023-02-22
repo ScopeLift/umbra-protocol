@@ -58,10 +58,9 @@ import jazzicon from '@metamask/jazzicon';
 import useSettingsStore from 'src/store/settings';
 
 function useWalletRow(userAddress: string) {
-  const { currentChain, connectedWalletLabel, disconnectWallet, copyAddress } = useWalletStore();
+  const { currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
 
   return {
-    copyAddress,
     blockExplorerUrl: computed(() => `${currentChain.value?.blockExplorerUrls![0] || ''}/address/${userAddress}`),
     connectedWalletLabel: connectedWalletLabel.value,
     disconnectWallet,

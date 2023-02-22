@@ -97,7 +97,7 @@
               <q-card-section>
                 <div class="row justify-between items-center">
                   <div>{{ $t('AccountReceiveTable.sender') }}</div>
-                  <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
+                  <div @click="copyAddress(props.row.from, provider, 'Sender')" class="cursor-pointer copy-icon-parent">
                     <span>{{ props.row.from }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
@@ -118,7 +118,10 @@
                       </router-link>
                     </base-tooltip>
                   </div>
-                  <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
+                  <div
+                    @click="copyAddress(props.row.receiver, provider, 'Receiver')"
+                    class="cursor-pointer copy-icon-parent"
+                  >
                     <span>{{ formatNameOrAddress(props.row.receiver) }}</span>
                     <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
@@ -235,7 +238,7 @@
 
               <!-- Sender column -->
               <div v-else-if="col.name === 'from'" class="d-inline-block">
-                <div @click="copyAddress(props.row.from, 'Sender')" class="cursor-pointer copy-icon-parent">
+                <div @click="copyAddress(props.row.from, provider, 'Sender')" class="cursor-pointer copy-icon-parent">
                   <span>{{ formatNameOrAddress(props.row.formattedFrom) }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
@@ -243,7 +246,10 @@
 
               <!-- Receiver column -->
               <div v-else-if="col.name === 'receiver'" class="d-inline-block">
-                <div @click="copyAddress(props.row.receiver, 'Receiver')" class="cursor-pointer copy-icon-parent">
+                <div
+                  @click="copyAddress(props.row.receiver, provider, 'Receiver')"
+                  class="cursor-pointer copy-icon-parent"
+                >
                   <span>{{ formatNameOrAddress(col.value) }}</span>
                   <q-icon class="copy-icon" name="far fa-copy" right />
                 </div>
@@ -361,6 +367,7 @@ import {
   formatTime,
   getTokenSymbol,
   getTokenLogoUri,
+  copyAddress,
 } from 'src/utils/utils';
 
 function useAdvancedFeatures(spendingKeyPair: KeyPair) {
@@ -412,8 +419,7 @@ interface ReceiveTableAnnouncement extends UserAnnouncement {
 }
 
 function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
-  const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens, copyAddress } =
-    useWalletStore();
+  const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const { setIsInWithdrawFlow } = useStatusesStore();
   const paginationConfig = { rowsPerPage: 25 };
   const expanded = ref<string[]>([]); // for managing expansion rows

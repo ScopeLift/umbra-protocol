@@ -24,7 +24,7 @@
               <span class="q-mr-xs">{{ $t('AccountSendTable.receiver') }}</span>
             </div>
             <div>
-              <div @click="copyAddress(props.row.address)" class="cursor-pointer copy-icon-parent">
+              <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
                 <span>{{ props.row.addressShortened }}</span>
                 <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
               </div>
@@ -49,7 +49,7 @@
           <!-- Date column -->
           <div v-if="col.name === 'dateSent'" class="d-inline-block">
             <div
-              @click="openInEtherscan(props.row.hash)"
+              @click="openInEtherscan(props.row.hash, provider, chainId)"
               class="row justify-start items-center cursor-pointer external-link-icon-parent"
             >
               <div class="col-auto">
@@ -73,7 +73,7 @@
 
           <!-- Sender column -->
           <div v-else-if="col.name === 'from'" class="d-inline-block">
-            <div @click="copyAddress(props.row.address)" class="cursor-pointer copy-icon-parent">
+            <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
               <span>{{ props.row.addressShortened }}</span>
               <q-icon class="copy-icon" name="far fa-copy" right />
             </div>
@@ -90,6 +90,7 @@
 import { defineComponent, PropType } from 'vue';
 import { SendTableMetadataRow } from 'components/models';
 import useWalletStore from 'src/store/wallet';
+import { copyAddress, openInEtherscan } from 'src/utils/utils';
 import { tc } from 'src/boot/i18n';
 
 export default defineComponent({
@@ -101,7 +102,7 @@ export default defineComponent({
     },
   },
   setup(props, context) {
-    const { copyAddress, openInEtherscan } = useWalletStore();
+    const { provider, chainId } = useWalletStore();
     const paginationConfig = { rowsPerPage: 25 };
     const mainTableColumns = [
       {
@@ -133,6 +134,8 @@ export default defineComponent({
       formattedSendMetadata: props.sendMetadata,
       copyAddress,
       openInEtherscan,
+      provider,
+      chainId,
     };
   },
 });
