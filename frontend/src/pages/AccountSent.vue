@@ -31,37 +31,31 @@ function useAccountSent() {
   const { tokens, userAddress } = useWalletStore();
   const sendMetadata = ref<SendTableMetadataRow[]>([]);
 
-  try {
-    const formattedRows = [];
-    const data = [
-      {
-        amount: '1000000000000000000',
-        tokenAddress: NATIVE_TOKEN_ADDRESS,
-        dateSent: new Date(),
-        address: '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5',
-        hash: '0xabeea5720640859db6dc46caae44fe34449469bfae8e3e930d9f59abbf50ed50',
-      },
-    ];
+  const data = [
+    {
+      amount: '1000000000000000000',
+      tokenAddress: NATIVE_TOKEN_ADDRESS,
+      dateSent: new Date(),
+      address: '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5',
+      hash: '0xabeea5720640859db6dc46caae44fe34449469bfae8e3e930d9f59abbf50ed50',
+    },
+  ];
 
-    for (const row of data) {
-      formattedRows.push({
-        amount: formatAmount(BigNumber.from(row.amount), row.tokenAddress, tokens.value),
-        dateSent: formatDate(row.dateSent.getTime()),
-        dateSentUnix: row.dateSent.getTime(),
-        address: row.address.toString(),
-        addressShortened: formatNameOrAddress(row.address.toString()),
-        hash: row.hash,
-        hashShortened: formatNameOrAddress(row.hash),
-        dateSentTime: formatTime(row.dateSent.getTime()),
-        tokenLogo: getTokenLogoUri(row.tokenAddress, tokens.value),
-        tokenAddress: row.tokenAddress,
-        tokenSymbol: getTokenSymbol(row.tokenAddress, tokens.value),
-      });
-    }
-    sendMetadata.value = formattedRows;
-  } catch (err) {
-    console.error(err);
-  }
+  sendMetadata.value = data.map((row) => {
+    return {
+      amount: formatAmount(BigNumber.from(row.amount), row.tokenAddress, tokens.value),
+      dateSent: formatDate(row.dateSent.getTime()),
+      dateSentUnix: row.dateSent.getTime(),
+      address: row.address.toString(),
+      addressShortened: formatNameOrAddress(row.address.toString()),
+      hash: row.hash,
+      hashShortened: formatNameOrAddress(row.hash),
+      dateSentTime: formatTime(row.dateSent.getTime()),
+      tokenLogo: getTokenLogoUri(row.tokenAddress, tokens.value),
+      tokenAddress: row.tokenAddress,
+      tokenSymbol: getTokenSymbol(row.tokenAddress, tokens.value),
+    };
+  });
   return {
     userAddress,
     sendMetadata,
