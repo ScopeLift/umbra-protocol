@@ -240,6 +240,11 @@
           icon="far fa-copy"
           :label="$t('Send.copy-payment-link')"
         />
+        <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+          <div class="row items-center justify-center q-pa-xs link-container">
+            {{ $t('Send.send-history') }}
+          </div>
+        </router-link>
       </div>
     </q-form>
   </q-page>
@@ -675,4 +680,10 @@ td
 td.min
   width: 1%
   white-space: nowrap
+
+.link-container
+  color: $primary
+
+.link-container:hover
+  background: rgba($primary, 0.15)
 </style>

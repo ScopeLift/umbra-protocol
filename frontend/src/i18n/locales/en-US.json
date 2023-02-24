@@ -88,7 +88,8 @@
     "wallet-not-connected": "Wallet not connected",
     "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance",
     "advanced-send-warning": "The receiver will have to enter their account's private key into this app to withdraw the funds. Don't use this feature unless you know what you're doing.",
-    "acknowledge-risks": "I acknowledge the risks"
+    "acknowledge-risks": "I acknowledge the risks",
+    "send-history": "Send history"
   },
   "Receive": {
     "receive": "Receive",
