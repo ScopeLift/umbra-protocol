@@ -1,9 +1,14 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">{{ $t('AccountSendTable.sent-funds') }}</h2>
+    <h2 class="page-title">
+      {{ $t('AccountSendTable.sent-funds') }}
+
+      <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+        {{ $t('AccountSent.storage-description') }}
+      </base-tooltip>
+    </h2>
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
-      <p class="text-center">{{ $t('AccountSent.connect-your-wallet') }}</p>
       <div class="row justify-center">
         <connect-wallet>
           <base-button class="text-center" :label="$t('AccountSent.connect-wallet')" />
@@ -20,6 +25,7 @@
 import { defineComponent, ref } from 'vue';
 import useWalletStore from 'src/store/wallet';
 import AccountSentTable from 'components/AccountSentTable.vue';
+import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import { SendTableMetadataRow } from 'components/models';
 import { BigNumber } from 'src/utils/ethers';
@@ -38,6 +44,13 @@ function useAccountSent() {
       dateSent: new Date(),
       address: '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5',
       hash: '0xabeea5720640859db6dc46caae44fe34449469bfae8e3e930d9f59abbf50ed50',
+    },
+    {
+      amount: '2000000000000000000',
+      tokenAddress: NATIVE_TOKEN_ADDRESS,
+      dateSent: new Date('2021-01-01'),
+      address: '0xEAC5F0d4A9a45E1f9FdD0e7e2882e9f60E301156',
+      hash: '0xf1a4ad61bd073c8262f18a13b81f9a3ce33884d22963be3f9150719116ac3194',
     },
   ];
 
@@ -63,7 +76,7 @@ function useAccountSent() {
 }
 export default defineComponent({
   name: 'PageSent',
-  components: { AccountSentTable, ConnectWallet },
+  components: { AccountSentTable, BaseTooltip, ConnectWallet },
   setup(context) {
     return { context, ...useAccountSent() };
   },

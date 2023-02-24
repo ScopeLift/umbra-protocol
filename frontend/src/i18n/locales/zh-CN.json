@@ -299,7 +299,8 @@
   },
   "AccountSent": {
     "connect-wallet": "连接钱包",
-    "connect-your-wallet": "连接您的钱包以发送资金"
+    "connect-your-wallet": "连接您的钱包以发送资金",
+    "storage-description": "发送历史记录是当前浏览器的本地发送历史记录，从其他浏览器或不同设备访问时会有所不同。我们这样做是为了最大限度地提高您的安全和隐私。"
   },
   "ConnectWalletCard": {
     "connect-wallet": "连接钱包"

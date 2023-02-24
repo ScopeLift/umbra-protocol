@@ -299,7 +299,9 @@
   },
   "AccountSent": {
     "connect-wallet": "Connect Wallet",
-    "connect-your-wallet": "Connect your wallet to send funds"
+    "connect-your-wallet": "Connect your wallet to send funds",
+
+    "storage-description": "The send history is local to your current browser an will differ when accessed from a different browser or a different device. We do this to maximize your security and privacy."
   },
   "ConnectWalletCard": {
     "connect-wallet": "Connect Wallet"
