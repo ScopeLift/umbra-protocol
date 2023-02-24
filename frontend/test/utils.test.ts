@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { humanizeTokenAmount, humanizeArithmeticResult, humanizeMinSendAmount } from '../src/utils/utils';
 import { parseUnits, parseEther } from '@ethersproject/units';
 
