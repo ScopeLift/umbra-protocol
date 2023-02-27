@@ -360,14 +360,16 @@ export async function getEthSweepGasInfo(
   const gasLimitOf21k = [1, 4, 5, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
   const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
-  const [toAddressCode, network, fromBalance, providerGasPrice] = await Promise.all([
+  const [toAddressCode, network, fromBalance, lastBlockData, providerGasPrice] = await Promise.all([
     provider.getCode(to),
     provider.getNetwork(),
     provider.getBalance(from),
-    // getGasPrice is officially deprecated in favor of getFeeData, as the
-    // former uses pre-1559 gas pricing. But we use it anyway because it makes
-    // it easier to calculate a price to sweep the account (1599 factors in
-    // refunds that we don't care about).
+    provider.getBlock('latest'),
+    // getGasPrice is officially deprecated in favor of getFeeData but we use it anyway because:
+    // (a) getGasPrice returns low estimates whereas getFeeData intentionally returns high estimates
+    //     of gas costs, since the latter presumes the post-1559 pricing model in which extra fees
+    //     are refunded; we don't want there to be any refunds since we're trying to sweep the account;
+    // (b) not all chains support getFeeData and/or 1559 gas pricing, e.g. Avalanche and Optimism.
     provider.getGasPrice(),
   ]);
   const isEoa = toAddressCode === '0x';
@@ -382,9 +384,20 @@ export async function getEthSweepGasInfo(
     : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
 
   // Estimate the gas price, defaulting to the given one unless on a network where we want to use provider gas price
-  const gasPrice = ignoreGasPriceOverride.includes(chainId)
+  let gasPrice = ignoreGasPriceOverride.includes(chainId)
     ? providerGasPrice
     : BigNumber.from((await overrides.gasPrice) || providerGasPrice);
+
+  // On networks with EIP-1559 gas pricing, the provider will throw an error and refuse to submit
+  // the tx if the gas price is less than the block-specified base gas cost. The error is "max fee
+  // per gas less than block base fee". So we need to ensure that the low estimate we're using isn't
+  // *too* low.  Additionally, if the previous block exceeded the target size, the base fee will be
+  // increased by 12.5% for the next block, per:
+  //   https://ethereum.org/en/developers/docs/gas/#base-fee
+  // To be conservative, therefore, we assume a 12.5% increase will affect the base fee for the
+  // transaction we're about to send.
+  const baseGasFee = (lastBlockData?.baseFeePerGas || BigNumber.from('1')).mul('1125').div('1000');
+  if (gasPrice.lt(baseGasFee)) gasPrice = baseGasFee;
 
   // On Optimism, we ask the gas price oracle for the L1 data fee that we should add on top of the L2 execution
   // cost: https://community.optimism.io/docs/developers/build/transaction-fees/

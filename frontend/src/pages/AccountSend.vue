@@ -368,7 +368,7 @@ function useSendForm() {
       }
 
       // Switch off the sendMax flag and clear value if we change tokens.
-      if (tokenValue != (_prevTokenValue || prevNativeTokenValue) && sendMax.value) {
+      if (tokenValue !== (_prevTokenValue || prevNativeTokenValue) && sendMax.value) {
         sendMax.value = false;
         humanAmount.value = '0.0';
       }
@@ -486,13 +486,10 @@ function useSendForm() {
       // Refresh the tokenAmount if the sendMax flag is set.
       if (sendMax.value) {
         if (sendingNativeToken) {
-          const [_getGasPrice, _toAddress, _estimatedNativeSendGasLimit] = await Promise.all([
-            provider.value!.getGasPrice(),
+          const [_toAddress, _estimatedNativeSendGasLimit] = await Promise.all([
             toAddress(recipientId.value, provider.value!),
             estimateNativeSendGasLimit(),
           ]);
-          // Add a 5% buffer to the gasPrice to avoid: "max fee per gas less than block base fee"
-          preCalculatedGasPrice = _getGasPrice.mul('105').div('100');
           // Get current balance less gas costs.
           const { ethToSend: balanceLessGasCosts } = await umbraUtils.getEthSweepGasInfo(
             userAddress.value!,
@@ -503,7 +500,6 @@ function useSendForm() {
               // address that has never been seen before, which increases gas
               // costs and is not accounted for by getEthSweepGasInfo.
               gasLimit: _estimatedNativeSendGasLimit,
-              gasPrice: preCalculatedGasPrice,
             }
           );
           tokenAmount = balanceLessGasCosts.sub(toll.value);
@@ -616,10 +612,10 @@ function useSendForm() {
 
     return (
       await umbra.value!.umbraContract.estimateGas.sendEth(
-        // We will be sending to an address that has never been seen before, which increases gas
-        // costs by 25k. To ensure this cost is included in our gas limit estimate, we estimate
-        // using a `to` address that is randomly generated (and thus likely to have never been seen
-        // before).
+        // We will be sending to an address that has never been seen before which substantially
+        // increases gas costs on some networks (e.g. by 25k on mainnet). To ensure this cost is
+        // included in our gas limit estimate, we estimate using a `to` address that is randomly
+        // generated (and thus likely to have never been seen before).
         new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0').slice(0, 42),
         // The toll needs to be correct, otherwise the tx would revert.
         toll.value,
