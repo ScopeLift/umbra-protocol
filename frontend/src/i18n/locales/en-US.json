@@ -295,13 +295,12 @@
     "amount": "Amount",
     "date-sent": "Date sent",
     "receiver": "Receiver",
-    "sent-funds": "Sent funds"
+    "sent-funds": "Sent funds",
+    "storage-description": "The send history is local to your current browser and will differ when accessed from a different browser or a different device. We do this to maximize your security and privacy."
   },
   "AccountSent": {
     "connect-wallet": "Connect Wallet",
-    "connect-your-wallet": "Connect your wallet to send funds",
-
-    "storage-description": "The send history is local to your current browser an will differ when accessed from a different browser or a different device. We do this to maximize your security and privacy."
+    "connect-your-wallet": "Connect your wallet to send funds"
   },
   "ConnectWalletCard": {
     "connect-wallet": "Connect Wallet"

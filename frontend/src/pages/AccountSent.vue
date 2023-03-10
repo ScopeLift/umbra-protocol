@@ -2,10 +2,6 @@
   <q-page padding>
     <h2 class="page-title">
       {{ $t('AccountSendTable.sent-funds') }}
-
-      <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
-        {{ $t('AccountSent.storage-description') }}
-      </base-tooltip>
     </h2>
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
@@ -25,7 +21,6 @@
 import { defineComponent, ref } from 'vue';
 import useWalletStore from 'src/store/wallet';
 import AccountSentTable from 'components/AccountSentTable.vue';
-import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import { SendTableMetadataRow } from 'components/models';
 import { BigNumber } from 'src/utils/ethers';
@@ -76,7 +71,7 @@ function useAccountSent() {
 }
 export default defineComponent({
   name: 'PageSent',
-  components: { AccountSentTable, BaseTooltip, ConnectWallet },
+  components: { AccountSentTable, ConnectWallet },
   setup(context) {
     return { context, ...useAccountSent() };
   },

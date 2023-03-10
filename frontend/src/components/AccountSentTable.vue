@@ -9,6 +9,14 @@
     row-key="dateSentUnix"
     :title="$t('AccountSendTable.sent-funds')"
   >
+    <template v-slot:top-left="props">
+      <div class="flex">
+        <div class="q-table__title" :props="props">{{ $t('AccountSendTable.sent-funds') }}</div>
+        <base-tooltip class="q-ml-sm self-center" size="xs" icon="fas fa-question-circle">
+          {{ $t('AccountSendTable.storage-description') }}
+        </base-tooltip>
+      </div>
+    </template>
     <!-- Card Layout for grid option -->
     <template v-slot:item="props">
       <div :key="props.row.dateSentUnix" class="col-12">
@@ -89,12 +97,14 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import { SendTableMetadataRow } from 'components/models';
+import BaseTooltip from 'src/components/BaseTooltip.vue';
 import useWalletStore from 'src/store/wallet';
 import { copyAddress, openInEtherscan } from 'src/utils/utils';
 import { tc } from 'src/boot/i18n';
 
 export default defineComponent({
   name: 'AccountSentTable',
+  components: { BaseTooltip },
   props: {
     sendMetadata: {
       type: undefined as unknown as PropType<SendTableMetadataRow[]>,
