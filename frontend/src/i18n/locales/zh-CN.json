@@ -77,6 +77,7 @@
     "fee-explain": "在 %{chainName} 上交易非常便宜，因此会收取少量费用以阻止垃圾信息。",
     "total": "总额",
     "max": "最大限额",
+    "max-native-less-than-toll": "无法发送最大限额。费用超过钱包金额。",
     "copy-payment-link": "复制付款链接",
     "enter-an-amount": "请输入金额",
     "enter-a-recipient": "请输入收款人",
