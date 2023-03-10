@@ -399,6 +399,18 @@ export async function getEthSweepGasInfo(
   const baseGasFee = (lastBlockData?.baseFeePerGas || BigNumber.from('1')).mul('1125').div('1000');
   if (gasPrice.lt(baseGasFee)) gasPrice = baseGasFee;
 
+  // For networks with a lot of gas market volatility, we bump the gas price to
+  // give us a bit of wiggle room.
+  let gasPriceScaleFactor;
+  switch (chainId) {
+    case 42161:
+      gasPriceScaleFactor = '110';
+      break;
+    default:
+      gasPriceScaleFactor = '105';
+  }
+  gasPrice = gasPrice.mul(gasPriceScaleFactor).div('100');
+
   let txCost = gasPrice.mul(gasLimit);
 
   // On Optimism, we ask the gas price oracle for the L1 data fee that we should add on top of the L2 execution

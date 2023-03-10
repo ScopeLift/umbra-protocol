@@ -480,6 +480,8 @@ function useSendForm() {
 
       const currentBalance = balances.value[tokenAddress];
       const sendingNativeToken = tokenAddress === NATIVE_TOKEN.value.address;
+      let sendMaxGasPrice; // Used if sendMax is true.
+      let sendMaxGasLimit; // Used if sendMax is true.
       let tokenAmount = parseUnits(humanAmount.value, decimals);
       // Refresh the tokenAmount if the sendMax flag is set.
       if (sendMax.value) {
@@ -489,7 +491,11 @@ function useSendForm() {
             estimateNativeSendGasLimit(),
           ]);
           // Get current balance less gas costs.
-          const { ethToSend: balanceLessGasCosts } = await umbraUtils.getEthSweepGasInfo(
+          const {
+            gasPrice: _sendMaxGasPrice,
+            gasLimit: _sendMaxGasLimit,
+            ethToSend: balanceLessGasCosts,
+          } = await umbraUtils.getEthSweepGasInfo(
             userAddress.value!,
             _toAddress,
             provider.value!,
@@ -500,6 +506,8 @@ function useSendForm() {
               gasLimit: _estimatedNativeSendGasLimit,
             }
           );
+          sendMaxGasPrice = _sendMaxGasPrice;
+          sendMaxGasLimit = _sendMaxGasLimit;
           tokenAmount = balanceLessGasCosts.sub(toll.value);
         } else {
           tokenAmount = currentBalance;
@@ -545,6 +553,20 @@ function useSendForm() {
       // Send with Umbra
       const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
         advanced: shouldUseNormalPubKey.value,
+        // When attempting to sendMax, we override the gasPrice to use the price
+        // from the sweepETH function that estimated the tokenAmount. That function
+        // calculates the tokenAmount based on a low (but reasonable) estimate of
+        // the gasPrice. Wallets are configured to choose a high-probability
+        // gasPrice for new transactions -- which is to say: a fairly high gasPrice.
+        // So if we don't specify the gasPrice here, the wallet will almost
+        // certainly choose a higher gasPrice. And since:
+        //   token amount = (account balance) - (expected gas costs)
+        // when the wallet increases gas costs on us, we end up in a situation where:
+        //   account balance < (token amount) + (wallet-chosen gas costs)
+        // So the wallet will reject the transaction on grounds that the account
+        // doesn't have enough funds.
+        gasPrice: sendMax.value && sendingNativeToken ? sendMaxGasPrice : undefined,
+        gasLimit: sendMax.value && sendingNativeToken ? sendMaxGasLimit : undefined,
       });
       void txNotify(tx.hash, ethersProvider);
       await tx.wait();
@@ -592,21 +614,6 @@ function useSendForm() {
 
   // Get an accurate estimate of the amount of gas needed to perform a native send.
   async function estimateNativeSendGasLimit() {
-    // Increase estimate to give us some wiggle room if network conditions are volatile.
-    // These have each been configured on a case-by-case basis; do not change
-    // unless you have tested a native token Umbra send on the network with the new value.
-    let scaleFactor;
-    switch (chainId.value) {
-      case 137:
-        scaleFactor = '120';
-        break;
-      case 42161:
-        scaleFactor = '110';
-        break;
-      default:
-        scaleFactor = '105';
-    }
-
     return (
       await umbra.value!.umbraContract.estimateGas.sendEth(
         // We will be sending to an address that has never been seen before which substantially
@@ -622,7 +629,7 @@ function useSendForm() {
         // Value doesn't matter, it just needs to be more than the toll else the tx would revert.
         { value: toll.value.add('1') }
       )
-    ).mul(scaleFactor).div('100');
+    );
   }
 
   return {
