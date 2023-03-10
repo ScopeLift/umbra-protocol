@@ -605,7 +605,9 @@ function useSendForm() {
           gasLimit: await estimateNativeSendGasLimit(),
         }
       );
-      humanAmount.value = formatUnits(ethToSend.sub(toll.value), token.value.decimals);
+      const sendAmount = ethToSend.sub(toll.value);
+      if (sendAmount.lt('0')) throw new Error(tc('Send.max-native-less-than-toll'));
+      humanAmount.value = formatUnits(sendAmount, token.value.decimals);
     } else {
       const tokenBalance = balances.value[token.value.address];
       humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals);

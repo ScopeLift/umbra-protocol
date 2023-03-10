@@ -77,6 +77,7 @@
     "fee-explain": "Transactions on %{chainName} are very cheap, so a small fee is charged to deter spamming the protocol.",
     "total": "Total",
     "max": "Max",
+    "max-native-less-than-toll": "Cannot send max. Balance less than toll.",
     "copy-payment-link": "Copy payment link",
     "enter-an-amount": "Please enter an amount",
     "enter-a-recipient": "Please enter a recipient",
