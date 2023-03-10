@@ -481,8 +481,6 @@ function useSendForm() {
       const currentBalance = balances.value[tokenAddress];
       const sendingNativeToken = tokenAddress === NATIVE_TOKEN.value.address;
       let tokenAmount = parseUnits(humanAmount.value, decimals);
-      // Needed for transactions that are going to sendMax.
-      let preCalculatedGasPrice;
       // Refresh the tokenAmount if the sendMax flag is set.
       if (sendMax.value) {
         if (sendingNativeToken) {
@@ -547,7 +545,6 @@ function useSendForm() {
       // Send with Umbra
       const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
         advanced: shouldUseNormalPubKey.value,
-        gasPrice: sendMax.value ? preCalculatedGasPrice : undefined,
       });
       void txNotify(tx.hash, ethersProvider);
       await tx.wait();

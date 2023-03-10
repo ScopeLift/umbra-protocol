@@ -399,18 +399,24 @@ export async function getEthSweepGasInfo(
   const baseGasFee = (lastBlockData?.baseFeePerGas || BigNumber.from('1')).mul('1125').div('1000');
   if (gasPrice.lt(baseGasFee)) gasPrice = baseGasFee;
 
+  let txCost = gasPrice.mul(gasLimit);
+
   // On Optimism, we ask the gas price oracle for the L1 data fee that we should add on top of the L2 execution
   // cost: https://community.optimism.io/docs/developers/build/transaction-fees/
   // For Arbitrum, this is baked into the gasPrice returned from the provider.
-  let txCost = gasPrice.mul(gasLimit);
   if (chainId === 10) {
     const nonce = await provider.getTransactionCount(from);
     const gasOracleAbi = ['function getL1Fee(bytes memory _data) public view returns (uint256)'];
     const gasPriceOracle = new Contract('0x420000000000000000000000000000000000000F', gasOracleAbi, provider);
-    const l1FeeInWei = await gasPriceOracle.getL1Fee(
+    let l1FeeInWei = await gasPriceOracle.getL1Fee(
       serializeTransaction({ to, value: fromBalance, data: '0x', gasLimit, gasPrice, nonce })
     );
-    txCost = txCost.add(<BigNumber>l1FeeInWei);
+
+    // We apply a 70% multiplier to the Optimism oracle quote, since it's frequently low
+    // by 45+% compared to actual L1 send fees.
+    l1FeeInWei = (l1FeeInWei as BigNumber).mul('170').div('100');
+
+    txCost = txCost.add(l1FeeInWei);
   }
 
   // Return the gas price, gas limit, and the transaction cost
