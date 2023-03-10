@@ -495,17 +495,12 @@ function useSendForm() {
             gasPrice: _sendMaxGasPrice,
             gasLimit: _sendMaxGasLimit,
             ethToSend: balanceLessGasCosts,
-          } = await umbraUtils.getEthSweepGasInfo(
-            userAddress.value!,
-            _toAddress,
-            provider.value!,
-            {
-              // We override the gasLimit here because we are sending to an
-              // address that has never been seen before, which increases gas
-              // costs and is not accounted for by getEthSweepGasInfo.
-              gasLimit: _estimatedNativeSendGasLimit,
-            }
-          );
+          } = await umbraUtils.getEthSweepGasInfo(userAddress.value!, _toAddress, provider.value!, {
+            // We override the gasLimit here because we are sending to an
+            // address that has never been seen before, which increases gas
+            // costs and is not accounted for by getEthSweepGasInfo.
+            gasLimit: _estimatedNativeSendGasLimit,
+          });
           sendMaxGasPrice = _sendMaxGasPrice;
           sendMaxGasLimit = _sendMaxGasLimit;
           tokenAmount = balanceLessGasCosts.sub(toll.value);
@@ -513,7 +508,6 @@ function useSendForm() {
           tokenAmount = currentBalance;
         }
       }
-
 
       if (tokenAddress === NATIVE_TOKEN.value.address) {
         // Throw if the tokenAmount differs from humanAmount.value by too much.
@@ -594,17 +588,12 @@ function useSendForm() {
       if (!userAddress.value || !provider.value) throw new Error(tc('Send.wallet-not-connected'));
       const fromAddress = userAddress.value;
       const recipientAddress = await toAddress(recipientId.value, provider.value);
-      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(
-        fromAddress,
-        recipientAddress,
-        provider.value,
-        {
-          // We override the gasLimit here because we are sending to an
-          // address that has never been seen before, which increases gas
-          // costs and is not accounted for by getEthSweepGasInfo.
-          gasLimit: await estimateNativeSendGasLimit(),
-        }
-      );
+      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(fromAddress, recipientAddress, provider.value, {
+        // We override the gasLimit here because we are sending to an
+        // address that has never been seen before, which increases gas
+        // costs and is not accounted for by getEthSweepGasInfo.
+        gasLimit: await estimateNativeSendGasLimit(),
+      });
       const sendAmount = ethToSend.sub(toll.value);
       if (sendAmount.lt('0')) throw new Error(tc('Send.max-native-less-than-toll'));
       humanAmount.value = formatUnits(sendAmount, token.value.decimals);
@@ -616,21 +605,19 @@ function useSendForm() {
 
   // Get an accurate estimate of the amount of gas needed to perform a native send.
   async function estimateNativeSendGasLimit() {
-    return (
-      await umbra.value!.umbraContract.estimateGas.sendEth(
-        // We will be sending to an address that has never been seen before which substantially
-        // increases gas costs on some networks (e.g. by 25k on mainnet). To ensure this cost is
-        // included in our gas limit estimate, we estimate using a `to` address that is randomly
-        // generated (and thus likely to have never been seen before).
-        new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0').slice(0, 42),
-        // The toll needs to be correct, otherwise the tx would revert.
-        toll.value,
-        // Fake values just to get a reasonable estimate.
-        new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0'), // pubKeyXCoordinate
-        new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0'), // ciphertext
-        // Value doesn't matter, it just needs to be more than the toll else the tx would revert.
-        { value: toll.value.add('1') }
-      )
+    return await umbra.value!.umbraContract.estimateGas.sendEth(
+      // We will be sending to an address that has never been seen before which substantially
+      // increases gas costs on some networks (e.g. by 25k on mainnet). To ensure this cost is
+      // included in our gas limit estimate, we estimate using a `to` address that is randomly
+      // generated (and thus likely to have never been seen before).
+      new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0').slice(0, 42),
+      // The toll needs to be correct, otherwise the tx would revert.
+      toll.value,
+      // Fake values just to get a reasonable estimate.
+      new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0'), // pubKeyXCoordinate
+      new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0'), // ciphertext
+      // Value doesn't matter, it just needs to be more than the toll else the tx would revert.
+      { value: toll.value.add('1') }
     );
   }
 

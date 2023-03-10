@@ -428,7 +428,7 @@ export async function getEthSweepGasInfo(
     // by 45+% compared to actual L1 send fees.
     l1FeeInWei = (l1FeeInWei as BigNumber).mul('170').div('100');
 
-    txCost = txCost.add(l1FeeInWei);
+    txCost = txCost.add(l1FeeInWei as BigNumber);
   }
 
   // Return the gas price, gas limit, and the transaction cost
