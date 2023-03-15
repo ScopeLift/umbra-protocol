@@ -42,7 +42,7 @@
         </div>
       </div>
     </div>
-    <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+    <router-link v-if="false" :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
       <div class="q-py-sm q-mt-md row justify-center items-center bg-grey-2 cursor border-color-primary">
         {{ $t('WalletRow.view-send-history') }}
       </div>
@@ -170,7 +170,7 @@ export default defineComponent({
   color: $primary
 
 .gutter-margin
-  margin: 0px 15px 0px 15px
+  margin: 0px 15px 15px 15px
 
 .border-color-primary:hover
   border: 1px solid $primary
