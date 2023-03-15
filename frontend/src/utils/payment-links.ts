@@ -40,10 +40,12 @@ export async function generatePaymentLink({
   to = undefined,
   token = undefined,
   amount = undefined,
+  chainId = undefined,
 }: {
   to: string | undefined;
   token: TokenInfoExtended | undefined;
   amount: string | undefined;
+  chainId: number | undefined;
 }) {
   // Ensure at least one form field was provided
   if (!to && !token && !amount) throw new Error('Please complete at least one field to generate a payment link');
@@ -56,6 +58,7 @@ export async function generatePaymentLink({
   if (to) url.searchParams.set('to', to);
   if (token) url.searchParams.set('token', token.symbol);
   if (amount) url.searchParams.set('amount', amount);
+  if (chainId) url.searchParams.set('chainId', chainId.toString());
 
   await copyToClipboard(url.toString());
   notifyUser('success', 'Payment link copied to clipboard');
@@ -66,16 +69,23 @@ export async function generatePaymentLink({
  */
 export async function parsePaymentLink(nativeToken: TokenInfoExtended) {
   // Setup output object
-  const paymentData: { to: string | null; token: TokenInfoExtended | null; amount: string | null } = {
+  const paymentData: {
+    to: string | null;
+    token: TokenInfoExtended | null;
+    amount: string | null;
+    chainId: string | null;
+  } = {
     to: null,
     token: null,
     amount: null,
+    chainId: null,
   };
 
   // First we assign the `to` and `amount` fields.
   const params = new URLSearchParams(window.location.search);
   paymentData['to'] = params.get('to');
   paymentData['amount'] = params.get('amount');
+  paymentData['chainId'] = params.get('chainId');
 
   // If no `token` symbol was given, we can return with the payment data.
   let tokenSymbol = params.get('token')?.toLowerCase();

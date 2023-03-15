@@ -233,7 +233,7 @@
           type="submit"
         />
         <base-button
-          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount })"
+          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount, chain: chainId })"
           :disable="isSending"
           :flat="true"
           :full-width="true"
@@ -278,7 +278,7 @@ import {
 } from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
-import { Provider, TokenInfoExtended } from 'components/models';
+import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
 
@@ -292,6 +292,7 @@ function useSendForm() {
     isLoading,
     NATIVE_TOKEN,
     provider,
+    setNetwork,
     signer,
     tokens: tokenList,
     umbra,
@@ -400,7 +401,7 @@ function useSendForm() {
   });
 
   async function setPaymentLinkData() {
-    const { to, token: paymentToken, amount } = await parsePaymentLink(NATIVE_TOKEN.value);
+    const { to, token: paymentToken, amount, chainId: linkChainId } = await parsePaymentLink(NATIVE_TOKEN.value);
     if (to) recipientId.value = to;
     if (amount) humanAmount.value = amount;
 
@@ -410,6 +411,15 @@ function useSendForm() {
 
     // Validate the form
     await sendFormRef.value?.validate();
+
+    // Switch chain
+    const chain = supportedChains.filter((chain) => chain.chainId === `0x${Number(linkChainId)?.toString(16)}`);
+    console.log('chain', chain);
+    console.log('chainIdHex', Number(linkChainId)?.toString(16));
+    console.log('chainId', linkChainId);
+    if (chain.length === 1 && !isLoading.value && chainId.value !== Number(linkChainId)) {
+      await setNetwork(chain[0]);
+    }
   }
 
   // Validators
