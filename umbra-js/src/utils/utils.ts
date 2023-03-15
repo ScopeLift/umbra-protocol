@@ -396,7 +396,7 @@ export async function getEthSweepGasInfo(
   //   https://ethereum.org/en/developers/docs/gas/#base-fee
   // To be conservative, therefore, we assume a 12.5% increase will affect the base fee for the
   // transaction we're about to send.
-  const baseGasFee = (lastBlockData?.baseFeePerGas || BigNumber.from('1')).mul('1125').div('1000');
+  const baseGasFee = (lastBlockData?.baseFeePerGas || BigNumber.from('0')).mul('1125').div('1000');
   if (gasPrice.lt(baseGasFee)) gasPrice = baseGasFee;
 
   // For networks with a lot of gas market volatility, we bump the gas price to
