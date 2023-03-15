@@ -414,9 +414,6 @@ function useSendForm() {
 
     // Switch chain
     const chain = supportedChains.filter((chain) => chain.chainId === `0x${Number(linkChainId)?.toString(16)}`);
-    console.log('chain', chain);
-    console.log('chainIdHex', Number(linkChainId)?.toString(16));
-    console.log('chainId', linkChainId);
     if (chain.length === 1 && !isLoading.value && chainId.value !== Number(linkChainId)) {
       await setNetwork(chain[0]);
     }
