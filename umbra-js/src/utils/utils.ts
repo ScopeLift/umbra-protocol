@@ -365,7 +365,7 @@ export async function getEthSweepGasInfo(
     provider.getNetwork(),
     provider.getBalance(from),
     provider.getBlock('latest'),
-    // getGasPrice is officially deprecated in favor of getFeeData but we use it anyway because:
+    // We use `getGasPrice` instead of `getFeeData` because:
     // (a) getGasPrice returns low estimates whereas getFeeData intentionally returns high estimates
     //     of gas costs, since the latter presumes the post-1559 pricing model in which extra fees
     //     are refunded; we don't want there to be any refunds since we're trying to sweep the account;
@@ -389,9 +389,9 @@ export async function getEthSweepGasInfo(
     : BigNumber.from((await overrides.gasPrice) || providerGasPrice);
 
   // On networks with EIP-1559 gas pricing, the provider will throw an error and refuse to submit
-  // the tx if the gas price is less than the block-specified base gas cost. The error is "max fee
+  // the tx if the gas price is less than the block-specified base fee. The error is "max fee
   // per gas less than block base fee". So we need to ensure that the low estimate we're using isn't
-  // *too* low.  Additionally, if the previous block exceeded the target size, the base fee will be
+  // *too* low. Additionally, if the previous block exceeded the target size, the base fee will be
   // increased by 12.5% for the next block, per:
   //   https://ethereum.org/en/developers/docs/gas/#base-fee
   // To be conservative, therefore, we assume a 12.5% increase will affect the base fee for the
