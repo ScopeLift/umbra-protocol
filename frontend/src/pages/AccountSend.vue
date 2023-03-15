@@ -233,7 +233,7 @@
           type="submit"
         />
         <base-button
-          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount, chain: chainId })"
+          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount, chainId: chainId })"
           :disable="isSending"
           :flat="true"
           :full-width="true"
