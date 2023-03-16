@@ -271,6 +271,7 @@ import {
   Contract,
   formatUnits,
   getAddress,
+  hexValue,
   MaxUint256,
   parseUnits,
   TransactionResponse,
@@ -414,15 +415,18 @@ function useSendForm() {
     await sendFormRef.value?.validate();
 
     // Switch chain
-    const chain = supportedChains.filter((chain) => chain.chainId === `0x${Number(linkChainId)?.toString(16)}`);
-    if (
-      chain.length === 1 &&
-      !isLoading.value &&
-      chainId.value !== Number(linkChainId) &&
-      !attemptedNetworkChange.value
-    ) {
-      attemptedNetworkChange.value = true;
-      await setNetwork(chain[0]);
+    if (linkChainId) {
+      const chain = supportedChains.filter((chain) => chain.chainId === hexValue(BigNumber.from(linkChainId)));
+
+      if (
+        chain.length === 1 &&
+        !isLoading.value &&
+        chainId.value !== Number(linkChainId) &&
+        !attemptedNetworkChange.value
+      ) {
+        attemptedNetworkChange.value = true;
+        await setNetwork(chain[0]);
+      }
     }
   }
 
@@ -554,7 +558,7 @@ function useSendForm() {
         // Check allowance
         const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
         const umbraAddress = umbra.value.umbraContract.address;
-        const allowance = <BigNumber>await tokenContract.allowance(userAddress.value, umbraAddress);
+        const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
         // If insufficient allowance, get approval
         if (tokenAmount.gt(allowance)) {
           const approveTx = <TransactionResponse>await tokenContract.approve(umbraAddress, MaxUint256);

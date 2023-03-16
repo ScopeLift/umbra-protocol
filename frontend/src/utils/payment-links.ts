@@ -58,7 +58,7 @@ export async function generatePaymentLink({
   if (to) url.searchParams.set('to', to);
   if (token) url.searchParams.set('token', token.symbol);
   if (amount) url.searchParams.set('amount', amount);
-  if (chainId) url.searchParams.set('chainId', chainId.toString());
+  if (chainId) url.searchParams.set('chainId', BigNumber.from(chainId).toString());
 
   await copyToClipboard(url.toString());
   notifyUser('success', 'Payment link copied to clipboard');
