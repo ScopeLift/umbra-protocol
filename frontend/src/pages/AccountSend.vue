@@ -558,7 +558,7 @@ function useSendForm() {
         // Check allowance
         const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
         const umbraAddress = umbra.value.umbraContract.address;
-        const allowance = await tokenContract.allowance(userAddress.value, umbraAddress);
+        const allowance = <BigNumber>await tokenContract.allowance(userAddress.value, umbraAddress);
         // If insufficient allowance, get approval
         if (tokenAmount.gt(allowance)) {
           const approveTx = <TransactionResponse>await tokenContract.approve(umbraAddress, MaxUint256);
