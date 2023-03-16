@@ -320,6 +320,7 @@ function useSendForm() {
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
   const sendMax = ref(false);
+  const attemptedNetworkChange = ref(false);
 
   // Computed form parameters.
   const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
@@ -414,7 +415,13 @@ function useSendForm() {
 
     // Switch chain
     const chain = supportedChains.filter((chain) => chain.chainId === `0x${Number(linkChainId)?.toString(16)}`);
-    if (chain.length === 1 && !isLoading.value && chainId.value !== Number(linkChainId)) {
+    if (
+      chain.length === 1 &&
+      !isLoading.value &&
+      chainId.value !== Number(linkChainId) &&
+      !attemptedNetworkChange.value
+    ) {
+      attemptedNetworkChange.value = true;
       await setNetwork(chain[0]);
     }
   }

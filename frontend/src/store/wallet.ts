@@ -399,6 +399,10 @@ export default function useWalletStore() {
    */
   async function setNetwork(chain: Chain) {
     setLoading(true);
+    if (!provider.value) {
+      setLoading(false);
+      return;
+    }
 
     try {
       await provider.value?.send('wallet_switchEthereumChain', [{ chainId: chain.chainId }]);
