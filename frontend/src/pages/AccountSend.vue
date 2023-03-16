@@ -149,8 +149,9 @@
         :disable="isSending"
         placeholder="0"
         :appendButtonDisable="!recipientId || !isValidRecipientId"
-        :appendButtonLabel="token && NATIVE_TOKEN && token.address !== NATIVE_TOKEN.address ? $t('Send.max') : ''"
+        :appendButtonLabel="$t('Send.max')"
         @click="setHumanAmountMax"
+        @input="() => (sendMax = false)"
         lazy-rules
         :rules="isValidTokenAmount"
         ref="humanAmountBaseInputRef"
@@ -248,7 +249,7 @@
 // --- External imports ---
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm, QInput, QSelect } from 'quasar';
-import { utils as umbraUtils } from '@umbracash/umbra-js';
+import { RandomNumber, utils as umbraUtils } from '@umbracash/umbra-js';
 // --- Components ---
 import BaseInput from 'components/BaseInput.vue';
 import BaseSelect from 'components/BaseSelect.vue';
@@ -312,6 +313,7 @@ function useSendForm() {
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
+  const sendMax = ref(false);
 
   // Computed form parameters.
   const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
@@ -363,6 +365,12 @@ function useSendForm() {
       // Reset acknowledgement if user changes the public key type.
       if (!useNormalPubKey) {
         advancedAcknowledged.value = false;
+      }
+
+      // Switch off the sendMax flag and clear value if we change tokens.
+      if (tokenValue !== (_prevTokenValue || prevNativeTokenValue) && sendMax.value) {
+        sendMax.value = false;
+        humanAmount.value = '0.0';
       }
 
       // Perform minimal required validation based on what changed.
@@ -469,16 +477,56 @@ function useSendForm() {
       // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
       await getTokenBalances();
       const { address: tokenAddress, decimals } = token.value;
-      const tokenAmount = parseUnits(humanAmount.value, decimals);
+
+      const currentBalance = balances.value[tokenAddress];
+      const sendingNativeToken = tokenAddress === NATIVE_TOKEN.value.address;
+      let sendMaxGasPrice; // Used if sendMax is true.
+      let sendMaxGasLimit; // Used if sendMax is true.
+      let tokenAmount = parseUnits(humanAmount.value, decimals);
+      // Refresh the tokenAmount if the sendMax flag is set.
+      if (sendMax.value) {
+        if (sendingNativeToken) {
+          const [_toAddress, _estimatedNativeSendGasLimit] = await Promise.all([
+            toAddress(recipientId.value, provider.value!),
+            estimateNativeSendGasLimit(),
+          ]);
+          // Get current balance less gas costs.
+          const {
+            gasPrice: _sendMaxGasPrice,
+            gasLimit: _sendMaxGasLimit,
+            ethToSend: balanceLessGasCosts,
+          } = await umbraUtils.getEthSweepGasInfo(userAddress.value!, _toAddress, provider.value!, {
+            // We override the gasLimit here because we are sending to an
+            // address that has never been seen before, which increases gas
+            // costs and is not accounted for by getEthSweepGasInfo.
+            gasLimit: _estimatedNativeSendGasLimit,
+          });
+          sendMaxGasPrice = _sendMaxGasPrice;
+          sendMaxGasLimit = _sendMaxGasLimit;
+          tokenAmount = balanceLessGasCosts.sub(toll.value);
+        } else {
+          tokenAmount = currentBalance;
+        }
+      }
+
       if (tokenAddress === NATIVE_TOKEN.value.address) {
+        // Throw if the tokenAmount differs from humanAmount.value by too much.
+        const expectedAmount = parseUnits(humanAmount.value, decimals);
+        // Only 2% downward slippage is tolerated. Any more and we throw.
+        if (tokenAmount.mul('100').div(expectedAmount).lt('98')) {
+          throw new Error(`${tc('Send.slippage-exceeded')}`);
+        }
+
         // Sending the native token, so check that user has balance of: amount being sent + toll
         const requiredAmount = tokenAmount.add(toll.value);
-        if (requiredAmount.gt(balances.value[tokenAddress])) throw new Error(`${tc('Send.amount-exceeds-balance')}`);
+        if (requiredAmount.gt(currentBalance)) {
+          throw new Error(`${tc('Send.amount-exceeds-balance')}`);
+        }
       } else {
         // Sending other tokens, so we need to check both separately
         const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} ${tc('Send.umbra-fee-exceeds-balance')}`;
         if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
-        if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error(tc('Send.amount-exceeds-balance'));
+        if (tokenAmount.gt(currentBalance)) throw new Error(tc('Send.amount-exceeds-balance'));
       }
 
       // If token, get approval when required
@@ -499,6 +547,20 @@ function useSendForm() {
       // Send with Umbra
       const { tx } = await umbra.value.send(signer.value, tokenAddress, tokenAmount, recipientId.value, {
         advanced: shouldUseNormalPubKey.value,
+        // When attempting to sendMax, we override the gasPrice to use the price
+        // from the sweepETH function that estimated the tokenAmount. That function
+        // calculates the tokenAmount based on a low (but reasonable) estimate of
+        // the gasPrice. Wallets are configured to choose a high-probability
+        // gasPrice for new transactions -- which is to say: a fairly high gasPrice.
+        // So if we don't specify the gasPrice here, the wallet will almost
+        // certainly choose a higher gasPrice. And since:
+        //   token amount = (account balance) - (expected gas costs)
+        // when the wallet increases gas costs on us, we end up in a situation where:
+        //   account balance < (token amount) + (wallet-chosen gas costs)
+        // So the wallet will reject the transaction on grounds that the account
+        // doesn't have enough funds.
+        gasPrice: sendMax.value && sendingNativeToken ? sendMaxGasPrice : undefined,
+        gasLimit: sendMax.value && sendingNativeToken ? sendMaxGasLimit : undefined,
       });
       void txNotify(tx.hash, ethersProvider);
       await tx.wait();
@@ -520,18 +582,43 @@ function useSendForm() {
     if (!token.value?.address) throw new Error(tc('Send.select-a-token'));
     if (!recipientId.value) throw new Error(tc('Send.enter-a-recipient'));
 
+    sendMax.value = true;
+
     if (NATIVE_TOKEN.value?.address === token.value?.address) {
       if (!userAddress.value || !provider.value) throw new Error(tc('Send.wallet-not-connected'));
       const fromAddress = userAddress.value;
       const recipientAddress = await toAddress(recipientId.value, provider.value);
-      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(fromAddress, recipientAddress, provider.value);
-      humanAmount.value = formatUnits(ethToSend, token.value.decimals);
-      return ethToSend;
+      const { ethToSend } = await umbraUtils.getEthSweepGasInfo(fromAddress, recipientAddress, provider.value, {
+        // We override the gasLimit here because we are sending to an
+        // address that has never been seen before, which increases gas
+        // costs and is not accounted for by getEthSweepGasInfo.
+        gasLimit: await estimateNativeSendGasLimit(),
+      });
+      const sendAmount = ethToSend.sub(toll.value);
+      if (sendAmount.lt('0')) throw new Error(tc('Send.max-native-less-than-toll'));
+      humanAmount.value = formatUnits(sendAmount, token.value.decimals);
+    } else {
+      const tokenBalance = balances.value[token.value.address];
+      humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals);
     }
+  }
 
-    const tokenBalance = balances.value[token.value.address];
-    humanAmount.value = formatUnits(tokenBalance.toString(), token.value.decimals);
-    return tokenBalance.toString();
+  // Get an accurate estimate of the amount of gas needed to perform a native send.
+  async function estimateNativeSendGasLimit() {
+    return await umbra.value!.umbraContract.estimateGas.sendEth(
+      // We will be sending to an address that has never been seen before which substantially
+      // increases gas costs on some networks (e.g. by 25k on mainnet). To ensure this cost is
+      // included in our gas limit estimate, we estimate using a `to` address that is randomly
+      // generated (and thus likely to have never been seen before).
+      new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0').slice(0, 42),
+      // The toll needs to be correct, otherwise the tx would revert.
+      toll.value,
+      // Fake values just to get a reasonable estimate.
+      new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0'), // pubKeyXCoordinate
+      new RandomNumber().asHex.replace(/0/g, 'f').replace(/^./, '0'), // ciphertext
+      // Value doesn't matter, it just needs to be more than the toll else the tx would revert.
+      { value: toll.value.add('1') }
+    );
   }
 
   return {
@@ -556,6 +643,7 @@ function useSendForm() {
     recipientIdBaseInputRef,
     sendAdvancedButton,
     sendFormRef,
+    sendMax,
     setHumanAmountMax,
     showAdvancedSendWarning,
     showAdvancedWarning,

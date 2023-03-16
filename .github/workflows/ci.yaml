@@ -33,6 +33,8 @@ jobs:
       INFURA_ID: ${{ secrets.INFURA_ID }}
       ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
       POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+      OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
+      ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
     steps:
       - uses: actions/checkout@v3
         with:
