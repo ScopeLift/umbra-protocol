@@ -1,5 +1,5 @@
 <template>
-  <q-page padding>
+  <q-page padding v-if="false">
     <h2 class="page-title">
       {{ $t('AccountSendTable.sent-funds') }}
     </h2>
