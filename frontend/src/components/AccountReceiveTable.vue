@@ -89,9 +89,10 @@
           <div :key="props.row.id" class="col-12">
             <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center">
               <q-card-section class="row justify-center items-center">
-                <img class="q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.2rem" />
+                <img class="q-mr-md" :src="getTokenLogoUri(props.row.token, tokens)" style="width: 1.2rem" />
                 <div class="text-primary text-h6 header-black q-pb-none">
-                  {{ formatAmount(props.row.amount, props.row.token) }} {{ getTokenSymbol(props.row.token) }}
+                  {{ formatAmount(props.row.amount, props.row.token, tokens) }}
+                  {{ getTokenSymbol(props.row.token, tokens) }}
                 </div>
               </q-card-section>
               <q-card-section>
@@ -228,10 +229,10 @@
               <!-- Amount column -->
               <div v-else-if="col.name === 'amount'">
                 <div class="row justify-start items-center no-wrap">
-                  <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token)" style="width: 1.2rem" />
+                  <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token, tokens)" style="width: 1.2rem" />
                   <div class="col-auto">
-                    {{ formatAmount(col.value, props.row.token) }}
-                    {{ getTokenSymbol(props.row.token) }}
+                    {{ formatAmount(col.value, props.row.token, tokens) }}
+                    {{ getTokenSymbol(props.row.token, tokens) }}
                   </div>
                 </div>
               </div>
@@ -694,6 +695,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     showPrivacyModal,
     showWithdrawLossModal,
     txHashIfEth,
+    tokens,
   };
 }
 

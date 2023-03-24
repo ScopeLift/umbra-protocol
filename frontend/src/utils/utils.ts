@@ -162,7 +162,6 @@ export const isToken = async (address: string, provider: Provider) => {
 // Data format utils
 export const getTokenInfo = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
   tokens.filter((token) => token.address === tokenAddress)[0];
-
 export const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
 
 export const formatAmount = (amount: BigNumber, tokenAddress: string, tokens: TokenInfoExtended[]) => {
