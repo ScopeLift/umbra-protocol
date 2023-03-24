@@ -88,7 +88,8 @@
     "wallet-not-connected": "Wallet not connected",
     "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance",
     "advanced-send-warning": "The receiver will have to enter their account's private key into this app to withdraw the funds. Don't use this feature unless you know what you're doing.",
-    "acknowledge-risks": "I acknowledge the risks"
+    "acknowledge-risks": "I acknowledge the risks",
+    "send-history": "Send history"
   },
   "Receive": {
     "receive": "Receive",
@@ -288,6 +289,19 @@
     "warning-paragraph": "<p class=\"text-bold\"> Umbra is not compatible with Argent's standard security model. While you can still use Umbra with Argent, you are at risk of losing funds if you switch devices or have to rely on social recovery without first withdrawing any funds sent to you via Umbra. </p> <p> Umbra works by generating app-specific keys derived from your wallet's private key. Argent is unique in that its security does not rely on your private key. This is good in many ways. </p> <p>When using Umbra, however, you must be aware of the following:</p> <ol> <li> If you recover your Argent wallet onto a new device, the new wallet will have the same address but a different private key. Unless you have access to the old device, funds sent via Umbra that you have not withdrawn will become unrecoverable. </li> <br /> <li> As a result, when you get a new device, you should withdraw all funds first using your old device, then repeat the Umbra account setup and re-publish your keys. Soon, the app will attempt to detect when you need to do this to minimize the chance of lost funds, but for now you must do it manually. </li> <br /> <li> Unlike other applications, the security of funds received by Umbra is not protected by the standard Argent security model, and instead they are just protected by your private key. </li> </ol>",
     "acknowledge-risks": "I acknowledge the risks"
   },
+  "AccountSendTable": {
+    "account-empty": "No funds sent in this browser",
+    "address": "Recipient address",
+    "amount": "Amount",
+    "date-sent": "Date sent",
+    "receiver": "Receiver",
+    "sent-funds": "Sent funds",
+    "storage-description": "The send history is local to your current browser and will differ when accessed from a different browser or a different device. We do this to maximize your security and privacy."
+  },
+  "AccountSent": {
+    "connect-wallet": "Connect Wallet",
+    "connect-your-wallet": "Connect your wallet to send funds"
+  },
   "ConnectWalletCard": {
     "connect-wallet": "Connect Wallet"
   },
@@ -297,6 +311,7 @@
     "address-copied": "Address copied to clipboard",
     "connected-with": "Connected with",
     "copy-address": "Copy address",
+    "view-send-history": "View send history",
     "view-on-explorer": "View on explorer"
   },
   "WithdrawForm": {

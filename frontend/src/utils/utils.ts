@@ -1,6 +1,12 @@
-import { supportedChains, TokenInfo, Provider } from 'src/components/models';
+import { supportedChains, TokenInfo, Provider, TokenInfoExtended } from 'src/components/models';
 import { ERC20_ABI } from './constants';
 import { BigNumber, BigNumberish, Contract, hexValue, parseUnits, formatUnits, isHexString } from './ethers';
+import { date } from 'quasar';
+import { copyToClipboard } from 'quasar';
+import { toAddress } from 'src/utils/address';
+import { notifyUser } from 'src/utils/alerts';
+import { tc } from 'src/boot/i18n';
+
 /**
  * @notice Generates the Etherscan URL based on the given `txHash` or `address and `chainId`
  */
@@ -152,3 +158,44 @@ export const isToken = async (address: string, provider: Provider) => {
     return false;
   }
 };
+
+// Data format utils
+export const getTokenInfo = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  tokens.filter((token) => token.address === tokenAddress)[0];
+export const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
+
+export const formatAmount = (amount: BigNumber, tokenAddress: string, tokens: TokenInfoExtended[]) => {
+  const decimals = getTokenInfo(tokenAddress, tokens).decimals;
+  return Number(formatUnits(amount, decimals)).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 10,
+  });
+};
+
+export const getTokenLogoUri = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  getTokenInfo(tokenAddress, tokens).logoURI;
+
+export const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
+
+export const getTokenSymbol = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
+  getTokenInfo(tokenAddress, tokens).symbol;
+
+/**
+ * @notice Copies the address of type to the clipboard
+ */
+export async function copyAddress(address: string, provider: Provider, prefix?: string) {
+  if (!provider) return;
+  const mainAddress = await toAddress(address, provider);
+  await copyToClipboard(mainAddress);
+  if (prefix) {
+    notifyUser('success', `${prefix} ${tc('WalletRow.address-copied')}`);
+    return;
+  }
+  notifyUser('success', `${tc('WalletRow.address-copied')}`);
+}
+
+export function openInEtherscan(hash: string, provider: Provider, chainId: number) {
+  if (!provider) throw new Error(tc('AccountSendTable.wallet-not-connected'));
+  // Assume mainnet if we don't have a provider with a valid chainId
+  window.open(getEtherscanUrl(hash, chainId || 1));
+}

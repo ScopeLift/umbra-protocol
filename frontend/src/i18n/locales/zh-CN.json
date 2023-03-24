@@ -89,7 +89,8 @@
     "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额",
     "advanced-send-warning": "接收者必须将其帐户的私钥输入此应用程序才能提取资金。除非您知道自己在做什么，不要使用此功能",
     "learn-more": "了解更多信息",
-    "acknowledge-risks": "我承认风险"
+    "acknowledge-risks": "我承认风险",
+    "send-history": "发送历史记录"
   },
   "Receive": {
     "receive": "接收",
@@ -289,6 +290,19 @@
     "warning-paragraph": "<p class=\"text-bold\"> Umbra 与 Argent 的标准安全模型不兼容。虽然您仍然可以将 Umbra 与 Argent 一起使用，但如果您切换设备或必须依靠社交恢复而不首先提取通过Umbra发送给您的任何资金，则您将面临损失资金的风险。 </p> <p> Umbra 的工作原理是从钱包的私钥派生出特定于应用程序的密钥。Argent的独特之处在于其安全性不依赖于您的私钥。这在很多方面都是好的。 </p> <p>但是，在使用 Umbra 时，必须注意以下事项：</p> <ol> <li> 如果您将Argent钱包恢复到新设备上，则新钱包将具有相同的地址，但具有不同的私钥。除非您有权访问旧设备，否则通过Umbra发送的您尚未提取的资金将无法恢复。 </li> <br /> <li> 因此，当您获得新设备时，您应该首先使用旧设备提取所有资金，然后重复Umbra帐户注册并重新发布密钥。很快，该应用程序将尝试检测何时需要执行此操作，以最大程度地减少资金损失的可能性，但现在您必须手动执行此操作。 </li> <br /> <li> 与其他应用程序不同，Umbra 接收的资金的安全性不受标准 Argent 安全模型的保护，而只是受您的私钥保护。 </li> </ol>",
     "acknowledge-risks": "我承认此操作有风险"
   },
+  "AccountSendTable": {
+    "account-empty": "此浏览器中未发送任何资金",
+    "address": "收款人地址",
+    "amount": "金额",
+    "date-sent": "发送日期",
+    "receiver": "收款人",
+    "sent-funds": "已发送的资金",
+    "storage-description": "发送历史记录是当前浏览器的本地发送历史记录，从其他浏览器或不同设备访问时会有所不同。我们这样做是为了最大限度地提高您的安全和隐私。"
+  },
+  "AccountSent": {
+    "connect-wallet": "连接钱包",
+    "connect-your-wallet": "连接您的钱包以发送资金"
+  },
   "ConnectWalletCard": {
     "connect-wallet": "连接钱包"
   },
@@ -298,6 +312,7 @@
     "address-copied": "地址已复制到剪贴板",
     "connected-with": "已连接",
     "copy-address": "复制地址",
+    "view-send-history": "查看发送历史",
     "view-on-explorer": "在区块链浏览器上查看"
   },
   "WithdrawForm": {

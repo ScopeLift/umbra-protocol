@@ -1,12 +1,12 @@
 <template>
   <div v-if="display" class="walletRow-container q-menu" :class="isDark ? 'q-dark' : ''">
-    <div class="row justify-between items-center q-mb-sm">
+    <div class="row justify-between items-center gutter-margin q-py-sm">
       <div>{{ $t('WalletRow.account') }}</div>
       <div @click="setDisplayWalletRow(false)">
         <q-icon class="copy-icon q-pr-xs cursor-pointer" name="fas fa-times" />
       </div>
     </div>
-    <div class="column inner-container">
+    <div class="gutter-margin column inner-container">
       <div class="row justify-between items-center">
         <div class="text-xxs">{{ $t('WalletRow.connected-with') }} {{ connectedWalletLabel }}</div>
         <base-button
@@ -42,34 +42,25 @@
         </div>
       </div>
     </div>
+    <router-link v-if="false" :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+      <div class="q-py-sm q-mt-md row justify-center items-center bg-grey-2 cursor border-color-primary">
+        {{ $t('WalletRow.view-send-history') }}
+      </div>
+    </router-link>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onUpdated, computed, PropType } from 'vue';
-import { copyToClipboard } from 'quasar';
-import { tc } from 'src/boot/i18n';
 import BaseButton from 'src/components/BaseButton.vue';
-import { toAddress } from 'src/utils/address';
-import { notifyUser } from 'src/utils/alerts';
 import useWalletStore from 'src/store/wallet';
 import jazzicon from '@metamask/jazzicon';
 import useSettingsStore from 'src/store/settings';
 
 function useWalletRow(userAddress: string) {
-  const { provider, currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
+  const { currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
 
-  /**
-   * @notice Copies the address of type to the clipboard
-   */
-  async function copyAddress(address: string) {
-    if (!provider.value) return;
-    const mainAddress = await toAddress(address, provider.value);
-    await copyToClipboard(mainAddress);
-    notifyUser('success', `${tc('WalletRow.address-copied')}`);
-  }
   return {
-    copyAddress,
     blockExplorerUrl: computed(() => `${currentChain.value?.blockExplorerUrls![0] || ''}/address/${userAddress}`),
     connectedWalletLabel: connectedWalletLabel.value,
     disconnectWallet,
@@ -160,10 +151,9 @@ export default defineComponent({
   margin-top: 40px
   position: absolute !important
   width: 290px
-  height: 150px
+  height: auto
   z-index: 1
   border-radius: 15px
-  padding: 15px
 
   @media screen and (max-width: $breakpoint-xs-max)
     left: -40px
@@ -177,6 +167,14 @@ export default defineComponent({
   color: $primary
 
 .external-link-parent:hover
+  color: $primary
+
+.gutter-margin
+  margin: 0px 15px 15px 15px
+
+.border-color-primary:hover
+  border: 1px solid $primary
+  border-radius: 0 0 15px 15px
   color: $primary
 
 .text-xxs

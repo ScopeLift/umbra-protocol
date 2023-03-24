@@ -150,6 +150,19 @@ export type WithdrawalInputs = {
 };
 export type RelayResponse = { relayTransactionHash: string } | ApiError;
 
+export type SendTableMetadataRow = {
+  dateSent: string;
+  dateSentUnix: number;
+  dateSentTime: string;
+  amount: string;
+  address: string;
+  addressShortened: string;
+  hash: string;
+  tokenLogo?: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+};
+
 // Logger type added to window
 declare global {
   interface Window {
