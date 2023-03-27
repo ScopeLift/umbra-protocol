@@ -89,6 +89,21 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   if (tx.type === 0 || !tx.type) {
     // LegacyTransaction is rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])
     txData.gasPrice = tx.gasPrice;
+  } else if (tx.chainId === 42161 && tx.type === 120) {
+    // This block is for handling Classic (pre-Nitro) transactions on Arbitrum. If given a legacy
+    // transaction hash on Arbitrum, when querying a Nitro node for that pre-nitro tx, the type
+    // should be 120. However, if you query classic node for the data, the type would be 0.
+    // Different RPC providers handle this differently. For example, `https://arb1.arbitrum.io/rpc`
+    // and Infura will return type 120, but Alchemy will return type 0. If type 0 is returned, it's
+    // handled by the previous block. If type 120 is returned, we handle it here. This block is
+    // required since ethers.js v5 won't serialize transactions unless the `type` is null,  0, 1,
+    // or 2, as seen here: https://github.com/ethers-io/ethers.js/blob/aaf40a1ccedd2664041938f1541d8a0fc3b8ae4d/packages/transactions/src.ts/index.ts#L305-L328
+    // These transactions can be serialized the same way as legacy type 0 transactions, so we just
+    // override the type here.
+
+    // LegacyTransaction is rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])
+    txData.gasPrice = tx.gasPrice;
+    txData.type = 0;
   } else if (tx.type === 1) {
     // 0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s])
     txData.gasPrice = tx.gasPrice;
