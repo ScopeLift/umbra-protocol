@@ -203,7 +203,6 @@ export function openInEtherscan(hash: string, provider: Provider, chainId: numbe
 export function paramsToObject(entries: IterableIterator<[string, string]>) {
   const result = {} as { [key: string]: string };
   for (const [key, value] of entries) {
-    // each 'entry' is a [key, value] tupple
     result[key] = value;
   }
   return result;
