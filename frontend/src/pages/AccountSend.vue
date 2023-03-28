@@ -82,7 +82,7 @@
     <div v-if="!userAddress">
       <p class="text-center">{{ $t('Send.connect-your-wallet') }}</p>
       <div class="row justify-center">
-        <connect-wallet>
+        <connect-wallet :to="connectRedirectTo" :params="paymentLinkParams">
           <base-button class="text-center" :label="$t('Send.connect-wallet')" />
         </connect-wallet>
       </div>
@@ -321,7 +321,9 @@ function useSendForm() {
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
   const sendMax = ref(false);
+  const paymentLinkParams = ref(window.location.search);
   const attemptedNetworkChange = ref(false);
+  const connectRedirectTo = ref('send');
 
   // Computed form parameters.
   const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
@@ -649,6 +651,7 @@ function useSendForm() {
     advancedAcknowledged,
     advancedMode,
     balances,
+    connectRedirectTo,
     chainId,
     currentChain,
     humanAmount,
@@ -662,6 +665,7 @@ function useSendForm() {
     isValidTokenAmount,
     NATIVE_TOKEN,
     onFormSubmit,
+    paymentLinkParams,
     recipientId,
     recipientIdBaseInputRef,
     sendAdvancedButton,
