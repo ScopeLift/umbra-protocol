@@ -97,9 +97,12 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
     // and Infura will return type 120, but Alchemy will return type 0. If type 0 is returned, it's
     // handled by the previous block. If type 120 is returned, we handle it here. This block is
     // required since ethers.js v5 won't serialize transactions unless the `type` is null,  0, 1,
-    // or 2, as seen here: https://github.com/ethers-io/ethers.js/blob/aaf40a1ccedd2664041938f1541d8a0fc3b8ae4d/packages/transactions/src.ts/index.ts#L305-L328
+    // or 2, as seen here:
+    //   https://github.com/ethers-io/ethers.js/blob/aaf40a1ccedd2664041938f1541d8a0fc3b8ae4d/packages/transactions/src.ts/index.ts#L305-L328
     // These transactions can be serialized the same way as legacy type 0 transactions, so we just
-    // override the type here.
+    // override the type here. For reference, the arbitrum transaction type definitions can be
+    // found here:
+    //  https://github.com/OffchainLabs/go-ethereum/blob/141b0fcdf0e4d8e9e5de3f0466533b86563f2d29/core/types/transaction.go#L54.
 
     // LegacyTransaction is rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])
     txData.gasPrice = tx.gasPrice;
