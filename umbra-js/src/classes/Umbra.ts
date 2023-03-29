@@ -35,11 +35,11 @@ import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOver
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
 const batchSendAddress = '0x0d81Df222BB44b883265538586829715CF157163'; // Goerli test address
 const subgraphs = {
-  1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
-  5: 'https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli',
-  10: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraoptimism',
-  137: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
-  42161: 'https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone',
+  1: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.0.0/gn',
+  5: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-goerli/v1.0.0/gn',
+  10: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.0.0/gn',
+  137: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn',
+  42161: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.0.0/gn',
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
