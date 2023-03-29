@@ -6,7 +6,15 @@ on:
   pull_request:
 
 env:
+  # Etherscan API keys.
+  ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
+  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }} # Mainnet.
+  OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
+  POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
+  # Other.
+  ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
   FOUNDRY_PROFILE: ci
+  INFURA_ID: ${{ secrets.INFURA_ID }}
 
 jobs:
   build:
@@ -28,13 +36,6 @@ jobs:
       - run: yarn build
   tests:
     runs-on: ubuntu-latest
-    env:
-      ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
-      INFURA_ID: ${{ secrets.INFURA_ID }}
-      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-      POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
-      OPTIMISTIC_ETHERSCAN_API_KEY: ${{ secrets.OPTIMISTIC_ETHERSCAN_API_KEY }}
-      ARBISCAN_API_KEY: ${{ secrets.ARBISCAN_API_KEY }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -54,12 +55,6 @@ jobs:
 
   coverage:
     runs-on: ubuntu-latest
-    env:
-      FOUNDRY_PROFILE: ci
-      ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
-      INFURA_ID: ${{ secrets.INFURA_ID }}
-      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-      POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}
     steps:
       - uses: actions/checkout@v3
         with:
