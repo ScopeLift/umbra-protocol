@@ -424,7 +424,8 @@ function useSendForm() {
         chain.length === 1 &&
         !isLoading.value &&
         chainId.value !== Number(linkChainId) &&
-        !attemptedNetworkChange.value
+        !attemptedNetworkChange.value &&
+        userAddress.value
       ) {
         attemptedNetworkChange.value = true;
         await setNetwork(chain[0]);
