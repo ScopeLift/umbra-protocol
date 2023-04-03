@@ -219,7 +219,7 @@ describe.only('Umbra class', () => {
       });
 
       const mintAndApproveDai = async (signer: Wallet, user: string, amount: BigNumber) => {
-        await dai.connect(signer).mint(user, amount.mul(5));
+        await dai.connect(signer).mint(user, amount);
         await dai.connect(signer).approve(umbra.umbraContract.address, ethers.constants.MaxUint256);
         await dai.connect(signer).approve(umbra.batchSendContract.address, ethers.constants.MaxUint256);
       };
@@ -250,7 +250,7 @@ describe.only('Umbra class', () => {
       it('Send tokens, scan for them, withdraw them (direct withdraw)', async () => {
         // SENDER
         // Mint Dai to sender, and approve the Umbra contract to spend their DAI
-        await mintAndApproveDai(sender, sender.address, quantity);
+        await mintAndApproveDai(sender, sender.address, quantity.mul(5));
 
         // Send funds with Umbra
         let tx: ContractTransaction | null = null;
@@ -276,12 +276,12 @@ describe.only('Umbra class', () => {
 
         for (let i = 0; i < usedReceivers.length; i++) {
           const receiver = usedReceivers[i];
+          const stealthKeyPair = stealthKeyPairs[i];
           // RECEIVER
           // Receiver scans for funds sent to them
           const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
           expect(userAnnouncements.length).to.be.greaterThan(0);
 
-          const stealthKeyPair = stealthKeyPairs[i];
           // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
           // Destination wallet should have a balance equal to amount sent.
           const destinationWallet = ethers.Wallet.createRandom();
@@ -316,58 +316,79 @@ describe.only('Umbra class', () => {
       it('Send tokens, scan for them, withdraw them (relayer withdraw)', async () => {
         // SENDER
         // Mint Dai to sender, and approve the Umbra contract to spend their DAI
-        await mintAndApproveDai(sender, sender.address, quantity);
+        await mintAndApproveDai(sender, sender.address, quantity.mul(5));
 
-        // Send funds with Umbra
-        const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
-        await tx.wait();
+        let tx: ContractTransaction | null = null;
+        let stealthKeyPairs: KeyPair[] = [];
+        let usedReceivers: Wallet[] = [];
 
-        // RECEIVER
-        // Receiver scans for funds sent to them
-        const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
-        expect(userAnnouncements.length).to.be.greaterThan(0);
+        if (test.id === 'send') {
+          const result = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
+          tx = result.tx;
+          stealthKeyPairs = [result.stealthKeyPair];
+          usedReceivers = receivers.slice(0, 1);
+        } else if (test.id === 'batchSend') {
+          const sends: SendBatch[] = [];
+          for (let i = 0; i < 5; i++) {
+            sends.push({ token: dai.address, amount: quantity, address: receivers[i].publicKey });
+          }
+          const result = await umbra.batchSend(sender, sends, overrides);
+          tx = result.tx;
+          stealthKeyPairs = result.stealthKeyPairs;
+          usedReceivers = receivers.slice(0, 5);
+        }
+        if (tx) await tx.wait();
 
-        // Withdraw (test withdraw by signature)
-        const destinationWallet = ethers.Wallet.createRandom();
-        const relayerWallet = ethers.Wallet.createRandom();
-        const sponsorWallet = ethers.Wallet.createRandom();
-        const sponsorFee = '2500';
+        for (let i = 0; i < usedReceivers.length; i++) {
+          const receiver = usedReceivers[i];
+          const stealthKeyPair = stealthKeyPairs[i];
+          // RECEIVER
+          // Receiver scans for funds sent to them
+          const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
+          expect(userAnnouncements.length).to.be.greaterThan(0);
 
-        // Fund relayer to pay for gas.
-        await sender.sendTransaction({ to: relayerWallet.address, value: parseEther('1') });
+          // Withdraw (test withdraw by signature)
+          const destinationWallet = ethers.Wallet.createRandom();
+          const relayerWallet = ethers.Wallet.createRandom();
+          const sponsorWallet = ethers.Wallet.createRandom();
+          const sponsorFee = '2500';
 
-        // Get signature
-        const stealthPrivateKey = Umbra.computeStealthPrivateKey(
-          receiver.privateKey,
-          userAnnouncements[0].randomNumber
-        );
-        const { chainId } = await ethersProvider.getNetwork();
-        const { v, r, s } = await Umbra.signWithdraw(
-          stealthPrivateKey,
-          chainId,
-          umbra.umbraContract.address,
-          destinationWallet.address,
-          dai.address,
-          sponsorWallet.address,
-          sponsorFee
-        );
+          // Fund relayer to pay for gas.
+          await sender.sendTransaction({ to: relayerWallet.address, value: parseEther('1') });
 
-        // Relay transaction
-        await umbra.withdrawOnBehalf(
-          relayerWallet,
-          stealthKeyPair.address,
-          destinationWallet.address,
-          dai.address,
-          sponsorWallet.address,
-          sponsorFee,
-          v,
-          r,
-          s
-        );
-        const expectedAmountReceived = BigNumber.from(quantity).sub(sponsorFee);
-        verifyEqualValues(await dai.balanceOf(destinationWallet.address), expectedAmountReceived);
-        verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
-        verifyEqualValues(await dai.balanceOf(sponsorWallet.address), sponsorFee);
+          // Get signature
+          const stealthPrivateKey = Umbra.computeStealthPrivateKey(
+            receiver.privateKey,
+            userAnnouncements[0].randomNumber
+          );
+          const { chainId } = await ethersProvider.getNetwork();
+          const { v, r, s } = await Umbra.signWithdraw(
+            stealthPrivateKey,
+            chainId,
+            umbra.umbraContract.address,
+            destinationWallet.address,
+            dai.address,
+            sponsorWallet.address,
+            sponsorFee
+          );
+
+          // Relay transaction
+          await umbra.withdrawOnBehalf(
+            relayerWallet,
+            stealthKeyPair.address,
+            destinationWallet.address,
+            dai.address,
+            sponsorWallet.address,
+            sponsorFee,
+            v,
+            r,
+            s
+          );
+          const expectedAmountReceived = BigNumber.from(quantity).sub(sponsorFee);
+          verifyEqualValues(await dai.balanceOf(destinationWallet.address), expectedAmountReceived);
+          verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
+          verifyEqualValues(await dai.balanceOf(sponsorWallet.address), sponsorFee);
+        }
       });
 
       it('Send ETH, scan for it, withdraw it (direct withdraw)', async () => {
