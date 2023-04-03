@@ -506,7 +506,7 @@ describe.only('Umbra class', () => {
     });
   });
 
-  describe('ParseOverrides without mutation', () => {
+  describe('parseOverrides', () => {
     it('should not mutate the original overrides', async () => {
       // Original
       let testOverrides = {
