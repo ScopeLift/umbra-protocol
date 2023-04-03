@@ -14,9 +14,10 @@ import {
   TestTokenFactory as ERC20__factory,
   UmbraFactory as Umbra__factory,
 } from '@umbra/contracts-core/typechain';
-import { parseOverrides } from '../src/classes/Umbra';
+import { parseOverrides, assertSufficientBalance, assertValidStealthAddress } from '../src/classes/Umbra';
 import { UMBRA_BATCH_SEND_ABI } from '../src/utils/constants';
 import { KeyPair } from '../src';
+import { blockedStealthAddresses } from '../src/utils/utils';
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
 const jsonRpcProvider = new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
@@ -549,6 +550,54 @@ describe.only('Umbra class', () => {
         ),
         'Data string must be null or in hex format with 0x prefix'
       );
+    });
+  });
+
+  describe('prepareSend', () => {
+    it('should return a valid result when public keys are found', async () => {
+      const result = await umbra.prepareSend(receiver.publicKey, { supportPubKey: true });
+      expect(result).to.have.property('stealthKeyPair');
+      expect(result).to.have.property('pubKeyXCoordinate');
+      expect(result).to.have.property('encrypted');
+    });
+  });
+
+  describe('assertSufficientBalance', () => {
+    let wallet: Wallet;
+    let token: string;
+
+    beforeEach(async () => {
+      // Set up a test wallet and token contract
+      wallet = sender;
+      token = dai.address;
+
+      await dai.connect(wallet).mint(wallet.address, quantity);
+    });
+
+    it('should pass when wallet has sufficient balance', async () => {
+      expect(await assertSufficientBalance(wallet, token, quantity)).to.equal(true);
+    });
+
+    it('should throw an error when wallet has insufficient balance', async () => {
+      const moreThanBalanceAmount = quantity.mul(2);
+      const details = `Has ${quantity} tokens, tried to send ${moreThanBalanceAmount.toString()} tokens.`;
+      await expectRejection(
+        assertSufficientBalance(wallet, token, moreThanBalanceAmount),
+        `Insufficient balance to complete transfer. ${details}`
+      );
+    });
+  });
+
+  describe('assertValidStealthAddress', () => {
+    it('should not throw an error for a valid stealth address', () => {
+      const randomAddress = ethers.Wallet.createRandom().address;
+      expect(() => assertValidStealthAddress(randomAddress)).to.not.throw();
+    });
+
+    it('should throw an error for a blocked stealth address', () => {
+      for (const blockedAddress of blockedStealthAddresses) {
+        expect(() => assertValidStealthAddress(blockedAddress)).to.throw(`Invalid stealth address: ${blockedAddress}`);
+      }
     });
   });
 

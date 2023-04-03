@@ -751,7 +751,7 @@ async function tryEthWithdraw(
   }
 }
 
-async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: string, tokenAmount: BigNumber) {
+export async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: string, tokenAmount: BigNumber) {
   // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
   // method also serves to validate the token input
   if (!isEth(token)) {
@@ -766,7 +766,7 @@ async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: st
   return true;
 }
 
-function assertValidStealthAddress(stealthAddress: string) {
+export function assertValidStealthAddress(stealthAddress: string) {
   // Ensure that the stealthKeyPair's address is not on the block list
   if (blockedStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
 }
