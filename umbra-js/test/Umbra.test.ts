@@ -1,13 +1,13 @@
 import { ethers } from 'hardhat';
 import hardhatConfig from '../hardhat.config';
 import { Umbra } from '../src/classes/Umbra';
-import { BigNumberish, BigNumber, StaticJsonRpcProvider, Wallet } from '../src/ethers';
+import { BigNumberish, BigNumber, StaticJsonRpcProvider, Wallet, ContractTransaction } from '../src/ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { HardhatNetworkHDAccountsUserConfig } from 'hardhat/src/types/config';
 import { expect } from 'chai';
 import { expectRejection } from './utils';
 import { testPrivateKeys } from './testPrivateKeys';
-import type { ChainConfig, UserAnnouncement } from '../src/types';
+import type { ChainConfig, SendBatch, UserAnnouncement } from '../src/types';
 import {
   TestToken as ERC20,
   Umbra as UmbraContract,
@@ -16,6 +16,7 @@ import {
 } from '@umbra/contracts-core/typechain';
 import { parseOverrides } from '../src/classes/Umbra';
 import { UMBRA_BATCH_SEND_ABI } from '../src/utils/constants';
+import { KeyPair } from '../src';
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
 const jsonRpcProvider = new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
@@ -27,12 +28,11 @@ const overrides = { supportPubKey: true }; // we directly enter a pubkey in thes
 // We don't use the 0 or 1 index just to reduce the chance of conflicting with a signer for another use case
 const senderIndex = 2;
 const receiverIndex = 3;
-const secondReceiverIndex = 4;
 
 describe.only('Umbra class', () => {
   let sender: Wallet;
   let receiver: Wallet;
-  let secondReceiver: Wallet;
+  let receivers: Wallet[] = [];
   let deployer: SignerWithAddress;
 
   let dai: ERC20;
@@ -57,8 +57,11 @@ describe.only('Umbra class', () => {
     sender.connect(ethers.provider);
     receiver = ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${receiverIndex}`);
     receiver.connect(ethers.provider);
-    secondReceiver = ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${secondReceiverIndex}`);
-    secondReceiver.connect(ethers.provider);
+    receivers.push(receiver);
+    for (let i = 4; i < 10; i++) {
+      receivers.push(ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${i}`));
+      receivers[i - 3].connect(ethers.provider);
+    }
 
     // Load other signers
     deployer = (await ethers.getSigners())[0]; // used for deploying contracts
@@ -216,8 +219,9 @@ describe.only('Umbra class', () => {
       });
 
       const mintAndApproveDai = async (signer: Wallet, user: string, amount: BigNumber) => {
-        await dai.connect(signer).mint(user, amount);
+        await dai.connect(signer).mint(user, amount.mul(5));
         await dai.connect(signer).approve(umbra.umbraContract.address, ethers.constants.MaxUint256);
+        await dai.connect(signer).approve(umbra.batchSendContract.address, ethers.constants.MaxUint256);
       };
 
       it('reverts if sender does not have enough tokens', async () => {
@@ -249,43 +253,64 @@ describe.only('Umbra class', () => {
         await mintAndApproveDai(sender, sender.address, quantity);
 
         // Send funds with Umbra
-        const { tx, stealthKeyPair } = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
-        await tx.wait();
+        let tx: ContractTransaction | null = null;
+        let stealthKeyPairs: KeyPair[] = [];
+        let usedReceivers: Wallet[] = [];
 
-        // RECEIVER
-        // Receiver scans for funds sent to them
-        const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
-        expect(userAnnouncements.length).to.be.greaterThan(0);
+        if (test.id === 'send') {
+          const result = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
+          tx = result.tx;
+          stealthKeyPairs = [result.stealthKeyPair];
+          usedReceivers = receivers.slice(0, 1);
+        } else if (test.id === 'batchSend') {
+          const sends: SendBatch[] = [];
+          for (let i = 0; i < 5; i++) {
+            sends.push({ token: dai.address, amount: quantity, address: receivers[i].publicKey });
+          }
+          const result = await umbra.batchSend(sender, sends, overrides);
+          tx = result.tx;
+          stealthKeyPairs = result.stealthKeyPairs;
+          usedReceivers = receivers.slice(0, 5);
+        }
+        if (tx) await tx.wait();
 
-        // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
-        // Destination wallet should have a balance equal to amount sent.
-        const destinationWallet = ethers.Wallet.createRandom();
+        for (let i = 0; i < usedReceivers.length; i++) {
+          const receiver = usedReceivers[i];
+          // RECEIVER
+          // Receiver scans for funds sent to them
+          const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
+          expect(userAnnouncements.length).to.be.greaterThan(0);
 
-        // Fund stealth address to can pay for gas.
-        await sender.sendTransaction({ to: stealthKeyPair.address, value: parseEther('1') });
+          const stealthKeyPair = stealthKeyPairs[i];
+          // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
+          // Destination wallet should have a balance equal to amount sent.
+          const destinationWallet = ethers.Wallet.createRandom();
+          // Fund stealth address to can pay for gas.
+          await sender.sendTransaction({ to: stealthKeyPair.address, value: parseEther('1') });
 
-        // Now we withdraw the tokens
-        const stealthPrivateKey = Umbra.computeStealthPrivateKey(
-          receiver.privateKey,
-          userAnnouncements[0].randomNumber
-        );
-        verifyEqualValues(await dai.balanceOf(destinationWallet.address), 0);
-        const withdrawTxToken = await umbra.withdraw(stealthPrivateKey, dai.address, destinationWallet.address);
-        await withdrawTxToken.wait();
-        verifyEqualValues(await dai.balanceOf(destinationWallet.address), quantity);
-        verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
+          // Now we withdraw the tokens
+          const stealthPrivateKey = Umbra.computeStealthPrivateKey(
+            receiver.privateKey,
+            userAnnouncements[0].randomNumber
+          );
+          verifyEqualValues(await dai.balanceOf(destinationWallet.address), 0);
+          const withdrawTxToken = await umbra.withdraw(stealthPrivateKey, dai.address, destinationWallet.address);
+          await withdrawTxToken.wait();
+          verifyEqualValues(await dai.balanceOf(destinationWallet.address), quantity);
+          verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
 
-        // And for good measure let's withdraw the rest of the ETH
-        const initialEthBalance = await getEthBalance(stealthKeyPair.address);
-        const withdrawTxEth = await umbra.withdraw(stealthPrivateKey, ETH_ADDRESS, destinationWallet.address);
-        await withdrawTxEth.wait();
-        const withdrawEthReceipt = await ethersProvider.getTransactionReceipt(withdrawTxEth.hash);
-        const withdrawTokenTxCost = withdrawEthReceipt.gasUsed.mul(withdrawEthReceipt.effectiveGasPrice);
-        verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
-        verifyEqualValues(
-          await getEthBalance(destinationWallet.address),
-          BigNumber.from(initialEthBalance).sub(withdrawTokenTxCost)
-        );
+          // And for good measure let's withdraw the rest of the ETH
+          const initialEthBalance = await getEthBalance(stealthKeyPair.address);
+          const withdrawTxEth = await umbra.withdraw(stealthPrivateKey, ETH_ADDRESS, destinationWallet.address);
+          await withdrawTxEth.wait();
+          const withdrawEthReceipt = await ethersProvider.getTransactionReceipt(withdrawTxEth.hash);
+          const withdrawTokenTxCost = withdrawEthReceipt.gasUsed.mul(withdrawEthReceipt.effectiveGasPrice);
+          verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+          verifyEqualValues(
+            await getEthBalance(destinationWallet.address),
+            BigNumber.from(initialEthBalance).sub(withdrawTokenTxCost)
+          );
+        }
       });
 
       it('Send tokens, scan for them, withdraw them (relayer withdraw)', async () => {
