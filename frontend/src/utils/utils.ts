@@ -199,3 +199,11 @@ export function openInEtherscan(hash: string, provider: Provider, chainId: numbe
   // Assume mainnet if we don't have a provider with a valid chainId
   window.open(getEtherscanUrl(hash, chainId || 1));
 }
+
+export function paramsToObject(entries: IterableIterator<[string, string]>) {
+  const result = {} as { [key: string]: string };
+  for (const [key, value] of entries) {
+    result[key] = value;
+  }
+  return result;
+}

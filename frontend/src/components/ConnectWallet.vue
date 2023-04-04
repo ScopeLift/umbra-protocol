@@ -8,15 +8,17 @@
 import { defineComponent } from 'vue';
 import { Router, useRouter } from 'vue-router';
 import useWalletStore from 'src/store/wallet';
+import { paramsToObject } from 'src/utils/utils';
 
-function useWallet(to: string, router: Router) {
+function useWallet(to: string, router: Router, params?: string) {
   const { connectWallet, userAddress } = useWalletStore();
 
   async function connectWalletWithRedirect() {
     // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
     // from the home page)
+    const parsedParams = paramsToObject(new URLSearchParams(params || '').entries());
     if (userAddress.value && to) {
-      await router.push({ name: to });
+      await router.push({ name: to, query: parsedParams });
       return;
     } else if (userAddress.value) {
       return;
@@ -24,7 +26,7 @@ function useWallet(to: string, router: Router) {
 
     await connectWallet();
 
-    if (to) await router.push({ name: to }); // redirect to specified page
+    if (to) await router.push({ name: to, query: parsedParams }); // redirect to specified page
   }
 
   return { connectWalletWithRedirect };
@@ -40,11 +42,16 @@ export default defineComponent({
       required: false,
       default: undefined,
     },
+    params: {
+      type: String,
+      required: false,
+      default: undefined,
+    },
   },
 
   setup(props) {
     const router = useRouter();
-    return { ...useWallet(props.to || 'home', router) };
+    return { ...useWallet(props.to || 'home', router, props.params) };
   },
 });
 </script>

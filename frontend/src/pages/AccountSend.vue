@@ -82,7 +82,7 @@
     <div v-if="!userAddress">
       <p class="text-center">{{ $t('Send.connect-your-wallet') }}</p>
       <div class="row justify-center">
-        <connect-wallet>
+        <connect-wallet :to="connectRedirectTo" :params="paymentLinkParams">
           <base-button class="text-center" :label="$t('Send.connect-wallet')" />
         </connect-wallet>
       </div>
@@ -233,7 +233,7 @@
           type="submit"
         />
         <base-button
-          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount })"
+          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount, chainId: chainId })"
           :disable="isSending"
           :flat="true"
           :full-width="true"
@@ -271,6 +271,7 @@ import {
   Contract,
   formatUnits,
   getAddress,
+  hexValue,
   MaxUint256,
   parseUnits,
   TransactionResponse,
@@ -278,7 +279,7 @@ import {
 } from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
-import { Provider, TokenInfoExtended } from 'components/models';
+import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
 
@@ -292,6 +293,7 @@ function useSendForm() {
     isLoading,
     NATIVE_TOKEN,
     provider,
+    setNetwork,
     signer,
     tokens: tokenList,
     umbra,
@@ -319,6 +321,9 @@ function useSendForm() {
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
   const sendMax = ref(false);
+  const paymentLinkParams = ref(window.location.search);
+  const attemptedNetworkChange = ref(false);
+  const connectRedirectTo = ref('send');
 
   // Computed form parameters.
   const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
@@ -400,7 +405,7 @@ function useSendForm() {
   });
 
   async function setPaymentLinkData() {
-    const { to, token: paymentToken, amount } = await parsePaymentLink(NATIVE_TOKEN.value);
+    const { to, token: paymentToken, amount, chainId: linkChainId } = await parsePaymentLink(NATIVE_TOKEN.value);
     if (to) recipientId.value = to;
     if (amount) humanAmount.value = amount;
 
@@ -410,6 +415,22 @@ function useSendForm() {
 
     // Validate the form
     await sendFormRef.value?.validate();
+
+    // Switch chain
+    if (linkChainId) {
+      const chain = supportedChains.filter((chain) => chain.chainId === hexValue(BigNumber.from(linkChainId)));
+
+      if (
+        chain.length === 1 &&
+        !isLoading.value &&
+        chainId.value !== Number(linkChainId) &&
+        !attemptedNetworkChange.value &&
+        userAddress.value
+      ) {
+        attemptedNetworkChange.value = true;
+        await setNetwork(chain[0]);
+      }
+    }
   }
 
   // Validators
@@ -631,6 +652,7 @@ function useSendForm() {
     advancedAcknowledged,
     advancedMode,
     balances,
+    connectRedirectTo,
     chainId,
     currentChain,
     humanAmount,
@@ -644,6 +666,7 @@ function useSendForm() {
     isValidTokenAmount,
     NATIVE_TOKEN,
     onFormSubmit,
+    paymentLinkParams,
     recipientId,
     recipientIdBaseInputRef,
     sendAdvancedButton,
