@@ -341,7 +341,7 @@ describe.only('Umbra class', () => {
           stealthKeyPairs = result.stealthKeyPairs;
           usedReceivers = receivers.slice(0, 5);
         }
-        if (tx) await tx.wait();
+        await tx!.wait();
 
         for (let i = 0; i < usedReceivers.length; i++) {
           const receiver = usedReceivers[i];
