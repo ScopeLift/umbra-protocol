@@ -18,6 +18,7 @@ import { parseOverrides, assertSufficientBalance, assertValidStealthAddress } fr
 import { UMBRA_BATCH_SEND_ABI } from '../src/utils/constants';
 import { KeyPair } from '../src';
 import { blockedStealthAddresses } from '../src/utils/utils';
+
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
 const jsonRpcProvider = new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
@@ -33,6 +34,7 @@ const receiverIndex = 3;
 describe.only('Umbra class', () => {
   let sender: Wallet;
   let receiver: Wallet;
+  // Receievers are used for batch send tests
   let receivers: Wallet[] = [];
   let deployer: SignerWithAddress;
 
@@ -58,10 +60,9 @@ describe.only('Umbra class', () => {
     sender.connect(ethers.provider);
     receiver = ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${receiverIndex}`);
     receiver.connect(ethers.provider);
-    receivers.push(receiver);
-    for (let i = 4; i < 10; i++) {
-      receivers.push(ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${i}`));
-      receivers[i - 3].connect(ethers.provider);
+    for (let i = 0; i < 5; i++) {
+      receivers.push(ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${i + 100}`));
+      receivers[receivers.length - 1].connect(ethers.provider);
     }
 
     // Load other signers
@@ -90,6 +91,7 @@ describe.only('Umbra class', () => {
     );
     const batchSendContract = await batchSendFactory.deploy(umbraContract.address);
     await batchSendContract.deployTransaction.wait();
+
     // Approve DAI token
     await batchSendContract.connect(deployer).approveToken(dai.address);
 
@@ -262,7 +264,7 @@ describe.only('Umbra class', () => {
           const result = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
           tx = result.tx;
           stealthKeyPairs = [result.stealthKeyPair];
-          usedReceivers = receivers.slice(0, 1);
+          usedReceivers = [receiver];
         } else if (test.id === 'batchSend') {
           const sends: SendBatch[] = [];
           for (let i = 0; i < 5; i++) {
@@ -273,7 +275,8 @@ describe.only('Umbra class', () => {
           stealthKeyPairs = result.stealthKeyPairs;
           usedReceivers = receivers.slice(0, 5);
         }
-        if (tx) await tx.wait();
+
+        await tx!.wait();
 
         for (let i = 0; i < usedReceivers.length; i++) {
           const receiver = usedReceivers[i];
@@ -327,7 +330,7 @@ describe.only('Umbra class', () => {
           const result = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
           tx = result.tx;
           stealthKeyPairs = [result.stealthKeyPair];
-          usedReceivers = receivers.slice(0, 1);
+          usedReceivers = [receiver];
         } else if (test.id === 'batchSend') {
           const sends: SendBatch[] = [];
           for (let i = 0; i < 5; i++) {
@@ -553,6 +556,7 @@ describe.only('Umbra class', () => {
     });
   });
 
+  // We check `prepareSend` return values are correct during withdrawal of sent fund tests above
   describe('prepareSend', () => {
     it('should return a valid result when public keys are found', async () => {
       const result = await umbra.prepareSend(receiver.publicKey, { supportPubKey: true });
