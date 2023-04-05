@@ -39,6 +39,7 @@ describe.only('Umbra class', () => {
   let deployer: SignerWithAddress;
 
   let dai: ERC20;
+  let usdc: ERC20;
   let umbra: Umbra;
   let chainConfig: ChainConfig;
 
@@ -60,7 +61,7 @@ describe.only('Umbra class', () => {
     sender.connect(ethers.provider);
     receiver = ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${receiverIndex}`);
     receiver.connect(ethers.provider);
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       receivers.push(ethers.Wallet.fromMnemonic(mnemonic as string, `${path as string}/${i + 100}`));
       receivers[receivers.length - 1].connect(ethers.provider);
     }
@@ -83,6 +84,11 @@ describe.only('Umbra class', () => {
     dai = (await daiFactory.deploy('Dai', 'DAI')) as ERC20;
     await dai.deployTransaction.wait();
 
+    // Deploy different mock tokens for batch send tests
+    const usdcFactory = new ERC20__factory(deployer);
+    usdc = (await usdcFactory.deploy('usdc', 'USDC')) as ERC20;
+    await usdc.deployTransaction.wait();
+
     // Deploy UmbraBatchSend
     const batchSendFactory = new ethers.ContractFactory(
       UMBRA_BATCH_SEND_ABI,
@@ -92,8 +98,9 @@ describe.only('Umbra class', () => {
     const batchSendContract = await batchSendFactory.deploy(umbraContract.address);
     await batchSendContract.deployTransaction.wait();
 
-    // Approve DAI token
+    // Approve tokens
     await batchSendContract.connect(deployer).approveToken(dai.address);
+    await batchSendContract.connect(deployer).approveToken(usdc.address);
 
     // Get chainConfig based on most recent Rinkeby block number to minimize scanning time
     const lastBlockNumber = await ethersProvider.getBlockNumber();
@@ -221,10 +228,10 @@ describe.only('Umbra class', () => {
         sender = sender.connect(ethers.provider);
       });
 
-      const mintAndApproveDai = async (signer: Wallet, user: string, amount: BigNumber) => {
-        await dai.connect(signer).mint(user, amount);
-        await dai.connect(signer).approve(umbra.umbraContract.address, ethers.constants.MaxUint256);
-        await dai.connect(signer).approve(umbra.batchSendContract.address, ethers.constants.MaxUint256);
+      const mintAndApproveToken = async (signer: Wallet, user: string, token: ERC20, amount: BigNumber) => {
+        await token.connect(signer).mint(user, amount);
+        await token.connect(signer).approve(umbra.umbraContract.address, ethers.constants.MaxUint256);
+        await token.connect(signer).approve(umbra.batchSendContract.address, ethers.constants.MaxUint256);
       };
 
       it('reverts if sender does not have enough tokens', async () => {
@@ -251,29 +258,37 @@ describe.only('Umbra class', () => {
       });
 
       it('Send tokens, scan for them, withdraw them (direct withdraw)', async () => {
-        // SENDER
-        // Mint Dai to sender, and approve the Umbra contract to spend their DAI
-        await mintAndApproveDai(sender, sender.address, quantity.mul(5));
-
         // Send funds with Umbra
         let tx: ContractTransaction | null = null;
         let stealthKeyPairs: KeyPair[] = [];
         let usedReceivers: Wallet[] = [];
 
+        // Batch send test params
+        const tokens = [dai, dai, usdc, usdc];
+        const amounts = [quantity, quantity.mul(2), quantity.mul(2), quantity.mul(3)];
+
         if (test.id === 'send') {
+          // SENDER
+          // Mint Dai to sender, and approve the Umbra contract to spend their DAI
+          await mintAndApproveToken(sender, sender.address, dai, quantity);
           const result = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
           tx = result.tx;
           stealthKeyPairs = [result.stealthKeyPair];
           usedReceivers = [receiver];
         } else if (test.id === 'batchSend') {
           const sends: SendBatch[] = [];
-          for (let i = 0; i < 5; i++) {
-            sends.push({ token: dai.address, amount: quantity, address: receivers[i].publicKey });
+
+          for (let i = 0; i < tokens.length; i++) {
+            // SENDER
+            // Mint tokens to sender, and approve the Umbra contract to spend their DAI
+            await mintAndApproveToken(sender, sender.address, tokens[i], BigNumber.from(amounts[i]));
+            sends.push({ token: tokens[i].address, amount: amounts[i], address: receivers[i].publicKey });
           }
+
           const result = await umbra.batchSend(sender, sends, overrides);
           tx = result.tx;
           stealthKeyPairs = result.stealthKeyPairs;
-          usedReceivers = receivers.slice(0, 5);
+          usedReceivers = receivers.slice(0, sends.length);
         }
 
         await tx!.wait();
@@ -281,6 +296,7 @@ describe.only('Umbra class', () => {
         for (let i = 0; i < usedReceivers.length; i++) {
           const receiver = usedReceivers[i];
           const stealthKeyPair = stealthKeyPairs[i];
+
           // RECEIVER
           // Receiver scans for funds sent to them
           const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
@@ -297,11 +313,16 @@ describe.only('Umbra class', () => {
             receiver.privateKey,
             userAnnouncements[0].randomNumber
           );
-          verifyEqualValues(await dai.balanceOf(destinationWallet.address), 0);
-          const withdrawTxToken = await umbra.withdraw(stealthPrivateKey, dai.address, destinationWallet.address);
+
+          const token = test.id === 'send' ? dai : tokens[i];
+          const expectedAmount = test.id === 'send' ? quantity : amounts[i];
+
+          expect(expectedAmount.gt(0)).to.be.true;
+          verifyEqualValues(await token.balanceOf(destinationWallet.address), 0);
+          const withdrawTxToken = await umbra.withdraw(stealthPrivateKey, token.address, destinationWallet.address);
           await withdrawTxToken.wait();
-          verifyEqualValues(await dai.balanceOf(destinationWallet.address), quantity);
-          verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
+          verifyEqualValues(await token.balanceOf(destinationWallet.address), expectedAmount);
+          verifyEqualValues(await token.balanceOf(stealthKeyPair.address), 0);
 
           // And for good measure let's withdraw the rest of the ETH
           const initialEthBalance = await getEthBalance(stealthKeyPair.address);
@@ -318,34 +339,41 @@ describe.only('Umbra class', () => {
       });
 
       it('Send tokens, scan for them, withdraw them (relayer withdraw)', async () => {
-        // SENDER
-        // Mint Dai to sender, and approve the Umbra contract to spend their DAI
-        await mintAndApproveDai(sender, sender.address, quantity.mul(5));
-
         let tx: ContractTransaction | null = null;
         let stealthKeyPairs: KeyPair[] = [];
         let usedReceivers: Wallet[] = [];
 
+        // Batch send test params
+        const tokens = [dai, dai, usdc, usdc];
+        const amounts = [quantity, quantity.mul(2), quantity.mul(2), quantity.mul(3)];
+
         if (test.id === 'send') {
+          // SENDER
+          // Mint Dai to sender, and approve the Umbra contract to spend their DAI
+          await mintAndApproveToken(sender, sender.address, dai, quantity);
           const result = await umbra.send(sender, dai.address, quantity, receiver!.publicKey, overrides);
           tx = result.tx;
           stealthKeyPairs = [result.stealthKeyPair];
           usedReceivers = [receiver];
         } else if (test.id === 'batchSend') {
           const sends: SendBatch[] = [];
-          for (let i = 0; i < 5; i++) {
-            sends.push({ token: dai.address, amount: quantity, address: receivers[i].publicKey });
+          for (let i = 0; i < tokens.length; i++) {
+            // SENDER
+            // Mint tokens to sender, and approve the Umbra contract to spend their DAI
+            await mintAndApproveToken(sender, sender.address, tokens[i], BigNumber.from(amounts[i]));
+            sends.push({ token: tokens[i].address, amount: amounts[i], address: receivers[i].publicKey });
           }
           const result = await umbra.batchSend(sender, sends, overrides);
           tx = result.tx;
           stealthKeyPairs = result.stealthKeyPairs;
-          usedReceivers = receivers.slice(0, 5);
+          usedReceivers = receivers.slice(0, sends.length);
         }
         await tx!.wait();
 
         for (let i = 0; i < usedReceivers.length; i++) {
           const receiver = usedReceivers[i];
           const stealthKeyPair = stealthKeyPairs[i];
+
           // RECEIVER
           // Receiver scans for funds sent to them
           const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
@@ -366,12 +394,14 @@ describe.only('Umbra class', () => {
             userAnnouncements[0].randomNumber
           );
           const { chainId } = await ethersProvider.getNetwork();
+          const token = test.id === 'send' ? dai : tokens[i];
+
           const { v, r, s } = await Umbra.signWithdraw(
             stealthPrivateKey,
             chainId,
             umbra.umbraContract.address,
             destinationWallet.address,
-            dai.address,
+            token.address,
             sponsorWallet.address,
             sponsorFee
           );
@@ -381,17 +411,21 @@ describe.only('Umbra class', () => {
             relayerWallet,
             stealthKeyPair.address,
             destinationWallet.address,
-            dai.address,
+            token.address,
             sponsorWallet.address,
             sponsorFee,
             v,
             r,
             s
           );
-          const expectedAmountReceived = BigNumber.from(quantity).sub(sponsorFee);
-          verifyEqualValues(await dai.balanceOf(destinationWallet.address), expectedAmountReceived);
-          verifyEqualValues(await dai.balanceOf(stealthKeyPair.address), 0);
-          verifyEqualValues(await dai.balanceOf(sponsorWallet.address), sponsorFee);
+          const originalQuantity = test.id === 'send' ? quantity : amounts[i];
+          const expectedAmountReceived = BigNumber.from(originalQuantity).sub(sponsorFee);
+
+          expect(originalQuantity.gt(0)).to.be.true;
+          expect(expectedAmountReceived.gt(0)).to.be.true;
+          verifyEqualValues(await token.balanceOf(destinationWallet.address), expectedAmountReceived);
+          verifyEqualValues(await token.balanceOf(stealthKeyPair.address), 0);
+          verifyEqualValues(await token.balanceOf(sponsorWallet.address), sponsorFee);
         }
       });
 
