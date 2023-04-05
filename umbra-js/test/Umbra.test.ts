@@ -305,7 +305,7 @@ describe.only('Umbra class', () => {
           // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
           // Destination wallet should have a balance equal to amount sent.
           const destinationWallet = ethers.Wallet.createRandom();
-          // Fund stealth address to can pay for gas.
+          // Fund stealth address to pay for gas.
           await sender.sendTransaction({ to: stealthKeyPair.address, value: parseEther('1') });
 
           // Now we withdraw the tokens
@@ -550,6 +550,182 @@ describe.only('Umbra class', () => {
           verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
         }
       });
+
+      if (test.id === 'batchSend') {
+        it('Send ETH and tokens, scan for them, withdraw them (direct withdraw)', async () => {
+          // Send funds with Umbra
+          let usedReceivers: Wallet[] = [];
+          const eth = { address: ETH_ADDRESS };
+
+          // Batch send test params
+          const tokens = [dai, eth, usdc, eth];
+          const amounts = [quantity, quantity.mul(2), quantity.mul(3), quantity.mul(4)];
+
+          const sends: SendBatch[] = [];
+
+          for (let i = 0; i < tokens.length; i++) {
+            if (tokens[i] != eth) {
+              // SENDER
+              // Mint tokens to sender, and approve the Umbra contract to spend their DAI
+              await mintAndApproveToken(sender, sender.address, tokens[i] as ERC20, BigNumber.from(amounts[i]));
+            }
+            sends.push({ token: tokens[i].address, amount: amounts[i], address: receivers[i].publicKey });
+          }
+
+          const { tx, stealthKeyPairs } = await umbra.batchSend(sender, sends, overrides);
+          await tx.wait();
+          usedReceivers = receivers.slice(0, sends.length);
+
+          for (let i = 0; i < usedReceivers.length; i++) {
+            const receiver = usedReceivers[i];
+            const stealthKeyPair = stealthKeyPairs[i];
+            const expectedAmount = amounts[i];
+            const token = tokens[i];
+
+            // RECEIVER
+            // Receiver scans for funds sent to them
+            const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
+            expect(userAnnouncements.length).to.be.greaterThan(0);
+
+            // Withdraw (test regular withdrawal, so we need to transfer ETH to pay gas)
+            // Destination wallet should have a balance equal to amount sent.
+            const destinationWallet = ethers.Wallet.createRandom();
+
+            // Now we withdraw the tokens
+            const stealthPrivateKey = Umbra.computeStealthPrivateKey(
+              receiver.privateKey,
+              userAnnouncements[0].randomNumber
+            );
+
+            if (token == eth) {
+              const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
+              await withdrawTx.wait();
+              const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
+              const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
+              expect(expectedAmount.gt(0)).to.be.true;
+              verifyEqualValues(await getEthBalance(destinationWallet.address), expectedAmount.sub(txCost));
+              verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+            } else {
+              const erc20Token = token as ERC20;
+              // Fund stealth address to pay for gas.
+              await sender.sendTransaction({ to: stealthKeyPair.address, value: parseEther('1') });
+
+              expect(expectedAmount.gt(0)).to.be.true;
+              verifyEqualValues(await erc20Token.balanceOf(destinationWallet.address), 0);
+              const withdrawTxToken = await umbra.withdraw(stealthPrivateKey, token.address, destinationWallet.address);
+              await withdrawTxToken.wait();
+              verifyEqualValues(await erc20Token.balanceOf(destinationWallet.address), expectedAmount);
+              verifyEqualValues(await erc20Token.balanceOf(stealthKeyPair.address), 0);
+
+              // And for good measure let's withdraw the rest of the ETH
+              const initialEthBalance = await getEthBalance(stealthKeyPair.address);
+              const withdrawTxEth = await umbra.withdraw(stealthPrivateKey, ETH_ADDRESS, destinationWallet.address);
+              await withdrawTxEth.wait();
+              const withdrawEthReceipt = await ethersProvider.getTransactionReceipt(withdrawTxEth.hash);
+              const withdrawTokenTxCost = withdrawEthReceipt.gasUsed.mul(withdrawEthReceipt.effectiveGasPrice);
+              verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+              verifyEqualValues(
+                await getEthBalance(destinationWallet.address),
+                BigNumber.from(initialEthBalance).sub(withdrawTokenTxCost)
+              );
+            }
+          }
+        });
+
+        it('Send ETH and tokens, scan for them, withdraw them (relayer withdraw)', async () => {
+          let usedReceivers: Wallet[] = [];
+          const eth = { address: ETH_ADDRESS };
+
+          // Batch send test params
+          const tokens = [dai, eth, usdc, eth];
+          const amounts = [quantity, quantity.mul(2), quantity.mul(3), quantity.mul(4)];
+
+          const sends: SendBatch[] = [];
+
+          for (let i = 0; i < tokens.length; i++) {
+            if (tokens[i] != eth) {
+              // SENDER
+              // Mint tokens to sender, and approve the Umbra contract to spend their DAI
+              await mintAndApproveToken(sender, sender.address, tokens[i] as ERC20, BigNumber.from(amounts[i]));
+            }
+            sends.push({ token: tokens[i].address, amount: amounts[i], address: receivers[i].publicKey });
+          }
+
+          const { tx, stealthKeyPairs } = await umbra.batchSend(sender, sends, overrides);
+          await tx.wait();
+          usedReceivers = receivers.slice(0, sends.length);
+
+          for (let i = 0; i < usedReceivers.length; i++) {
+            const receiver = usedReceivers[i];
+            const stealthKeyPair = stealthKeyPairs[i];
+            const expectedAmount = amounts[i];
+            const token = tokens[i];
+
+            // RECEIVER
+            // Receiver scans for funds sent to them
+            const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
+            expect(userAnnouncements.length).to.be.greaterThan(0);
+
+            // Withdraw (test withdraw by signature)
+            const destinationWallet = ethers.Wallet.createRandom();
+            const relayerWallet = ethers.Wallet.createRandom();
+            const sponsorWallet = ethers.Wallet.createRandom();
+            const sponsorFee = '2500';
+
+            // Get signature
+            const stealthPrivateKey = Umbra.computeStealthPrivateKey(
+              receiver.privateKey,
+              userAnnouncements[0].randomNumber
+            );
+
+            if (token == eth) {
+              const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
+              await withdrawTx.wait();
+              const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
+              const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
+              expect(expectedAmount.gt(0)).to.be.true;
+              verifyEqualValues(await getEthBalance(destinationWallet.address), expectedAmount.sub(txCost));
+              verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+            } else {
+              const erc20Token = token as ERC20;
+              // Fund relayer to pay for gas.
+              await sender.sendTransaction({ to: relayerWallet.address, value: parseEther('1') });
+
+              const { chainId } = await ethersProvider.getNetwork();
+
+              const { v, r, s } = await Umbra.signWithdraw(
+                stealthPrivateKey,
+                chainId,
+                umbra.umbraContract.address,
+                destinationWallet.address,
+                token.address,
+                sponsorWallet.address,
+                sponsorFee
+              );
+
+              // Relay transaction
+              await umbra.withdrawOnBehalf(
+                relayerWallet,
+                stealthKeyPair.address,
+                destinationWallet.address,
+                token.address,
+                sponsorWallet.address,
+                sponsorFee,
+                v,
+                r,
+                s
+              );
+              const expectedAmountReceived = BigNumber.from(amounts[i]).sub(sponsorFee);
+
+              expect(amounts[i].gt(0)).to.be.true;
+              expect(expectedAmountReceived.gt(0)).to.be.true;
+              verifyEqualValues(await erc20Token.balanceOf(destinationWallet.address), expectedAmountReceived);
+              verifyEqualValues(await erc20Token.balanceOf(stealthKeyPair.address), 0);
+              verifyEqualValues(await erc20Token.balanceOf(sponsorWallet.address), sponsorFee);
+            }
+          }
+        });
+      }
     });
   }
 
