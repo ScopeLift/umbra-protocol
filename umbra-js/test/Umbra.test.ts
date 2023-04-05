@@ -430,58 +430,125 @@ describe.only('Umbra class', () => {
       });
 
       it('Send ETH, scan for it, withdraw it (direct withdraw)', async () => {
-        // SENDER
-        // Send funds with Umbra
-        const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver!.publicKey, overrides);
-        await tx.wait();
-        verifyEqualValues(await getEthBalance(stealthKeyPair.address), quantity);
+        let stealthKeyPairs: KeyPair[] = [];
+        let usedReceivers: Wallet[] = [];
 
-        // RECEIVER
-        // Receiver scans for funds sent to them
-        const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
-        expect(userAnnouncements.length).to.be.greaterThan(0);
+        // Batch send test params
+        const amounts = [quantity, quantity.mul(2), quantity.mul(2), quantity.mul(3)];
+        const numOfSends = amounts.length;
 
-        // Withdraw (test regular withdrawal)
-        const destinationWallet = ethers.Wallet.createRandom();
+        if (test.id === 'send') {
+          // SENDER
+          // Send funds with Umbra
+          const { tx, stealthKeyPair } = await umbra.send(
+            sender,
+            ETH_ADDRESS,
+            quantity,
+            receiver!.publicKey,
+            overrides
+          );
+          await tx.wait();
+          verifyEqualValues(await getEthBalance(stealthKeyPair.address), quantity);
+          stealthKeyPairs = [stealthKeyPair];
+          usedReceivers = [receiver];
+        } else if (test.id === 'batchSend') {
+          const sends: SendBatch[] = [];
+          for (let i = 0; i < numOfSends; i++) {
+            sends.push({ token: ETH_ADDRESS, amount: amounts[i], address: receivers[i].publicKey });
+          }
+          const { tx, stealthKeyPairs: KeyPairs } = await umbra.batchSend(sender, sends, overrides);
+          await tx.wait();
+          stealthKeyPairs = KeyPairs;
+          usedReceivers = receivers.slice(0, sends.length);
+        }
 
-        // Destination wallet should have a balance equal to amount sent minus gas cost
-        const stealthPrivateKey = Umbra.computeStealthPrivateKey(
-          receiver.privateKey,
-          userAnnouncements[0].randomNumber
-        );
-        const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
-        await withdrawTx.wait();
-        const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
-        const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
-        verifyEqualValues(await getEthBalance(destinationWallet.address), quantity.sub(txCost));
-        verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+        for (let i = 0; i < usedReceivers.length; i++) {
+          const expectedAmount = test.id === 'send' ? quantity : amounts[i];
+          const receiver = usedReceivers[i];
+          const stealthKeyPair = stealthKeyPairs[i];
+          verifyEqualValues(await getEthBalance(stealthKeyPair.address), expectedAmount);
+          // RECEIVER
+          // Receiver scans for funds sent to them
+          const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
+          expect(userAnnouncements.length).to.be.greaterThan(0);
+
+          // Withdraw (test regular withdrawal)
+          const destinationWallet = ethers.Wallet.createRandom();
+
+          // Destination wallet should have a balance equal to amount sent minus gas cost
+          const stealthPrivateKey = Umbra.computeStealthPrivateKey(
+            receiver.privateKey,
+            userAnnouncements[0].randomNumber
+          );
+          const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
+          await withdrawTx.wait();
+          const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
+          const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
+
+          expect(expectedAmount.gt(0)).to.be.true;
+          verifyEqualValues(await getEthBalance(destinationWallet.address), expectedAmount.sub(txCost));
+          verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+        }
       });
 
       it('Send ETH, scan for it, withdraw it (relayer withdraw)', async () => {
-        // SENDER
-        // Send funds with Umbra
-        const { tx, stealthKeyPair } = await umbra.send(sender, ETH_ADDRESS, quantity, receiver.publicKey, overrides);
-        await tx.wait();
+        let stealthKeyPairs: KeyPair[] = [];
+        let usedReceivers: Wallet[] = [];
 
-        // RECEIVER
-        // Receiver scans for funds send to them
-        const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
-        expect(userAnnouncements.length).to.be.greaterThan(0);
+        // Batch send test params
+        const amounts = [quantity, quantity.mul(2), quantity.mul(2), quantity.mul(3)];
+        const numOfSends = amounts.length;
 
-        // Withdraw (test regular withdrawal)
-        const destinationWallet = ethers.Wallet.createRandom();
+        if (test.id === 'send') {
+          // SENDER
+          // Send funds with Umbra
+          const { tx, stealthKeyPair } = await umbra.send(
+            sender,
+            ETH_ADDRESS,
+            quantity,
+            receiver!.publicKey,
+            overrides
+          );
+          await tx.wait();
+          verifyEqualValues(await getEthBalance(stealthKeyPair.address), quantity);
+          stealthKeyPairs = [stealthKeyPair];
+          usedReceivers = [receiver];
+        } else if (test.id === 'batchSend') {
+          const sends: SendBatch[] = [];
+          for (let i = 0; i < numOfSends; i++) {
+            sends.push({ token: ETH_ADDRESS, amount: amounts[i], address: receivers[i].publicKey });
+          }
+          const { tx, stealthKeyPairs: KeyPairs } = await umbra.batchSend(sender, sends, overrides);
+          await tx.wait();
+          stealthKeyPairs = KeyPairs;
+          usedReceivers = receivers.slice(0, sends.length);
+        }
 
-        // Destination wallet should have a balance equal to amount sent minus gas cost
-        const stealthPrivateKey = Umbra.computeStealthPrivateKey(
-          receiver.privateKey,
-          userAnnouncements[0].randomNumber
-        );
-        const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
-        await withdrawTx.wait();
-        const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
-        const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
-        verifyEqualValues(await getEthBalance(destinationWallet.address), quantity.sub(txCost));
-        verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+        for (let i = 0; i < usedReceivers.length; i++) {
+          const expectedAmount = test.id === 'send' ? quantity : amounts[i];
+          const receiver = usedReceivers[i];
+          const stealthKeyPair = stealthKeyPairs[i];
+          // RECEIVER
+          // Receiver scans for funds send to them
+          const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
+          expect(userAnnouncements.length).to.be.greaterThan(0);
+
+          // Withdraw (test regular withdrawal)
+          const destinationWallet = ethers.Wallet.createRandom();
+
+          // Destination wallet should have a balance equal to amount sent minus gas cost
+          const stealthPrivateKey = Umbra.computeStealthPrivateKey(
+            receiver.privateKey,
+            userAnnouncements[0].randomNumber
+          );
+          const withdrawTx = await umbra.withdraw(stealthPrivateKey, 'ETH', destinationWallet.address);
+          await withdrawTx.wait();
+          const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
+          const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
+          expect(expectedAmount.gt(0)).to.be.true;
+          verifyEqualValues(await getEthBalance(destinationWallet.address), expectedAmount.sub(txCost));
+          verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
+        }
       });
     });
   }
