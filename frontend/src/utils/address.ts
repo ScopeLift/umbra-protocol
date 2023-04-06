@@ -5,10 +5,12 @@
 import { Provider } from 'components/models';
 import { utils } from '@umbracash/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
-import { getAddress, Web3Provider, isHexString } from 'src/utils/ethers';
+import { getAddress, Web3Provider, isHexString, namehash, Interface, Contract } from 'src/utils/ethers';
 import { getChainById } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
 import Resolution from '@unstoppabledomains/resolution';
+import { MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+
 // ================================================== Address Helpers ==================================================
 
 // Returns an address with the following format: 0x1234...abcd
@@ -57,11 +59,11 @@ export const lookupCnsName = async (address: string) => {
 
 // Returns an ENS or CNS name if found, otherwise returns null
 const lookupEnsOrCns = async (address: string, provider: Provider) => {
-  const cnsName = await lookupCnsName(address);
-  if (cnsName) return cnsName;
-
   const ensName = await lookupEnsName(address, provider);
   if (ensName) return ensName;
+
+  const cnsName = await lookupCnsName(address);
+  if (cnsName) return cnsName;
 
   return null;
 };
@@ -74,14 +76,36 @@ export const toAddress = utils.toAddress;
 
 export const formatAddresses = (addresses: string[]) => addresses.map(formatNameOrAddress);
 
-export const lookupAddresses = async (addresses: string[], provider: Provider) => {
-  const promises = addresses.map((address) => lookupAddress(address, provider));
-  return Promise.all(promises);
-};
-
 export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider) => {
-  const promises = addresses.map((address) => lookupOrReturnAddress(address, provider));
-  return Promise.all(promises);
+  // Based on https://github.com/ethers-io/ethers.js/blob/0802b70a724321f56d4c170e4c8a46b7804dfb48/src.ts/providers/abstract-provider.ts#L976
+  // TODO Add back CNS lookup support if ENS name was not found
+  const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
+  const ensRegistryAddr = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e';
+  const ensRegistryInterface = new Interface(['function resolver(bytes32) view returns (address)']);
+  const resolverInterface = new Interface(['function name(bytes32) view returns (string)']);
+
+  const nodes = addresses.map((addr) => namehash(addr.substring(2).toLowerCase() + '.addr.reverse'));
+  const resolverCalls = nodes.map((node) => ({
+    target: ensRegistryAddr,
+    allowFailure: true,
+    callData: ensRegistryInterface.encodeFunctionData('resolver', [node]),
+  }));
+  type Response = { success: boolean; returnData: string };
+  const resolverResults: Response[] = await multicall.callStatic.aggregate3(resolverCalls);
+
+  const resolverAddrs = resolverResults.map(({ returnData }) => getAddress(`0x${returnData.slice(26)}`));
+  const nameCalls = resolverAddrs.map((resolverAddr, i) => ({
+    target: resolverAddr,
+    allowFailure: true,
+    callData: resolverInterface.encodeFunctionData('name', [nodes[i]]),
+  }));
+  const nameResults: Response[] = await multicall.callStatic.aggregate3(nameCalls);
+  const names = nameResults.map(({ success, returnData }, i) => {
+    if (!success || returnData === '0x') return addresses[i];
+    return <string>resolverInterface.decodeFunctionResult('name', returnData)[0];
+  });
+
+  return names;
 };
 
 // ================================================== Privacy Checks ===================================================
