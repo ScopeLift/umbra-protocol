@@ -9,6 +9,8 @@ import { getAddress, Web3Provider, isHexString } from 'src/utils/ethers';
 import { getChainById } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
 import Resolution from '@unstoppabledomains/resolution';
+import { ENS } from '@ensdomains/ensjs';
+
 // ================================================== Address Helpers ==================================================
 
 // Returns an address with the following format: 0x1234...abcd
@@ -74,12 +76,12 @@ export const toAddress = utils.toAddress;
 
 export const formatAddresses = (addresses: string[]) => addresses.map(formatNameOrAddress);
 
-export const lookupAddresses = async (addresses: string[], provider: Provider) => {
-  const promises = addresses.map((address) => lookupAddress(address, provider));
-  return Promise.all(promises);
-};
-
 export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider) => {
+  const ENSInstance = new ENS({ graphURI: null });
+  await ENSInstance.setProvider(provider);
+  const batched = await ENSInstance.batch(...addresses.map((addr) => ENSInstance.getName.batch(addr)));
+  console.log('batched:', batched);
+
   const promises = addresses.map((address) => lookupOrReturnAddress(address, provider));
   return Promise.all(promises);
 };
