@@ -88,7 +88,6 @@
     "wallet-not-connected": "钱包未连接",
     "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额",
     "advanced-send-warning": "接收者必须将其帐户的私钥输入此应用程序才能提取资金。除非您知道自己在做什么，不要使用此功能",
-    "learn-more": "了解更多信息",
     "acknowledge-risks": "我承认风险",
     "send-history": "发送历史记录"
   },
@@ -372,7 +371,7 @@
       }
     },
     "connectingWallet": {
-      "header": "{connectionRejected, select, false {Connecting to {wallet}...} 其他 {Connection Rejected}}",
+      "header": "连接被拒绝了",
       "sidebar": {
         "subheading": "批准连接",
         "paragraph": "请批准钱包中的连接并授权来继续访问。"
