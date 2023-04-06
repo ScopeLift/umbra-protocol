@@ -69,6 +69,14 @@ module.exports = configure(function (ctx) {
       // extractCSS: false,
 
       chainWebpack: (chain) => {
+        // Keep all .mjs files, requires for @ensdomains/ensjs which uses graphql.
+        chain.module
+          .rule('mjs')
+          .test(/\.mjs$/)
+          .include.add(/node_modules/)
+          .end()
+          .type('javascript/auto');
+
         chain.module
           .rule('i18n-resource')
           .test(/\.(json5?|ya?ml)$/)
@@ -83,9 +91,7 @@ module.exports = configure(function (ctx) {
           .type('javascript/auto')
           .use('i18n')
           .loader('@intlify/vue-i18n-loader');
-      },
 
-      chainWebpack(chain) {
         const nodePolyfillWebpackPlugin = require('node-polyfill-webpack-plugin');
         chain.plugin('node-polyfill').use(nodePolyfillWebpackPlugin);
         chain.plugin('eslint-webpack-plugin').use(ESLintPlugin, [{ extensions: ['js', 'ts', 'vue'] }]);
@@ -94,6 +100,8 @@ module.exports = configure(function (ctx) {
         cfg.resolve.alias = {
           ...cfg.resolve.alias, // This adds the existing aliases.
         };
+        // Add .mjs to the list of extensions
+        cfg.resolve.extensions.push('.mjs');
       },
     },
 

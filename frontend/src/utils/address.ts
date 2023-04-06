@@ -79,6 +79,7 @@ export const formatAddresses = (addresses: string[]) => addresses.map(formatName
 export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider) => {
   const ENSInstance = new ENS({ graphURI: null });
   await ENSInstance.setProvider(provider);
+
   const batched = await ENSInstance.batch(...addresses.map((addr) => ENSInstance.getName.batch(addr)));
   console.log('batched:', batched);
 
