@@ -467,6 +467,7 @@ describe.only('Umbra class', () => {
           const receiver = usedReceivers[i];
           const stealthKeyPair = stealthKeyPairs[i];
           verifyEqualValues(await getEthBalance(stealthKeyPair.address), expectedAmount);
+
           // RECEIVER
           // Receiver scans for funds sent to them
           const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
@@ -484,7 +485,6 @@ describe.only('Umbra class', () => {
           await withdrawTx.wait();
           const receipt = await ethers.provider.getTransactionReceipt(withdrawTx.hash);
           const txCost = withdrawTx.gasLimit.mul(receipt.effectiveGasPrice);
-
           expect(expectedAmount.gt(0)).to.be.true;
           verifyEqualValues(await getEthBalance(destinationWallet.address), expectedAmount.sub(txCost));
           verifyEqualValues(await getEthBalance(stealthKeyPair.address), 0);
@@ -528,6 +528,8 @@ describe.only('Umbra class', () => {
           const expectedAmount = test.id === 'send' ? quantity : amounts[i];
           const receiver = usedReceivers[i];
           const stealthKeyPair = stealthKeyPairs[i];
+          verifyEqualValues(await getEthBalance(stealthKeyPair.address), expectedAmount);
+
           // RECEIVER
           // Receiver scans for funds send to them
           const { userAnnouncements } = await umbra.scan(receiver.publicKey, receiver.privateKey);
