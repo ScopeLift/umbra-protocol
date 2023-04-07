@@ -82,30 +82,64 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
   const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
   const ensRegistryAddr = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e';
   const ensRegistryInterface = new Interface(['function resolver(bytes32) view returns (address)']);
-  const resolverInterface = new Interface(['function name(bytes32) view returns (string)']);
+  const resolverInterface = new Interface([
+    'function name(bytes32) view returns (string)',
+    'function addr(bytes32) view returns (address)',
+  ]);
 
-  const nodes = addresses.map((addr) => namehash(addr.substring(2).toLowerCase() + '.addr.reverse'));
-  const resolverCalls = nodes.map((node) => ({
+  // REVERSE LOOKUP.
+  const reverseNodes = addresses.map((addr) => namehash(addr.substring(2).toLowerCase() + '.addr.reverse'));
+  const reverseResolverCalls = reverseNodes.map((node) => ({
     target: ensRegistryAddr,
     allowFailure: true,
     callData: ensRegistryInterface.encodeFunctionData('resolver', [node]),
   }));
   type Response = { success: boolean; returnData: string };
-  const resolverResults: Response[] = await multicall.callStatic.aggregate3(resolverCalls);
+  const reverseResolverResults: Response[] = await multicall.callStatic.aggregate3(reverseResolverCalls);
 
-  const resolverAddrs = resolverResults.map(({ returnData }) => getAddress(`0x${returnData.slice(26)}`));
-  const nameCalls = resolverAddrs.map((resolverAddr, i) => ({
+  const reverseResolverAddrs = reverseResolverResults.map(({ returnData }) => getAddress(`0x${returnData.slice(26)}`));
+  const nameCalls = reverseResolverAddrs.map((resolverAddr, i) => ({
     target: resolverAddr,
     allowFailure: true,
-    callData: resolverInterface.encodeFunctionData('name', [nodes[i]]),
+    callData: resolverInterface.encodeFunctionData('name', [reverseNodes[i]]),
   }));
-  const nameResults: Response[] = await multicall.callStatic.aggregate3(nameCalls);
-  const names = nameResults.map(({ success, returnData }, i) => {
+  const nameResponses: Response[] = await multicall.callStatic.aggregate3(nameCalls);
+  const names = nameResponses.map(({ success, returnData }, i) => {
     if (!success || returnData === '0x') return addresses[i];
     return <string>resolverInterface.decodeFunctionResult('name', returnData)[0];
   });
 
-  return names;
+  // FORWARD LOOKUP.
+  const forwardNodes = names.map((name) => namehash(name));
+  const forwardResolverCalls = forwardNodes.map((node) => {
+    return {
+      target: ensRegistryAddr,
+      allowFailure: true,
+      callData: ensRegistryInterface.encodeFunctionData('resolver', [node]),
+    };
+  });
+  const forwardResolverResults: Response[] = await multicall.callStatic.aggregate3(forwardResolverCalls);
+
+  const addrCalls = forwardResolverResults.map(({ returnData }, i) => {
+    const resolverAddr = ensRegistryInterface.decodeFunctionResult('resolver', returnData)[0];
+    return {
+      target: resolverAddr,
+      allowFailure: true,
+      callData: resolverInterface.encodeFunctionData('addr', [forwardNodes[i]]),
+    };
+  });
+
+  const addrResponses: Response[] = await multicall.callStatic.aggregate3(addrCalls);
+  const forwardAddrs = addrResponses.map(({ success, returnData }, i) => {
+    if (!success || returnData === '0x') return names[i];
+    return <string>resolverInterface.decodeFunctionResult('addr', returnData)[0];
+  });
+
+  // VERIFY THAT THEY MATCH.
+  return names.map((name, i) => {
+    if (getAddress(addresses[i]) === getAddress(forwardAddrs[i])) return name;
+    return addresses[i];
+  });
 };
 
 // ================================================== Privacy Checks ===================================================
