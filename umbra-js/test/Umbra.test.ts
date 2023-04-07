@@ -31,7 +31,7 @@ const overrides = { supportPubKey: true }; // we directly enter a pubkey in thes
 const senderIndex = 2;
 const receiverIndex = 3;
 
-describe.only('Umbra class', () => {
+describe('Umbra class', () => {
   let sender: Wallet;
   let receiver: Wallet;
   // Receievers are used for batch send tests
