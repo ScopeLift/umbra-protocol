@@ -329,8 +329,8 @@ export default function useWalletStore() {
       const [_hasEnsKeys, _hasCnsKeys] = _isAccountSetup
         ? [false, false]
         : await Promise.all([
-            Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, provider.value)),
-            Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, provider.value)),
+            Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, MAINNET_PROVIDER as Web3Provider)),
+            Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, MAINNET_PROVIDER as Web3Provider)),
           ]);
 
       // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
