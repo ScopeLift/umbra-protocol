@@ -109,7 +109,7 @@ describe('Umbra class', () => {
       umbraAddress: umbraContract.address,
       batchSendAddress: batchSendContract.address,
       startBlock: lastBlockNumber,
-      subgraphUrl: 'https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon',
+      subgraphUrl: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn', // prettier-ignore
     };
 
     // Get Umbra instance
@@ -156,35 +156,45 @@ describe('Umbra class', () => {
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       expect(umbra3.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra3.chainConfig.startBlock).to.equal(7718444);
-      expect(umbra3.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli');
+      expect(umbra3.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-goerli/v1.0.0/gn'
+      );
 
       // --- Mainnet ---
       const umbra4 = new Umbra(jsonRpcProvider, 1);
       expect(umbra4.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       // expect(umbra4.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra4.chainConfig.startBlock).to.equal(12343914);
-      expect(umbra4.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet');
+      expect(umbra4.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.0.0/gn'
+      );
 
       // --- Optimism ---
       const umbra5 = new Umbra(jsonRpcProvider, 10);
       expect(umbra5.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       // expect(umbra5.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra5.chainConfig.startBlock).to.equal(4069556);
-      expect(umbra5.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbraoptimism'); // prettier-ignore
+      expect(umbra5.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.0.0/gn'
+      );
 
       // --- Polygon ---
       const umbra6 = new Umbra(jsonRpcProvider, 137);
       expect(umbra6.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       // expect(umbra6.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra6.chainConfig.startBlock).to.equal(20717318);
-      expect(umbra6.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbrapolygon');
+      expect(umbra6.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn'
+      );
 
       // --- Arbitrum ---
       const umbra7 = new Umbra(jsonRpcProvider, 42161);
       expect(umbra7.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       // expect(umbra7.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
       expect(umbra7.chainConfig.startBlock).to.equal(7285883);
-      expect(umbra7.chainConfig.subgraphUrl).to.equal('https://api.thegraph.com/subgraphs/name/scopelift/umbraarbitrumone'); // prettier-ignore
+      expect(umbra7.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.0.0/gn'
+      );
     });
 
     it('does not allow invalid default chain IDs to be provided', async () => {
