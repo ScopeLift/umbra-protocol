@@ -104,7 +104,7 @@
           </div>
           <!-- Legacy warning -->
           <div
-            v-if="!isAccountSetup && isAccountSetupLegacy"
+            v-if="!isAccountSetup && isAccountSetupLegacy && network?.chainId === 1"
             class="dark-toggle text-center text-bold q-my-md q-pa-md"
             style="border-radius: 15px"
             :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
