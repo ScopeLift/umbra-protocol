@@ -43,12 +43,12 @@ const subgraphs = {
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
-  1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
+  1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
   5: { chainId: 5, umbraAddress, batchSendAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
-  10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
-  1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
-  42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
+  10: { chainId: 10, umbraAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
+  137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
+  1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
+  42161: { chainId: 42161, umbraAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
 };
 
 /**
@@ -83,9 +83,17 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
     throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${String(subgraphUrl)}'`);
   }
 
+  if (batchSendAddress) {
+    return {
+      umbraAddress: getAddress(umbraAddress),
+      batchSendAddress: getAddress(batchSendAddress),
+      startBlock,
+      chainId,
+      subgraphUrl,
+    };
+  }
   return {
     umbraAddress: getAddress(umbraAddress),
-    batchSendAddress: getAddress(batchSendAddress),
     startBlock,
     chainId,
     subgraphUrl,
@@ -135,7 +143,9 @@ export class Umbra {
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
     this.umbraContract = new Contract(this.chainConfig.umbraAddress, UMBRA_ABI, provider) as UmbraContract;
-    this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, UMBRA_BATCH_SEND_ABI, provider);
+    if (this.chainConfig.batchSendAddress) {
+      this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, UMBRA_BATCH_SEND_ABI, provider);
+    }
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
@@ -255,12 +265,17 @@ export class Umbra {
 
     // Send transaction
     const txOverrides = { ...localOverrides, value: valueAmount };
-    const tx: ContractTransaction = await this.batchSendContract
-      .connect(this.getConnectedSigner(signer))
-      .batchSend(toll, sortedData, txOverrides);
+    if (this.batchSendContract) {
+      const tx: ContractTransaction = await this.batchSendContract
+        .connect(this.getConnectedSigner(signer))
+        .batchSend(toll, sortedData, txOverrides);
 
-    // We do not wait for the transaction to be mined before returning it
-    return { tx, stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair) };
+      // We do not wait for the transaction to be mined before returning it
+      return { tx, stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair) };
+    }
+    return {
+      stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair),
+    };
   }
 
   /**
@@ -751,6 +766,7 @@ async function tryEthWithdraw(
   }
 }
 
+// The function below is exported for testing purposes only and should not be used outside of this file.
 export async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: string, tokenAmount: BigNumber) {
   // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
   // method also serves to validate the token input
