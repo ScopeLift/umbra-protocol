@@ -5,7 +5,7 @@ import { Point } from '@noble/secp256k1';
 import { default as Resolution, NamingServiceName } from '@unstoppabledomains/resolution';
 import type { EthersProvider } from '../types';
 import { CNS_RESOLVER_ABI } from './constants';
-import { createContract } from './utils';
+import { Contract } from '../ethers';
 
 export const cnsKeyPathSpending = 'crypto.ETH.umbra.spending_public_key';
 export const cnsKeyPathViewing = 'crypto.ETH.umbra.viewing_public_key';
@@ -32,7 +32,7 @@ export async function getPublicKeys(name: string, provider: EthersProvider, reso
   // Read compressed public keys
   const domainNamehash = resolution.namehash(name, NamingServiceName.UNS);
   const resolverAddress = await resolution.resolver(name);
-  const cnsResolver = createContract(resolverAddress, CNS_RESOLVER_ABI, provider);
+  const cnsResolver = new Contract(resolverAddress, CNS_RESOLVER_ABI, provider);
   const [compressedSpendingPublicKey, compressedViewingPublicKey] = await cnsResolver.getMany(
     [cnsKeyPathSpending, cnsKeyPathViewing],
     domainNamehash

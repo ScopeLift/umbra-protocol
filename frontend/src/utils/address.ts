@@ -24,12 +24,6 @@ export const lookupAddress = async (address: string, provider: Provider) => {
   return domainName ? domainName : address;
 };
 
-// Returns an ENS or CNS name if found, otherwise returns the address
-export const lookupOrReturnAddress = async (address: string, provider: Provider) => {
-  const domainName = await lookupAddress(address, provider);
-  return domainName !== address ? domainName : address;
-};
-
 // Returns ENS name that address resolves to, or null if not found
 export const lookupEnsName = async (address: string, provider: Provider) => {
   try {
