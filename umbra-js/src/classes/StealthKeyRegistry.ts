@@ -4,7 +4,7 @@
 
 import { KeyPair } from '../classes/KeyPair';
 import { StealthKeyRegistry as StealthKeyRegistryContract } from '@umbra/contracts-core/typechain';
-import { Contract, JsonRpcSigner } from '../ethers';
+import { Contract, JsonRpcSigner, TransactionResponse } from '../ethers';
 import type { EthersProvider } from '../types';
 
 // Address of the StealthKeyRegistry is the same on all supported networks
@@ -29,7 +29,7 @@ export class StealthKeyRegistry {
    * @param signerOrProvider signer or provider to use
    */
   constructor(signerOrProvider: JsonRpcSigner | EthersProvider) {
-    this._registry = new Contract(stealthKeyRegistry, abi, signerOrProvider) as StealthKeyRegistryContract;
+    this._registry = new Contract(stealthKeyRegistry, abi, signerOrProvider) as unknown as StealthKeyRegistryContract;
   }
 
   /**
@@ -60,7 +60,11 @@ export class StealthKeyRegistry {
    * attached to `this.registry` is used
    * @returns Transaction
    */
-  async setStealthKeys(spendingPublicKey: string, viewingPublicKey: string, signer: JsonRpcSigner | null = null) {
+  async setStealthKeys(
+    spendingPublicKey: string,
+    viewingPublicKey: string,
+    signer: JsonRpcSigner | null = null
+  ): Promise<TransactionResponse> {
     // Get instance of StealthKeyRegistry contract
     const registry = signer ? this._registry.connect(signer) : this._registry;
 
