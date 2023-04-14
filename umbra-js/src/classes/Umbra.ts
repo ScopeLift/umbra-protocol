@@ -151,7 +151,7 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(this.chainConfig.umbraAddress, umbraAbi, provider) as UmbraContract;
+    this.umbraContract = new Contract(this.chainConfig.umbraAddress, umbraAbi, provider) as unknown as UmbraContract;
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
@@ -194,7 +194,7 @@ export class Umbra {
     // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
     // method also serves to validate the token input
     if (!isEth(token)) {
-      const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
+      const tokenContract = new Contract(token, ERC20_ABI, signer) as unknown as ERC20;
       const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
       if (tokenBalance.lt(amount)) {
         const providedAmount = BigNumber.from(amount).toString();
@@ -321,7 +321,7 @@ export class Umbra {
     r: string,
     s: string,
     overrides: Overrides = {}
-  ) {
+  ): Promise<TransactionResponse> {
     // Address input validations
     stealthAddr = getAddress(stealthAddr);
     destination = getAddress(destination);
