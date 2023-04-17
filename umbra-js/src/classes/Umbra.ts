@@ -43,12 +43,12 @@ const subgraphs = {
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
-  1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
+  1: { chainId: 1, umbraAddress, batchSendAddress: null, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
   5: { chainId: 5, umbraAddress, batchSendAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
-  10: { chainId: 10, umbraAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
-  1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
-  42161: { chainId: 42161, umbraAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
+  10: { chainId: 10, umbraAddress, batchSendAddress: null, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
+  137: { chainId: 137, umbraAddress, batchSendAddress: null, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
+  1337: { chainId: 1337, umbraAddress, batchSendAddress: null, startBlock: 8505089, subgraphUrl: false }, // Local
+  42161: { chainId: 42161, umbraAddress, batchSendAddress: null, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
 };
 
 /**
@@ -83,17 +83,9 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
     throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${String(subgraphUrl)}'`);
   }
 
-  if (batchSendAddress) {
-    return {
-      umbraAddress: getAddress(umbraAddress),
-      batchSendAddress: getAddress(batchSendAddress),
-      startBlock,
-      chainId,
-      subgraphUrl,
-    };
-  }
   return {
     umbraAddress: getAddress(umbraAddress),
+    batchSendAddress: batchSendAddress ? getAddress(batchSendAddress) : null,
     startBlock,
     chainId,
     subgraphUrl,
@@ -218,6 +210,10 @@ export class Umbra {
   }
 
   async batchSend(signer: JsonRpcSigner | Wallet, sends: SendBatch[], overrides: SendOverrides = {}) {
+    if (!this.batchSendContract) {
+      throw new Error('Batch send is not supported on this network');
+    }
+
     // Check that all recipients are valid.
     const recipients = new Set(sends.map((send) => send.address));
     await Promise.all([...recipients].map(assertSupportedAddress));
@@ -265,17 +261,12 @@ export class Umbra {
 
     // Send transaction
     const txOverrides = { ...localOverrides, value: valueAmount };
-    if (this.batchSendContract) {
-      const tx: ContractTransaction = await this.batchSendContract
-        .connect(this.getConnectedSigner(signer))
-        .batchSend(toll, sortedData, txOverrides);
+    const tx: ContractTransaction = await this.batchSendContract
+      .connect(this.getConnectedSigner(signer))
+      .batchSend(toll, sortedData, txOverrides);
 
-      // We do not wait for the transaction to be mined before returning it
-      return { tx, stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair) };
-    }
-    return {
-      stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair),
-    };
+    // We do not wait for the transaction to be mined before returning it
+    return { tx, stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair) };
   }
 
   /**

@@ -40,7 +40,7 @@ export interface TransactionResponseExtended extends TransactionResponse {
 export interface ChainConfig {
   chainId: number; // Chain ID of the deployed contract
   umbraAddress: string; // address of Umbra contract
-  batchSendAddress?: string; // address of UmbraBatchSend contract
+  batchSendAddress: string | null; // address of UmbraBatchSend contract
   startBlock: number; // block Umbra contract was deployed at
   subgraphUrl: string | false; // URL of the subgraph used to fetch Announcement events, or false to not use a subgraph
 }
