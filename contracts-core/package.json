@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "Contracts for the Umbra Protocol",
   "dependencies": {
-    "@openzeppelin/contracts": "3.4.1"
+    "@openzeppelin/contracts": "4.8.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^9.1.2",
