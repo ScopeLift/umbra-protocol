@@ -282,6 +282,7 @@ import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
+import { storeSend } from 'src/utils/account-send';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -298,6 +299,7 @@ function useSendForm() {
     tokens: tokenList,
     umbra,
     userAddress,
+    viewingKeyPair,
   } = useWalletStore();
 
   // Helpers
@@ -589,6 +591,19 @@ function useSendForm() {
         gasLimit: sendMax.value && sendingNativeToken ? sendMaxGasLimit : undefined,
       });
       void txNotify(tx.hash, ethersProvider);
+      if (viewingKeyPair.value?.privateKeyHex && userAddress.value) {
+        await storeSend({
+          recipientAddress: recipientId.value,
+          chainId: chainId.value!,
+          advancedMode: advancedMode.value,
+          viewingKey: viewingKeyPair.value?.privateKeyHex,
+          amount: tokenAmount.toString(),
+          tokenAddress,
+          hash: tx.hash,
+          userAddress: userAddress.value,
+          checkbox: advancedAcknowledged.value,
+        });
+      }
       await tx.wait();
       resetForm();
     } finally {

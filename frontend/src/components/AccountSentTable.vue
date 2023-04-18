@@ -137,6 +137,7 @@ export default defineComponent({
         sortable: true,
       },
     ];
+    console.log('Send Metadata', props.sendMetadata);
     return {
       context,
       paginationConfig,
