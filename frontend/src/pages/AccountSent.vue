@@ -14,11 +14,7 @@
     <div v-else class="q-mx-auto" style="max-width: 800px">
       <div v-if="needsSignature" class="text-center q-mb-md">
         {{ $t('AccountSent.need-signature') }}
-        <base-button
-          @click="getData"
-          class="text-center"
-          :label="needsSignature ? $t('AccountSent.sign') : $t('AccountSent.scan')"
-        />
+        <base-button @click="getData" class="text-center q-mt-md" :label="$t('AccountSent.sign')" />
       </div>
       <div v-else-if="!needsSignature && sendMetadata.length > 0" class="q-mx-auto" style="max-width: 800px">
         <account-sent-table :sendMetadata="sendMetadata" />
@@ -31,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import useWalletStore from 'src/store/wallet';
 import AccountSentTable from 'components/AccountSentTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
@@ -78,6 +74,12 @@ function useAccountSent() {
     }
     sendMetadata.value = formattedRows;
   };
+
+  onMounted(async () => {
+    if (!needsSignature.value) {
+      await getData();
+    }
+  });
 
   return {
     userAddress,
