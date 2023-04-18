@@ -100,7 +100,7 @@ export const fetchAccountSends = async ({
   address: string;
   viewingKey: string;
 }) => {
-  const key = `${LOCALFORAGE_KEY}-${address}-${chainId}`;
+  const key = `${LOCALFORAGE_ACOOUNT_SEND_KEY}-${address}-${chainId}`;
   const values = ((await localforage.getItem(key)) as (AccountSendData & EncryptedData)[]) || [];
 
   const accountData = [] as AccountSendData[];
