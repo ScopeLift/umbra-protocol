@@ -33,9 +33,9 @@
     "core-js": "^3.6.5",
     "ethers": "5.7.2",
     "quasar": "2.10.2",
+    "vue": "3.2.45",
     "vue-i18n": "^9.2.2",
     "vue-router": "4.1.6",
-    "vue": "3.2.45",
     "yaml-loader": "0.6.0"
   },
   "devDependencies": {
