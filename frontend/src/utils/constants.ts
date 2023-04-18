@@ -43,3 +43,5 @@ export const MULTICALL_ABI = [
 
 // https://github.com/mds1/multicall
 export const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11';
+
+export const LOCALFORAGE_ACOOUNT_SEND_KEY = 'acountSends';

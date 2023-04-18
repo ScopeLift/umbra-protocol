@@ -1,14 +1,6 @@
-// Verify address
-// Figure bit length for number
-// Append bit for advanced mode
-// Append a bit for if checkbox checked
-
-// create key with keccack hash and number
 import { isAddress, keccak256, toUtf8Bytes, BigNumber, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
-
-// TODO: move to constants file
-const LOCALFORAGE_KEY = 'acountSends';
+import { LOCALFORAGE_ACOOUNT_SEND_KEY } from 'src/utils/constants';
 
 type AccountData = {
   address: string;
@@ -48,30 +40,18 @@ const accountData = ({ address, advancedMode, checkbox }: AccountData) => {
 };
 
 const encryptAccountData = ({ address, advancedMode, checkbox, count, viewingKey }: AccountData & KeyData) => {
-  console.log('viewingKey', viewingKey);
   const key = keccak256(toUtf8Bytes(`${viewingKey}${count}`));
-  console.log('Encryption', key);
   const data = accountData({ address, advancedMode, checkbox });
-  console.log('Encryption data', data);
   const encryptedData = data.xor(key);
-  console.log('Encrypted data', encryptedData);
   return hexZeroPad(encryptedData.toHexString(), 32);
 };
 
 export const decryptData = ({ viewingKey, count, encryptedAddress }: KeyData & EncryptedData) => {
-  console.log('viewingKey', viewingKey);
-  console.log('count', count);
   const key = keccak256(toUtf8Bytes(`${viewingKey}${count}`));
 
-  console.log('Decryption', key);
-
   const decryptedData = BigNumber.from(encryptedAddress).xor(key);
-  console.log('Decrypted', decryptedData);
   const hexData = decryptedData.toHexString();
-  console.log(hexData);
-  //
 
-  // parse hex data for appropriate values
   const advancedMode = hexData.slice(-1);
   const checkbox = hexData.slice(-2);
   return {
@@ -93,8 +73,9 @@ export const storeSend = async ({
   userAddress,
 }: { chainId: number; viewingKey: string } & Omit<AccountSendData, 'dateSent'> & Omit<AccountData, 'address'>) => {
   // Send history is scoped by chain
-  const key = `${LOCALFORAGE_KEY}-${userAddress}-${chainId}`;
-  const count = ((await localforage.getItem(`${LOCALFORAGE_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
+  const key = `${LOCALFORAGE_ACOOUNT_SEND_KEY}-${userAddress}-${chainId}`;
+  const count =
+    ((await localforage.getItem(`${LOCALFORAGE_ACOOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
   const encryptedData = encryptAccountData({ address: recipientAddress, advancedMode, checkbox, count, viewingKey });
   const values = ((await localforage.getItem(key)) as AccountSendData & EncryptedData[]) || [];
   await localforage.setItem(key, [
@@ -107,7 +88,7 @@ export const storeSend = async ({
       hash,
     },
   ]);
-  await localforage.setItem(`${LOCALFORAGE_KEY}-count-${userAddress}-${chainId}`, count + 1);
+  await localforage.setItem(`${LOCALFORAGE_ACOOUNT_SEND_KEY}-count-${userAddress}-${chainId}`, count + 1);
 };
 
 export const fetchAccountSends = async ({
