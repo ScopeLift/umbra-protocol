@@ -273,6 +273,7 @@
   },
   "AccountReceiveTableWithdrawConfirmation": {
     "confirm": "Confirm",
+    "reset": "Reset",
     "cancel": "Cancel",
     "confirm-withdrawal": "Confirm Withdrawal",
     "to": "Withdrawing to",

@@ -27,7 +27,7 @@
             class="q-ml-xs"
             :dense="true"
             :flat="true"
-            :label="$t('AccountReceiveTableWithdrawConfirmation.confirm')"
+            :label="$t('AccountReceiveTableWithdrawConfirmation.reset')"
             size="1em"
           />
         </div>
