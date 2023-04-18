@@ -274,7 +274,6 @@
   },
   "AccountReceiveTableWithdrawConfirmation": {
     "confirm": "确认",
-    "reset": "重置",
     "cancel": "取消",
     "confirm-withdrawal": "确认提款",
     "to": "提取到",
