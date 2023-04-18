@@ -1,6 +1,6 @@
 import { isAddress, keccak256, toUtf8Bytes, BigNumber, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
-import { LOCALFORAGE_ACOOUNT_SEND_KEY } from 'src/utils/constants';
+import { LOCALFORAGE_ACOUNT_SEND_KEY } from 'src/utils/constants';
 
 type AccountData = {
   address: string;
@@ -73,9 +73,9 @@ export const storeSend = async ({
   userAddress,
 }: { chainId: number; viewingKey: string } & Omit<AccountSendData, 'dateSent'> & Omit<AccountData, 'address'>) => {
   // Send history is scoped by chain
-  const key = `${LOCALFORAGE_ACOOUNT_SEND_KEY}-${userAddress}-${chainId}`;
+  const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${userAddress}-${chainId}`;
   const count =
-    ((await localforage.getItem(`${LOCALFORAGE_ACOOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
+    ((await localforage.getItem(`${LOCALFORAGE_ACOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
   const encryptedData = encryptAccountData({ address: recipientAddress, advancedMode, checkbox, count, viewingKey });
   const values = ((await localforage.getItem(key)) as AccountSendData & EncryptedData[]) || [];
   await localforage.setItem(key, [
@@ -88,7 +88,7 @@ export const storeSend = async ({
       hash,
     },
   ]);
-  await localforage.setItem(`${LOCALFORAGE_ACOOUNT_SEND_KEY}-count-${userAddress}-${chainId}`, count + 1);
+  await localforage.setItem(`${LOCALFORAGE_ACOUNT_SEND_KEY}-count-${userAddress}-${chainId}`, count + 1);
 };
 
 export const fetchAccountSends = async ({
@@ -100,7 +100,7 @@ export const fetchAccountSends = async ({
   address: string;
   viewingKey: string;
 }) => {
-  const key = `${LOCALFORAGE_ACOOUNT_SEND_KEY}-${address}-${chainId}`;
+  const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${address}-${chainId}`;
   const values = ((await localforage.getItem(key)) as (AccountSendData & EncryptedData)[]) || [];
 
   const accountData = [] as AccountSendData[];
