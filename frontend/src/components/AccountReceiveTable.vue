@@ -345,7 +345,15 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
 import { copyToClipboard } from 'quasar';
-import { BigNumber, Block, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
+import {
+  BigNumber,
+  Block,
+  Contract,
+  joinSignature,
+  formatUnits,
+  TransactionResponse,
+  Web3Provider,
+} from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
 import { tc } from 'src/boot/i18n';
 import useSettingsStore from 'src/store/settings';
@@ -359,7 +367,7 @@ import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { FeeEstimateResponse } from 'components/models';
 import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
-import { MAINNET_PROVIDER } from 'src/utils/constants';
+import { MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
 import {
   getEtherscanUrl,
   isToken,
@@ -489,10 +497,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   // Table formatters and helpers
   const isNativeToken = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
-  const getStealthBalance = async (tokenAddress: string, userAddress: string) => {
-    if (isNativeToken(tokenAddress)) return (await provider.value?.getBalance(userAddress)) as BigNumber;
-    return (await umbra.value?.umbraContract.tokenPayments(userAddress, tokenAddress)) as BigNumber;
-  };
 
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
   const formattedAnnouncements = ref(announcements.reverse() as ReceiveTableAnnouncement[]); // We reverse so most recent transaction is first
@@ -509,8 +513,25 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     });
 
     // Find announcements that have been withdrawn
-    const stealthBalancePromises = announcements.map((a) => getStealthBalance(a.token, a.receiver));
-    const stealthBalances = await Promise.all(stealthBalancePromises);
+    const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider.value);
+    const stealthBalanceCalls = announcements.map((a) => {
+      if (isNativeToken(a.token)) {
+        return {
+          target: MULTICALL_ADDRESS,
+          allowFailure: true,
+          callData: multicall.interface.encodeFunctionData('getEthBalance', [a.receiver]),
+        };
+      }
+      return {
+        target: umbra.value?.umbraContract.address,
+        allowFailure: true,
+        callData: umbra.value?.umbraContract.interface.encodeFunctionData('tokenPayments', [a.receiver, a.token]),
+      };
+    });
+    type Response = { success: boolean; returnData: string };
+    const stealthBalanceResponses: Response[] = await multicall.callStatic.aggregate3(stealthBalanceCalls);
+    const stealthBalances = stealthBalanceResponses.map((r) => BigNumber.from(r.returnData));
+
     formattedAnnouncements.value.forEach((announcement, index) => {
       announcement.isWithdrawn = stealthBalances[index].lt(announcement.amount);
     });
