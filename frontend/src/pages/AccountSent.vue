@@ -38,7 +38,7 @@ import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri }
 import { fetchAccountSends } from 'src/utils/account-send';
 
 function useAccountSent() {
-  const { tokens, userAddress, chainId, viewingKeyPair, getPrivateKeys } = useWalletStore();
+  const { tokens, userAddress, chainId, viewingKeyPair, getPrivateKeys, provider } = useWalletStore();
   const sendMetadata = ref<SendTableMetadataRow[]>([]);
   const needsSignature = computed(() => !viewingKeyPair.value?.privateKeyHex);
   const viewingPrivateKey = computed(() => viewingKeyPair.value?.privateKeyHex);
@@ -55,6 +55,7 @@ function useAccountSent() {
       address: userAddress.value!,
       chainId: chainId.value!,
       viewingKey: viewingKeyPair.value?.privateKeyHex,
+      provider: provider.value!,
     });
     const formattedRows = [];
     for (const row of data) {

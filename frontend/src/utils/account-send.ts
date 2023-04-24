@@ -1,6 +1,8 @@
 import { isAddress, keccak256, toUtf8Bytes, BigNumber, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
+import { toAddress, lookupAddress } from 'src/utils/address';
 import { LOCALFORAGE_ACOUNT_SEND_KEY } from 'src/utils/constants';
+import { Web3Provider } from 'src/utils/ethers';
 
 type AccountData = {
   address: string;
@@ -71,12 +73,21 @@ export const storeSend = async ({
   tokenAddress,
   hash,
   userAddress,
-}: { chainId: number; viewingKey: string } & Omit<AccountSendData, 'dateSent'> & Omit<AccountData, 'address'>) => {
+  provider,
+}: { chainId: number; viewingKey: string; provider: Web3Provider } & Omit<AccountSendData, 'dateSent'> &
+  Omit<AccountData, 'address'>) => {
   // Send history is scoped by chain
   const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${userAddress}-${chainId}`;
   const count =
     ((await localforage.getItem(`${LOCALFORAGE_ACOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
-  const encryptedData = encryptAccountData({ address: recipientAddress, advancedMode, checkbox, count, viewingKey });
+  const checksumedRecipientAddress = await toAddress(recipientAddress, provider);
+  const encryptedData = encryptAccountData({
+    address: checksumedRecipientAddress,
+    advancedMode,
+    checkbox,
+    count,
+    viewingKey,
+  });
   const values = ((await localforage.getItem(key)) as AccountSendData & EncryptedData[]) || [];
   await localforage.setItem(key, [
     ...values,
@@ -95,10 +106,12 @@ export const fetchAccountSends = async ({
   address,
   viewingKey,
   chainId,
+  provider,
 }: {
   chainId: number;
   address: string;
   viewingKey: string;
+  provider: Web3Provider;
 }) => {
   const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${address}-${chainId}`;
   const values = ((await localforage.getItem(key)) as (AccountSendData & EncryptedData)[]) || [];
@@ -110,8 +123,9 @@ export const fetchAccountSends = async ({
       count: index,
       encryptedAddress: sendInfo.encryptedAddress,
     });
+    const recipientAddress = await lookupAddress(decryptedData.address, provider);
     accountData.push({
-      recipientAddress: decryptedData.address,
+      recipientAddress: recipientAddress,
       advancedMode: decryptedData.advancedMode === '1' ? true : false,
       checkbox: decryptedData.checkbox === '1' ? true : false,
       amount: sendInfo.amount,

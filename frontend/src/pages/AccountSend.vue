@@ -591,7 +591,7 @@ function useSendForm() {
         gasLimit: sendMax.value && sendingNativeToken ? sendMaxGasLimit : undefined,
       });
       void txNotify(tx.hash, ethersProvider);
-      if (viewingKeyPair.value?.privateKeyHex && userAddress.value) {
+      if (viewingKeyPair.value?.privateKeyHex && userAddress.value && provider.value) {
         await storeSend({
           recipientAddress: recipientId.value,
           chainId: chainId.value!,
@@ -602,6 +602,7 @@ function useSendForm() {
           hash: tx.hash,
           userAddress: userAddress.value,
           checkbox: advancedAcknowledged.value,
+          provider: provider.value,
         });
       }
       await tx.wait();
