@@ -180,13 +180,17 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
   };
 
   const isGitcoinContributor = async (address: string) => {
+    let resp;
     try {
-      const resp = await jsonFetch(`https://mainnet.api.umbra.cash/is-gitcoin-contributor/${address}`);
-      return resp.isContributor;
+      resp = (await jsonFetch(`https://mainnet.api.umbra.cash/is-gitcoin-contributor/${address}`)) as {
+        isContributor: boolean;
+      };
     } catch (err) {
       window.logger.warn('Error fetching is gitcoin contributor');
       window.logger.warn(err);
-      return false;
+    }
+    if (resp && resp.isContributor) {
+      reasons.push(`${tc('Utils.Address.address-it-resolves-to')} ${tc('Utils.Address.gitcoin-contributor')}.`);
     }
   };
   promises.push(hasPOAPsCheck());
