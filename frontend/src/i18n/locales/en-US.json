@@ -303,7 +303,7 @@
     "connect-wallet": "Connect Wallet",
     "connect-your-wallet": "Connect your wallet to send funds",
 
-    "need-signature": "This app needs your signature to scan for funds you've sent",
+    "need-signature": "This app needs your signature to decrypt your locally stored send history",
     "sign": "Sign"
   },
   "ConnectWalletCard": {

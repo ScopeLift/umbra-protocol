@@ -240,7 +240,7 @@
           icon="far fa-copy"
           :label="$t('Send.copy-payment-link')"
         />
-        <router-link v-if="false" :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+        <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
           <div class="row items-center justify-center q-pa-xs link-container">
             {{ $t('Send.send-history') }}
           </div>
