@@ -347,7 +347,8 @@
       "same-addr-as-wallet": "the same address as the connected wallet",
       "same-addr-as-stealth": "the same address as the stealth address",
       "address-it-resolves-to": "The address it resolves to",
-      "has-poap-tokens": "has POAP tokens"
+      "has-poap-tokens": "has POAP tokens",
+      "gitcoin-contributor": "is a gitcoin contributor"
     },
     "Dialog": {
       "warning": "Warning"
