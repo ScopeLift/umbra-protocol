@@ -178,7 +178,19 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
     const has = await hasPOAPs(destinationAddress);
     if (has) reasons.push(`${isDomain ? tc('Utils.Address.address-it-resolves-to') : tc('Utils.Address.it')} ${tc('Utils.Address.has-poap-tokens')}`); // prettier-ignore
   };
+
+  const isGitcoinContributor = async (address: string) => {
+    try {
+      const resp = await jsonFetch(`https://mainnet.api.umbra.cash/is-gitcoin-contributor/${address}`);
+      return resp.isContributor;
+    } catch (err) {
+      window.logger.warn('Error fetching is gitcoin contributor');
+      window.logger.warn(err);
+      return false;
+    }
+  };
   promises.push(hasPOAPsCheck());
+  promises.push(isGitcoinContributor(destinationAddress));
 
   // Check if address has contributed to Gitcoin Grants
   // TODO
