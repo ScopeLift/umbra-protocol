@@ -586,3 +586,5 @@ export async function assertSupportedAddress(recipientId: string) {
   if (await contract.isSanctioned(address)) throw new Error(errMsg);
   return true;
 }
+
+export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
