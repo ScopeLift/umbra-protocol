@@ -6,10 +6,11 @@ import { Provider } from 'components/models';
 import { utils } from '@umbracash/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
 import { getAddress, Web3Provider, isHexString, namehash, Interface, Contract } from 'src/utils/ethers';
-import { getChainById } from 'src/utils/utils';
+import { getChainById, jsonFetch } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
 import Resolution from '@unstoppabledomains/resolution';
 import { MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+import { UmbraApi } from 'src/utils/umbra-api';
 
 // ================================================== Address Helpers ==================================================
 
@@ -182,9 +183,7 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
   const isGitcoinContributor = async (address: string) => {
     let resp;
     try {
-      resp = (await jsonFetch(`https://mainnet.api.umbra.cash/is-gitcoin-contributor/${address}`)) as {
-        isContributor: boolean;
-      };
+      resp = await UmbraApi.isGitcoinContributor(address);
     } catch (err) {
       window.logger.warn('Error fetching is gitcoin contributor');
       window.logger.warn(err);
@@ -222,8 +221,6 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
 
   return { safe: reasons.length === 0, reasons };
 };
-
-const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
 
 // Returns true if the address owns any POAP tokens
 const hasPOAPs = async (address: string) => {
