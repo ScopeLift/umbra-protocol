@@ -16,10 +16,10 @@
         {{ $t('AccountSent.need-signature') }}
         <base-button @click="getData" class="text-center q-mt-md" :label="$t('AccountSent.sign')" />
       </div>
-      <div v-else-if="!needsSignature && sendMetadata.length > 0" class="q-mx-auto" style="max-width: 800px">
-        <account-sent-table :sendMetadata="sendMetadata" />
+      <div className="flex" v-else-if="dataLoading">
+        <loading-spinner />
       </div>
-      <div v-else-if="!needsSignature && sendMetadata.length === 0" class="q-mx-auto" style="max-width: 800px">
+      <div v-else-if="!needsSignature && !dataLoading" class="q-mx-auto" style="max-width: 800px">
         <account-sent-table :sendMetadata="sendMetadata" />
       </div>
     </div>
@@ -40,6 +40,7 @@ import { fetchAccountSends } from 'src/utils/account-send';
 function useAccountSent() {
   const { tokens, userAddress, chainId, viewingKeyPair, getPrivateKeys, provider } = useWalletStore();
   const sendMetadata = ref<SendTableMetadataRow[]>([]);
+  const dataLoading = ref<boolean>(false);
   const needsSignature = computed(() => !viewingKeyPair.value?.privateKeyHex);
   const viewingPrivateKey = computed(() => viewingKeyPair.value?.privateKeyHex);
 
@@ -51,6 +52,7 @@ function useAccountSent() {
     if (!viewingKeyPair.value?.privateKeyHex) {
       return;
     }
+    dataLoading.value = true;
     const data = await fetchAccountSends({
       address: userAddress.value!,
       chainId: chainId.value!,
@@ -74,6 +76,7 @@ function useAccountSent() {
       });
     }
     sendMetadata.value = formattedRows;
+    dataLoading.value = false;
   };
 
   onMounted(async () => {
@@ -88,6 +91,7 @@ function useAccountSent() {
     getData,
     viewingPrivateKey,
     needsSignature,
+    dataLoading,
   };
 }
 export default defineComponent({

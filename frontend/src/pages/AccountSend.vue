@@ -290,6 +290,7 @@ function useSendForm() {
     balances,
     chainId,
     currentChain,
+    getPrivateKeys,
     getTokenBalances,
     isLoading,
     NATIVE_TOKEN,
@@ -570,6 +571,9 @@ function useSendForm() {
           void txNotify(approveTx.hash, ethersProvider);
           await approveTx.wait();
         }
+      }
+      if (!viewingKeyPair.value?.privateKeyHex) {
+        await getPrivateKeys();
       }
 
       // Send with Umbra
