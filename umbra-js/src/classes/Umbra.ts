@@ -33,7 +33,7 @@ import type { Announcement, ChainConfig, EthersProvider, GraphFilterOverride, Sc
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
-const batchSendAddress = '0x0d81Df222BB44b883265538586829715CF157163'; // Goerli test address
+const batchSendAddress = '0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB'; // same on all supported networks
 const subgraphs = {
   1: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.0.0/gn',
   5: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-goerli/v1.0.0/gn',
@@ -43,12 +43,12 @@ const subgraphs = {
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
-  1: { chainId: 1, umbraAddress, batchSendAddress: null, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
+  1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
   5: { chainId: 5, umbraAddress, batchSendAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
-  10: { chainId: 10, umbraAddress, batchSendAddress: null, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  137: { chainId: 137, umbraAddress, batchSendAddress: null, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
-  1337: { chainId: 1337, umbraAddress, batchSendAddress: null, startBlock: 8505089, subgraphUrl: false }, // Local
-  42161: { chainId: 42161, umbraAddress, batchSendAddress: null, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
+  10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
+  137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
+  1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
+  42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
 };
 
 /**

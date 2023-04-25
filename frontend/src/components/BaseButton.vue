@@ -17,7 +17,7 @@
       :text-color="textColor"
       :type="type"
     >
-      <q-icon v-if="icon" right size="0.875rem" :name="icon" />
+      <q-icon v-if="icon" size="0.875rem" :name="icon" :class="iconMargin" />
     </q-btn>
   </div>
 </template>
@@ -62,6 +62,12 @@ export default defineComponent({
       type: String,
       required: false,
       default: undefined,
+    },
+
+    iconMargin: {
+      type: String,
+      required: false,
+      default: 'q-mx-xs',
     },
 
     label: {
