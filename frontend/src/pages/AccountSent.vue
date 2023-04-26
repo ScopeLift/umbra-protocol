@@ -32,7 +32,7 @@ import useWalletStore from 'src/store/wallet';
 import AccountSentTable from 'components/AccountSentTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import { SendTableMetadataRow } from 'components/models';
-import { BigNumber, getAddress } from 'src/utils/ethers';
+import { BigNumber, getAddress, isHexString } from 'src/utils/ethers';
 import { formatNameOrAddress } from 'src/utils/address';
 import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri } from 'src/utils/utils';
 import { fetchAccountSends } from 'src/utils/account-send';
@@ -66,7 +66,9 @@ function useAccountSent() {
         dateSent: formatDate(row.dateSent.getTime()),
         dateSentUnix: row.dateSent.getTime(),
         address: getAddress(row.recipientAddress.toString()),
-        addressShortened: formatNameOrAddress(getAddress(row.recipientAddress.toString())),
+        recipientId: isHexString(row.recipientId.toString())
+          ? formatNameOrAddress(getAddress(row.recipientId.toString()))
+          : formatNameOrAddress(row.recipientId.toString()),
         hash: row.hash,
         hashShortened: formatNameOrAddress(row.hash),
         dateSentTime: formatTime(row.dateSent.getTime()),

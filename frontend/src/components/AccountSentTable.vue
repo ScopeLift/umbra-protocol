@@ -33,7 +33,7 @@
             </div>
             <div>
               <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
-                <span>{{ props.row.addressShortened }}</span>
+                <span>{{ props.row.recipientId }}</span>
                 <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
               </div>
             </div>
@@ -82,7 +82,7 @@
           <!-- Sender column -->
           <div v-else-if="col.name === 'from'" class="d-inline-block">
             <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
-              <span>{{ props.row.addressShortened }}</span>
+              <span>{{ props.row.recipientId }}</span>
               <q-icon class="copy-icon" name="far fa-copy" right />
             </div>
           </div>

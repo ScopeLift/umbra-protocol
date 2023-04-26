@@ -156,7 +156,7 @@ export type SendTableMetadataRow = {
   dateSentTime: string;
   amount: string;
   address: string;
-  addressShortened: string;
+  recipientId: string;
   hash: string;
   tokenLogo?: string;
   tokenAddress: string;

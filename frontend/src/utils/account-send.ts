@@ -30,6 +30,10 @@ type AccountSendData = {
   advancedMode?: boolean;
 };
 
+type DecryptedSendData = {
+  recipientId: string;
+};
+
 const accountData = ({ address, advancedMode, checkbox }: AccountData) => {
   if (!isAddress(address)) {
     throw new Error('Invalid address');
@@ -116,16 +120,17 @@ export const fetchAccountSends = async ({
   const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${address}-${chainId}`;
   const values = ((await localforage.getItem(key)) as (AccountSendData & EncryptedData)[]) || [];
 
-  const accountData = [] as AccountSendData[];
+  const accountData = [] as (AccountSendData & DecryptedSendData)[];
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData({
       viewingKey,
       count: index,
       encryptedAddress: sendInfo.encryptedAddress,
     });
-    const recipientAddress = await lookupAddress(decryptedData.address, provider);
+    const recipientId = await lookupAddress(decryptedData.address, provider);
     accountData.push({
-      recipientAddress: recipientAddress,
+      recipientId: recipientId,
+      recipientAddress: decryptedData.address,
       advancedMode: decryptedData.advancedMode === '1' ? true : false,
       checkbox: decryptedData.checkbox === '1' ? true : false,
       amount: sendInfo.amount,
