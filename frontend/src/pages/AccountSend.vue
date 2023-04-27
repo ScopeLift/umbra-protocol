@@ -595,7 +595,7 @@ function useSendForm() {
         gasLimit: sendMax.value && sendingNativeToken ? sendMaxGasLimit : undefined,
       });
       void txNotify(tx.hash, ethersProvider);
-      // The values in this if statement should exist. W have this check to appease the type checker and handle regressions.
+      // The values in this if statement should exist. We have this check to appease the type checker and handle regressions.
       if (viewingKeyPair.value?.privateKeyHex && userAddress.value && provider.value) {
         await storeSend({
           recipientAddress: recipientId.value,

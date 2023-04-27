@@ -47,6 +47,7 @@ function useAccountSent() {
       const success = await getPrivateKeys();
       if (success === 'denied') return; // if unsuccessful, user denied signature or an error was thrown
     }
+    // The viewingKeyPair should exist and this if statement is to appease the type checker guaranteeing privateKeyHex exists
     if (!viewingKeyPair.value?.privateKeyHex) {
       return;
     }
@@ -59,15 +60,13 @@ function useAccountSent() {
     });
     const formattedRows = [];
     for (const row of data) {
-      console.log(row.txHash);
       formattedRows.push({
         amount: formatAmount(BigNumber.from(row.amount), row.tokenAddress, tokens.value),
         dateSent: formatDate(row.dateSent.getTime()),
         dateSentUnix: row.dateSent.getTime(),
         address: row.recipientAddress.toString(),
         recipientId: formatNameOrAddress(row.recipientId.toString()),
-        hash: row.txHash,
-        hashShortened: formatNameOrAddress(row.txHash),
+        txHash: row.txHash,
         dateSentTime: formatTime(row.dateSent.getTime()),
         tokenLogo: getTokenLogoUri(row.tokenAddress, tokens.value),
         tokenAddress: row.tokenAddress,

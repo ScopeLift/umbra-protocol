@@ -57,7 +57,7 @@
           <!-- Date column -->
           <div v-if="col.name === 'dateSent'" class="d-inline-block">
             <div
-              @click="openInEtherscan(props.row.hash, provider, chainId)"
+              @click="openInEtherscan(props.row.txHash, provider, chainId)"
               class="row justify-start items-center cursor-pointer external-link-icon-parent"
             >
               <div class="col-auto">
