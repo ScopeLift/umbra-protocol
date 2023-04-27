@@ -62,7 +62,7 @@ export class UmbraApi {
   }
 
   static async isGitcoinContributor(address: string) {
-    return (await jsonFetch(`${this.baseUrl}/is-gitcoin-contributor/${address}`)) as {
+    return (await jsonFetch(`${this.baseUrl}/addresses/${address}/is-gitcoin-contributor`)) as {
       isContributor: boolean;
     };
   }
