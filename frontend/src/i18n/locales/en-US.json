@@ -301,7 +301,7 @@
   },
   "AccountSent": {
     "connect-wallet": "Connect Wallet",
-    "connect-your-wallet": "Connect your wallet to send funds",
+    "connect-your-wallet": "Connect your wallet to view sent funds",
 
     "need-signature": "This app needs your signature to decrypt your locally stored send history",
     "sign": "Sign"

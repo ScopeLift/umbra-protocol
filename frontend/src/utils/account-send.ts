@@ -38,9 +38,9 @@ const accountData = ({ address, advancedMode, checkbox }: AccountData) => {
   if (!isAddress(address)) {
     throw new Error('Invalid address');
   }
-  const advancedModeBit = advancedMode ? '1' : '0';
-  const checkboxBit = checkbox ? '1' : '0';
-  const addressHex = BigNumber.from(address).toHexString() + advancedModeBit + checkboxBit;
+  const advancedModeByte = advancedMode ? '01' : '00';
+  const checkboxByte = checkbox ? '01' : '00';
+  const addressHex = BigNumber.from(address).toHexString() + advancedModeByte + checkboxByte;
 
   return BigNumber.from(hexZeroPad(addressHex, 32));
 };
@@ -58,8 +58,8 @@ export const decryptData = ({ viewingKey, count, encryptedAddress }: KeyData & E
   const decryptedData = BigNumber.from(encryptedAddress).xor(key);
   const hexData = decryptedData.toHexString();
 
-  const advancedMode = hexData.slice(-1);
-  const checkbox = hexData.slice(-2);
+  const advancedMode = hexData.slice(-1, -2);
+  const checkbox = hexData.slice(-2, -3);
   return {
     advancedMode,
     checkbox,
@@ -84,9 +84,9 @@ export const storeSend = async ({
   const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${userAddress}-${chainId}`;
   const count =
     ((await localforage.getItem(`${LOCALFORAGE_ACOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
-  const checksumedRecipientAddress = await toAddress(recipientAddress, provider);
+  const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
   const encryptedData = encryptAccountData({
-    address: checksumedRecipientAddress,
+    address: checksummedRecipientAddress,
     advancedMode,
     checkbox,
     count,
@@ -131,8 +131,8 @@ export const fetchAccountSends = async ({
     accountData.push({
       recipientId: recipientId,
       recipientAddress: decryptedData.address,
-      advancedMode: decryptedData.advancedMode === '1' ? true : false,
-      checkbox: decryptedData.checkbox === '1' ? true : false,
+      advancedMode: decryptedData.advancedMode === '01' ? true : false,
+      checkbox: decryptedData.checkbox === '01' ? true : false,
       amount: sendInfo.amount,
       tokenAddress: sendInfo.tokenAddress,
       dateSent: sendInfo.dateSent,

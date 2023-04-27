@@ -16,7 +16,7 @@
         {{ $t('AccountSent.need-signature') }}
         <base-button @click="getData" class="text-center q-mt-md" :label="$t('AccountSent.sign')" />
       </div>
-      <div className="flex" v-else-if="dataLoading">
+      <div v-else-if="dataLoading" class="flex">
         <loading-spinner />
       </div>
       <div v-else-if="!needsSignature && !dataLoading" class="q-mx-auto" style="max-width: 800px">
@@ -45,10 +45,11 @@ function useAccountSent() {
   const viewingPrivateKey = computed(() => viewingKeyPair.value?.privateKeyHex);
 
   const getData = async () => {
-    if (needsSignature.value || !viewingPrivateKey.value) {
+    if (needsSignature.value) {
       const success = await getPrivateKeys();
       if (success === 'denied') return; // if unsuccessful, user denied signature or an error was thrown
     }
+    // The viewingKeyPair should exist and this if statement is to appease the type checker guranteeing privateKeyHex exists
     if (!viewingKeyPair.value?.privateKeyHex) {
       return;
     }
