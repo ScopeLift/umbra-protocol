@@ -12,11 +12,12 @@
       "send-first": "获取您要向其汇款的人员的地址、ENS 或 CNS 姓名",
       "send-second": "填写<span class=\"text-bold\">发送</span>页面上的表单"
     },
-    "banner-donate": "Umbra正在Gitcoin Alpha轮里匹配捐赠。请考虑{supporting}开发。{LearnMore}。",
+    "banner-donate": "请考虑在Gitcoin匹配轮中支持Umbra的{DevelopmentGrant}。{LearnMore}。",
     "banner-passport": "如果您有在Gitcoin回合中给Umbra捐款，您需要{configurePassport}以获得匹配资格。{LearnMore}。",
     "supporting": "支持",
     "configure-passport": "配置‘护照‘",
-    "learn-more": "了解更多"
+    "learn-more": "了解更多",
+    "development-grant": "发展补助金"
   },
   "Home-action-card": {
     "send": "发送",

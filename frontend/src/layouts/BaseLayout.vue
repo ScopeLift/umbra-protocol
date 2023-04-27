@@ -1,16 +1,19 @@
 <template>
   <div>
-    <div v-if="false" class="alert-banner text-bold text-center q-py-md">
-      <i18n-t scope="global" keypath="Home.banner-passport" tag="span">
-        <template v-slot:configurePassport>
-          <a class="alert-banner-hyperlink" href="https://passport.gitcoin.co" target="_blank">{{
-            $t('Home.configure-passport')
-          }}</a>
+    <div class="alert-banner text-bold text-center q-py-md">
+      <i18n-t scope="global" keypath="Home.banner-donate" tag="span">
+        <template v-slot:DevelopmentGrant>
+          <a
+            class="alert-banner-hyperlink"
+            href="https://explorer.gitcoin.co/#/round/1/0x12bb5bbbfe596dbc489d209299b8302c3300fa40/0x12bb5bbbfe596dbc489d209299b8302c3300fa40-22"
+            target="_blank"
+            >{{ $t('Home.development-grant') }}</a
+          >
         </template>
         <template v-slot:LearnMore>
           <a
             class="alert-banner-hyperlink"
-            href="https://twitter.com/gitcoin/status/1620475869826514944"
+            href="https://twitter.com/UmbraCash/status/1651702157345976320"
             target="_blank"
             >{{ $t('Home.learn-more') }}</a
           >
