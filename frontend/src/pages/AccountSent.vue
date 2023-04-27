@@ -3,16 +3,14 @@
     <h2 class="page-title">
       {{ $t('AccountSendTable.sent-funds') }}
     </h2>
-    <!-- User has not connected wallet  -->
-    <div v-if="!userAddress">
-      <div class="row justify-center">
+    <div class="q-mx-auto" style="max-width: 800px">
+      <div v-if="!userAddress" class="row justify-center">
         <connect-wallet>
           <base-button class="text-center" :label="$t('AccountSent.connect-wallet')" />
         </connect-wallet>
       </div>
-    </div>
-    <div v-else class="q-mx-auto" style="max-width: 800px">
-      <div v-if="needsSignature" class="text-center q-mb-md">
+
+      <div v-else-if="needsSignature" class="text-center q-mb-md">
         {{ $t('AccountSent.need-signature') }}
         <base-button @click="getData" class="text-center q-mt-md" :label="$t('AccountSent.sign')" />
       </div>
@@ -32,7 +30,7 @@ import useWalletStore from 'src/store/wallet';
 import AccountSentTable from 'components/AccountSentTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import { SendTableMetadataRow } from 'components/models';
-import { BigNumber, getAddress, isHexString } from 'src/utils/ethers';
+import { BigNumber } from 'src/utils/ethers';
 import { formatNameOrAddress } from 'src/utils/address';
 import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri } from 'src/utils/utils';
 import { fetchAccountSends } from 'src/utils/account-send';
@@ -49,7 +47,6 @@ function useAccountSent() {
       const success = await getPrivateKeys();
       if (success === 'denied') return; // if unsuccessful, user denied signature or an error was thrown
     }
-    // The viewingKeyPair should exist and this if statement is to appease the type checker guranteeing privateKeyHex exists
     if (!viewingKeyPair.value?.privateKeyHex) {
       return;
     }
@@ -62,16 +59,15 @@ function useAccountSent() {
     });
     const formattedRows = [];
     for (const row of data) {
+      console.log(row.txHash);
       formattedRows.push({
         amount: formatAmount(BigNumber.from(row.amount), row.tokenAddress, tokens.value),
         dateSent: formatDate(row.dateSent.getTime()),
         dateSentUnix: row.dateSent.getTime(),
-        address: getAddress(row.recipientAddress.toString()),
-        recipientId: isHexString(row.recipientId.toString())
-          ? formatNameOrAddress(getAddress(row.recipientId.toString()))
-          : formatNameOrAddress(row.recipientId.toString()),
-        hash: row.hash,
-        hashShortened: formatNameOrAddress(row.hash),
+        address: row.recipientAddress.toString(),
+        recipientId: formatNameOrAddress(row.recipientId.toString()),
+        hash: row.txHash,
+        hashShortened: formatNameOrAddress(row.txHash),
         dateSentTime: formatTime(row.dateSent.getTime()),
         tokenLogo: getTokenLogoUri(row.tokenAddress, tokens.value),
         tokenAddress: row.tokenAddress,
