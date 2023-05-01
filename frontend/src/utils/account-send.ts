@@ -1,7 +1,7 @@
-import { isAddress, keccak256, toUtf8Bytes, BigNumber, hexZeroPad } from 'src/utils/ethers';
+import { isAddress, keccak256, toUtf8Bytes, BigNumber, hexZeroPad, getAddress } from 'src/utils/ethers';
 import localforage from 'localforage';
 import { toAddress, lookupAddress } from 'src/utils/address';
-import { LOCALFORAGE_ACOUNT_SEND_KEY, MAINNET_PROVIDER } from 'src/utils/constants';
+import { LOCALFORAGE_ACCOUNT_SEND_KEY, MAINNET_PROVIDER } from 'src/utils/constants';
 import { Web3Provider } from 'src/utils/ethers';
 
 // Send data that is encrypted and stored in local storage
@@ -9,6 +9,7 @@ type AccountDataToEncrypt = {
   address: string;
   advancedMode: boolean;
   usePublicKeyChecked: boolean;
+  pubKey: string; // can be full or partial pubKey
 };
 
 // Used to create key which is used to encrypt account data
@@ -39,7 +40,7 @@ type StoreSendArgs = { chainId: number; viewingKey: string; provider: Web3Provid
   'dateSent' | 'recipientId'
 > &
   Omit<AccountDataToEncrypt, 'address'>;
-type FetchAcountSendArgs = {
+type FetchAccountSendArgs = {
   chainId: number;
   address: string;
   viewingKey: string;
@@ -49,15 +50,33 @@ type AccountSendDataWithEncryptedFields = UnencryptedAcountSendData & EncryptedA
 // All values in local storage with encrypted values decrypted
 type AccountSendData = UnencryptedAcountSendData & { recipientId: string } & Omit<AccountDataToEncrypt, 'address'>;
 
-const buildAccountDataForEncryption = ({ address, advancedMode, usePublicKeyChecked }: AccountDataToEncrypt) => {
+const buildAccountDataForEncryption = ({
+  address,
+  advancedMode,
+  pubKey,
+  usePublicKeyChecked,
+}: AccountDataToEncrypt) => {
   if (!isAddress(address)) {
     throw new Error('Invalid address');
   }
-  const advancedModeByte = advancedMode ? '01' : '00';
-  const usePublicKeyCheckedByte = usePublicKeyChecked ? '01' : '00';
-  const addressHex = BigNumber.from(address).toHexString() + advancedModeByte + usePublicKeyCheckedByte;
+  if (pubKey.slice(0, 4) !== '0x04') {
+    throw new Error('Invalid pubkey');
+  }
 
-  return BigNumber.from(hexZeroPad(addressHex, 32));
+  address = getAddress(address).slice(2); // slice off the `0x` prefix.
+  const advancedModeHalfByte = advancedMode ? '1' : '0';
+  const usePublicKeyCheckedHalfByte = usePublicKeyChecked ? '1' : '0';
+  const remainingBytes = 11; // 20 bytes for address, 1 byte total for advancedMode and usePublicKeyChecked.
+
+  // Store as much of the pubkey as we can in the remaining bytes. The first 4 characters are `0x04` so we skip those.
+  const pubKeyStart = pubKey.slice(4, remainingBytes * 2 + 4); // Each slot is a half byte meaning remaining bytes must be multiplied by 2
+  const dataToEncrypt = `${address}${advancedModeHalfByte}${usePublicKeyCheckedHalfByte}${pubKeyStart}`;
+  if (dataToEncrypt.length !== 64) {
+    // This should never happen.
+    throw new Error(`Data to encrypt is not the correct length ${dataToEncrypt.length} instead of 64`);
+  }
+
+  return BigNumber.from(`0x${dataToEncrypt}`);
 };
 
 const encryptAccountData = ({
@@ -66,9 +85,10 @@ const encryptAccountData = ({
   usePublicKeyChecked,
   encryptionCount,
   viewingKey,
+  pubKey,
 }: EncryptAccountDataArgs) => {
   const key = keccak256(toUtf8Bytes(`${viewingKey}${encryptionCount}`));
-  const data = buildAccountDataForEncryption({ address, advancedMode, usePublicKeyChecked });
+  const data = buildAccountDataForEncryption({ address, advancedMode, usePublicKeyChecked, pubKey });
   const encryptedData = data.xor(key);
   return hexZeroPad(encryptedData.toHexString(), 32);
 };
@@ -79,12 +99,14 @@ export const decryptData = ({ viewingKey, encryptionCount, encryptedAddress }: D
   const decryptedData = BigNumber.from(encryptedAddress).xor(key);
   const hexData = decryptedData.toHexString();
 
-  const advancedMode = hexData.slice(-1, -2);
-  const usePublicKeyChecked = hexData.slice(-2, -3);
+  const paritalPubKey = hexData.slice(44);
+  const advancedMode = hexData.slice(42, 43);
+  const usePublicKeyChecked = hexData.slice(43, 44);
   return {
     advancedMode,
     usePublicKeyChecked,
-    address: hexData.slice(0, -4),
+    address: hexData.slice(0, 42),
+    pubKey: paritalPubKey,
   };
 };
 
@@ -99,11 +121,12 @@ export const storeSend = async ({
   txHash,
   userAddress,
   provider,
+  pubKey,
 }: StoreSendArgs) => {
   // Send history is scoped by chain
-  const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${userAddress}-${chainId}`;
+  const key = `${LOCALFORAGE_ACCOUNT_SEND_KEY}-${userAddress}-${chainId}`;
   const count =
-    ((await localforage.getItem(`${LOCALFORAGE_ACOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
+    ((await localforage.getItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
   const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
   const encryptedData = encryptAccountData({
     address: checksummedRecipientAddress,
@@ -111,6 +134,7 @@ export const storeSend = async ({
     usePublicKeyChecked,
     encryptionCount: count,
     viewingKey,
+    pubKey,
   });
   const values = ((await localforage.getItem(key)) as AccountSendData[]) || [];
   await localforage.setItem(key, [
@@ -123,11 +147,11 @@ export const storeSend = async ({
       txHash,
     },
   ]);
-  await localforage.setItem(`${LOCALFORAGE_ACOUNT_SEND_KEY}-count-${userAddress}-${chainId}`, count + 1);
+  await localforage.setItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${userAddress}-${chainId}`, count + 1);
 };
 
-export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchAcountSendArgs) => {
-  const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${address}-${chainId}`;
+export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchAccountSendArgs) => {
+  const key = `${LOCALFORAGE_ACCOUNT_SEND_KEY}-${address}-${chainId}`;
   const values = ((await localforage.getItem(key)) as AccountSendDataWithEncryptedFields[]) || [];
 
   const accountData = [] as AccountSendData[];
@@ -141,13 +165,14 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
     accountData.push({
       recipientId: recipientId,
       recipientAddress: decryptedData.address,
-      advancedMode: decryptedData.advancedMode === '01' ? true : false,
-      usePublicKeyChecked: decryptedData.usePublicKeyChecked === '01' ? true : false,
+      advancedMode: decryptedData.advancedMode === '1' ? true : false,
+      usePublicKeyChecked: decryptedData.usePublicKeyChecked === '1' ? true : false,
       amount: sendInfo.amount,
       tokenAddress: sendInfo.tokenAddress,
       dateSent: sendInfo.dateSent,
       userAddress: sendInfo.userAddress,
       txHash: sendInfo.txHash,
+      pubKey: decryptedData.pubKey,
     });
   }
   return accountData.reverse();
