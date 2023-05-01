@@ -1,7 +1,7 @@
 import { isAddress, keccak256, toUtf8Bytes, BigNumber, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
 import { toAddress, lookupAddress } from 'src/utils/address';
-import { LOCALFORAGE_ACOUNT_SEND_KEY } from 'src/utils/constants';
+import { LOCALFORAGE_ACOUNT_SEND_KEY, MAINNET_PROVIDER } from 'src/utils/constants';
 import { Web3Provider } from 'src/utils/ethers';
 
 // Send data that is encrypted and stored in local storage
@@ -43,7 +43,6 @@ type FetchAcountSendArgs = {
   chainId: number;
   address: string;
   viewingKey: string;
-  provider: Web3Provider;
 };
 // All values stored in local storage
 type AccountSendDataWithEncryptedFields = UnencryptedAcountSendData & EncryptedAccountSendData;
@@ -127,7 +126,7 @@ export const storeSend = async ({
   await localforage.setItem(`${LOCALFORAGE_ACOUNT_SEND_KEY}-count-${userAddress}-${chainId}`, count + 1);
 };
 
-export const fetchAccountSends = async ({ address, viewingKey, chainId, provider }: FetchAcountSendArgs) => {
+export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchAcountSendArgs) => {
   const key = `${LOCALFORAGE_ACOUNT_SEND_KEY}-${address}-${chainId}`;
   const values = ((await localforage.getItem(key)) as AccountSendDataWithEncryptedFields[]) || [];
 
@@ -138,7 +137,7 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId, provider
       encryptionCount: index,
       encryptedAddress: sendInfo.encryptedAddress,
     });
-    const recipientId = await lookupAddress(decryptedData.address, provider);
+    const recipientId = await lookupAddress(decryptedData.address, MAINNET_PROVIDER);
     accountData.push({
       recipientId: recipientId,
       recipientAddress: decryptedData.address,
