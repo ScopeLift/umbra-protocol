@@ -5,6 +5,9 @@ pragma solidity ^0.8.16;
 /// @notice Run the script with `forge script Deploy --private-key <privateKey>`
 /// and add `--broadcast` to broadcast the tx.
 /// @dev The contract that's being deployed is specified in `BaseScript.sol`.
+/// Specify additional netowrk aliases in [rpc_enpoints] in `forge.toml`
+/// before adding them to the list of networks below.
+/// Add corresponding `env` variables in a `.env` file, such as ETH_RPC_URL=<URL>
 
 import {StdChains} from "forge-std/StdChains.sol";
 import {BaseScript} from "script/BaseScript.sol";
