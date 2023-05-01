@@ -21,12 +21,12 @@
   invariant = { runs = 1000 }
 
 [rpc_endpoints]
+  arbitrum = "${ARBITRUM_RPC_URL}"
+  goerli = "${GOERLI_RPC_URL}"
   mainnet = "${ETH_RPC_URL}"
   optimism = "${OPTIMISM_RPC_URL}"
-  arbitrum = "${ARBITRUM_RPC_URL}"
   polygon = "${POLYGON_RPC_URL}"
   sepolia = "${SEPOLIA_RPC_URL}"
-  goerli = "${GOERLI_RPC_URL}"
 
 [fmt]
   bracket_spacing = false
