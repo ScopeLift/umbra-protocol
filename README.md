@@ -12,7 +12,7 @@
 	🚀 <a href="https://app.umbra.cash">app.umbra.cash</a>
 	🐦 <a href="https://twitter.com/umbracash">@UmbraCash</a>
 	💬 <a href="https://discord.com/invite/uw4y5J2p7C">Discord</a>
-	🤑 <a href="https://gitcoin.co/grants/821/umbra-privacy-preserving-stealth-payments">Gitcoin</a>
+	🤑 <a href="https://explorer.gitcoin.co/#/round/1/0x12bb5bbbfe596dbc489d209299b8302c3300fa40/0x12bb5bbbfe596dbc489d209299b8302c3300fa40-22">Gitcoin</a>
 	🏗️ <a href="https://twitter.com/scopelift">@ScopeLift</a>
 </p>
 
