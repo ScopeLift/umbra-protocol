@@ -8,8 +8,8 @@ contract Deploy is BaseScript {
   string[] public networks = ["mainnet", "optimism", "arbitrum_one", "polygon", "goerli", "sepolia"];
 
   function run(address expectedContractAddress) public {
+    setFallbackToDefaultRpcUrls(false);
     for (uint256 i; i < networks.length; i++) {
-      setFallbackToDefaultRpcUrls(false);
       vm.createSelectFork(getChain(networks[i]).rpcUrl);
       bool isDeployed = address(expectedContractAddress).code.length > 0;
       if (!isDeployed) deploy();
