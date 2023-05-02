@@ -50,7 +50,7 @@ type AccountSendDataWithEncryptedFields = UnencryptedAcountSendData & EncryptedA
 // All values in local storage with encrypted values decrypted
 type AccountSendData = UnencryptedAcountSendData & { recipientId: string } & Omit<AccountDataToEncrypt, 'address'>;
 
-const buildAccountDataForEncryption = ({
+export const buildAccountDataForEncryption = ({
   address,
   advancedMode,
   pubKey,
@@ -60,7 +60,7 @@ const buildAccountDataForEncryption = ({
     throw new Error('Invalid address');
   }
   if (pubKey.slice(0, 4) !== '0x04') {
-    throw new Error('Invalid pubkey');
+    throw new Error('Invalid public key');
   }
 
   address = getAddress(address).slice(2); // slice off the `0x` prefix.
@@ -79,7 +79,7 @@ const buildAccountDataForEncryption = ({
   return BigNumber.from(`0x${dataToEncrypt}`);
 };
 
-const encryptAccountData = ({
+export const encryptAccountData = ({
   address,
   advancedMode,
   usePublicKeyChecked,
