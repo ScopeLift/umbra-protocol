@@ -44,12 +44,16 @@ contract Deploy is Script {
       uint256 nonce = vm.getNonce(msg.sender);
 
       if (nonce > EXPECTED_NONCE) {
-        console2.log("Skipping '%s': current nonce %d > expected nonce %d", networks[i], nonce, EXPECTED_NONCE);
+        console2.log(
+          "Skipping '%s': current nonce %d > expected nonce %d", networks[i], nonce, EXPECTED_NONCE
+        );
         continue;
       }
 
       if (nonce < EXPECTED_NONCE) {
-        console2.log("Skipping '%s': current nonce %d < expected nonce %d", networks[i], nonce, EXPECTED_NONCE);
+        console2.log(
+          "Skipping '%s': current nonce %d < expected nonce %d", networks[i], nonce, EXPECTED_NONCE
+        );
         continue;
       }
 
