@@ -161,6 +161,8 @@ export type SendTableMetadataRow = {
   tokenLogo?: string;
   tokenAddress: string;
   tokenSymbol: string;
+  advancedMode: boolean;
+  usePublicKeyChecked: boolean;
 };
 
 // Logger type added to window

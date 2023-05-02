@@ -4,16 +4,16 @@
     card-container-class="col q-col-gutter-md"
     :columns="mainTableColumns"
     :rows="formattedSendMetadata"
-    :no-data-label="$t('AccountSendTable.account-empty')"
+    :no-data-label="$t('AccountSentTable.account-empty')"
     :pagination="paginationConfig"
     row-key="dateSentUnix"
-    :title="$t('AccountSendTable.sent-funds')"
+    :title="$t('AccountSentTable.sent-funds')"
   >
     <template v-slot:top-left="props">
       <div class="flex">
-        <div class="q-table__title" :props="props">{{ $t('AccountSendTable.sent-funds') }}</div>
+        <div class="q-table__title" :props="props">{{ $t('AccountSentTable.sent-funds') }}</div>
         <base-tooltip class="q-ml-sm self-center" size="xs" icon="fas fa-question-circle">
-          {{ $t('AccountSendTable.storage-description') }}
+          {{ $t('AccountSentTable.storage-description') }}
         </base-tooltip>
       </div>
     </template>
@@ -29,18 +29,26 @@
           </q-card-section>
           <div class="row justify-between items-center">
             <div>
-              <span class="q-mr-xs">{{ $t('AccountSendTable.receiver') }}</span>
+              <span class="q-mr-xs">
+                {{ $t('AccountSentTable.receiver') }}
+                <span v-if="true" class="q-ml-sm">
+                  <base-tooltip label="🧙" size="sm">{{ $t('AccountSent.advanced-mode-on') }}</base-tooltip>
+                </span>
+                <span v-if="true" class="q-ml-sm">
+                  <base-tooltip label="🔑" size="sm">{{ $t('AccountSent.use-public-key-checked') }}</base-tooltip>
+                </span>
+              </span>
             </div>
             <div>
               <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
-                <span>{{ props.row.recipientId }}</span>
+                <span>{{ props.row.recipientId }} </span>
                 <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
               </div>
             </div>
           </div>
 
           <div class="row justify-between items-center text-caption text-grey">
-            <div>{{ $t('AccountSendTable.date-sent') }}</div>
+            <div>{{ $t('AccountSentTable.date-sent') }}</div>
             <div>
               {{ props.row.dateSent }}
               {{ props.row.dateSentTime }}
@@ -82,7 +90,19 @@
           <!-- Sender column -->
           <div v-else-if="col.name === 'from'" class="d-inline-block">
             <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
-              <span>{{ props.row.recipientId }}</span>
+              <span class="">
+                {{ props.row.recipientId }}
+                <span v-if="props.row.advancedMode">
+                  <base-tooltip class="q-mb-md" label="🧙" size="sm">{{
+                    $t('AccountSentTable.advanced-mode-on')
+                  }}</base-tooltip>
+                </span>
+                <span v-if="props.row.usePublicKeyChecked">
+                  <base-tooltip class="q-mb-md" label="🔑" size="sm">{{
+                    $t('AccountSentTable.use-public-key-checked')
+                  }}</base-tooltip>
+                </span>
+              </span>
               <q-icon class="copy-icon" name="far fa-copy" right />
             </div>
           </div>
@@ -118,21 +138,21 @@ export default defineComponent({
       {
         align: 'left',
         field: 'dateSent',
-        label: tc('AccountSendTable.date-sent'),
+        label: tc('AccountSentTable.date-sent'),
         name: 'dateSent',
         sortable: true,
       },
       {
         align: 'left',
         field: 'amount',
-        label: tc('AccountSendTable.amount'),
+        label: tc('AccountSentTable.amount'),
         name: 'amount',
         sortable: true,
       },
       {
         align: 'left',
         field: 'address',
-        label: tc('AccountSendTable.address'),
+        label: tc('AccountSentTable.address'),
         name: 'from',
         sortable: true,
       },

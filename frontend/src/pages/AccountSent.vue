@@ -61,6 +61,8 @@ function useAccountSent() {
     for (const row of data) {
       formattedRows.push({
         amount: formatAmount(BigNumber.from(row.amount), row.tokenAddress, tokens.value),
+        advancedMode: row.advancedMode,
+        usePublicKeyChecked: row.usePublicKeyChecked,
         dateSent: formatDate(row.dateSent.getTime()),
         dateSentUnix: row.dateSent.getTime(),
         address: row.recipientAddress.toString(),

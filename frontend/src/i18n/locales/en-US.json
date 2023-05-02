@@ -299,6 +299,17 @@
     "sent-funds": "Sent funds",
     "storage-description": "The send history is local to your current browser and will differ when accessed from a different browser or a different device. We do this to maximize your security and privacy."
   },
+  "AccountSentTable": {
+    "address": "Recipient address",
+    "account-empty": "No funds sent in this browser",
+    "advanced-mode-on": "Advanced mode is on",
+    "amount": "Amount",
+    "date-sent": "Date sent",
+    "receiver": "Receiver",
+    "sent-funds": "Sent funds",
+    "storage-description": "The send history is local to your current browser and will differ when accessed from a different browser or a different device. We do this to maximize your security and privacy.",
+    "use-public-key-checked": "Use public key was checked"
+  },
   "AccountSent": {
     "connect-wallet": "Connect Wallet",
     "connect-your-wallet": "Connect your wallet to view sent funds",
