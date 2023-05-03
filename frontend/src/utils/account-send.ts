@@ -29,7 +29,7 @@ type UnencryptedAcountSendData = {
   tokenAddress: string;
   dateSent: Date;
   txHash: string;
-  userAddress: string;
+  senderAddress: string;
   recipientAddress: string;
 };
 
@@ -119,14 +119,14 @@ export const storeSend = async ({
   amount,
   tokenAddress,
   txHash,
-  userAddress,
+  senderAddress,
   provider,
   pubKey,
 }: StoreSendArgs) => {
   // Send history is scoped by chain
-  const key = `${LOCALFORAGE_ACCOUNT_SEND_KEY}-${userAddress}-${chainId}`;
+  const key = `${LOCALFORAGE_ACCOUNT_SEND_KEY}-${senderAddress}-${chainId}`;
   const count =
-    ((await localforage.getItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${userAddress}-${chainId}`)) as number) || 0;
+    ((await localforage.getItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${senderAddress}-${chainId}`)) as number) || 0;
   const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
   const encryptedData = encryptAccountData({
     address: checksummedRecipientAddress,
@@ -147,7 +147,7 @@ export const storeSend = async ({
       txHash,
     },
   ]);
-  await localforage.setItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${userAddress}-${chainId}`, count + 1);
+  await localforage.setItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${senderAddress}-${chainId}`, count + 1);
 };
 
 export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchAccountSendArgs) => {
@@ -170,7 +170,7 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
       amount: sendInfo.amount,
       tokenAddress: sendInfo.tokenAddress,
       dateSent: sendInfo.dateSent,
-      userAddress: sendInfo.userAddress,
+      senderAddress: sendInfo.senderAddress,
       txHash: sendInfo.txHash,
       pubKey: decryptedData.pubKey,
     });

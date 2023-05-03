@@ -609,7 +609,7 @@ function useSendForm() {
           amount: tokenAmount.toString(),
           tokenAddress,
           txHash: tx.hash,
-          userAddress: userAddress.value,
+          senderAddress: userAddress.value,
           usePublicKeyChecked: advancedAcknowledged.value,
           provider: provider.value,
           pubKey: publicKeys.spendingPublicKey,
