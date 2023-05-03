@@ -17,8 +17,8 @@ import {IUmbra} from "src/interface/IUmbra.sol";
 /// @dev Specify additional network aliases in [rpc_endpoints] in `forge.toml`
 /// before adding them to the list of networks below, and add corresponding environment
 /// variables to the `.env` and `.env.template` files.
-contract Deploy is Script {
-  uint256 constant EXPECTED_NONCE = 4; // TODO Edit this with the nonce of the deployer address
+contract DeployBatchSend is Script {
+  uint256 constant EXPECTED_NONCE = 0; // TODO Edit this with the nonce of the deployer address
   address constant UMBRA = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   // The list of networks to deploy to.
   string[] public networks = ["mainnet", "optimism", "arbitrum_one", "polygon", "goerli", "sepolia"];

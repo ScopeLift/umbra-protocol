@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-import {Deploy} from "script/DeployBatchSend.s.sol";
+import {DeployBatchSend} from "script/DeployBatchSend.s.sol";
 import {Test} from "forge-std/Test.sol";
 import {console2} from "forge-std/console2.sol";
+import {UmbraBatchSend} from "src/UmbraBatchSend.sol";
+import {IUmbra} from "src/interface/IUmbra.sol";
 
-contract DeployBatchSendTest is Deploy, Test {
-  uint256 constant EXPECTED_TEST_NONCE = 4; // TODO Edit this with the nonce of the
+contract DeployBatchSendTest is DeployBatchSend, Test {
+  uint256 constant EXPECTED_TEST_NONCE = 0; // TODO Edit this with the nonce of the
   address expectedContractAddress = computeCreateAddress(msg.sender, EXPECTED_NONCE);
+  UmbraBatchSend umbraBatchSend = new UmbraBatchSend(IUmbra(UMBRA));
+  bytes batchSendCode = address(umbraBatchSend).code;
 
-  function setUp() public {
+  function test_checkNonce() public {
     assertEq(EXPECTED_NONCE, EXPECTED_TEST_NONCE);
     assertTrue(expectedContractAddress.code.length == 0);
   }
@@ -18,8 +22,10 @@ contract DeployBatchSendTest is Deploy, Test {
     console2.log("expectedContractAddress is ", expectedContractAddress);
     run();
     for (uint256 i; i < networks.length; i++) {
-      vm.createSelectFork(getChain(networks[i]).rpcUrl);
+      vm.selectFork(i);
+      assertEq(vm.activeFork(), i);
       assertTrue(expectedContractAddress.code.length > 0);
+      assertEq(address(expectedContractAddress).code, batchSendCode);
     }
   }
 }
