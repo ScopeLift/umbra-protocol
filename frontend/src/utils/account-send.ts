@@ -9,7 +9,7 @@ type AccountDataToEncrypt = {
   recipientAddress: string;
   advancedMode: boolean;
   usePublicKeyChecked: boolean;
-  pubKey: string; // can be full or partial pubKey
+  pubKey: string;
 };
 
 // Used to create key which is used to encrypt account data
