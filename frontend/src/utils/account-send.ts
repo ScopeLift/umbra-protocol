@@ -73,7 +73,7 @@ export const buildAccountDataForEncryption = ({
   const dataToEncrypt = `${address}${advancedModeHalfByte}${usePublicKeyCheckedHalfByte}${pubKeyStart}`;
   if (dataToEncrypt.length !== 64) {
     // This should never happen.
-    throw new Error(`Data to encrypt is not the correct length ${dataToEncrypt.length} instead of 64`);
+    throw new Error(`Data to encrypt is not the correct length: found ${dataToEncrypt.length}, expected 64`);
   }
 
   return BigNumber.from(`0x${dataToEncrypt}`);
