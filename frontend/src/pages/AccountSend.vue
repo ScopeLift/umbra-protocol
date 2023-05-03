@@ -600,19 +600,20 @@ function useSendForm() {
         const publicKeys = await umbraUtils.lookupRecipient(recipientId.value, provider.value, {
           advanced: shouldUseNormalPubKey.value,
         });
-
         await storeSend({
           recipientAddress: recipientId.value,
           chainId: chainId.value!,
           advancedMode: advancedMode.value,
           viewingKey: viewingKeyPair.value?.privateKeyHex,
-          amount: tokenAmount.toString(),
-          tokenAddress,
-          txHash: tx.hash,
-          senderAddress: userAddress.value,
           usePublicKeyChecked: advancedAcknowledged.value,
           provider: provider.value,
           pubKey: publicKeys.spendingPublicKey,
+          unencryptedAccountSendData: {
+            amount: tokenAmount.toString(),
+            tokenAddress,
+            txHash: tx.hash,
+            senderAddress: userAddress.value,
+          },
         });
       }
       await tx.wait();
