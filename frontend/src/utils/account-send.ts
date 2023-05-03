@@ -69,7 +69,7 @@ export const buildAccountDataForEncryption = ({
   const remainingBytes = 11; // 20 bytes for address, 1 byte total for advancedMode and usePublicKeyChecked.
 
   // Store as much of the pubkey as we can in the remaining bytes. The first 4 characters are `0x04` so we skip those.
-  const pubKeyStart = pubKey.slice(4, remainingBytes * 2 + 4); // Each slot is a half byte meaning remaining bytes must be multiplied by 2
+  const pubKeyStart = pubKey.slice(4, remainingBytes * 2 + 4); // Each hex character is a half byte meaning remaining bytes must be multiplied by 2
   const dataToEncrypt = `${address}${advancedModeHalfByte}${usePublicKeyCheckedHalfByte}${pubKeyStart}`;
   if (dataToEncrypt.length !== 64) {
     // This should never happen.
