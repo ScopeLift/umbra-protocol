@@ -18,11 +18,6 @@ type KeyData = {
   viewingKey: string;
 };
 
-// Encrypted values that are stored in local storage
-type EncryptedAccountSendData = {
-  encryptedAddress: string;
-};
-
 // Unencrypted values that are stored in local storage
 type UnencryptedAccountSendData = {
   amount: string;
@@ -30,6 +25,11 @@ type UnencryptedAccountSendData = {
   dateSent: Date;
   txHash: string;
   senderAddress: string;
+};
+
+// Encrypted value that is stored in local storage
+type EncryptedAccountSendData = {
+  accountSendCiphertext: string;
 };
 
 type StoreSendArgs = {
@@ -96,10 +96,10 @@ export const encryptAccountData = (accountDataToEncrypt: AccountDataToEncrypt, k
   return encryptedData.toHexString();
 };
 
-export const decryptData = (encryptedAccountSendData: EncryptedAccountSendData, keyData: KeyData) => {
+export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => {
   const key = keccak256(toUtf8Bytes(`${keyData.viewingKey}${keyData.encryptionCount}`));
 
-  const decryptedData = BigNumber.from(encryptedAccountSendData.encryptedAddress).xor(key);
+  const decryptedData = BigNumber.from(accountSendCiphertext).xor(key);
   const hexData = decryptedData.toHexString();
 
   const paritalPubKey = hexData.slice(44);
@@ -144,7 +144,7 @@ export const storeSend = async ({
   await localforage.setItem(key, [
     ...values,
     {
-      encryptedAddress: encryptedData,
+      accountSendCiphertext: encryptedData,
       amount,
       tokenAddress,
       dateSent: new Date(),
@@ -160,15 +160,10 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
 
   const accountData = [] as AccountSendData[];
   for (const [index, sendInfo] of values.entries()) {
-    const decryptedData = decryptData(
-      {
-        encryptedAddress: sendInfo.encryptedAddress,
-      },
-      {
-        viewingKey,
-        encryptionCount: index,
-      }
-    );
+    const decryptedData = decryptData(sendInfo.accountSendCiphertext, {
+      viewingKey,
+      encryptionCount: index,
+    });
     const recipientId = await lookupAddress(decryptedData.address, MAINNET_PROVIDER);
     accountData.push({
       recipientId: recipientId,

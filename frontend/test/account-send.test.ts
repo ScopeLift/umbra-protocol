@@ -106,15 +106,10 @@ describe('buildAccountDataForEncryption Utils', () => {
   });
 
   it('Data decrypted correctly all true', () => {
-    const data = decryptData(
-      {
-        encryptedAddress: '0xed72d6744be0208e4d1c6312a04d2d623b99b2487fb31c0954dca38779969cfa',
-      },
-      {
-        encryptionCount: 0,
-        viewingKey: viewingKey,
-      }
-    );
+    const data = decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487fb31c0954dca38779969cfa', {
+      encryptionCount: 0,
+      viewingKey: viewingKey,
+    });
 
     expect(data.advancedMode).toBe('1');
     expect(data.usePublicKeyChecked).toBe('1');
@@ -123,15 +118,10 @@ describe('buildAccountDataForEncryption Utils', () => {
   });
 
   it('Data decrypted correctly all false', () => {
-    const data = decryptData(
-      {
-        encryptedAddress: '0x7fa429b09b448b9b5b513626b2088fdf317e49f19f8acb9d966e4d257173356b',
-      },
-      {
-        encryptionCount: 1,
-        viewingKey: viewingKey,
-      }
-    );
+    const data = decryptData('0x7fa429b09b448b9b5b513626b2088fdf317e49f19f8acb9d966e4d257173356b', {
+      encryptionCount: 1,
+      viewingKey: viewingKey,
+    });
 
     expect(data.advancedMode).toBe('0');
     expect(data.usePublicKeyChecked).toBe('0');
