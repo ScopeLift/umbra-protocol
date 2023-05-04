@@ -1,4 +1,4 @@
-import { isAddress, keccak256, toUtf8Bytes, BigNumber, getAddress } from 'src/utils/ethers';
+import { isAddress, keccak256, toUtf8Bytes, BigNumber, getAddress, computeAddress } from 'src/utils/ethers';
 import localforage from 'localforage';
 import { toAddress, lookupAddress } from 'src/utils/address';
 import { LOCALFORAGE_ACCOUNT_SEND_KEY, MAINNET_PROVIDER } from 'src/utils/constants';
@@ -69,7 +69,14 @@ export const buildAccountDataForEncryption = ({
     throw new Error('Invalid recipientAddress');
   }
   if (pubKey.slice(0, 4) !== '0x04') {
-    throw new Error('Invalid public key');
+    throw new Error('Invalid public key prefix');
+  }
+
+  try {
+    // This will error if an invalid public key is provided
+    computeAddress(pubKey);
+  } catch {
+    throw new Error('Invalid public or private key');
   }
 
   recipientAddress = getAddress(recipientAddress).slice(2); // slice off the `0x` prefix.

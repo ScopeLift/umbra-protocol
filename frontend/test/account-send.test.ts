@@ -6,9 +6,11 @@ import { BigNumber } from '../src/utils/ethers';
 
 describe('buildAccountDataForEncryption Utils', () => {
   const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
-  const partialPubKey = '0x049dad8ddb0bd43093435ce4';
+  const partialPubKey =
+    '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
 
   it('invalid address', () => {
+    let err;
     try {
       buildAccountDataForEncryption({
         recipientAddress: 'adfaklsfjl',
@@ -17,34 +19,39 @@ describe('buildAccountDataForEncryption Utils', () => {
         usePublicKeyChecked: true,
       });
     } catch (e) {
-      expect((e as Error).message).toBe('Invalid address');
+      err = e;
     }
+    expect((err as Error)?.message).toBe('Invalid recipientAddress');
+  });
+
+  it('invalid pubkey prefix', () => {
+    let err;
+    try {
+      buildAccountDataForEncryption({
+        recipientAddress,
+        advancedMode: true,
+        pubKey: '0x039dad8ddb0bd43093435ce4',
+        usePublicKeyChecked: true,
+      });
+    } catch (e) {
+      err = e;
+    }
+    expect((err as Error)?.message).toBe('Invalid public key prefix');
   });
 
   it('invalid pubkey', () => {
+    let err;
     try {
       buildAccountDataForEncryption({
         recipientAddress,
         advancedMode: true,
-        pubKey: partialPubKey,
+        pubKey: '0x049dad8ddb0bd43093435ce4',
         usePublicKeyChecked: true,
       });
     } catch (e) {
-      expect((e as Error).message).toBe('Invalid public key');
+      err = e;
     }
-  });
-
-  it('Data not correct length', () => {
-    try {
-      buildAccountDataForEncryption({
-        recipientAddress,
-        advancedMode: true,
-        pubKey: '0x049dad8ddb0b',
-        usePublicKeyChecked: true,
-      });
-    } catch (e) {
-      expect((e as Error).message).toBe('Data to encrypt is not the correct length 52 instead of 64');
-    }
+    expect((err as Error)?.message).toBe('Invalid public or private key');
   });
 
   it('Data is correct', () => {
@@ -59,7 +66,9 @@ describe('buildAccountDataForEncryption Utils', () => {
 });
 
 describe('buildAccountDataForEncryption Utils', () => {
-  const partialPubKey = '0x049dad8ddb0bd43093435ce4';
+  const partialPubKey = '0x0476698beebe8ee5c74d8cc5';
+  const pubKey =
+    '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
   const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
   const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
 
@@ -69,7 +78,7 @@ describe('buildAccountDataForEncryption Utils', () => {
         recipientAddress,
         advancedMode: true,
         usePublicKeyChecked: true,
-        pubKey: partialPubKey,
+        pubKey: pubKey,
       },
       {
         encryptionCount: 0,
@@ -81,7 +90,7 @@ describe('buildAccountDataForEncryption Utils', () => {
     expect(data.length).toBe(66);
 
     // This data was generated from this test when it was working and it's contents are verified in the below decrypt test
-    expect(data).toBe('0xed72d6744be0208e4d1c6312a04d2d623b99b2487fb31c0954dca38779969cfa');
+    expect(data).toBe('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb');
   });
 
   it('Data encrypted correctly all false', () => {
@@ -90,7 +99,7 @@ describe('buildAccountDataForEncryption Utils', () => {
         recipientAddress,
         advancedMode: false,
         usePublicKeyChecked: false,
-        pubKey: partialPubKey,
+        pubKey: pubKey,
       },
       {
         encryptionCount: 1,
@@ -102,11 +111,11 @@ describe('buildAccountDataForEncryption Utils', () => {
     expect(data.length).toBe(66);
 
     // This data was generated from this test when it was working and it's contents are verified in the below decrypt test
-    expect(data).toBe('0x7fa429b09b448b9b5b513626b2088fdf317e49f19f8acb9d966e4d257173356b');
+    expect(data).toBe('0x7fa429b09b448b9b5b513626b2088fdf317e49f19f610f9ba3db17f0257de54a');
   });
 
   it('Data decrypted correctly all true', () => {
-    const data = decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487fb31c0954dca38779969cfa', {
+    const data = decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
       encryptionCount: 0,
       viewingKey: viewingKey,
     });
@@ -118,7 +127,7 @@ describe('buildAccountDataForEncryption Utils', () => {
   });
 
   it('Data decrypted correctly all false', () => {
-    const data = decryptData('0x7fa429b09b448b9b5b513626b2088fdf317e49f19f8acb9d966e4d257173356b', {
+    const data = decryptData('0x7fa429b09b448b9b5b513626b2088fdf317e49f19f610f9ba3db17f0257de54a', {
       encryptionCount: 1,
       viewingKey: viewingKey,
     });
