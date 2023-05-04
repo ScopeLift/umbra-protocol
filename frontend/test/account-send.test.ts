@@ -6,7 +6,7 @@ import { BigNumber } from '../src/utils/ethers';
 
 describe('buildAccountDataForEncryption Utils', () => {
   const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
-  const partialPubKey =
+  const pubKey =
     '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
 
   it('invalid address', () => {
@@ -15,13 +15,13 @@ describe('buildAccountDataForEncryption Utils', () => {
       buildAccountDataForEncryption({
         recipientAddress: 'adfaklsfjl',
         advancedMode: true,
-        pubKey: partialPubKey,
+        pubKey: pubKey,
         usePublicKeyChecked: true,
       });
     } catch (e) {
       err = e;
     }
-    expect((err as Error)?.message).toBe('Invalid recipientAddress');
+    expect((err as Error)?.message).toBe('Invalid recipient address');
   });
 
   it('invalid pubkey prefix', () => {
@@ -58,19 +58,179 @@ describe('buildAccountDataForEncryption Utils', () => {
     const data = buildAccountDataForEncryption({
       recipientAddress,
       advancedMode: true,
-      pubKey: partialPubKey,
+      pubKey: pubKey,
       usePublicKeyChecked: true,
     });
-    expect(data === BigNumber.from(`${recipientAddress}11${partialPubKey.slice(4)}`));
+    expect(data === BigNumber.from(`${recipientAddress}11${pubKey.slice(4)}`));
   });
 });
 
-describe('buildAccountDataForEncryption Utils', () => {
-  const partialPubKey = '0x0476698beebe8ee5c74d8cc5';
+describe('Encryption/Decryption utils', () => {
+  const partialPubKey = '0x9976698beebe8ee5c74d8cc5';
   const pubKey =
     '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
   const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
   const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
+
+  it('Encryption invalid recipientAddress', () => {
+    let err;
+    try {
+      encryptAccountData(
+        {
+          recipientAddress: '0xhi',
+          advancedMode: false,
+          usePublicKeyChecked: false,
+          pubKey: pubKey,
+        },
+        {
+          encryptionCount: 1,
+          viewingKey: viewingKey,
+        }
+      );
+    } catch (e) {
+      err = e;
+    }
+    expect((err as Error)?.message).toBe('Invalid recipient address');
+  });
+
+  it('Encryption invalid encryption count', () => {
+    let err;
+    try {
+      buildAccountDataForEncryption({
+        recipientAddress,
+        advancedMode: true,
+        pubKey,
+        usePublicKeyChecked: true,
+      });
+      encryptAccountData(
+        {
+          recipientAddress,
+          advancedMode: false,
+          usePublicKeyChecked: false,
+          pubKey: pubKey,
+        },
+        {
+          encryptionCount: -1,
+          viewingKey: viewingKey,
+        }
+      );
+    } catch (e) {
+      err = e;
+    }
+    expect((err as Error)?.message).toBe('Invalid count provided for encryption');
+  });
+
+  it('Encryption invalid viewing key', () => {
+    let err;
+    try {
+      buildAccountDataForEncryption({
+        recipientAddress,
+        advancedMode: true,
+        pubKey,
+        usePublicKeyChecked: true,
+      });
+      encryptAccountData(
+        {
+          recipientAddress,
+          advancedMode: false,
+          usePublicKeyChecked: false,
+          pubKey: pubKey,
+        },
+        {
+          encryptionCount: 0,
+          viewingKey: '',
+        }
+      );
+    } catch (e) {
+      err = e;
+    }
+    expect((err as Error)?.message).toBe('Invalid viewing key');
+  });
+
+  it('Encryption invalid public key prefix', () => {
+    let err;
+    try {
+      encryptAccountData(
+        {
+          recipientAddress,
+          advancedMode: false,
+          usePublicKeyChecked: false,
+          pubKey: pubKey,
+        },
+        {
+          encryptionCount: 0,
+          viewingKey: '0x03',
+        }
+      );
+    } catch (e) {
+      err = e;
+    }
+    expect((err as Error)?.message).toBe('Invalid viewing key');
+    // Add tests for all of the assertions
+  });
+
+  it('Encryption invalid public key', () => {
+    let err;
+    try {
+      encryptAccountData(
+        {
+          recipientAddress,
+          advancedMode: false,
+          usePublicKeyChecked: false,
+          pubKey: pubKey,
+        },
+        {
+          encryptionCount: 0,
+          viewingKey: '0x04randomcharacters',
+        }
+      );
+    } catch (e) {
+      err = e;
+    }
+    expect((err as Error)?.message).toBe('Invalid viewing key');
+  });
+
+  it('Decryption invalid count', () => {
+    let err;
+    try {
+      decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
+        encryptionCount: -1,
+        viewingKey: viewingKey,
+      });
+    } catch (e) {
+      err = e;
+    }
+
+    expect((err as Error)?.message).toBe('Invalid count for decryption');
+  });
+
+  it('Decryption invalid viewing key', () => {
+    let err;
+    try {
+      decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
+        encryptionCount: 0,
+        viewingKey: viewingKey.slice(1),
+      });
+    } catch (e) {
+      err = e;
+    }
+
+    expect((err as Error)?.message).toBe('Invalid viewing key');
+  });
+
+  it('Decryption invalid viewing key', () => {
+    let err;
+    try {
+      decryptData('0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
+        encryptionCount: 0,
+        viewingKey: viewingKey,
+      });
+    } catch (e) {
+      err = e;
+    }
+
+    expect((err as Error)?.message).toBe('Invalid ciphertext');
+  });
 
   it('Data encrypted correctly all true', () => {
     const data = encryptAccountData(
@@ -123,7 +283,7 @@ describe('buildAccountDataForEncryption Utils', () => {
     expect(data.advancedMode).toBe('1');
     expect(data.usePublicKeyChecked).toBe('1');
     expect(data.address).toBe(recipientAddress.toLowerCase());
-    expect(`0x04${data.pubKey}`).toBe(partialPubKey);
+    expect(`${data.pubKey}`).toBe(partialPubKey);
   });
 
   it('Data decrypted correctly all false', () => {
@@ -135,6 +295,6 @@ describe('buildAccountDataForEncryption Utils', () => {
     expect(data.advancedMode).toBe('0');
     expect(data.usePublicKeyChecked).toBe('0');
     expect(data.address).toBe(recipientAddress.toLowerCase());
-    expect(`0x04${data.pubKey}`).toBe(partialPubKey);
+    expect(`${data.pubKey}`).toBe(partialPubKey);
   });
 });
