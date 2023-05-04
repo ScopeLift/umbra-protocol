@@ -163,7 +163,6 @@ export const storeSend = async ({
   const { amount, tokenAddress, txHash, senderAddress } = unencryptedAccountSendData;
   const { recipientAddress, advancedMode, usePublicKeyChecked, pubKey } = accountDataToEncrypt;
 
-  assertValidAddress(recipientAddress, 'Invalid recipient address');
   assertValidAddress(senderAddress, 'Invalid sender address');
   assertValidAddress(tokenAddress, 'Invalid token address');
   assertValidHexString(viewingKey, 32, 'Invalid viewing key');
@@ -179,6 +178,7 @@ export const storeSend = async ({
     )) as number) || 0;
   const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
 
+  assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
   assertValidEncryptionCount(count);
 
   const keyData = {
@@ -218,6 +218,8 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
       viewingKey,
       encryptionCount: index,
     });
+
+    console.log(`Partial PubKey: ${decryptedData.pubKey} for send ${index}`);
     accountData.push({
       recipientId: decryptedData.address,
       recipientAddress: decryptedData.address,
