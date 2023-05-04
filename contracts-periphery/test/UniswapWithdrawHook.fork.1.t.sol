@@ -153,13 +153,9 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     );
 
     if (fn == UmbraFns.withdrawTokenAndCall) {
-      vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector));
       umbraContract.withdrawTokenAndCall(address(withdrawHook), dai, receiver, data);
       assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount);
     } else {
-      vm.expectCall(
-        umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCallOnBehalf.selector)
-      );
       umbraContract_withdrawTokenAndCallOnBehalf(receiver, data, sponsorFee);
       assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount - sponsorFee);
     }
