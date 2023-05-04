@@ -147,6 +147,33 @@ describe('Encryption/Decryption utils', () => {
     expect((err as Error)?.message).toBe('Invalid viewing key');
   });
 
+  it('Encryption invalid viewing key missing 0x', () => {
+    let err;
+    try {
+      buildAccountDataForEncryption({
+        recipientAddress,
+        advancedMode: true,
+        pubKey,
+        usePublicKeyChecked: true,
+      });
+      encryptAccountData(
+        {
+          recipientAddress,
+          advancedMode: false,
+          usePublicKeyChecked: false,
+          pubKey: pubKey,
+        },
+        {
+          encryptionCount: 0,
+          viewingKey: '290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1',
+        }
+      );
+    } catch (e) {
+      err = e;
+    }
+    expect((err as Error)?.message).toBe('Invalid viewing key');
+  });
+
   it('Encryption invalid public key prefix', () => {
     let err;
     try {
@@ -218,7 +245,7 @@ describe('Encryption/Decryption utils', () => {
     expect((err as Error)?.message).toBe('Invalid viewing key');
   });
 
-  it('Decryption invalid viewing key', () => {
+  it('Decryption invalid ciphertext', () => {
     let err;
     try {
       decryptData('0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {

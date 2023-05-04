@@ -1,12 +1,20 @@
-import { isAddress, keccak256, BigNumber, getAddress, computeAddress, isHexString, hexZeroPad } from 'src/utils/ethers';
+import { keccak256, BigNumber, getAddress, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
+
 import { toAddress, lookupOrReturnAddresses } from 'src/utils/address';
 import { LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX, MAINNET_PROVIDER } from 'src/utils/constants';
 import { Web3Provider } from 'src/utils/ethers';
+import {
+  assertValidAddress,
+  assertValidPublicKeyPrefix,
+  assertValidPublicKey,
+  assertValidEncryptionCount,
+  assertValidHexString,
+} from 'src/utils/validation';
 
 type PartialPublicKey = '0x99{string}';
 
-// Send data that is encrypted and stored in local storage
+// Account Send data that is encrypted and stored in local storage
 type AccountDataToEncrypt = {
   recipientAddress: string;
   advancedMode: boolean;
@@ -14,7 +22,7 @@ type AccountDataToEncrypt = {
   pubKey: string;
 };
 
-// Used to create key which is used to encrypt account data
+// Used to create an encryption key which encrypts account send data
 type KeyData = {
   encryptionCount: number;
   viewingKey: string;
@@ -53,39 +61,6 @@ type AccountSendDataWithEncryptedFields = UnencryptedAccountSendData & Encrypted
 // All values in local storage with encrypted values decrypted
 type AccountSendData = UnencryptedAccountSendData & { recipientId: string } & AccountDataToEncrypt;
 
-const assertValidAddress = (address: string, errorMsg?: string) => {
-  if (!isAddress(address)) {
-    throw new Error(errorMsg || 'Invalid address');
-  }
-};
-
-const assertValidPublicKeyPrefix = (pubKey: string, errorMsg?: string) => {
-  if (pubKey.slice(0, 4) !== '0x04') {
-    throw new Error(errorMsg || 'Invalid public key prefix');
-  }
-};
-
-const assertValidPublicKey = (pubKey: string, errorMsg?: string) => {
-  try {
-    // This will error if an invalid public key is provided
-    computeAddress(pubKey);
-  } catch {
-    throw new Error(errorMsg || 'Invalid public or private key');
-  }
-};
-
-const assertValidEncryptionCount = (count: number, errorMsg?: string) => {
-  if (count < 0) {
-    throw new Error(errorMsg || 'Invalid count provided for encryption');
-  }
-};
-
-const assertValidHexString = (hex: string, length: number, errorMsg?: string) => {
-  if (!isHexString(hex, length)) {
-    throw new Error(errorMsg || 'Invalid hex string was provided');
-  }
-};
-
 export const buildAccountDataForEncryption = ({
   recipientAddress,
   advancedMode,
@@ -101,7 +76,7 @@ export const buildAccountDataForEncryption = ({
   const usePublicKeyCheckedHalfByte = usePublicKeyChecked ? '1' : '0';
   const remainingBytes = 11; // 20 bytes for the receiver's address, 1 byte total for advancedMode and usePublicKeyChecked.
 
-  // Store as much of the pubkey as we can in the remaining bytes. The first 4 characters are `0x04` so we skip those.
+  // Store as much of the public key as we can in the remaining bytes. The first 4 characters are `0x04` so we skip those.
   const pubKeyStart = pubKey.slice(4, remainingBytes * 2 + 4); // Each hex character is a half byte meaning remaining bytes must be multiplied by 2
   const dataToEncrypt = `${recipientAddress}${advancedModeHalfByte}${usePublicKeyCheckedHalfByte}${pubKeyStart}`;
   if (dataToEncrypt.length !== 64) {
