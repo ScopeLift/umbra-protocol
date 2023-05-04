@@ -1,6 +1,6 @@
 import { isAddress, keccak256, BigNumber, getAddress, computeAddress, isHexString, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
-import { toAddress, lookupAddress } from 'src/utils/address';
+import { toAddress, lookupOrReturnAddresses } from 'src/utils/address';
 import { LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX, MAINNET_PROVIDER } from 'src/utils/constants';
 import { Web3Provider } from 'src/utils/ethers';
 
@@ -220,15 +220,16 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
   const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${address}-${chainId}`;
   const values = ((await localforage.getItem(localStorageKey)) as AccountSendDataWithEncryptedFields[]) || [];
 
-  const accountData = [] as AccountSendData[];
+  let accountData = [] as AccountSendData[];
+  const addresses = [];
+
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData(sendInfo.accountSendCiphertext, {
       viewingKey,
       encryptionCount: index,
     });
-    const recipientId = await lookupAddress(decryptedData.address, MAINNET_PROVIDER);
     accountData.push({
-      recipientId: recipientId,
+      recipientId: decryptedData.address,
       recipientAddress: decryptedData.address,
       advancedMode: decryptedData.advancedMode,
       usePublicKeyChecked: decryptedData.usePublicKeyChecked,
@@ -239,6 +240,14 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
       txHash: sendInfo.txHash,
       pubKey: decryptedData.pubKey,
     });
+    addresses.push(decryptedData.address);
   }
+  const recipientIds = await lookupOrReturnAddresses(addresses, MAINNET_PROVIDER);
+  accountData = accountData.map((accountSend, i) => {
+    return {
+      ...accountSend,
+      recipientId: recipientIds[i],
+    };
+  });
   return accountData.reverse();
 };

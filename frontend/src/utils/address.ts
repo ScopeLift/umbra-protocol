@@ -79,7 +79,7 @@ export const toAddress = utils.toAddress;
 
 export const formatAddresses = (addresses: string[]) => addresses.map(formatNameOrAddress);
 
-export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider) => {
+export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
   // Based on https://github.com/ethers-io/ethers.js/blob/0802b70a724321f56d4c170e4c8a46b7804dfb48/src.ts/providers/abstract-provider.ts#L976
   // TODO Add back CNS lookup support if ENS name was not found
   const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
