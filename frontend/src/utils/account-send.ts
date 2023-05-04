@@ -1,7 +1,7 @@
 import { isAddress, keccak256, BigNumber, getAddress, computeAddress, isHexString, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
 import { toAddress, lookupAddress } from 'src/utils/address';
-import { LOCALFORAGE_ACCOUNT_SEND_KEY, MAINNET_PROVIDER } from 'src/utils/constants';
+import { LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX, MAINNET_PROVIDER } from 'src/utils/constants';
 import { Web3Provider } from 'src/utils/ethers';
 
 type PartialPublicKey = '0x99{string}';
@@ -131,9 +131,9 @@ export const encryptAccountData = (accountDataToEncrypt: AccountDataToEncrypt, k
   assertValidPublicKey(pubKey);
 
   const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
-  const key = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
+  const encryptionKey = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
   const data = buildAccountDataForEncryption({ recipientAddress, advancedMode, usePublicKeyChecked, pubKey });
-  const encryptedData = data.xor(key);
+  const encryptedData = data.xor(encryptionKey);
   return encryptedData.toHexString();
 };
 
@@ -145,9 +145,9 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
   assertValidEncryptionCount(encryptionCount, 'Invalid count for decryption');
 
   const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
-  const key = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
+  const encryptionKey = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
 
-  const decryptedData = BigNumber.from(accountSendCiphertext).xor(key);
+  const decryptedData = BigNumber.from(accountSendCiphertext).xor(encryptionKey);
   const hexData = decryptedData.toHexString();
 
   const partialPubKey = hexData.slice(44);
@@ -182,9 +182,11 @@ export const storeSend = async ({
   assertValidPublicKey(pubKey);
 
   // Send history is scoped by chain
-  const key = `${LOCALFORAGE_ACCOUNT_SEND_KEY}-${senderAddress}-${chainId}`;
+  const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${senderAddress}-${chainId}`;
   const count =
-    ((await localforage.getItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${senderAddress}-${chainId}`)) as number) || 0;
+    ((await localforage.getItem(
+      `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`
+    )) as number) || 0;
   const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
 
   assertValidEncryptionCount(count);
@@ -200,8 +202,8 @@ export const storeSend = async ({
     pubKey,
   };
   const encryptedData = encryptAccountData(accountDataToEncrypt, keyData);
-  const values = ((await localforage.getItem(key)) as AccountSendData[]) || [];
-  await localforage.setItem(key, [
+  const values = ((await localforage.getItem(localStorageKey)) as AccountSendData[]) || [];
+  await localforage.setItem(localStorageKey, [
     ...values,
     {
       accountSendCiphertext: encryptedData,
@@ -211,12 +213,12 @@ export const storeSend = async ({
       txHash,
     },
   ]);
-  await localforage.setItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY}-count-${senderAddress}-${chainId}`, count + 1);
+  await localforage.setItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`, count + 1);
 };
 
 export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchAccountSendArgs) => {
-  const key = `${LOCALFORAGE_ACCOUNT_SEND_KEY}-${address}-${chainId}`;
-  const values = ((await localforage.getItem(key)) as AccountSendDataWithEncryptedFields[]) || [];
+  const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${address}-${chainId}`;
+  const values = ((await localforage.getItem(localStorageKey)) as AccountSendDataWithEncryptedFields[]) || [];
 
   const accountData = [] as AccountSendData[];
   for (const [index, sendInfo] of values.entries()) {
