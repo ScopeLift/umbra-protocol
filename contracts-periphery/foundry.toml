@@ -21,7 +21,7 @@
   invariant = { runs = 1000 }
 
 [rpc_endpoints]
-  arbitrum = "${ARBITRUM_RPC_URL}"
+  arbitrum = "${ARBITRUM_ONE_RPC_URL}"
   goerli = "${GOERLI_RPC_URL}"
   mainnet = "${ETH_RPC_URL}"
   optimism = "${OPTIMISM_RPC_URL}"
