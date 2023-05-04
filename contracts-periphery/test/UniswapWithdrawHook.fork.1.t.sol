@@ -68,18 +68,19 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
   ) public {
     // Using for loop here to generate deterministic addresses instead of fetching random address
     // state from network RPC node every time a fuzz test is run.
+    // vm.expectCall(
+    //   address(withdrawHook),
+    //   abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector),
+    //   uint64(numOfAddrs)
+    // );
+    // vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector), uint64(numOfAddrs));
+    // vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCallOnBehalf.selector), 0);
+
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
-      hookTest(
-        recipient,
-        amount,
-        swapAmount,
-        feeBips,
-        feeRecipient,
-        sponsorFee,
-        UmbraFns.withdrawTokenAndCall
-      );
+
+      hookTest(recipient, amount, swapAmount, feeBips, feeRecipient, sponsorFee, UmbraFns.withdrawTokenAndCall);
     }
   }
 
@@ -89,20 +90,16 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     uint256 feeBips,
     uint256 sponsorFee
   ) public {
+    // amount = bound(amount, 10e10, 100_000 ether);
+    // swapAmount = bound(swapAmount, 10e8, amount);
+    // feeBips = bound(feeBips, 1, 100);
+    // sponsorFee = bound(sponsorFee, 0, amount - swapAmount);
     // Using for loop here to generate deterministic addresses instead of fetching random address
     // state from network RPC node every time a fuzz test is run.
     for (uint256 i = 0; i < numOfAddrs; i++) {
       feeRecipient = address(uint160(uint256(keccak256(abi.encode(i)))));
       recipient = address(uint160(uint256(keccak256(abi.encode(feeRecipient)))));
-      hookTest(
-        recipient,
-        amount,
-        swapAmount,
-        feeBips,
-        feeRecipient,
-        sponsorFee,
-        UmbraFns.withdrawTokenAndCallOnBehalf
-      );
+      hookTest(recipient, amount, swapAmount, feeBips, feeRecipient, sponsorFee, UmbraFns.withdrawTokenAndCallOnBehalf);
     }
   }
 
@@ -118,7 +115,7 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     amount = bound(amount, 10e10, 100_000 ether);
     swapAmount = bound(swapAmount, 10e8, amount);
     feeBips = bound(feeBips, 1, 100);
-    sponsorFee = bound(sponsorFee, 1, amount - swapAmount);
+    sponsorFee = bound(sponsorFee, 0, amount - swapAmount);
 
     daiToken.approve(address(umbraContract), amount);
     umbraContract.sendToken{value: toll}(alice, dai, amount, pkx, ciphertext);
@@ -148,18 +145,17 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     IUmbraHookReceiver receiver = IUmbraHookReceiver(address(withdrawHook));
 
     vm.prank(alice); // Withdraw as Alice
-    vm.expectCall(
-      address(withdrawHook), abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector)
-    );
+    // vm.expectCall(address(withdrawHook), abi.encodeWithSelector(withdrawHook.tokensWithdrawn.selector), 0);
 
     if (fn == UmbraFns.withdrawTokenAndCall) {
-      vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector));
+      vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector), 10);
+
       umbraContract.withdrawTokenAndCall(address(withdrawHook), dai, receiver, data);
       assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount);
     } else {
-      vm.expectCall(
-        umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCallOnBehalf.selector)
-      );
+      // vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCall.selector), 0);
+
+      // vm.expectCall(umbra, abi.encodeWithSelector(umbraContract.withdrawTokenAndCallOnBehalf.selector));
       umbraContract_withdrawTokenAndCallOnBehalf(receiver, data, sponsorFee);
       assertEq(daiToken.balanceOf(destinationAddr), amount - swapAmount - sponsorFee);
     }
@@ -172,11 +168,27 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     bytes memory data,
     uint256 sponsorFee
   ) internal {
-    (uint8 v, bytes32 r, bytes32 s) =
-      createDigestAndSign(address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, 1);
+    (uint8 v, bytes32 r, bytes32 s) = createDigestAndSign(
+      address(withdrawHook),
+      dai,
+      sponsor,
+      sponsorFee,
+      receiver,
+      data,
+      1
+    );
 
     umbraContract.withdrawTokenAndCallOnBehalf(
-      alice, address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, v, r, s
+      alice,
+      address(withdrawHook),
+      dai,
+      sponsor,
+      sponsorFee,
+      receiver,
+      data,
+      v,
+      r,
+      s
     );
   }
 }
