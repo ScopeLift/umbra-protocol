@@ -250,7 +250,7 @@ describe('Encryption/Decryption utils', () => {
     expect(data.length).toBe(66);
 
     // This data was generated from this test when it was working and it's contents are verified in the below decrypt test
-    expect(data).toBe('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb');
+    expect(data).toBe('0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621');
   });
 
   it('Data encrypted correctly all false', () => {
@@ -271,11 +271,11 @@ describe('Encryption/Decryption utils', () => {
     expect(data.length).toBe(66);
 
     // This data was generated from this test when it was working and it's contents are verified in the below decrypt test
-    expect(data).toBe('0x7fa429b09b448b9b5b513626b2088fdf317e49f19f610f9ba3db17f0257de54a');
+    expect(data).toBe('0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2');
   });
 
   it('Data decrypted correctly all true', () => {
-    const data = decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
+    const data = decryptData('0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621', {
       encryptionCount: 0,
       viewingKey: viewingKey,
     });
@@ -287,7 +287,7 @@ describe('Encryption/Decryption utils', () => {
   });
 
   it('Data decrypted correctly all false', () => {
-    const data = decryptData('0x7fa429b09b448b9b5b513626b2088fdf317e49f19f610f9ba3db17f0257de54a', {
+    const data = decryptData('0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2', {
       encryptionCount: 1,
       viewingKey: viewingKey,
     });

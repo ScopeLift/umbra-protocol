@@ -1,12 +1,4 @@
-import {
-  isAddress,
-  keccak256,
-  BigNumber,
-  getAddress,
-  computeAddress,
-  isHexString,
-  toUtf8Bytes,
-} from 'src/utils/ethers';
+import { isAddress, keccak256, BigNumber, getAddress, computeAddress, isHexString, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
 import { toAddress, lookupAddress } from 'src/utils/address';
 import { LOCALFORAGE_ACCOUNT_SEND_KEY, MAINNET_PROVIDER } from 'src/utils/constants';
@@ -138,7 +130,8 @@ export const encryptAccountData = (accountDataToEncrypt: AccountDataToEncrypt, k
   assertValidPublicKeyPrefix(pubKey);
   assertValidPublicKey(pubKey);
 
-  const key = keccak256(toUtf8Bytes(`${viewingKey}${encryptionCount}`));
+  const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
+  const key = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
   const data = buildAccountDataForEncryption({ recipientAddress, advancedMode, usePublicKeyChecked, pubKey });
   const encryptedData = data.xor(key);
   return encryptedData.toHexString();
@@ -151,7 +144,8 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
   assertValidHexString(accountSendCiphertext, 32, 'Invalid ciphertext');
   assertValidEncryptionCount(encryptionCount, 'Invalid count for decryption');
 
-  const key = keccak256(toUtf8Bytes(`${viewingKey}${encryptionCount}`));
+  const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
+  const key = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
 
   const decryptedData = BigNumber.from(accountSendCiphertext).xor(key);
   const hexData = decryptedData.toHexString();
