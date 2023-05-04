@@ -280,8 +280,8 @@ describe('Encryption/Decryption utils', () => {
       viewingKey: viewingKey,
     });
 
-    expect(data.advancedMode).toBe('1');
-    expect(data.usePublicKeyChecked).toBe('1');
+    expect(data.advancedMode).toBe(true);
+    expect(data.usePublicKeyChecked).toBe(true);
     expect(data.address).toBe(recipientAddress.toLowerCase());
     expect(`${data.pubKey}`).toBe(partialPubKey);
   });
@@ -292,8 +292,8 @@ describe('Encryption/Decryption utils', () => {
       viewingKey: viewingKey,
     });
 
-    expect(data.advancedMode).toBe('0');
-    expect(data.usePublicKeyChecked).toBe('0');
+    expect(data.advancedMode).toBe(false);
+    expect(data.usePublicKeyChecked).toBe(false);
     expect(data.address).toBe(recipientAddress.toLowerCase());
     expect(`${data.pubKey}`).toBe(partialPubKey);
   });

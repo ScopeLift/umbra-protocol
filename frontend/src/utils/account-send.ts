@@ -160,8 +160,8 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
   const advancedMode = hexData.slice(42, 43);
   const usePublicKeyChecked = hexData.slice(43, 44);
   return {
-    advancedMode,
-    usePublicKeyChecked,
+    advancedMode: advancedMode === '1' ? true : false,
+    usePublicKeyChecked: usePublicKeyChecked === '1' ? true : false,
     address: hexData.slice(0, 42),
     pubKey: `0x99${partialPubKey}` as PartialPublicKey,
   };
@@ -234,8 +234,8 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
     accountData.push({
       recipientId: recipientId,
       recipientAddress: decryptedData.address,
-      advancedMode: decryptedData.advancedMode === '1' ? true : false,
-      usePublicKeyChecked: decryptedData.usePublicKeyChecked === '1' ? true : false,
+      advancedMode: decryptedData.advancedMode,
+      usePublicKeyChecked: decryptedData.usePublicKeyChecked,
       amount: sendInfo.amount,
       tokenAddress: sendInfo.tokenAddress,
       dateSent: sendInfo.dateSent,
