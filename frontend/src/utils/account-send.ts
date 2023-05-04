@@ -36,18 +36,10 @@ type EncryptedAccountSendData = {
 
 type StoreSendArgs = {
   chainId: number;
-  viewingKey: string;
   provider: Web3Provider;
-  unencryptedAccountSendData: {
-    amount: string;
-    tokenAddress: string;
-    txHash: string;
-    senderAddress: string;
-  };
-  advancedMode: boolean;
-  usePublicKeyChecked: boolean;
-  pubKey: string;
-  recipientAddress: string;
+  viewingKey: string;
+  unencryptedAccountSendData: Omit<UnencryptedAccountSendData, 'dateSent'>;
+  accountDataToEncrypt: AccountDataToEncrypt;
 };
 
 type FetchAccountSendArgs = {
@@ -162,16 +154,14 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
 };
 
 export const storeSend = async ({
-  recipientAddress,
   chainId,
-  advancedMode,
-  usePublicKeyChecked,
+  provider,
   viewingKey,
   unencryptedAccountSendData,
-  provider,
-  pubKey,
+  accountDataToEncrypt,
 }: StoreSendArgs) => {
   const { amount, tokenAddress, txHash, senderAddress } = unencryptedAccountSendData;
+  const { recipientAddress, advancedMode, usePublicKeyChecked, pubKey } = accountDataToEncrypt;
 
   assertValidAddress(recipientAddress, 'Invalid recipient address');
   assertValidAddress(senderAddress, 'Invalid sender address');
@@ -195,7 +185,7 @@ export const storeSend = async ({
     encryptionCount: count,
     viewingKey,
   };
-  const accountDataToEncrypt = {
+  accountDataToEncrypt = {
     recipientAddress: checksummedRecipientAddress,
     advancedMode,
     usePublicKeyChecked,

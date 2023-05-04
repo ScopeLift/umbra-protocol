@@ -601,13 +601,15 @@ function useSendForm() {
           advanced: shouldUseNormalPubKey.value,
         });
         await storeSend({
-          recipientAddress: recipientId.value,
           chainId: chainId.value!,
-          advancedMode: advancedMode.value,
           viewingKey: viewingKeyPair.value?.privateKeyHex,
-          usePublicKeyChecked: advancedAcknowledged.value,
           provider: provider.value,
-          pubKey: publicKeys.spendingPublicKey,
+          accountDataToEncrypt: {
+            recipientAddress: recipientId.value,
+            advancedMode: advancedMode.value,
+            usePublicKeyChecked: advancedAcknowledged.value,
+            pubKey: publicKeys.spendingPublicKey,
+          },
           unencryptedAccountSendData: {
             amount: tokenAmount.toString(),
             tokenAddress,
