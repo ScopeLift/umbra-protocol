@@ -5,6 +5,8 @@ import { buildAccountDataForEncryption, encryptAccountData, decryptData } from '
 import { BigNumber } from '../src/utils/ethers';
 import { ethers } from 'ethers';
 
+const NUM_RUNS = 10;
+
 const invalidAddresses = [
   '0x869b1913aeD711246A4cD22B4cFE9DD13996B13', // Missing last character.
   '0x869b1913aeD711246A4cD22B4cFE9DD13996B13dd', // Has extra character.
@@ -50,7 +52,7 @@ function randomData() {
   };
 }
 
-describe('buildAccountDataForEncryption Utils', () => {
+describe('buildAccountDataForEncryption', () => {
   invalidAddresses.forEach((recipientAddress) => {
     it('Throws when given an invalid recipient address', () => {
       const { pubKey, advancedMode, usePublicKeyChecked } = randomData();
@@ -69,7 +71,7 @@ describe('buildAccountDataForEncryption Utils', () => {
 
   it('Correctly formats the data to be encrypted', () => {
     // Generate random data and do multiple runs.
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < NUM_RUNS; i++) {
       const { recipientAddress, pubKey, advancedMode, usePublicKeyChecked } = randomData();
       const actualData = buildAccountDataForEncryption({ recipientAddress, pubKey, advancedMode, usePublicKeyChecked });
 
@@ -83,14 +85,13 @@ describe('buildAccountDataForEncryption Utils', () => {
   });
 });
 
-describe('Encryption/Decryption utils', () => {
-  const partialPubKey = '0x9976698beebe8ee5c74d8cc5';
-  const pubKey =
-    '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
-  const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
-  const lowercaseRecipientAddress = recipientAddress.toLowerCase();
-  const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
+const partialPubKey = '0x9976698beebe8ee5c74d8cc5';
+const pubKey =
+  '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
+const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
+const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
 
+describe('encryptAccountData', () => {
   invalidAddresses.forEach((recipientAddress) => {
     it('Throws when given an invalid recipient address', () => {
       const { pubKey, advancedMode, usePublicKeyChecked, viewingKey, encryptionCount } = randomData();
@@ -131,7 +132,9 @@ describe('Encryption/Decryption utils', () => {
       expect(x).toThrow('Invalid viewing key');
     });
   });
+});
 
+describe('decryptData', () => {
   invalidEncryptionCounts.forEach((encryptionCount) => {
     it('Decryption invalid count', () => {
       const { viewingKey, ciphertext } = randomData();
@@ -205,7 +208,7 @@ describe('Encryption/Decryption utils', () => {
       expectedDecryptedData: {
         advancedMode: true,
         usePublicKeyChecked: true,
-        address: lowercaseRecipientAddress,
+        address: recipientAddress,
         pubKey: partialPubKey,
       },
     },
@@ -215,7 +218,7 @@ describe('Encryption/Decryption utils', () => {
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: false,
-        address: lowercaseRecipientAddress,
+        address: recipientAddress,
         pubKey: partialPubKey,
       },
     },
@@ -225,7 +228,7 @@ describe('Encryption/Decryption utils', () => {
       expectedDecryptedData: {
         advancedMode: true,
         usePublicKeyChecked: false,
-        address: lowercaseRecipientAddress,
+        address: recipientAddress,
         pubKey: partialPubKey,
       },
     },
@@ -235,7 +238,7 @@ describe('Encryption/Decryption utils', () => {
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: true,
-        address: lowercaseRecipientAddress,
+        address: recipientAddress,
         pubKey: partialPubKey,
       },
     },
@@ -244,5 +247,25 @@ describe('Encryption/Decryption utils', () => {
       const data = decryptData(ciphertext, { encryptionCount, viewingKey: viewingKey });
       expect(data).toEqual(expectedDecryptedData); // Recursively checks all properties.
     });
+  });
+});
+
+describe('encrypt/decrypt relationship', () => {
+  it('Encrypt and decrypt are inverses', () => {
+    // Generate random data and do multiple runs.
+    for (let i = 0; i < NUM_RUNS; i++) {
+      const { recipientAddress, pubKey, viewingKey, advancedMode, usePublicKeyChecked, encryptionCount } = randomData();
+      const ciphertext = encryptAccountData(
+        { recipientAddress, advancedMode, pubKey, usePublicKeyChecked },
+        { encryptionCount, viewingKey }
+      );
+      const decryptedData = decryptData(ciphertext, { encryptionCount, viewingKey });
+      expect(decryptedData).toEqual({
+        advancedMode,
+        usePublicKeyChecked,
+        address: recipientAddress,
+        pubKey: `0x99${pubKey.slice(4, 4 + 22)}`,
+      });
+    }
   });
 });

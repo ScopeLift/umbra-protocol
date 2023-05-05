@@ -120,7 +120,7 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
   return {
     advancedMode: advancedMode === '1' ? true : false,
     usePublicKeyChecked: usePublicKeyChecked === '1' ? true : false,
-    address: hexData.slice(0, 42),
+    address: getAddress(hexData.slice(0, 42)),
     pubKey: `0x99${partialPubKey}` as PartialPublicKey,
   };
 };
