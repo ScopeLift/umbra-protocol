@@ -15,6 +15,26 @@ const invalidAddresses = [
   'adfaklsfjl', // Random string.
 ];
 
+const invalidPubKeys = [
+  '0x0290d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a75', // Wrong prefix, this is a compressed pubkey.
+  '0x031cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Wrong prefix, this is a compressed pubkey.
+  '0x041cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Right prefix, but not a valid public key format.
+  '0x0290d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
+  '0x0390d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
+  '0x9990d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
+];
+
+const invalidPrivateKeys = [
+  '',
+  '0xea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f88', // Too short.
+  '0xea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f8877', // Too long.
+  'ea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f88a', // Missing 0x prefix.
+  '0x03ea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f887', // Has a pubkey prefix.
+  '0x04randomcharacters',
+];
+
+const invalidEncryptionCounts = [-1, -2, -99999, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER - 1000];
+
 // Used to generate random data in tests.
 function randomData() {
   return {
@@ -25,6 +45,8 @@ function randomData() {
     viewingKey: ethers.Wallet.createRandom().privateKey,
     // Make sure 0 is more likely to show up for encryption count.
     encryptionCount: Math.random() < 0.1 ? 0 : BigNumber.from(Math.floor(Math.random() * 1000)).toNumber(),
+    // Ciphertext has the same length as a private key.
+    ciphertext: ethers.Wallet.createRandom().privateKey,
   };
 }
 
@@ -37,14 +59,7 @@ describe('buildAccountDataForEncryption Utils', () => {
     });
   });
 
-  [
-    '0x0290d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a75', // Wrong prefix, this is a compressed pubkey.
-    '0x031cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Wrong prefix, this is a compressed pubkey.
-    '0x041cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Right prefix, but not a valid public key format.
-    '0x0290d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
-    '0x0390d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
-    '0x9990d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
-  ].forEach((pubKey) => {
+  invalidPubKeys.forEach((pubKey) => {
     it('Throws when given an invalid public key', () => {
       const { recipientAddress, advancedMode, usePublicKeyChecked } = randomData();
       const x = () => buildAccountDataForEncryption({ recipientAddress, pubKey, advancedMode, usePublicKeyChecked });
@@ -73,6 +88,7 @@ describe('Encryption/Decryption utils', () => {
   const pubKey =
     '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
   const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
+  const lowercaseRecipientAddress = recipientAddress.toLowerCase();
   const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
 
   invalidAddresses.forEach((recipientAddress) => {
@@ -87,7 +103,7 @@ describe('Encryption/Decryption utils', () => {
     });
   });
 
-  [-1, -2, -99999, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER - 1000].forEach((encryptionCount) => {
+  invalidEncryptionCounts.forEach((encryptionCount) => {
     it('Throws when given an invalid encryption count', () => {
       // Generate random data for everything except the encryption count.
       const recipientAddress = ethers.Wallet.createRandom().address;
@@ -104,203 +120,129 @@ describe('Encryption/Decryption utils', () => {
     });
   });
 
-  it('Throws when given an invalid viewing key', () => {
-    const x = () =>
-      encryptAccountData(
-        {
-          recipientAddress,
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          pubKey: pubKey,
-        },
-        {
-          encryptionCount: 0,
-          viewingKey: '',
-        }
+  invalidPrivateKeys.forEach((viewingKey) => {
+    const { recipientAddress, pubKey, advancedMode, usePublicKeyChecked, encryptionCount } = randomData();
+    it('Throws when given an invalid viewing key', () => {
+      const x = () =>
+        encryptAccountData(
+          { recipientAddress, advancedMode, pubKey, usePublicKeyChecked },
+          { encryptionCount, viewingKey }
+        );
+      expect(x).toThrow('Invalid viewing key');
+    });
+  });
+
+  invalidEncryptionCounts.forEach((encryptionCount) => {
+    it('Decryption invalid count', () => {
+      const { viewingKey, ciphertext } = randomData();
+      const x = () => decryptData(ciphertext, { encryptionCount, viewingKey });
+      expect(x).toThrow('Invalid count for decryption');
+    });
+  });
+
+  invalidPrivateKeys.forEach((viewingKey) => {
+    it('Decryption invalid viewing key', () => {
+      const { ciphertext, encryptionCount } = randomData();
+      const x = () => decryptData(ciphertext, { encryptionCount, viewingKey });
+      expect(x).toThrow('Invalid viewing key');
+    });
+  });
+
+  [
+    '',
+    '0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', // Too short.
+    '0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdbbb', // Too long.
+    'ffed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdbb', // Right length, wrong format.
+  ].forEach((ciphertext) => {
+    it('Decryption invalid ciphertext', () => {
+      const { viewingKey, encryptionCount } = randomData();
+      const x = () => decryptData(ciphertext, { encryptionCount, viewingKey });
+      expect(x).toThrow('Invalid ciphertext');
+    });
+  });
+
+  // This data was generated from this test when it was working and it's contents are verified in the below decrypt tests.
+  [
+    {
+      advancedMode: true,
+      usePublicKeyChecked: true,
+      encryptionCount: 0,
+      expectedCiphertext: '0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621',
+    },
+    {
+      advancedMode: false,
+      usePublicKeyChecked: false,
+      encryptionCount: 1,
+      expectedCiphertext: '0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2',
+    },
+    {
+      advancedMode: true,
+      usePublicKeyChecked: false,
+      encryptionCount: 2,
+      expectedCiphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
+    },
+    {
+      advancedMode: false,
+      usePublicKeyChecked: true,
+      encryptionCount: 3,
+      expectedCiphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
+    },
+  ].forEach(({ advancedMode, usePublicKeyChecked, encryptionCount, expectedCiphertext }) => {
+    it('Correctly encrypts data', () => {
+      const data = encryptAccountData(
+        { recipientAddress, advancedMode, usePublicKeyChecked, pubKey: pubKey },
+        { encryptionCount, viewingKey: viewingKey }
       );
-
-    expect(x).toThrow('Invalid viewing key');
+      expect(data.length).toBe(66); // 32 bytes + 0x
+      expect(data).toBe(expectedCiphertext);
+    });
   });
 
-  it('Encryption invalid viewing key missing 0x', () => {
-    const x = () =>
-      encryptAccountData(
-        {
-          recipientAddress,
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          pubKey: pubKey,
-        },
-        {
-          encryptionCount: 0,
-          viewingKey: '290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1',
-        }
-      );
-
-    expect(x).toThrow('Invalid viewing key');
-  });
-
-  it('Encryption invalid viewing key too short', () => {
-    const x = () =>
-      encryptAccountData(
-        {
-          recipientAddress,
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          pubKey: pubKey,
-        },
-        {
-          encryptionCount: 0,
-          viewingKey: pubKey.slice(0, -1),
-        }
-      );
-
-    expect(x).toThrow('Invalid viewing key');
-  });
-
-  it('Encryption invalid public key prefix', () => {
-    const x = () =>
-      encryptAccountData(
-        {
-          recipientAddress,
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          pubKey: pubKey,
-        },
-        {
-          encryptionCount: 0,
-          viewingKey: '0x03',
-        }
-      );
-
-    expect(x).toThrow('Invalid viewing key');
-    // Add tests for all of the assertions
-  });
-
-  it('Encryption invalid public key', () => {
-    const x = () =>
-      encryptAccountData(
-        {
-          recipientAddress,
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          pubKey: pubKey,
-        },
-        {
-          encryptionCount: 0,
-          viewingKey: '0x04randomcharacters',
-        }
-      );
-
-    expect(x).toThrow('Invalid viewing key');
-  });
-
-  it('Decryption invalid count', () => {
-    const x = () =>
-      decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
-        encryptionCount: -1,
-        viewingKey: viewingKey,
-      });
-    expect(x).toThrow('Invalid count for decryption');
-  });
-
-  it('Decryption invalid viewing key', () => {
-    const x = () =>
-      decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
-        encryptionCount: 0,
-        viewingKey: '',
-      });
-    expect(x).toThrow('Invalid viewing key');
-  });
-
-  it('Decryption invalid viewing key missing 0x', () => {
-    const x = () =>
-      decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
-        encryptionCount: 0,
-        viewingKey: viewingKey.slice(2),
-      });
-    expect(x).toThrow('Invalid viewing key');
-  });
-
-  it('Decryption invalid viewing key too short', () => {
-    const x = () =>
-      decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
-        encryptionCount: 0,
-        viewingKey: viewingKey.slice(0, -1),
-      });
-    expect(x).toThrow('Invalid viewing key');
-  });
-
-  it('Decryption invalid ciphertext', () => {
-    const x = () =>
-      decryptData('0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
-        encryptionCount: 0,
-        viewingKey: viewingKey,
-      });
-    expect(x).toThrow('Invalid ciphertext');
-  });
-
-  it('Data encrypted correctly all true', () => {
-    const data = encryptAccountData(
-      {
-        recipientAddress,
+  [
+    {
+      ciphertext: '0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621',
+      encryptionCount: 0,
+      expectedDecryptedData: {
         advancedMode: true,
         usePublicKeyChecked: true,
-        pubKey: pubKey,
+        address: lowercaseRecipientAddress,
+        pubKey: partialPubKey,
       },
-      {
-        encryptionCount: 0,
-        viewingKey: viewingKey,
-      }
-    );
-
-    // 32 bytes + 0x
-    expect(data.length).toBe(66);
-
-    // This data was generated from this test when it was working and it's contents are verified in the below decrypt test
-    expect(data).toBe('0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621');
-  });
-
-  it('Data encrypted correctly all false', () => {
-    const data = encryptAccountData(
-      {
-        recipientAddress,
+    },
+    {
+      ciphertext: '0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2',
+      encryptionCount: 1,
+      expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: false,
-        pubKey: pubKey,
+        address: lowercaseRecipientAddress,
+        pubKey: partialPubKey,
       },
-      {
-        encryptionCount: 1,
-        viewingKey: viewingKey,
-      }
-    );
-
-    // 32 bytes + 0x
-    expect(data.length).toBe(66);
-
-    // This data was generated from this test when it was working and it's contents are verified in the below decrypt test
-    expect(data).toBe('0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2');
-  });
-
-  it('Data decrypted correctly all true', () => {
-    const data = decryptData('0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621', {
-      encryptionCount: 0,
-      viewingKey: viewingKey,
+    },
+    {
+      ciphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
+      encryptionCount: 2,
+      expectedDecryptedData: {
+        advancedMode: true,
+        usePublicKeyChecked: false,
+        address: lowercaseRecipientAddress,
+        pubKey: partialPubKey,
+      },
+    },
+    {
+      ciphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
+      encryptionCount: 3,
+      expectedDecryptedData: {
+        advancedMode: false,
+        usePublicKeyChecked: true,
+        address: lowercaseRecipientAddress,
+        pubKey: partialPubKey,
+      },
+    },
+  ].forEach(({ ciphertext, encryptionCount, expectedDecryptedData }) => {
+    it('Data decrypted correctly all true', () => {
+      const data = decryptData(ciphertext, { encryptionCount, viewingKey: viewingKey });
+      expect(data).toEqual(expectedDecryptedData); // Recursively checks all properties.
     });
-    expect(data.advancedMode).toBe(true);
-    expect(data.usePublicKeyChecked).toBe(true);
-    expect(data.address).toBe(recipientAddress.toLowerCase());
-    expect(`${data.pubKey}`).toBe(partialPubKey);
-  });
-
-  it('Data decrypted correctly all false', () => {
-    const data = decryptData('0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2', {
-      encryptionCount: 1,
-      viewingKey: viewingKey,
-    });
-    expect(data.advancedMode).toBe(false);
-    expect(data.usePublicKeyChecked).toBe(false);
-    expect(data.address).toBe(recipientAddress.toLowerCase());
-    expect(`${data.pubKey}`).toBe(partialPubKey);
   });
 });
