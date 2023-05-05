@@ -1,8 +1,9 @@
 /**
  * @jest-environment jsdom
  */
+import { randomBytes } from 'crypto';
 import { buildAccountDataForEncryption, encryptAccountData, decryptData } from '../src/utils/account-send';
-import { BigNumber } from '../src/utils/ethers';
+import { BigNumber, getAddress } from '../src/utils/ethers';
 import { ethers } from 'ethers';
 
 const NUM_RUNS = 10;
@@ -37,18 +38,22 @@ const invalidPrivateKeys = [
 
 const invalidEncryptionCounts = [-1, -2, -99999, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER - 1000];
 
+function randomHexString(numBytes: number): string {
+  return `0x${randomBytes(numBytes).toString('hex')}`;
+}
+
 // Used to generate random data in tests.
 function randomData() {
   return {
-    recipientAddress: ethers.Wallet.createRandom().address,
-    pubKey: ethers.Wallet.createRandom().publicKey,
+    recipientAddress: getAddress(randomHexString(20)),
+    pubKey: ethers.Wallet.createRandom().publicKey, // Need this one to be real so validation passes.
     advancedMode: Math.random() > 0.5,
     usePublicKeyChecked: Math.random() > 0.5,
-    viewingKey: ethers.Wallet.createRandom().privateKey,
+    viewingKey: randomHexString(32),
     // Make sure 0 is more likely to show up for encryption count.
     encryptionCount: Math.random() < 0.1 ? 0 : BigNumber.from(Math.floor(Math.random() * 1000)).toNumber(),
     // Ciphertext has the same length as a private key.
-    ciphertext: ethers.Wallet.createRandom().privateKey,
+    ciphertext: randomHexString(32),
   };
 }
 
