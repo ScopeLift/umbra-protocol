@@ -274,4 +274,36 @@ describe('encrypt/decrypt relationship', () => {
       });
     }
   });
+
+  it('bug', () => {
+    const recipientAddress = '0x00bB833415cf56f112389E146Cb7847dDbE93fB5';
+    const pubKey =
+      '0x040426c84897f9e07632687f69ef714090307dcdc23b4a9f3719e6db8eb1f753f71dd4f849c6101d13049f6091944914c31e6fe32db34daa176da230a04de12bf3';
+    const viewingPrivateKey = '0xeaa492b979aead8bdaf857673c4fe453a3f7ce5e8d661499391505f47d96d613';
+    const advancedMode = false;
+    const usePublicKeyChecked = false;
+    const encryptionCount = 661;
+
+    const ciphertext = encryptAccountData(
+      { recipientAddress, advancedMode, pubKey, usePublicKeyChecked },
+      { encryptionCount, viewingPrivateKey }
+    );
+    const decryptedData = decryptData(ciphertext, { encryptionCount, viewingPrivateKey });
+
+    // print all data
+    console.log('recipientAddress', recipientAddress);
+    console.log('pubKey', pubKey);
+    console.log('viewingPrivateKey', viewingPrivateKey);
+    console.log('advancedMode', advancedMode);
+    console.log('usePublicKeyChecked', usePublicKeyChecked);
+    console.log('encryptionCount', encryptionCount);
+    console.log('ciphertext', ciphertext);
+    console.log('decryptedData', decryptedData);
+    expect(decryptedData).toEqual({
+      advancedMode,
+      usePublicKeyChecked,
+      address: recipientAddress,
+      pubKey: `0x99${pubKey.slice(4, 4 + 22)}`,
+    });
+  });
 });
