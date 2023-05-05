@@ -30,26 +30,24 @@ describe('buildAccountDataForEncryption Utils', () => {
     });
   });
 
-  it('invalid pubkey prefix', () => {
-    const x = () =>
-      buildAccountDataForEncryption({
-        recipientAddress,
-        advancedMode: true,
-        pubKey: '0x039dad8ddb0bd43093435ce4',
-        usePublicKeyChecked: true,
-      });
-    expect(x).toThrow('Invalid public key prefix');
-  });
-
-  it('invalid pubkey', () => {
-    const x = () =>
-      buildAccountDataForEncryption({
-        recipientAddress,
-        advancedMode: true,
-        pubKey: '0x049dad8ddb0bd43093435ce4',
-        usePublicKeyChecked: true,
-      });
-    expect(x).toThrow('Invalid public or private key');
+  [
+    '0x0290d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a75', // Wrong prefix, this is a compressed pubkey.
+    '0x031cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Wrong prefix, this is a compressed pubkey.
+    '0x041cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Right prefix, but not a valid public key format.
+    '0x0290d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
+    '0x0390d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
+    '0x9990d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
+  ].forEach((pubKey) => {
+    it('Throws when given an invalid public key', () => {
+      const x = () =>
+        buildAccountDataForEncryption({
+          recipientAddress,
+          advancedMode: true,
+          pubKey,
+          usePublicKeyChecked: true,
+        });
+      expect(x).toThrow('Invalid public key');
+    });
   });
 
   it('Data is correct', () => {

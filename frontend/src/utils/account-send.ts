@@ -6,7 +6,6 @@ import { LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX, MAINNET_PROVIDER } from 'src/utils
 import { Web3Provider } from 'src/utils/ethers';
 import {
   assertValidAddress,
-  assertValidPublicKeyPrefix,
   assertValidPublicKey,
   assertValidEncryptionCount,
   assertValidHexString,
@@ -68,7 +67,6 @@ export const buildAccountDataForEncryption = ({
   usePublicKeyChecked,
 }: AccountDataToEncrypt) => {
   assertValidAddress(recipientAddress, 'Invalid recipient address');
-  assertValidPublicKeyPrefix(pubKey);
   assertValidPublicKey(pubKey);
 
   recipientAddress = getAddress(recipientAddress).slice(2); // slice off the `0x` prefix.
@@ -94,7 +92,6 @@ export const encryptAccountData = (accountDataToEncrypt: AccountDataToEncrypt, k
   assertValidAddress(recipientAddress, 'Invalid recipient address');
   assertValidEncryptionCount(encryptionCount);
   assertValidHexString(viewingKey, 32, 'Invalid viewing key');
-  assertValidPublicKeyPrefix(pubKey);
   assertValidPublicKey(pubKey);
 
   const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
@@ -142,7 +139,6 @@ export const storeSend = async ({
   assertValidAddress(tokenAddress, 'Invalid token address');
   assertValidHexString(viewingKey, 32, 'Invalid viewing key');
   assertValidHexString(txHash, 32, 'Transaction hash');
-  assertValidPublicKeyPrefix(pubKey);
   assertValidPublicKey(pubKey);
 
   // Send history is scoped by chain

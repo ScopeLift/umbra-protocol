@@ -6,18 +6,17 @@ export const assertValidAddress = (address: string, errorMsg?: string) => {
   }
 };
 
-export const assertValidPublicKeyPrefix = (pubKey: string, errorMsg?: string) => {
-  if (pubKey.slice(0, 4) !== '0x04') {
-    throw new Error(errorMsg || 'Invalid public key prefix');
-  }
-};
-
 export const assertValidPublicKey = (pubKey: string, errorMsg?: string) => {
+  // Only uncompressed public keys are supported.
+  if (!pubKey.startsWith('0x04')) {
+    throw new Error(errorMsg || 'Invalid public key');
+  }
+
+  // This will error if an invalid public key is provided
   try {
-    // This will error if an invalid public key is provided
     computeAddress(pubKey);
   } catch {
-    throw new Error(errorMsg || 'Invalid public or private key');
+    throw new Error(errorMsg || 'Invalid public key');
   }
 };
 
