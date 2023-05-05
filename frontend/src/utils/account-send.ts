@@ -82,7 +82,7 @@ export const buildAccountDataForEncryption = ({
     throw new Error(`Data to encrypt is not the correct length: found ${dataToEncrypt.length}, expected 64`);
   }
 
-  return BigNumber.from(`0x${dataToEncrypt}`);
+  return BigNumber.from(`0x${dataToEncrypt.toLowerCase()}`);
 };
 
 export const encryptAccountData = (accountDataToEncrypt: AccountDataToEncrypt, keyData: KeyData) => {

@@ -3,6 +3,7 @@
  */
 import { buildAccountDataForEncryption, encryptAccountData, decryptData } from '../src/utils/account-send';
 import { BigNumber } from '../src/utils/ethers';
+import { ethers } from 'ethers';
 
 describe('buildAccountDataForEncryption Utils', () => {
   const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
@@ -50,14 +51,22 @@ describe('buildAccountDataForEncryption Utils', () => {
     });
   });
 
-  it('Data is correct', () => {
-    const data = buildAccountDataForEncryption({
-      recipientAddress,
-      advancedMode: true,
-      pubKey: pubKey,
-      usePublicKeyChecked: true,
-    });
-    expect(data === BigNumber.from(`${recipientAddress}11${pubKey.slice(4)}`));
+  it('Correctly formats the data to be encrypted', () => {
+    // Generate random data and do multiple runs.
+    for (let i = 0; i < 10; i++) {
+      const recipientAddress = ethers.Wallet.createRandom().address;
+      const pubKey = ethers.Wallet.createRandom().publicKey;
+      const advancedMode = Math.random() > 0.5;
+      const usePublicKeyChecked = Math.random() > 0.5;
+      const actualData = buildAccountDataForEncryption({ recipientAddress, pubKey, advancedMode, usePublicKeyChecked });
+
+      const advancedModeString = advancedMode ? '1' : '0';
+      const usePublicKeyCheckedString = usePublicKeyChecked ? '1' : '0';
+      const expectedData = BigNumber.from(
+        `${recipientAddress.toLowerCase()}${advancedModeString}${usePublicKeyCheckedString}${pubKey.slice(4, 4 + 22)}`
+      );
+      expect(actualData.toHexString()).toEqual(expectedData.toHexString());
+    }
   });
 });
 
