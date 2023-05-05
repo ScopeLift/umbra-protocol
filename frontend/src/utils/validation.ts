@@ -8,7 +8,7 @@ export const assertValidAddress = (address: string, errorMsg?: string) => {
 
 export const assertValidPublicKey = (pubKey: string, errorMsg?: string) => {
   // Only uncompressed public keys are supported.
-  if (!pubKey.startsWith('0x04')) {
+  if (!pubKey.startsWith('0x04') || pubKey.length !== 132 || !isHexString(pubKey)) {
     throw new Error(errorMsg || 'Invalid public key');
   }
 
