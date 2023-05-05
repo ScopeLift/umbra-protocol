@@ -18,15 +18,19 @@ import {IUmbra} from "src/interface/IUmbra.sol";
 /// before adding them to the list of networks below, and add corresponding environment
 /// variables to the `.env` and `.env.template` files.
 contract DeployBatchSend is Script {
-  uint256 constant EXPECTED_NONCE = 0; // TODO Edit this with the nonce of the deployer address
+  UmbraBatchSend umbraBatchSend;
+  uint256 constant EXPECTED_NONCE = 176; // TODO Edit this with the nonce of the deployer address
   address constant UMBRA = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   // The list of networks to deploy to.
   string[] public networks = ["mainnet", "optimism", "arbitrum_one", "polygon", "goerli", "sepolia"];
+
+  mapping(string => address) public batchSendAddresses;
 
   /// @notice Deploy the contract to the list of networks,
   function run() public {
     // Compute the address the contract will be deployed to
     address expectedContractAddress = computeCreateAddress(msg.sender, EXPECTED_NONCE);
+    console2.log("Expected contract address: %s", expectedContractAddress);
 
     // Turn off fallback to default RPC URLs since they can be flaky.
     setFallbackToDefaultRpcUrls(false);
@@ -37,30 +41,31 @@ contract DeployBatchSend is Script {
       bool isDeployed = address(expectedContractAddress).code.length > 0;
 
       if (isDeployed) {
-        console2.log("Skipping '%s': contract already deployed", networks[i]);
-        continue;
+        console2.log(
+          "Skipping '%s': contract already deployed at %s", networks[i], expectedContractAddress
+        );
+        revert("Contract already deployed");
       }
 
       uint256 nonce = vm.getNonce(msg.sender);
-
-      if (nonce > EXPECTED_NONCE) {
+      if (nonce != EXPECTED_NONCE) {
         console2.log(
-          "Skipping '%s': current nonce %d > expected nonce %d", networks[i], nonce, EXPECTED_NONCE
+          "%s: current nonce %d != expected nonce %d", networks[i], nonce, EXPECTED_NONCE
         );
-        continue;
-      }
-
-      if (nonce < EXPECTED_NONCE) {
-        console2.log(
-          "Skipping '%s': current nonce %d < expected nonce %d", networks[i], nonce, EXPECTED_NONCE
-        );
-        continue;
+        revert("Nonce Mismatch");
       }
 
       // Deploy the contract
       vm.broadcast();
-      new UmbraBatchSend(IUmbra(UMBRA));
-      console2.log("Deployed contract to '%s' at %s", networks[i], expectedContractAddress);
+
+      umbraBatchSend = new UmbraBatchSend(IUmbra(UMBRA));
+      require(address(umbraBatchSend) == expectedContractAddress, "Deploy failed");
+      require(umbraBatchSend.owner() == msg.sender, "Owner Mismatch");
+      batchSendAddresses[networks[i]] = address(umbraBatchSend);
+    }
+
+    for (uint256 i; i < networks.length; i++) {
+      console2.log("Deployed contract to '%s' at %s", networks[i], batchSendAddresses[networks[i]]);
     }
   }
 }

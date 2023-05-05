@@ -10,21 +10,31 @@ import {IUmbra} from "src/interface/IUmbra.sol";
 contract DeployBatchSendTest is DeployBatchSend, Test {
   address sender = msg.sender;
   address expectedContractAddress;
-  UmbraBatchSend umbraBatchSend;
+  UmbraBatchSend umbraBatchSendTest;
   bytes batchSendCode;
 
   function setUp() public {
     expectedContractAddress = computeCreateAddress(sender, EXPECTED_NONCE);
-    umbraBatchSend = new UmbraBatchSend(IUmbra(UMBRA));
-    batchSendCode = address(umbraBatchSend).code;
+    umbraBatchSendTest = new UmbraBatchSend(IUmbra(UMBRA));
+    batchSendCode = address(umbraBatchSendTest).code;
+  }
+
+  function test_checkNonce() public {
+    for (uint256 i; i < networks.length; i++) {
+      vm.createSelectFork(getChain(networks[i]).rpcUrl);
+      assertEq(vm.activeFork(), i);
+      uint256 nonce = vm.getNonce(sender);
+      assertEq(nonce, EXPECTED_NONCE);
+    }
   }
 
   function test_checkContractIsDeployed() public {
-    run();
+    DeployBatchSend.run();
     for (uint256 i; i < networks.length; i++) {
       vm.selectFork(i);
       assertEq(vm.activeFork(), i);
       assertTrue(expectedContractAddress.code.length > 0);
+      assertEq(batchSendAddresses[networks[i]], expectedContractAddress);
       assertEq(address(expectedContractAddress).code, batchSendCode);
     }
   }
