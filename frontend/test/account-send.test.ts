@@ -9,16 +9,20 @@ import { ethers } from 'ethers';
 const NUM_RUNS = 100;
 
 const invalidAddresses = [
+  '',
+  '0x',
+  'adfaklsfjl', // Random string.
   '0x869b1913aeD711246A4cD22B4cFE9DD13996B13', // Missing last character.
   '0x869b1913aeD711246A4cD22B4cFE9DD13996B13dd', // Has extra character.
   '0x869b1913aed711246a4cd22b4cfe9dd13996b13dd', // All lowercase.
   '0x869b1913aeD711246A4cD22B4cFE9DD13996B13D', // Wrong checksum.
   '869b1913aeD711246A4cD22B4cFE9DD13996B13d', // No 0x prefix.
-  '0x',
-  'adfaklsfjl', // Random string.
 ];
 
 const invalidPubKeys = [
+  '',
+  '0x',
+  'adfaklsfjl', // Random string.
   '0x0290d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a75', // Wrong prefix, this is a compressed pubkey.
   '0x031cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Wrong prefix, this is a compressed pubkey.
   '0x041cfa0212cf73dde948b32da3715d4a17cd9188263729ccddccffc30581b1efce', // Right prefix, but not a valid public key format.
@@ -29,15 +33,19 @@ const invalidPubKeys = [
 
 const invalidPrivateKeys = [
   '',
+  '0x',
+  'adfaklsfjl', // Random string.
   '0xea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f88', // Too short.
   '0xea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f8877', // Too long.
   'ea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f88a', // Missing 0x prefix.
   '0x03ea40eda38ee75464fd68074e35c1e52c03ac041e2ffba23efaa93d425487f887', // Has a pubkey prefix.
   '0x04randomcharacters',
+  '0xa4ba0c601af9054f6872baef005e890ecadc8c807b2635be04ad24875fb04faz', // Right length, not hex though.
 ];
 
 const invalidEncryptionCounts = [-1, -2, -99999, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER - 1000];
 
+// This is faster than relying on ethers to generate all the random data.
 function randomHexString(numBytes: number): string {
   return `0x${randomBytes(numBytes).toString('hex')}`;
 }
@@ -158,9 +166,12 @@ describe('decryptData', () => {
 
   [
     '',
+    '0x',
+    'adfaklsfjl',
     '0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', // Too short.
     '0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdbbb', // Too long.
     'ffed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdbb', // Right length, wrong format.
+    '0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdbz', // Right length, but not hex
   ].forEach((ciphertext) => {
     it('Decryption invalid ciphertext', () => {
       const { viewingPrivateKey, encryptionCount } = randomData();
@@ -294,16 +305,6 @@ describe('encrypt/decrypt relationship', () => {
       { encryptionCount, viewingPrivateKey }
     );
     const decryptedData = decryptData(ciphertext, { encryptionCount, viewingPrivateKey });
-
-    // print all data
-    console.log('recipientAddress', recipientAddress);
-    console.log('pubKey', pubKey);
-    console.log('viewingPrivateKey', viewingPrivateKey);
-    console.log('advancedMode', advancedMode);
-    console.log('usePublicKeyChecked', usePublicKeyChecked);
-    console.log('encryptionCount', encryptionCount);
-    console.log('ciphertext', ciphertext);
-    console.log('decryptedData', decryptedData);
     expect(decryptedData).toEqual({
       advancedMode,
       usePublicKeyChecked,
