@@ -10,48 +10,36 @@ describe('buildAccountDataForEncryption Utils', () => {
     '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
 
   it('invalid address', () => {
-    let err;
-    try {
+    const x = () =>
       buildAccountDataForEncryption({
         recipientAddress: 'adfaklsfjl',
         advancedMode: true,
         pubKey: pubKey,
         usePublicKeyChecked: true,
       });
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid recipient address');
+    expect(x).toThrow('Invalid recipient address');
   });
 
   it('invalid pubkey prefix', () => {
-    let err;
-    try {
+    const x = () =>
       buildAccountDataForEncryption({
         recipientAddress,
         advancedMode: true,
         pubKey: '0x039dad8ddb0bd43093435ce4',
         usePublicKeyChecked: true,
       });
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid public key prefix');
+    expect(x).toThrow('Invalid public key prefix');
   });
 
   it('invalid pubkey', () => {
-    let err;
-    try {
+    const x = () =>
       buildAccountDataForEncryption({
         recipientAddress,
         advancedMode: true,
         pubKey: '0x049dad8ddb0bd43093435ce4',
         usePublicKeyChecked: true,
       });
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid public or private key');
+    expect(x).toThrow('Invalid public or private key');
   });
 
   it('Data is correct', () => {
@@ -73,8 +61,7 @@ describe('Encryption/Decryption utils', () => {
   const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
 
   it('Encryption invalid recipientAddress', () => {
-    let err;
-    try {
+    const x = () =>
       encryptAccountData(
         {
           recipientAddress: '0xhi',
@@ -87,15 +74,12 @@ describe('Encryption/Decryption utils', () => {
           viewingKey: viewingKey,
         }
       );
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid recipient address');
+
+    expect(x).toThrow('Invalid recipient address');
   });
 
   it('Encryption invalid encryption count', () => {
-    let err;
-    try {
+    const x = () =>
       encryptAccountData(
         {
           recipientAddress,
@@ -108,15 +92,12 @@ describe('Encryption/Decryption utils', () => {
           viewingKey: viewingKey,
         }
       );
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid count provided for encryption');
+
+    expect(x).toThrow('Invalid count provided for encryption');
   });
 
   it('Encryption invalid viewing key', () => {
-    let err;
-    try {
+    const x = () =>
       encryptAccountData(
         {
           recipientAddress,
@@ -129,15 +110,12 @@ describe('Encryption/Decryption utils', () => {
           viewingKey: '',
         }
       );
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+
+    expect(x).toThrow('Invalid viewing key');
   });
 
   it('Encryption invalid viewing key missing 0x', () => {
-    let err;
-    try {
+    const x = () =>
       encryptAccountData(
         {
           recipientAddress,
@@ -150,15 +128,12 @@ describe('Encryption/Decryption utils', () => {
           viewingKey: '290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1',
         }
       );
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+
+    expect(x).toThrow('Invalid viewing key');
   });
 
   it('Encryption invalid viewing key too short', () => {
-    let err;
-    try {
+    const x = () =>
       encryptAccountData(
         {
           recipientAddress,
@@ -171,15 +146,12 @@ describe('Encryption/Decryption utils', () => {
           viewingKey: pubKey.slice(0, -1),
         }
       );
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+
+    expect(x).toThrow('Invalid viewing key');
   });
 
   it('Encryption invalid public key prefix', () => {
-    let err;
-    try {
+    const x = () =>
       encryptAccountData(
         {
           recipientAddress,
@@ -192,16 +164,13 @@ describe('Encryption/Decryption utils', () => {
           viewingKey: '0x03',
         }
       );
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+
+    expect(x).toThrow('Invalid viewing key');
     // Add tests for all of the assertions
   });
 
   it('Encryption invalid public key', () => {
-    let err;
-    try {
+    const x = () =>
       encryptAccountData(
         {
           recipientAddress,
@@ -214,80 +183,53 @@ describe('Encryption/Decryption utils', () => {
           viewingKey: '0x04randomcharacters',
         }
       );
-    } catch (e) {
-      err = e;
-    }
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+
+    expect(x).toThrow('Invalid viewing key');
   });
 
   it('Decryption invalid count', () => {
-    let err;
-    try {
+    const x = () =>
       decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
         encryptionCount: -1,
         viewingKey: viewingKey,
       });
-    } catch (e) {
-      err = e;
-    }
-
-    expect((err as Error)?.message).toBe('Invalid count for decryption');
+    expect(x).toThrow('Invalid count for decryption');
   });
 
   it('Decryption invalid viewing key', () => {
-    let err;
-    try {
+    const x = () =>
       decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
         encryptionCount: 0,
         viewingKey: '',
       });
-    } catch (e) {
-      err = e;
-    }
-
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+    expect(x).toThrow('Invalid viewing key');
   });
 
   it('Decryption invalid viewing key missing 0x', () => {
-    let err;
-    try {
+    const x = () =>
       decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
         encryptionCount: 0,
         viewingKey: viewingKey.slice(2),
       });
-    } catch (e) {
-      err = e;
-    }
-
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+    expect(x).toThrow('Invalid viewing key');
   });
 
   it('Decryption invalid viewing key too short', () => {
-    let err;
-    try {
+    const x = () =>
       decryptData('0xed72d6744be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
         encryptionCount: 0,
         viewingKey: viewingKey.slice(0, -1),
       });
-    } catch (e) {
-      err = e;
-    }
-
-    expect((err as Error)?.message).toBe('Invalid viewing key');
+    expect(x).toThrow('Invalid viewing key');
   });
 
   it('Decryption invalid ciphertext', () => {
-    let err;
-    try {
+    const x = () =>
       decryptData('0xed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdb', {
         encryptionCount: 0,
         viewingKey: viewingKey,
       });
-    } catch (e) {
-      err = e;
-    }
-
-    expect((err as Error)?.message).toBe('Invalid ciphertext');
+    expect(x).toThrow('Invalid ciphertext');
   });
 
   it('Data encrypted correctly all true', () => {
@@ -337,7 +279,6 @@ describe('Encryption/Decryption utils', () => {
       encryptionCount: 0,
       viewingKey: viewingKey,
     });
-
     expect(data.advancedMode).toBe(true);
     expect(data.usePublicKeyChecked).toBe(true);
     expect(data.address).toBe(recipientAddress.toLowerCase());
@@ -349,7 +290,6 @@ describe('Encryption/Decryption utils', () => {
       encryptionCount: 1,
       viewingKey: viewingKey,
     });
-
     expect(data.advancedMode).toBe(false);
     expect(data.usePublicKeyChecked).toBe(false);
     expect(data.address).toBe(recipientAddress.toLowerCase());
