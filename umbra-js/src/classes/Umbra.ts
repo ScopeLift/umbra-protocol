@@ -8,7 +8,6 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
-  ContractInterface,
   ContractTransaction,
   defaultAbiCoder,
   getAddress,
@@ -23,41 +22,18 @@ import {
   toUtf8Bytes,
   TransactionResponse,
   Wallet,
+  Zero,
 } from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
-import { ERC20_ABI } from '../utils/constants';
-import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail } from '../types'; // prettier-ignore
-
-// Umbra.sol ABI
-const umbraAbi: ContractInterface = [
-  'constructor(uint256 toll, address tollCollector, address tollReceiver)',
-  'event Announcement(address indexed receiver, uint256 amount, address indexed token, bytes32 pkx, bytes32 ciphertext)',
-  'event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)',
-  'event TokenWithdrawal(address indexed receiver, address indexed acceptor, uint256 amount, address indexed token)',
-  'function collectTolls()',
-  'function owner() view returns (address)',
-  'function renounceOwnership()',
-  'function sendEth(address receiver, uint256 tollCommitment, bytes32 pkx, bytes32 ciphertext) payable',
-  'function sendToken(address receiver, address tokenAddr, uint256 amount, bytes32 pkx, bytes32 ciphertext) payable',
-  'function setToll(uint256 newToll)',
-  'function setTollCollector(address newTollCollector)',
-  'function setTollReceiver(address newTollReceiver)',
-  'function tokenPayments(address, address) view returns (uint256)',
-  'function toll() view returns (uint256)',
-  'function tollCollector() view returns (address)',
-  'function tollReceiver() view returns (address)',
-  'function transferOwnership(address newOwner)',
-  'function withdrawToken(address acceptor, address tokenAddr)',
-  'function withdrawTokenAndCall(address acceptor, address tokenAddr, address hook, bytes data)',
-  'function withdrawTokenAndCallOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, address hook, bytes data, uint8 v, bytes32 r, bytes32 s)',
-  'function withdrawTokenOnBehalf(address stealthAddr, address acceptor, address tokenAddr, address sponsor, uint256 sponsorFee, uint8 v, bytes32 r, bytes32 s)',
-];
+import { ERC20_ABI, ETH_ADDRESS, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
+const batchSendAddress = '0x0d81Df222BB44b883265538586829715CF157163'; // Goerli test address
 const subgraphs = {
   1: 'https://api.thegraph.com/subgraphs/name/scopelift/umbramainnet',
   5: 'https://api.thegraph.com/subgraphs/name/scopelift/umbragoerli',
@@ -67,12 +43,12 @@ const subgraphs = {
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
-  1: { chainId: 1, umbraAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
-  5: { chainId: 5, umbraAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
-  10: { chainId: 10, umbraAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  137: { chainId: 137, umbraAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
-  1337: { chainId: 1337, umbraAddress, startBlock: 8505089, subgraphUrl: false }, // Local
-  42161: { chainId: 42161, umbraAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
+  1: { chainId: 1, umbraAddress, batchSendAddress: null, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
+  5: { chainId: 5, umbraAddress, batchSendAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
+  10: { chainId: 10, umbraAddress, batchSendAddress: null, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
+  137: { chainId: 137, umbraAddress, batchSendAddress: null, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
+  1337: { chainId: 1337, umbraAddress, batchSendAddress: null, startBlock: 8505089, subgraphUrl: false }, // Local
+  42161: { chainId: 42161, umbraAddress, batchSendAddress: null, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
 };
 
 /**
@@ -94,7 +70,7 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
   }
 
   // Otherwise verify the user's provided chain config is valid and return it
-  const { chainId, startBlock, subgraphUrl, umbraAddress } = chainConfig;
+  const { chainId, startBlock, subgraphUrl, umbraAddress, batchSendAddress } = chainConfig;
   const isValidStartBlock = typeof startBlock === 'number' && startBlock >= 0;
 
   if (!isValidStartBlock) {
@@ -107,7 +83,13 @@ const parseChainConfig = (chainConfig: ChainConfig | number) => {
     throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${String(subgraphUrl)}'`);
   }
 
-  return { umbraAddress: getAddress(umbraAddress), startBlock, chainId, subgraphUrl };
+  return {
+    umbraAddress: getAddress(umbraAddress),
+    batchSendAddress: batchSendAddress ? getAddress(batchSendAddress) : null,
+    startBlock,
+    chainId,
+    subgraphUrl,
+  };
 };
 
 /**
@@ -118,7 +100,7 @@ const isEth = (token: string) => {
   if (token === 'ETH') {
     return true;
   }
-  return getAddress(token) === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'; // throws if `token` is not a valid address
+  return getAddress(token) === ETH_ADDRESS; // throws if `token` is not a valid address
 };
 
 /**
@@ -138,6 +120,7 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
 export class Umbra {
   readonly chainConfig: ChainConfig;
   readonly umbraContract: UmbraContract;
+  readonly batchSendContract;
   // Fallback provider, used when a user's provider rejects the transaction. This may happen if the provider from
   // the user's wallet rejects transactions from accounts not associated with that user's wallet (in this case, that
   // means transactions from stealth addresses would be rejected). More info: https://github.com/coinbase/coinbase-wallet-sdk/issues/580
@@ -151,7 +134,10 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(this.chainConfig.umbraAddress, umbraAbi, provider) as unknown as UmbraContract;
+    this.umbraContract = new Contract(this.chainConfig.umbraAddress, UMBRA_ABI, provider) as UmbraContract;
+    if (this.chainConfig.batchSendAddress) {
+      this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, UMBRA_BATCH_SEND_ABI, provider);
+    }
     this.fallbackProvider = new StaticJsonRpcProvider(
       infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
     );
@@ -188,59 +174,24 @@ export class Umbra {
     recipientId: string,
     overrides: SendOverrides = {}
   ) {
+    // Check that recipient is valid.
     await assertSupportedAddress(recipientId);
-    const txSigner = this.getConnectedSigner(signer); // signer input validated
 
-    // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
-    // method also serves to validate the token input
-    if (!isEth(token)) {
-      const tokenContract = new Contract(token, ERC20_ABI, signer) as unknown as ERC20;
-      const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
-      if (tokenBalance.lt(amount)) {
-        const providedAmount = BigNumber.from(amount).toString();
-        const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
-        throw new Error(`Insufficient balance to complete transfer. ${details}`);
-      }
-    }
+    // Check that the sender has sufficient balance.
+    await assertSufficientBalance(signer, token, BigNumber.from(amount));
 
-    // Get toll amount from contract
+    // Get toll amount from contract.
     const toll = await this.umbraContract.toll();
 
-    // Parse provided overrides
-    const localOverrides = { ...overrides }; // avoid mutating the object passed in
-    const advanced = localOverrides?.advanced || false;
-    const supportPubKey = localOverrides?.supportPubKey || false;
-    const supportTxHash = localOverrides?.supportTxHash || false;
-    const lookupOverrides = { advanced, supportPubKey, supportTxHash };
+    // Parse provided overrides.
+    const { localOverrides, lookupOverrides } = parseOverrides(overrides);
 
-    delete localOverrides.advanced;
-    delete localOverrides.supportPubKey;
-    delete localOverrides.supportTxHash;
+    // Prepare data for the send.
+    const { stealthKeyPair, pubKeyXCoordinate, encrypted } = await this.prepareSend(recipientId, lookupOverrides);
+    assertValidStealthAddress(stealthKeyPair.address);
 
-    // Lookup recipient's public key
-    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
-    if (!spendingPublicKey || !viewingPublicKey) {
-      throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
-    }
-    const spendingKeyPair = new KeyPair(spendingPublicKey);
-    const viewingKeyPair = new KeyPair(viewingPublicKey);
-
-    // Generate random number
-    const randomNumber = new RandomNumber();
-
-    // Encrypt random number with recipient's public key
-    const encrypted = viewingKeyPair.encrypt(randomNumber);
-
-    // Get x,y coordinates of ephemeral private key
-    const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
-
-    // Compute stealth address
-    const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
-
-    // Ensure that the stealthKeyPair's address is not on the block list
-    if (blockedStealthAddresses.includes(stealthKeyPair.address)) throw new Error('Invalid stealth address');
-
-    // Send transaction
+    // Send transaction.
+    const txSigner = this.getConnectedSigner(signer); // signer input validated
     let tx: ContractTransaction;
     if (isEth(token)) {
       const txOverrides = { ...localOverrides, value: toll.add(amount) };
@@ -256,6 +207,66 @@ export class Umbra {
 
     // We do not wait for the transaction to be mined before returning it
     return { tx, stealthKeyPair };
+  }
+
+  async batchSend(signer: JsonRpcSigner | Wallet, sends: SendBatch[], overrides: SendOverrides = {}) {
+    if (!this.batchSendContract) {
+      throw new Error('Batch send is not supported on this network');
+    }
+
+    // Check that all recipients are valid.
+    const recipients = new Set(sends.map((send) => send.address));
+    await Promise.all([...recipients].map(assertSupportedAddress));
+
+    // Check that the sender has sufficient balance for all tokens.
+    const tokenSum = new Map<string, BigNumber>();
+    for (const send of sends) {
+      const token = send.token;
+      const amount = BigNumber.from(send.amount);
+      tokenSum.set(token, tokenSum.get(token)?.add(amount) || amount);
+    }
+
+    await Promise.all(
+      [...tokenSum.keys()].map((token) => assertSufficientBalance(signer, token, tokenSum.get(token) as BigNumber))
+    );
+
+    // Get toll amount from contract.
+    const toll = await this.umbraContract.toll();
+
+    // Parse provided overrides.
+    const { localOverrides, lookupOverrides } = parseOverrides(overrides);
+
+    // Prepare data for each send.
+    const sendInfo = await Promise.all(sends.map((send) => this.prepareSend(send.address, lookupOverrides)));
+
+    // Send transaction.
+    const valueAmount = toll.mul(sendInfo.length).add(tokenSum.get(ETH_ADDRESS) || Zero);
+    const sendData: SendData[] = sendInfo.map((info, index) => {
+      const receiver = info.stealthKeyPair.address;
+      const token = sends[index].token;
+      const amount = BigNumber.from(sends[index].amount);
+      assertValidStealthAddress(receiver);
+
+      return {
+        receiver: receiver,
+        tokenAddr: token,
+        amount: amount,
+        pkx: info.pubKeyXCoordinate,
+        ciphertext: info.encrypted.ciphertext,
+      };
+    });
+
+    // Sort by token addresses
+    const sortedData: SendData[] = sendData.sort((a, b) => a.tokenAddr.localeCompare(b.tokenAddr));
+
+    // Send transaction
+    const txOverrides = { ...localOverrides, value: valueAmount };
+    const tx: ContractTransaction = await this.batchSendContract
+      .connect(this.getConnectedSigner(signer))
+      .batchSend(toll, sortedData, txOverrides);
+
+    // We do not wait for the transaction to be mined before returning it
+    return { tx, stealthKeyPairs: sendInfo.map((info) => info.stealthKeyPair) };
   }
 
   /**
@@ -567,6 +578,30 @@ export class Umbra {
     return { spendingKeyPair, viewingKeyPair };
   }
 
+  async prepareSend(recipientId: string, lookupOverrides: SendOverrides = {}) {
+    // Lookup recipient's public key
+    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
+    if (!spendingPublicKey || !viewingPublicKey) {
+      throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
+    }
+    const spendingKeyPair = new KeyPair(spendingPublicKey);
+    const viewingKeyPair = new KeyPair(viewingPublicKey);
+
+    // Generate random number
+    const randomNumber = new RandomNumber();
+
+    // Encrypt random number with recipient's public key
+    const encrypted = viewingKeyPair.encrypt(randomNumber);
+
+    // Get x,y coordinates of ephemeral private key
+    const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
+
+    // Compute stealth address
+    const stealthKeyPair = spendingKeyPair.mulPublicKey(randomNumber);
+
+    return { stealthKeyPair, pubKeyXCoordinate, encrypted };
+  }
+
   // ==================================== STATIC HELPER METHODS ====================================
 
   /**
@@ -720,4 +755,48 @@ async function tryEthWithdraw(
     console.warn(`failed with "insufficient funds for gas * price + value", retry attempt ${retryCount}...`);
     return await tryEthWithdraw(signer, from, to, overrides, retryCount + 1);
   }
+}
+
+// The function below is exported for testing purposes only and should not be used outside of this file.
+export async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, token: string, tokenAmount: BigNumber) {
+  // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
+  // method also serves to validate the token input
+  if (!isEth(token)) {
+    const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
+    const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
+    if (tokenBalance.lt(tokenAmount)) {
+      const providedAmount = tokenAmount.toString();
+      const details = `Has ${tokenBalance.toString()} tokens, tried to send ${providedAmount} tokens.`;
+      throw new Error(`Insufficient balance to complete transfer. ${details}`);
+    }
+  }
+  return true;
+}
+
+export function assertValidStealthAddress(stealthAddress: string) {
+  // Ensure that the stealthKeyPair's address is not on the block list
+  if (blockedStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
+}
+
+/**
+ * @notice Helper method to return parsed localOverrides and LookupOverrides
+ * @param overrides Override the gas limit, gas price, nonce, or advanced mode.
+ * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
+ * them from on-chain transaction when true
+ */
+export function parseOverrides(overrides: SendOverrides = {}): {
+  localOverrides: SendOverrides;
+  lookupOverrides: Pick<SendOverrides, 'advanced' | 'supportPubKey' | 'supportTxHash'>;
+} {
+  const localOverrides = { ...overrides }; // avoid mutating the object passed in
+  const advanced = localOverrides?.advanced || false;
+  const supportPubKey = localOverrides?.supportPubKey || false;
+  const supportTxHash = localOverrides?.supportTxHash || false;
+  const lookupOverrides = { advanced, supportPubKey, supportTxHash };
+
+  delete localOverrides.advanced;
+  delete localOverrides.supportPubKey;
+  delete localOverrides.supportTxHash;
+
+  return { localOverrides, lookupOverrides };
 }
