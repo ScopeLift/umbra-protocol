@@ -5,24 +5,34 @@ import { buildAccountDataForEncryption, encryptAccountData, decryptData } from '
 import { BigNumber } from '../src/utils/ethers';
 import { ethers } from 'ethers';
 
+const invalidAddresses = [
+  '0x869b1913aeD711246A4cD22B4cFE9DD13996B13', // Missing last character.
+  '0x869b1913aeD711246A4cD22B4cFE9DD13996B13dd', // Has extra character.
+  '0x869b1913aed711246a4cd22b4cfe9dd13996b13dd', // All lowercase.
+  '0x869b1913aeD711246A4cD22B4cFE9DD13996B13D', // Wrong checksum.
+  '869b1913aeD711246A4cD22B4cFE9DD13996B13d', // No 0x prefix.
+  '0x',
+  'adfaklsfjl', // Random string.
+];
+
+// Used to generate random data in tests.
+function randomData() {
+  return {
+    recipientAddress: ethers.Wallet.createRandom().address,
+    pubKey: ethers.Wallet.createRandom().publicKey,
+    advancedMode: Math.random() > 0.5,
+    usePublicKeyChecked: Math.random() > 0.5,
+    viewingKey: ethers.Wallet.createRandom().privateKey,
+    // Make sure 0 is more likely to show up for encryption count.
+    encryptionCount: Math.random() < 0.1 ? 0 : BigNumber.from(Math.floor(Math.random() * 1000)).toNumber(),
+  };
+}
+
 describe('buildAccountDataForEncryption Utils', () => {
-  [
-    '0x869b1913aeD711246A4cD22B4cFE9DD13996B13', // Missing last character.
-    '0x869b1913aeD711246A4cD22B4cFE9DD13996B13dd', // Has extra character.
-    '0x869b1913aed711246a4cd22b4cfe9dd13996b13dd', // All lowercase.
-    '0x869b1913aeD711246A4cD22B4cFE9DD13996B13D', // Wrong checksum.
-    '869b1913aeD711246A4cD22B4cFE9DD13996B13d', // No 0x prefix.
-    '0x',
-    'adfaklsfjl', // Random string.
-  ].forEach((recipientAddress) => {
+  invalidAddresses.forEach((recipientAddress) => {
     it('Throws when given an invalid recipient address', () => {
-      const x = () =>
-        buildAccountDataForEncryption({
-          recipientAddress,
-          advancedMode: true,
-          pubKey: ethers.Wallet.createRandom().publicKey,
-          usePublicKeyChecked: true,
-        });
+      const { pubKey, advancedMode, usePublicKeyChecked } = randomData();
+      const x = () => buildAccountDataForEncryption({ recipientAddress, pubKey, advancedMode, usePublicKeyChecked });
       expect(x).toThrow('Invalid recipient address');
     });
   });
@@ -36,13 +46,8 @@ describe('buildAccountDataForEncryption Utils', () => {
     '0x9990d47bf25f057e085aaff2881f2a59799d6b2553dda3aac0cd340ffdf0c71a7565eb3b9ba06f42e7450625ea0ec4f7cb65b1c5f0854c5e7bbed9c3bd3c8c5660', // Would be valid if prefix was 0x04.
   ].forEach((pubKey) => {
     it('Throws when given an invalid public key', () => {
-      const x = () =>
-        buildAccountDataForEncryption({
-          recipientAddress: ethers.Wallet.createRandom().address,
-          advancedMode: true,
-          pubKey,
-          usePublicKeyChecked: true,
-        });
+      const { recipientAddress, advancedMode, usePublicKeyChecked } = randomData();
+      const x = () => buildAccountDataForEncryption({ recipientAddress, pubKey, advancedMode, usePublicKeyChecked });
       expect(x).toThrow('Invalid public key');
     });
   });
@@ -50,10 +55,7 @@ describe('buildAccountDataForEncryption Utils', () => {
   it('Correctly formats the data to be encrypted', () => {
     // Generate random data and do multiple runs.
     for (let i = 0; i < 10; i++) {
-      const recipientAddress = ethers.Wallet.createRandom().address;
-      const pubKey = ethers.Wallet.createRandom().publicKey;
-      const advancedMode = Math.random() > 0.5;
-      const usePublicKeyChecked = Math.random() > 0.5;
+      const { recipientAddress, pubKey, advancedMode, usePublicKeyChecked } = randomData();
       const actualData = buildAccountDataForEncryption({ recipientAddress, pubKey, advancedMode, usePublicKeyChecked });
 
       const advancedModeString = advancedMode ? '1' : '0';
@@ -73,43 +75,36 @@ describe('Encryption/Decryption utils', () => {
   const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
   const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
 
-  it('Encryption invalid recipientAddress', () => {
-    const x = () =>
-      encryptAccountData(
-        {
-          recipientAddress: '0xhi',
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          pubKey: pubKey,
-        },
-        {
-          encryptionCount: 1,
-          viewingKey: viewingKey,
-        }
-      );
-
-    expect(x).toThrow('Invalid recipient address');
+  invalidAddresses.forEach((recipientAddress) => {
+    it('Throws when given an invalid recipient address', () => {
+      const { pubKey, advancedMode, usePublicKeyChecked, viewingKey, encryptionCount } = randomData();
+      const x = () =>
+        encryptAccountData(
+          { recipientAddress, advancedMode, usePublicKeyChecked, pubKey },
+          { encryptionCount, viewingKey }
+        );
+      expect(x).toThrow('Invalid recipient address');
+    });
   });
 
-  it('Encryption invalid encryption count', () => {
-    const x = () =>
-      encryptAccountData(
-        {
-          recipientAddress,
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          pubKey: pubKey,
-        },
-        {
-          encryptionCount: -1,
-          viewingKey: viewingKey,
-        }
-      );
-
-    expect(x).toThrow('Invalid count provided for encryption');
+  [-1, -2, -99999, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER - 1000].forEach((encryptionCount) => {
+    it('Throws when given an invalid encryption count', () => {
+      // Generate random data for everything except the encryption count.
+      const recipientAddress = ethers.Wallet.createRandom().address;
+      const pubKey = ethers.Wallet.createRandom().publicKey;
+      const advancedMode = Math.random() > 0.5;
+      const usePublicKeyChecked = Math.random() > 0.5;
+      const viewingKey = ethers.Wallet.createRandom().privateKey;
+      const x = () =>
+        encryptAccountData(
+          { recipientAddress, advancedMode, usePublicKeyChecked, pubKey },
+          { encryptionCount, viewingKey }
+        );
+      expect(x).toThrow('Invalid count provided for encryption');
+    });
   });
 
-  it('Encryption invalid viewing key', () => {
+  it('Throws when given an invalid viewing key', () => {
     const x = () =>
       encryptAccountData(
         {
