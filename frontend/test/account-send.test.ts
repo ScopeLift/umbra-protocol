@@ -9,15 +9,25 @@ describe('buildAccountDataForEncryption Utils', () => {
   const pubKey =
     '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
 
-  it('invalid address', () => {
-    const x = () =>
-      buildAccountDataForEncryption({
-        recipientAddress: 'adfaklsfjl',
-        advancedMode: true,
-        pubKey: pubKey,
-        usePublicKeyChecked: true,
-      });
-    expect(x).toThrow('Invalid recipient address');
+  [
+    '0x869b1913aeD711246A4cD22B4cFE9DD13996B13', // Missing last character.
+    '0x869b1913aeD711246A4cD22B4cFE9DD13996B13dd', // Has extra character.
+    '0x869b1913aed711246a4cd22b4cfe9dd13996b13dd', // All lowercase.
+    '0x869b1913aeD711246A4cD22B4cFE9DD13996B13D', // Wrong checksum.
+    '869b1913aeD711246A4cD22B4cFE9DD13996B13d', // No 0x prefix.
+    '0x',
+    'adfaklsfjl', // Random string.
+  ].forEach((recipientAddress) => {
+    it('Throws when given an invalid recipient address', () => {
+      const x = () =>
+        buildAccountDataForEncryption({
+          recipientAddress,
+          advancedMode: true,
+          pubKey: pubKey,
+          usePublicKeyChecked: true,
+        });
+      expect(x).toThrow('Invalid recipient address');
+    });
   });
 
   it('invalid pubkey prefix', () => {

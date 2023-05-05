@@ -1,7 +1,7 @@
 import { computeAddress, isHexString, isAddress } from 'src/utils/ethers';
 
 export const assertValidAddress = (address: string, errorMsg?: string) => {
-  if (!isAddress(address)) {
+  if (!address.startsWith('0x') || !isAddress(address)) {
     throw new Error(errorMsg || 'Invalid address');
   }
 };
