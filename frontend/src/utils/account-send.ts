@@ -24,7 +24,7 @@ type AccountDataToEncrypt = {
 // Used to create an encryption key which encrypts account send data
 type KeyData = {
   encryptionCount: number;
-  viewingKey: string;
+  viewingPrivateKey: string;
 };
 
 // Unencrypted values that are stored in local storage
@@ -44,7 +44,7 @@ type EncryptedAccountSendData = {
 type StoreSendArgs = {
   chainId: number;
   provider: Web3Provider;
-  viewingKey: string;
+  viewingPrivateKey: string;
   unencryptedAccountSendData: Omit<UnencryptedAccountSendData, 'dateSent'>;
   accountDataToEncrypt: AccountDataToEncrypt;
 };
@@ -52,7 +52,7 @@ type StoreSendArgs = {
 type FetchAccountSendArgs = {
   chainId: number;
   address: string;
-  viewingKey: string;
+  viewingPrivateKey: string;
 };
 
 // All values stored in local storage
@@ -87,29 +87,29 @@ export const buildAccountDataForEncryption = ({
 
 export const encryptAccountData = (accountDataToEncrypt: AccountDataToEncrypt, keyData: KeyData) => {
   const { recipientAddress, advancedMode, usePublicKeyChecked, pubKey } = accountDataToEncrypt;
-  const { encryptionCount, viewingKey } = keyData;
+  const { encryptionCount, viewingPrivateKey } = keyData;
 
   assertValidAddress(recipientAddress, 'Invalid recipient address');
   assertValidEncryptionCount(encryptionCount);
-  assertValidHexString(viewingKey, 32, 'Invalid viewing key');
+  assertValidHexString(viewingPrivateKey, 32, 'Invalid viewing key');
   assertValidPublicKey(pubKey);
 
   const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
-  const encryptionKey = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
+  const encryptionKey = keccak256(`${viewingPrivateKey}${encryptionCountHex.slice(2)}`);
   const data = buildAccountDataForEncryption({ recipientAddress, advancedMode, usePublicKeyChecked, pubKey });
   const encryptedData = data.xor(encryptionKey);
   return encryptedData.toHexString();
 };
 
 export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => {
-  const { viewingKey, encryptionCount } = keyData;
+  const { viewingPrivateKey, encryptionCount } = keyData;
 
-  assertValidHexString(viewingKey, 32, 'Invalid viewing key');
+  assertValidHexString(viewingPrivateKey, 32, 'Invalid viewing key');
   assertValidHexString(accountSendCiphertext, 32, 'Invalid ciphertext');
   assertValidEncryptionCount(encryptionCount, 'Invalid count for decryption');
 
   const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
-  const encryptionKey = keccak256(`${viewingKey}${encryptionCountHex.slice(2)}`);
+  const encryptionKey = keccak256(`${viewingPrivateKey}${encryptionCountHex.slice(2)}`);
 
   const decryptedData = BigNumber.from(accountSendCiphertext).xor(encryptionKey);
   const hexData = decryptedData.toHexString();
@@ -128,7 +128,7 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
 export const storeSend = async ({
   chainId,
   provider,
-  viewingKey,
+  viewingPrivateKey,
   unencryptedAccountSendData,
   accountDataToEncrypt,
 }: StoreSendArgs) => {
@@ -137,7 +137,7 @@ export const storeSend = async ({
 
   assertValidAddress(senderAddress, 'Invalid sender address');
   assertValidAddress(tokenAddress, 'Invalid token address');
-  assertValidHexString(viewingKey, 32, 'Invalid viewing key');
+  assertValidHexString(viewingPrivateKey, 32, 'Invalid viewing key');
   assertValidHexString(txHash, 32, 'Transaction hash');
   assertValidPublicKey(pubKey);
 
@@ -154,7 +154,7 @@ export const storeSend = async ({
 
   const keyData = {
     encryptionCount: count,
-    viewingKey,
+    viewingPrivateKey,
   };
   accountDataToEncrypt = {
     recipientAddress: checksummedRecipientAddress,
@@ -177,7 +177,7 @@ export const storeSend = async ({
   await localforage.setItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`, count + 1);
 };
 
-export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchAccountSendArgs) => {
+export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }: FetchAccountSendArgs) => {
   const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${address}-${chainId}`;
   const values = ((await localforage.getItem(localStorageKey)) as AccountSendDataWithEncryptedFields[]) || [];
 
@@ -186,7 +186,7 @@ export const fetchAccountSends = async ({ address, viewingKey, chainId }: FetchA
 
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData(sendInfo.accountSendCiphertext, {
-      viewingKey,
+      viewingPrivateKey,
       encryptionCount: index,
     });
 

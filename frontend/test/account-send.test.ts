@@ -6,7 +6,7 @@ import { buildAccountDataForEncryption, encryptAccountData, decryptData } from '
 import { BigNumber, getAddress } from '../src/utils/ethers';
 import { ethers } from 'ethers';
 
-const NUM_RUNS = 10;
+const NUM_RUNS = 100;
 
 const invalidAddresses = [
   '0x869b1913aeD711246A4cD22B4cFE9DD13996B13', // Missing last character.
@@ -49,7 +49,7 @@ function randomData() {
     pubKey: ethers.Wallet.createRandom().publicKey, // Need this one to be real so validation passes.
     advancedMode: Math.random() > 0.5,
     usePublicKeyChecked: Math.random() > 0.5,
-    viewingKey: randomHexString(32),
+    viewingPrivateKey: randomHexString(32),
     // Make sure 0 is more likely to show up for encryption count.
     encryptionCount: Math.random() < 0.1 ? 0 : BigNumber.from(Math.floor(Math.random() * 1000)).toNumber(),
     // Ciphertext has the same length as a private key.
@@ -94,16 +94,16 @@ const partialPubKey = '0x9976698beebe8ee5c74d8cc5';
 const pubKey =
   '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
 const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
-const viewingKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
+const viewingPrivateKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
 
 describe('encryptAccountData', () => {
   invalidAddresses.forEach((recipientAddress) => {
     it('Throws when given an invalid recipient address', () => {
-      const { pubKey, advancedMode, usePublicKeyChecked, viewingKey, encryptionCount } = randomData();
+      const { pubKey, advancedMode, usePublicKeyChecked, viewingPrivateKey, encryptionCount } = randomData();
       const x = () =>
         encryptAccountData(
           { recipientAddress, advancedMode, usePublicKeyChecked, pubKey },
-          { encryptionCount, viewingKey }
+          { encryptionCount, viewingPrivateKey }
         );
       expect(x).toThrow('Invalid recipient address');
     });
@@ -116,23 +116,23 @@ describe('encryptAccountData', () => {
       const pubKey = ethers.Wallet.createRandom().publicKey;
       const advancedMode = Math.random() > 0.5;
       const usePublicKeyChecked = Math.random() > 0.5;
-      const viewingKey = ethers.Wallet.createRandom().privateKey;
+      const viewingPrivateKey = ethers.Wallet.createRandom().privateKey;
       const x = () =>
         encryptAccountData(
           { recipientAddress, advancedMode, usePublicKeyChecked, pubKey },
-          { encryptionCount, viewingKey }
+          { encryptionCount, viewingPrivateKey }
         );
       expect(x).toThrow('Invalid count provided for encryption');
     });
   });
 
-  invalidPrivateKeys.forEach((viewingKey) => {
+  invalidPrivateKeys.forEach((viewingPrivateKey) => {
     const { recipientAddress, pubKey, advancedMode, usePublicKeyChecked, encryptionCount } = randomData();
     it('Throws when given an invalid viewing key', () => {
       const x = () =>
         encryptAccountData(
           { recipientAddress, advancedMode, pubKey, usePublicKeyChecked },
-          { encryptionCount, viewingKey }
+          { encryptionCount, viewingPrivateKey }
         );
       expect(x).toThrow('Invalid viewing key');
     });
@@ -142,16 +142,16 @@ describe('encryptAccountData', () => {
 describe('decryptData', () => {
   invalidEncryptionCounts.forEach((encryptionCount) => {
     it('Decryption invalid count', () => {
-      const { viewingKey, ciphertext } = randomData();
-      const x = () => decryptData(ciphertext, { encryptionCount, viewingKey });
+      const { viewingPrivateKey, ciphertext } = randomData();
+      const x = () => decryptData(ciphertext, { encryptionCount, viewingPrivateKey });
       expect(x).toThrow('Invalid count for decryption');
     });
   });
 
-  invalidPrivateKeys.forEach((viewingKey) => {
+  invalidPrivateKeys.forEach((viewingPrivateKey) => {
     it('Decryption invalid viewing key', () => {
       const { ciphertext, encryptionCount } = randomData();
-      const x = () => decryptData(ciphertext, { encryptionCount, viewingKey });
+      const x = () => decryptData(ciphertext, { encryptionCount, viewingPrivateKey });
       expect(x).toThrow('Invalid viewing key');
     });
   });
@@ -163,8 +163,8 @@ describe('decryptData', () => {
     'ffed72d644be0208e4d1c6312a04d2d623b99b2487f58d80f6169f9522d984cdbb', // Right length, wrong format.
   ].forEach((ciphertext) => {
     it('Decryption invalid ciphertext', () => {
-      const { viewingKey, encryptionCount } = randomData();
-      const x = () => decryptData(ciphertext, { encryptionCount, viewingKey });
+      const { viewingPrivateKey, encryptionCount } = randomData();
+      const x = () => decryptData(ciphertext, { encryptionCount, viewingPrivateKey });
       expect(x).toThrow('Invalid ciphertext');
     });
   });
@@ -199,7 +199,7 @@ describe('decryptData', () => {
     it('Correctly encrypts data', () => {
       const data = encryptAccountData(
         { recipientAddress, advancedMode, usePublicKeyChecked, pubKey: pubKey },
-        { encryptionCount, viewingKey: viewingKey }
+        { encryptionCount, viewingPrivateKey: viewingPrivateKey }
       );
       expect(data.length).toBe(66); // 32 bytes + 0x
       expect(data).toBe(expectedCiphertext);
@@ -249,7 +249,7 @@ describe('decryptData', () => {
     },
   ].forEach(({ ciphertext, encryptionCount, expectedDecryptedData }) => {
     it('Data decrypted correctly all true', () => {
-      const data = decryptData(ciphertext, { encryptionCount, viewingKey: viewingKey });
+      const data = decryptData(ciphertext, { encryptionCount, viewingPrivateKey: viewingPrivateKey });
       expect(data).toEqual(expectedDecryptedData); // Recursively checks all properties.
     });
   });
@@ -258,13 +258,14 @@ describe('decryptData', () => {
 describe('encrypt/decrypt relationship', () => {
   it('Encrypt and decrypt are inverses', () => {
     // Generate random data and do multiple runs.
-    for (let i = 0; i < NUM_RUNS; i++) {
-      const { recipientAddress, pubKey, viewingKey, advancedMode, usePublicKeyChecked, encryptionCount } = randomData();
+    for (let i = 0; i < 100; i++) {
+      const { recipientAddress, pubKey, viewingPrivateKey, advancedMode, usePublicKeyChecked, encryptionCount } =
+        randomData();
       const ciphertext = encryptAccountData(
         { recipientAddress, advancedMode, pubKey, usePublicKeyChecked },
-        { encryptionCount, viewingKey }
+        { encryptionCount, viewingPrivateKey }
       );
-      const decryptedData = decryptData(ciphertext, { encryptionCount, viewingKey });
+      const decryptedData = decryptData(ciphertext, { encryptionCount, viewingPrivateKey });
       expect(decryptedData).toEqual({
         advancedMode,
         usePublicKeyChecked,
