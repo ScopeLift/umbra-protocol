@@ -6,10 +6,6 @@ import { BigNumber } from '../src/utils/ethers';
 import { ethers } from 'ethers';
 
 describe('buildAccountDataForEncryption Utils', () => {
-  const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
-  const pubKey =
-    '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
-
   [
     '0x869b1913aeD711246A4cD22B4cFE9DD13996B13', // Missing last character.
     '0x869b1913aeD711246A4cD22B4cFE9DD13996B13dd', // Has extra character.
@@ -24,7 +20,7 @@ describe('buildAccountDataForEncryption Utils', () => {
         buildAccountDataForEncryption({
           recipientAddress,
           advancedMode: true,
-          pubKey: pubKey,
+          pubKey: ethers.Wallet.createRandom().publicKey,
           usePublicKeyChecked: true,
         });
       expect(x).toThrow('Invalid recipient address');
@@ -42,7 +38,7 @@ describe('buildAccountDataForEncryption Utils', () => {
     it('Throws when given an invalid public key', () => {
       const x = () =>
         buildAccountDataForEncryption({
-          recipientAddress,
+          recipientAddress: ethers.Wallet.createRandom().address,
           advancedMode: true,
           pubKey,
           usePublicKeyChecked: true,
