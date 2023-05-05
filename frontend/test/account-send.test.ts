@@ -275,7 +275,12 @@ describe('encrypt/decrypt relationship', () => {
     }
   });
 
-  it('bug', () => {
+  it('Encrypts and decrypts properly for values with leading zeros', () => {
+    // `BigNumber.from(myHexString).toHexString()` where `myHexString` has leading zero bytes will
+    // truncate those leading zeroes from the string. If data is not manually zero-padded to the
+    // correct length, this can cause a bug where the leading zero bytes of the address are
+    // truncated and trailing bytes of other data are appended. The above fuzz test found this bug,
+    // and this is a concrete test with known inputs would fail if the bug were present.
     const recipientAddress = '0x00bB833415cf56f112389E146Cb7847dDbE93fB5';
     const pubKey =
       '0x040426c84897f9e07632687f69ef714090307dcdc23b4a9f3719e6db8eb1f753f71dd4f849c6101d13049f6091944914c31e6fe32db34daa176da230a04de12bf3';

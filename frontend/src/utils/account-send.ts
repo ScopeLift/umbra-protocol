@@ -98,7 +98,7 @@ export const encryptAccountData = (accountDataToEncrypt: AccountDataToEncrypt, k
   const encryptionKey = keccak256(`${viewingPrivateKey}${encryptionCountHex.slice(2)}`);
   const data = buildAccountDataForEncryption({ recipientAddress, advancedMode, usePublicKeyChecked, pubKey });
   const encryptedData = data.xor(encryptionKey);
-  return encryptedData.toHexString();
+  return hexZeroPad(encryptedData.toHexString(), 32);
 };
 
 export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => {
@@ -112,7 +112,7 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
   const encryptionKey = keccak256(`${viewingPrivateKey}${encryptionCountHex.slice(2)}`);
 
   const decryptedData = BigNumber.from(accountSendCiphertext).xor(encryptionKey);
-  const hexData = decryptedData.toHexString();
+  const hexData = hexZeroPad(decryptedData.toHexString(), 32);
 
   const partialPubKey = hexData.slice(44);
   const advancedMode = hexData.slice(42, 43);
