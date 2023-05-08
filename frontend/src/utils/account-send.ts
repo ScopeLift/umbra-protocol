@@ -11,6 +11,10 @@ import {
   assertValidHexString,
 } from 'src/utils/validation';
 
+// A partial public key is prefixed with 0x99 and does not contain the full public key.
+// We created this type because when storing account send data we only 11 bytes to store
+// the senders public key. This type should have 11 bytes of the public key, but this is
+// not enforced in typescript.
 type PartialPublicKey = '0x99{string}';
 
 // Account Send data that is encrypted and stored in local storage
