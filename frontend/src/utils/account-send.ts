@@ -12,7 +12,7 @@ import {
 } from 'src/utils/validation';
 
 // A partial public key is prefixed with 0x99 and does not contain the full public key.
-// We created this type because when storing account send data we only 11 bytes to store
+// We created this type because when storing account send data we only have 11 bytes to store
 // the senders public key. This type should have 11 bytes of the public key, but this is
 // not enforced in typescript.
 type PartialPublicKey = '0x99{string}';
@@ -194,7 +194,7 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
       encryptionCount: index,
     });
 
-    console.log(`Partial PubKey: ${decryptedData.pubKey} for send ${index}`);
+    window.logger.debug(`Partial PubKey: ${decryptedData.pubKey} for send ${index}`);
     accountData.push({
       recipientId: decryptedData.address,
       recipientAddress: decryptedData.address,
