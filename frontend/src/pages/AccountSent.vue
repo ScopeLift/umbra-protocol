@@ -55,7 +55,7 @@ function useAccountSent() {
     const data = await fetchAccountSends({
       address: userAddress.value!,
       chainId: chainId.value!,
-      viewingKey: viewingKeyPair.value?.privateKeyHex,
+      viewingPrivateKey: viewingKeyPair.value?.privateKeyHex,
     });
     const formattedRows = [];
     for (const row of data) {
