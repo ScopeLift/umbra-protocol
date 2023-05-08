@@ -89,19 +89,16 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     uint256 totalAmount = uint256(amount) + amount2;
     uint256 totalAmount2 = uint256(amount3) + amount4;
 
-    sendData.push(UmbraBatchSend.SendData(alice, address(token), amount, pkx, ciphertext));
-    sendData.push(UmbraBatchSend.SendData(bob, address(token), amount2, pkx, ciphertext));
     sendData.push(UmbraBatchSend.SendData(alice, address(token2), amount3, pkx, ciphertext));
     sendData.push(UmbraBatchSend.SendData(bob, address(token2), amount4, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(alice, address(token), amount, pkx, ciphertext));
+    sendData.push(UmbraBatchSend.SendData(bob, address(token), amount2, pkx, ciphertext));
 
     uint256 totalToll = toll * sendData.length;
     token.approve(address(router), totalAmount);
     token2.approve(address(router), totalAmount2);
 
-    vm.expectCall(
-      address(router), abi.encodeWithSelector(router.batchSend.selector, toll, sendData)
-    );
-    vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector));
+    vm.expectCall(umbra, abi.encodeWithSelector(IUmbra(umbra).sendToken.selector), 4);
     router.batchSend{value: totalToll}(toll, sendData);
 
     assertEq(token.balanceOf(umbra), totalAmount);
