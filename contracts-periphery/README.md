@@ -26,8 +26,8 @@ This repo uses [Foundry](https://github.com/gakonst/foundry).
 
 6. Pass in the `private key` to dry run deploying the contract across 6 networks. You should see gas estimates for 6 networks, otherwise the address might be taken.
 
-- `forge script Deploy --private-key <Private Key> `
+- `forge script DeployBatchSend --private-key <Private Key> `
 
 7. Actually deploy the contracts.
 
-- `forge script Deploy --private-key <Private Key> --broadcast`
+- `forge script DeployBatchSend --private-key <Private Key> --broadcast`
