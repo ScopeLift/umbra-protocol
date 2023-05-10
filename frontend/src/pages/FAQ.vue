@@ -140,6 +140,15 @@
         </f-a-q-item>
       </div>
 
+      <div @click="copyUrl" id="why-cant-I-see-my-send-history-on-different-devices">
+        <f-a-q-item
+          :expanded="selectedId === 'why-cant-I-see-my-send-history-on-different-devices'"
+          :question="$t('FAQ.send-history-different-devices')"
+        >
+          <div v-html="$t('FAQ.send-history-different-devices-answer')"></div>
+        </f-a-q-item>
+      </div>
+
       <!-- Receiving Funds -->
       <div class="separator q-mt-lg q-mb-xl"></div>
       <div
