@@ -307,9 +307,11 @@
     "advanced-mode-on": "Sent with advanced mode enabled",
     "amount": "Amount",
     "date-sent": "Date sent",
+    "learn-more": "Learn more",
     "receiver": "Receiver",
     "sent-funds": "Sent funds",
     "storage-description": "The send history is local to your current browser and will differ when accessed from a different browser or a different device. We do this to maximize your security and privacy.",
+    "stored-on-device": "Send history is only stored locally on this device",
     "use-public-key-checked": "Sent using recipient's standard public key"
   },
   "AccountSent": {
