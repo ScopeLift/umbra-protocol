@@ -24,7 +24,7 @@ This repo uses [Foundry](https://github.com/gakonst/foundry).
 
 - `forge test --mc DeployBatchSendTest --sender <Deployer's address>`
 
-6. Pass in the `private key` to dry run deploying the contract across 6 networks. You should see gas estimates for 6 networks, otherwise there could be a mismatch between deployer's nonce and the specified expected nonce, or there's already code at the expected contract address.
+6. Pass in the `private key` to dry run deploying the contract across the networks you've specified. You should see gas estimates for each network, otherwise there could be a mismatch between deployer's nonce and the specified expected nonce, or there's already code at the expected contract address.
 
 - `forge script DeployBatchSend --private-key <Private Key> `
 
