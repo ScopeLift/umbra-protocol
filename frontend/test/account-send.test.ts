@@ -2,9 +2,11 @@
  * @jest-environment jsdom
  */
 import { randomBytes } from 'crypto';
+import { ethers } from 'ethers';
+import { RandomNumber } from '@umbracash/umbra-js';
+
 import { buildAccountDataForEncryption, encryptAccountData, decryptData } from '../src/utils/account-send';
 import { BigNumber, getAddress } from '../src/utils/ethers';
-import { ethers } from 'ethers';
 
 const NUM_RUNS = 100;
 
@@ -43,7 +45,13 @@ const invalidPrivateKeys = [
   '0xa4ba0c601af9054f6872baef005e890ecadc8c807b2635be04ad24875fb04faz', // Right length, not hex though.
 ];
 
-const invalidEncryptionCounts = [-1, -2, -99999, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER - 1000];
+const invalidEncryptionCounts = [
+  '-1',
+  '-2',
+  '-99999',
+  `${Number.MIN_SAFE_INTEGER}`,
+  `${Number.MIN_SAFE_INTEGER - 1000}`,
+];
 
 // This is faster than relying on ethers to generate all the random data.
 function randomHexString(numBytes: number): string {
@@ -59,7 +67,7 @@ function randomData() {
     usePublicKeyChecked: Math.random() > 0.5,
     viewingPrivateKey: randomHexString(32),
     // Make sure 0 is more likely to show up for encryption count.
-    encryptionCount: Math.random() < 0.1 ? 0 : BigNumber.from(Math.floor(Math.random() * 1000)).toNumber(),
+    encryptionCount: Math.random() < 0.1 ? '0' : new RandomNumber().value.toString(),
     // Ciphertext has the same length as a private key.
     ciphertext: randomHexString(32),
   };
@@ -185,26 +193,32 @@ describe('decryptData', () => {
     {
       advancedMode: true,
       usePublicKeyChecked: true,
-      encryptionCount: 0,
+      encryptionCount: '0',
       expectedCiphertext: '0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621',
     },
     {
       advancedMode: false,
       usePublicKeyChecked: false,
-      encryptionCount: 1,
+      encryptionCount: '1',
       expectedCiphertext: '0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2',
     },
     {
       advancedMode: true,
       usePublicKeyChecked: false,
-      encryptionCount: 2,
+      encryptionCount: '2',
       expectedCiphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
     },
     {
       advancedMode: false,
       usePublicKeyChecked: true,
-      encryptionCount: 3,
+      encryptionCount: '3',
       expectedCiphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
+    },
+    {
+      advancedMode: false,
+      usePublicKeyChecked: true,
+      encryptionCount: ethers.constants.MaxUint256.toString(),
+      expectedCiphertext: '0x89d8a5695a2d6f5b85b1969c4b1cda3c22c36896d907bb0d35975733f7cab1c1',
     },
   ].forEach(({ advancedMode, usePublicKeyChecked, encryptionCount, expectedCiphertext }) => {
     it('Correctly encrypts data', () => {
@@ -220,7 +234,7 @@ describe('decryptData', () => {
   [
     {
       ciphertext: '0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621',
-      encryptionCount: 0,
+      encryptionCount: '0',
       expectedDecryptedData: {
         advancedMode: true,
         usePublicKeyChecked: true,
@@ -230,7 +244,7 @@ describe('decryptData', () => {
     },
     {
       ciphertext: '0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2',
-      encryptionCount: 1,
+      encryptionCount: '1',
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: false,
@@ -240,7 +254,7 @@ describe('decryptData', () => {
     },
     {
       ciphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
-      encryptionCount: 2,
+      encryptionCount: '2',
       expectedDecryptedData: {
         advancedMode: true,
         usePublicKeyChecked: false,
@@ -250,7 +264,17 @@ describe('decryptData', () => {
     },
     {
       ciphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
-      encryptionCount: 3,
+      encryptionCount: '3',
+      expectedDecryptedData: {
+        advancedMode: false,
+        usePublicKeyChecked: true,
+        address: recipientAddress,
+        pubKey: partialPubKey,
+      },
+    },
+    {
+      ciphertext: '0x89d8a5695a2d6f5b85b1969c4b1cda3c22c36896d907bb0d35975733f7cab1c1',
+      encryptionCount: ethers.constants.MaxUint256.toString(),
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: true,
@@ -298,7 +322,7 @@ describe('encrypt/decrypt relationship', () => {
     const viewingPrivateKey = '0xeaa492b979aead8bdaf857673c4fe453a3f7ce5e8d661499391505f47d96d613';
     const advancedMode = false;
     const usePublicKeyChecked = false;
-    const encryptionCount = 661;
+    const encryptionCount = '661';
 
     const ciphertext = encryptAccountData(
       { recipientAddress, advancedMode, pubKey, usePublicKeyChecked },

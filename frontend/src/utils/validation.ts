@@ -1,4 +1,4 @@
-import { computeAddress, isHexString, isAddress } from 'src/utils/ethers';
+import { BigNumber, computeAddress, isHexString, isAddress } from 'src/utils/ethers';
 
 export const assertValidAddress = (address: string, errorMsg?: string) => {
   if (!address.startsWith('0x') || !isAddress(address)) {
@@ -20,9 +20,16 @@ export const assertValidPublicKey = (pubKey: string, errorMsg?: string) => {
   }
 };
 
-export const assertValidEncryptionCount = (count: number, errorMsg?: string) => {
-  if (count < 0) {
-    throw new Error(errorMsg || 'Invalid count provided for encryption');
+export const assertValidEncryptionCount = (count: string, errorMsg?: string) => {
+  const error = new Error(errorMsg || 'Invalid count provided for encryption');
+  let bigNumberCount = BigNumber.from(-1);
+  try {
+    bigNumberCount = BigNumber.from(count);
+  } catch {
+    throw error;
+  }
+  if (bigNumberCount.lt(0)) {
+    throw error;
   }
 };
 

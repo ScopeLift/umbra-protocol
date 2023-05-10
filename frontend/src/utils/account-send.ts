@@ -1,6 +1,7 @@
-import { keccak256, BigNumber, getAddress, hexZeroPad } from 'src/utils/ethers';
 import localforage from 'localforage';
+import { RandomNumber } from '@umbracash/umbra-js';
 
+import { keccak256, BigNumber, getAddress, hexZeroPad } from 'src/utils/ethers';
 import { toAddress, lookupOrReturnAddresses } from 'src/utils/address';
 import { LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX, MAINNET_PROVIDER } from 'src/utils/constants';
 import { Web3Provider } from 'src/utils/ethers';
@@ -27,7 +28,7 @@ type AccountDataToEncrypt = {
 
 // Used to create an encryption key which encrypts account send data
 type KeyData = {
-  encryptionCount: number;
+  encryptionCount: string;
   viewingPrivateKey: string;
 };
 
@@ -150,7 +151,7 @@ export const storeSend = async ({
   const count =
     ((await localforage.getItem(
       `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`
-    )) as number) || 0;
+    )) as string) || new RandomNumber().value.toString();
   const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
 
   assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
@@ -178,12 +179,17 @@ export const storeSend = async ({
       txHash,
     },
   ]);
-  await localforage.setItem(`${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`, count + 1);
+  await localforage.setItem(
+    `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`,
+    BigNumber.from(count).add(1).toString()
+  );
 };
 
 export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }: FetchAccountSendArgs) => {
   const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${address}-${chainId}`;
   const values = ((await localforage.getItem(localStorageKey)) as AccountSendDataWithEncryptedFields[]) || [];
+  const localStorageCountKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${address}-${chainId}`;
+  const encryptionCount = (await localforage.getItem(localStorageCountKey)) as string;
 
   let accountData = [] as AccountSendData[];
   const addresses = [];
@@ -191,7 +197,7 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData(sendInfo.accountSendCiphertext, {
       viewingPrivateKey,
-      encryptionCount: index,
+      encryptionCount: BigNumber.from(encryptionCount).add(1).toString(),
     });
 
     window.logger.debug(`Partial PubKey: ${decryptedData.pubKey} for send ${index}`);
