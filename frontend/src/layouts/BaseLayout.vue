@@ -1,25 +1,5 @@
 <template>
   <div>
-    <div class="alert-banner text-bold text-center q-py-md">
-      <i18n-t scope="global" keypath="Home.banner-donate" tag="span">
-        <template v-slot:DevelopmentGrant>
-          <a
-            class="alert-banner-hyperlink"
-            href="https://explorer.gitcoin.co/#/round/1/0x12bb5bbbfe596dbc489d209299b8302c3300fa40/0x12bb5bbbfe596dbc489d209299b8302c3300fa40-22"
-            target="_blank"
-            >{{ $t('Home.development-grant') }}</a
-          >
-        </template>
-        <template v-slot:LearnMore>
-          <a
-            class="alert-banner-hyperlink"
-            href="https://twitter.com/UmbraCash/status/1651702157345976320"
-            target="_blank"
-            >{{ $t('Home.learn-more') }}</a
-          >
-        </template>
-      </i18n-t>
-    </div>
     <q-layout view="hhh lpr ffr" style="z-index: 0">
       <q-header class="q-mx-md q-mt-md" style="color: #000000; background-color: rgba(0, 0, 0, 0)">
         <div class="column all-content-format">
