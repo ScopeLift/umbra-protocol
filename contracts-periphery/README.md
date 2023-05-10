@@ -14,20 +14,20 @@ This repo uses [Foundry](https://github.com/gakonst/foundry).
 
 ### How to use the DeployBatchSend Script
 
-1. Inside `contracts-periphery` folder, run `cp .env.example .env` and fill out all fields
+1. Inside `contracts-periphery` folder, run `cp .env.example .env` and fill out all fields.
 2. In your terminal use command
 
-- `cast nonce <Deployer's address> --rpc-url <URL>` to find your nonce
+- `cast nonce <Deployer's address> --rpc-url <URL>` to find your nonce.
 
 4. Change `EXPECTED_NONCE` of `DeployBatchSend` script to match your nonce.
 5. To make sure the script test passes, run
 
 - `forge test --mc DeployBatchSendTest --sender <Deployer's address>`
 
-6. Pass in the `private key` to dry run deploying the contract across 6 networks. You should see gas estimates for 6 networks, otherwise the address might be taken.
+6. Pass in the `private key` to dry run deploying the contract across 6 networks. You should see gas estimates for 6 networks, otherwise there could be a mismatch between deployer's nonce and the specified expected nonce, or there's already code at the expected contract address.
 
 - `forge script DeployBatchSend --private-key <Private Key> `
 
-7. Actually deploy the contracts.
+7. Execute the deploy by broadcasting the deploy transactions.
 
 - `forge script DeployBatchSend --private-key <Private Key> --broadcast`
