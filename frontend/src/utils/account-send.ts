@@ -157,8 +157,9 @@ export const storeSend = async ({
   assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
   assertValidEncryptionCount(count);
 
+  const values = ((await localforage.getItem(localStorageKey)) as AccountSendData[]) || [];
   const keyData = {
-    encryptionCount: count,
+    encryptionCount: BigNumber.from(count).add(values.length).toString(),
     viewingPrivateKey,
   };
   accountDataToEncrypt = {
@@ -168,7 +169,6 @@ export const storeSend = async ({
     pubKey,
   };
   const encryptedData = encryptAccountData(accountDataToEncrypt, keyData);
-  const values = ((await localforage.getItem(localStorageKey)) as AccountSendData[]) || [];
   await localforage.setItem(localStorageKey, [
     ...values,
     {
@@ -181,7 +181,7 @@ export const storeSend = async ({
   ]);
   await localforage.setItem(
     `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`,
-    BigNumber.from(count).add(1).toString()
+    BigNumber.from(count).toString()
   );
 };
 
@@ -197,7 +197,7 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData(sendInfo.accountSendCiphertext, {
       viewingPrivateKey,
-      encryptionCount: BigNumber.from(encryptionCount).add(1).toString(),
+      encryptionCount: BigNumber.from(encryptionCount).add(index).toString(),
     });
 
     window.logger.debug(`Partial PubKey: ${decryptedData.pubKey} for send ${index}`);
