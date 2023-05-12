@@ -148,16 +148,31 @@ export const storeSend = async ({
 
   // Send history is scoped by chain
   const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${senderAddress}-${chainId}`;
-  const count =
-    ((await localforage.getItem(
-      `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`
-    )) as string) || new RandomNumber().value.toString();
+  let count = (await localforage.getItem(
+    `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`
+  )) as string;
+  let values = ((await localforage.getItem(localStorageKey)) as AccountSendData[]) || [];
+
+  // If there is no count or the length of values is 0
+  // then someone cleared localstorage data,
+  // and we need to reset the count.
+  if (!count || values.length === 0) {
+    count = new RandomNumber().value.toString();
+
+    await localforage.setItem(
+      `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`,
+      count.toString()
+    );
+    // Clear values because they cannot be decrypted if the original count is missing.
+    await localforage.setItem(localStorageKey, []);
+    values = [];
+  }
+
   const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
 
   assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
   assertValidEncryptionCount(count);
 
-  const values = ((await localforage.getItem(localStorageKey)) as AccountSendData[]) || [];
   const keyData = {
     encryptionCount: BigNumber.from(count).add(values.length).toString(),
     viewingPrivateKey,
@@ -179,10 +194,6 @@ export const storeSend = async ({
       txHash,
     },
   ]);
-  await localforage.setItem(
-    `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`,
-    BigNumber.from(count).toString()
-  );
 };
 
 export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }: FetchAccountSendArgs) => {

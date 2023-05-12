@@ -2,11 +2,28 @@
  * @jest-environment jsdom
  */
 import { randomBytes } from 'crypto';
+import { generateTestingUtils } from 'eth-testing';
 import { ethers } from 'ethers';
 import { RandomNumber } from '@umbracash/umbra-js';
 
-import { buildAccountDataForEncryption, encryptAccountData, decryptData } from '../src/utils/account-send';
+import {
+  buildAccountDataForEncryption,
+  decryptData,
+  encryptAccountData,
+  fetchAccountSends,
+  storeSend,
+} from '../src/utils/account-send';
 import { BigNumber, getAddress } from '../src/utils/ethers';
+import localforage from 'localforage';
+import { LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX } from 'src/utils/constants';
+jest.mock('src/utils/address', () => ({
+  ...jest.requireActual('src/utils/address'),
+  lookupOrReturnAddresses: jest.fn((args) => args),
+}));
+jest.mock('src/utils/constants', () => ({
+  ...jest.requireActual('src/utils/constants'),
+  MAINNET_PROVIDER: jest.fn(),
+}));
 
 const NUM_RUNS = 100;
 
@@ -111,6 +128,10 @@ const pubKey =
   '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
 const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
 const viewingPrivateKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
+const localStorageCountKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${recipientAddress}-5`;
+const localStorageValueKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${recipientAddress}-5`;
+const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+const txHash = '0x79d28911717689ca3c2c76407d8d965b82e856a9ab8f1ca5c2420c9addd97279';
 
 describe('encryptAccountData', () => {
   invalidAddresses.forEach((recipientAddress) => {
@@ -335,5 +356,206 @@ describe('encrypt/decrypt relationship', () => {
       address: recipientAddress,
       pubKey: `0x99${pubKey.slice(4, 4 + 22)}`,
     });
+  });
+});
+
+describe('storeSend', () => {
+  const testingUtils = generateTestingUtils({ providerType: 'default' });
+  const storeSendArgs = {
+    chainId: 5,
+    provider: new ethers.providers.Web3Provider(testingUtils.getProvider()),
+    viewingPrivateKey,
+    unencryptedAccountSendData: {
+      amount: '100',
+      tokenAddress,
+      txHash,
+      senderAddress: recipientAddress,
+    },
+    accountDataToEncrypt: {
+      recipientAddress: '0xEAC5F0d4A9a45E1f9FdD0e7e2882e9f60E301156',
+      advancedMode: false,
+      usePublicKeyChecked: false,
+      pubKey,
+    },
+  };
+  beforeEach(async () => {
+    testingUtils.clearAllMocks();
+    await localforage.clear();
+  });
+
+  it('Generates and saves an encryption count when there are no existing values and count', async () => {
+    const existingCount = await localforage.getItem(localStorageCountKey);
+    const value = await localforage.getItem(localStorageValueKey);
+    expect(existingCount).toEqual(undefined);
+    expect(value).toEqual(undefined);
+
+    await storeSend(storeSendArgs);
+
+    const newCount = await localforage.getItem(localStorageCountKey);
+    const values = (await localforage.getItem(localStorageValueKey)) as any[];
+    expect(newCount).toBeTruthy();
+    expect(values.length).toEqual(1);
+  });
+
+  it('Generates and saves an encryption count when there is an existing count but no existing values', async () => {
+    await localforage.setItem(localStorageCountKey, 1);
+    const value = await localforage.getItem(localStorageValueKey);
+    expect(value).toEqual(undefined);
+
+    await storeSend(storeSendArgs);
+
+    const newCount = await localforage.getItem(localStorageCountKey);
+    const values = (await localforage.getItem(localStorageValueKey)) as any[];
+    expect(newCount).not.toEqual(1);
+    expect(newCount).toBeTruthy();
+    expect(values.length).toEqual(1);
+  });
+
+  it('Generates and saves an encryption count when there is an existing value but no existing count', async () => {
+    // These values are not representative
+    // of actual values but this test should work regardless
+    // of the values.
+    await localforage.setItem(localStorageValueKey, [
+      {
+        accountSendCiphertext: '',
+        amount: '100',
+        tokenAddress,
+        dateSent: new Date(),
+        txHash,
+      },
+    ]);
+    const count = await localforage.getItem(localStorageCountKey);
+    expect(count).toEqual(undefined);
+
+    await storeSend(storeSendArgs);
+    const newCount = await localforage.getItem(localStorageCountKey);
+    const values = (await localforage.getItem(localStorageValueKey)) as any[];
+
+    expect(newCount).toBeTruthy();
+    expect(values.length).toEqual(1);
+  });
+
+  it('Preserves existing value and count when storing a new entry', async () => {
+    // These values are not representative
+    // of actual values but this test should work regardless
+    // of the values.
+    await localforage.setItem(localStorageValueKey, [
+      {
+        accountSendCiphertext: '',
+        amount: '100',
+        tokenAddress,
+        dateSent: new Date(),
+        txHash,
+      },
+    ]);
+    await localforage.setItem(localStorageCountKey, 10012);
+
+    await storeSend(storeSendArgs);
+
+    const count = await localforage.getItem(localStorageCountKey);
+    const values = (await localforage.getItem(localStorageValueKey)) as any[];
+    expect(count).toEqual(10012);
+    expect(values.length).toEqual(2);
+  });
+});
+
+describe('fetchAccountSends', () => {
+  const testingUtils = generateTestingUtils({ providerType: 'default' });
+
+  beforeEach(async () => {
+    await localforage.clear();
+    testingUtils.clearAllMocks();
+    window.logger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      version: '',
+      _log: jest.fn(),
+      makeError: jest.fn(),
+      assert: jest.fn(),
+      assertArgument: jest.fn(),
+      checkNormalize: jest.fn(),
+      checkArgumentCount: jest.fn(),
+      checkNew: jest.fn(),
+      checkAbstract: jest.fn(),
+      checkSafeUint53: jest.fn(),
+      throwError: jest.fn() as never,
+      throwArgumentError: jest.fn() as never,
+    };
+  });
+
+  it('Correctly fetch send data when there is a single send', async () => {
+    await localforage.setItem(localStorageValueKey, [
+      {
+        accountSendCiphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
+        amount: '100',
+        tokenAddress,
+        dateSent: new Date(),
+        txHash,
+      },
+    ]);
+    await localforage.setItem(localStorageCountKey, 2);
+
+    const accountSends = await fetchAccountSends({
+      address: recipientAddress,
+      viewingPrivateKey,
+      chainId: 5,
+    });
+
+    expect(accountSends.length).toEqual(1);
+    expect(accountSends[0].recipientAddress).toEqual(recipientAddress);
+    expect(accountSends[0].advancedMode).toEqual(true);
+    expect(accountSends[0].usePublicKeyChecked).toEqual(false);
+  });
+
+  it('Correctly fetch send data when there are multiple send', async () => {
+    await localforage.setItem(localStorageValueKey, [
+      {
+        accountSendCiphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
+        amount: '100',
+        tokenAddress,
+        dateSent: new Date(),
+        txHash,
+      },
+      {
+        accountSendCiphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
+        amount: '100',
+        tokenAddress,
+        dateSent: new Date(),
+        txHash,
+      },
+    ]);
+    await localforage.setItem(localStorageCountKey, 2);
+
+    const accountSends = await fetchAccountSends({
+      address: recipientAddress,
+      viewingPrivateKey,
+      chainId: 5,
+    });
+
+    const decryptedArray = accountSends.map((send) => ({
+      recipientAddress: send.recipientAddress,
+      advancedMode: send.advancedMode,
+      usePublicKeyChecked: send.usePublicKeyChecked,
+    }));
+
+    // This array's order matches the
+    // expected results from the input array.
+    // We need to reverse this array because
+    // fetchAccountSends will do the same
+    // to show the most recent send first.
+    const expectedArray = [
+      {
+        recipientAddress,
+        advancedMode: true,
+        usePublicKeyChecked: false,
+      },
+      {
+        recipientAddress,
+        advancedMode: false,
+        usePublicKeyChecked: true,
+      },
+    ].reverse();
+    expect(decryptedArray).toEqual(expectedArray);
   });
 });
