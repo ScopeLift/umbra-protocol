@@ -21,15 +21,8 @@ export const assertValidPublicKey = (pubKey: string, errorMsg?: string) => {
 };
 
 export const assertValidEncryptionCount = (count: string, errorMsg?: string) => {
-  const error = new Error(errorMsg || 'Invalid count provided for encryption');
-  let bigNumberCount = BigNumber.from(-1);
-  try {
-    bigNumberCount = BigNumber.from(count);
-  } catch {
-    throw error;
-  }
-  if (bigNumberCount.lt(0)) {
-    throw error;
+  if (BigNumber.from(count).lt(0)) {
+    throw new Error(errorMsg || 'Invalid count provided for encryption');
   }
 };
 
