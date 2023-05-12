@@ -200,7 +200,7 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
   const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${address}-${chainId}`;
   const values = ((await localforage.getItem(localStorageKey)) as AccountSendDataWithEncryptedFields[]) || [];
   const localStorageCountKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${address}-${chainId}`;
-  const encryptionCount = (await localforage.getItem(localStorageCountKey)) as string;
+  const initialEncryptionCount = (await localforage.getItem(localStorageCountKey)) as string;
 
   let accountData = [] as AccountSendData[];
   const addresses = [];
@@ -208,7 +208,7 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData(sendInfo.accountSendCiphertext, {
       viewingPrivateKey,
-      encryptionCount: BigNumber.from(encryptionCount).add(index).toString(),
+      encryptionCount: BigNumber.from(initialEncryptionCount).add(index).toString(),
     });
 
     window.logger.debug(`Partial PubKey: ${decryptedData.pubKey} for send ${index}`);
