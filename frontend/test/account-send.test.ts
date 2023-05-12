@@ -238,8 +238,8 @@ describe('decryptData', () => {
     {
       advancedMode: false,
       usePublicKeyChecked: true,
-      encryptionCount: ethers.constants.MaxUint256.toString(),
-      expectedCiphertext: '0x89d8a5695a2d6f5b85b1969c4b1cda3c22c36896d907bb0d35975733f7cab1c1',
+      encryptionCount: BigNumber.from(2).pow(255).toString(),
+      expectedCiphertext: '0x85057ea47f6f7666a437be1f8890f34932e70650f592fbb3baaa6a3af7e01ecd',
     },
   ].forEach(({ advancedMode, usePublicKeyChecked, encryptionCount, expectedCiphertext }) => {
     it('Correctly encrypts data', () => {
@@ -294,8 +294,8 @@ describe('decryptData', () => {
       },
     },
     {
-      ciphertext: '0x89d8a5695a2d6f5b85b1969c4b1cda3c22c36896d907bb0d35975733f7cab1c1',
-      encryptionCount: ethers.constants.MaxUint256.toString(),
+      ciphertext: '0x85057ea47f6f7666a437be1f8890f34932e70650f592fbb3baaa6a3af7e01ecd',
+      encryptionCount: BigNumber.from(2).pow(255).toString(),
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: true,
