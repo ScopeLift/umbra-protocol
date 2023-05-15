@@ -46,7 +46,7 @@ type EncryptedAccountSendData = {
   accountSendCiphertext: string;
 };
 
-type StoreSendArgs = {
+export type StoreSendArgs = {
   chainId: number;
   provider: Web3Provider;
   viewingPrivateKey: string;

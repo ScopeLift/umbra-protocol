@@ -12,6 +12,7 @@ import {
   encryptAccountData,
   fetchAccountSends,
   storeSend,
+  StoreSendArgs,
 } from '../src/utils/account-send';
 import { BigNumber, getAddress } from '../src/utils/ethers';
 import localforage from 'localforage';
@@ -83,10 +84,13 @@ function randomData() {
     advancedMode: Math.random() > 0.5,
     usePublicKeyChecked: Math.random() > 0.5,
     viewingPrivateKey: randomHexString(32),
+    tokenAddress: getAddress(randomHexString(20)),
+    txHash: randomHexString(32),
     // Make sure 0 is more likely to show up for encryption count.
     encryptionCount: Math.random() < 0.1 ? BigNumber.from(0) : new RandomNumber().value,
     // Ciphertext has the same length as a private key.
     ciphertext: randomHexString(32),
+    amount: new RandomNumber().value.toString(),
   };
 }
 
@@ -361,27 +365,41 @@ describe('encrypt/decrypt relationship', () => {
 
 describe('storeSend', () => {
   const testingUtils = generateTestingUtils({ providerType: 'default' });
-  const storeSendArgs = {
-    chainId: 5,
-    provider: new ethers.providers.Web3Provider(testingUtils.getProvider()),
-    viewingPrivateKey,
-    unencryptedAccountSendData: {
-      amount: '100',
-      tokenAddress,
-      txHash,
-      senderAddress: recipientAddress,
-    },
-    accountDataToEncrypt: {
-      recipientAddress: '0xEAC5F0d4A9a45E1f9FdD0e7e2882e9f60E301156',
-      advancedMode: false,
-      usePublicKeyChecked: false,
-      pubKey,
-    },
-  };
+  let storeSendArgs = {} as StoreSendArgs;
 
   beforeEach(async () => {
     testingUtils.clearAllMocks();
     await localforage.clear();
+    const {
+      recipientAddress: randomRecipientAddress,
+      pubKey,
+      viewingPrivateKey,
+      amount,
+      tokenAddress,
+      txHash,
+      advancedMode,
+      usePublicKeyChecked,
+    } = randomData();
+
+    storeSendArgs = {
+      chainId: 5,
+      provider: new ethers.providers.Web3Provider(testingUtils.getProvider()),
+      viewingPrivateKey,
+      unencryptedAccountSendData: {
+        amount,
+        tokenAddress,
+        txHash,
+        // Sender address needs to be static because it is part of the key used
+        // to fetch data from localforage.
+        senderAddress: recipientAddress,
+      },
+      accountDataToEncrypt: {
+        recipientAddress: randomRecipientAddress,
+        advancedMode,
+        usePublicKeyChecked,
+        pubKey,
+      },
+    };
   });
 
   it('Generates and saves an encryption count when there are no existing values and count', async () => {
@@ -395,7 +413,7 @@ describe('storeSend', () => {
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
     const bigNumberCount = BigNumber.from(newCount);
-    expect(bigNumberCount.gt(0)).toEqual(true);
+    expect(bigNumberCount.toBigInt()).toBeGreaterThan(BigInt(0));
     expect(values.length).toEqual(1);
   });
 
@@ -409,7 +427,7 @@ describe('storeSend', () => {
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
     const bigNumberCount = BigNumber.from(newCount);
-    expect(bigNumberCount.gt(1)).toEqual(true);
+    expect(bigNumberCount.toBigInt()).toBeGreaterThan(BigInt(1));
     expect(values.length).toEqual(1);
   });
 
@@ -432,15 +450,15 @@ describe('storeSend', () => {
     await storeSend(storeSendArgs);
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
+    const bigNumberCount = BigNumber.from(newCount);
 
-    expect(newCount).toBeTruthy();
+    expect(bigNumberCount.toBigInt()).toBeGreaterThan(BigInt(1));
     expect(values.length).toEqual(1);
   });
 
   it('Preserves existing value and count when storing a new entry', async () => {
-    // These values are not representative
-    // of actual values but this test should work regardless
-    // of the values.
+    // These values are not representative of actual values but this test should
+    // work regardless of the values.
     await localforage.setItem(localStorageValueKey, [
       {
         accountSendCiphertext: '',
@@ -541,11 +559,9 @@ describe('fetchAccountSends', () => {
       usePublicKeyChecked: send.usePublicKeyChecked,
     }));
 
-    // This array's order matches the
-    // expected results from the input array.
-    // We need to reverse this array because
-    // fetchAccountSends will do the same
-    // to show the most recent send first.
+    // This array's order matches the expected results from the input array.We
+    // need to reverse this array because fetchAccountSends will do the same to
+    // show the most recent send first.
     const expectedArray = [
       {
         recipientAddress,
