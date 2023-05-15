@@ -378,6 +378,7 @@ describe('storeSend', () => {
       pubKey,
     },
   };
+
   beforeEach(async () => {
     testingUtils.clearAllMocks();
     await localforage.clear();
@@ -393,7 +394,8 @@ describe('storeSend', () => {
 
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
-    expect(newCount).toBeTruthy();
+    const bigNumberCount = BigNumber.from(newCount);
+    expect(bigNumberCount.gt(0)).toEqual(true);
     expect(values.length).toEqual(1);
   });
 
@@ -406,8 +408,8 @@ describe('storeSend', () => {
 
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
-    expect(newCount).not.toEqual(1);
-    expect(newCount).toBeTruthy();
+    const bigNumberCount = BigNumber.from(newCount);
+    expect(bigNumberCount.gt(1)).toEqual(true);
     expect(values.length).toEqual(1);
   });
 
