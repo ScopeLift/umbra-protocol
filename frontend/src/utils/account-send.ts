@@ -28,7 +28,7 @@ type AccountDataToEncrypt = {
 
 // Used to create an encryption key which encrypts account send data
 type KeyData = {
-  encryptionCount: string;
+  encryptionCount: BigNumber;
   viewingPrivateKey: string;
 };
 
@@ -113,7 +113,7 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
   assertValidHexString(accountSendCiphertext, 32, 'Invalid ciphertext');
   assertValidEncryptionCount(encryptionCount, 'Invalid count for decryption');
 
-  const encryptionCountHex = hexZeroPad(BigNumber.from(keyData.encryptionCount).toHexString(), 32);
+  const encryptionCountHex = hexZeroPad(keyData.encryptionCount.toHexString(), 32);
   const encryptionKey = keccak256(`${viewingPrivateKey}${encryptionCountHex.slice(2)}`);
 
   const decryptedData = BigNumber.from(accountSendCiphertext).xor(encryptionKey);
@@ -169,12 +169,13 @@ export const storeSend = async ({
   }
 
   const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
+  const bigNumberCount = BigNumber.from(count);
 
   assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
-  assertValidEncryptionCount(count);
+  assertValidEncryptionCount(bigNumberCount);
 
   const keyData = {
-    encryptionCount: BigNumber.from(count).add(values.length).toString(),
+    encryptionCount: bigNumberCount.add(values.length),
     viewingPrivateKey,
   };
   accountDataToEncrypt = {
@@ -208,7 +209,7 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData(sendInfo.accountSendCiphertext, {
       viewingPrivateKey,
-      encryptionCount: BigNumber.from(initialEncryptionCount).add(index).toString(),
+      encryptionCount: BigNumber.from(initialEncryptionCount).add(index),
     });
 
     window.logger.debug(`Partial PubKey: ${decryptedData.pubKey} for send ${index}`);

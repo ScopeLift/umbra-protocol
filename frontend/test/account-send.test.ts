@@ -63,11 +63,11 @@ const invalidPrivateKeys = [
 ];
 
 const invalidEncryptionCounts = [
-  '-1',
-  '-2',
-  '-99999',
-  `${Number.MIN_SAFE_INTEGER}`,
-  `${Number.MIN_SAFE_INTEGER - 1000}`,
+  BigNumber.from('-1'),
+  BigNumber.from('-2'),
+  BigNumber.from('-99999'),
+  BigNumber.from(`${Number.MIN_SAFE_INTEGER}`),
+  BigNumber.from(`${Number.MIN_SAFE_INTEGER - 1000}`),
 ];
 
 // This is faster than relying on ethers to generate all the random data.
@@ -84,7 +84,7 @@ function randomData() {
     usePublicKeyChecked: Math.random() > 0.5,
     viewingPrivateKey: randomHexString(32),
     // Make sure 0 is more likely to show up for encryption count.
-    encryptionCount: Math.random() < 0.1 ? '0' : new RandomNumber().value.toString(),
+    encryptionCount: Math.random() < 0.1 ? BigNumber.from(0) : new RandomNumber().value,
     // Ciphertext has the same length as a private key.
     ciphertext: randomHexString(32),
   };
@@ -214,31 +214,31 @@ describe('decryptData', () => {
     {
       advancedMode: true,
       usePublicKeyChecked: true,
-      encryptionCount: '0',
+      encryptionCount: BigNumber.from('0'),
       expectedCiphertext: '0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621',
     },
     {
       advancedMode: false,
       usePublicKeyChecked: false,
-      encryptionCount: '1',
+      encryptionCount: BigNumber.from('1'),
       expectedCiphertext: '0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2',
     },
     {
       advancedMode: true,
       usePublicKeyChecked: false,
-      encryptionCount: '2',
+      encryptionCount: BigNumber.from('2'),
       expectedCiphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
     },
     {
       advancedMode: false,
       usePublicKeyChecked: true,
-      encryptionCount: '3',
+      encryptionCount: BigNumber.from('3'),
       expectedCiphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
     },
     {
       advancedMode: false,
       usePublicKeyChecked: true,
-      encryptionCount: BigNumber.from(2).pow(255).toString(),
+      encryptionCount: BigNumber.from(2).pow(255),
       expectedCiphertext: '0x85057ea47f6f7666a437be1f8890f34932e70650f592fbb3baaa6a3af7e01ecd',
     },
   ].forEach(({ advancedMode, usePublicKeyChecked, encryptionCount, expectedCiphertext }) => {
@@ -255,7 +255,7 @@ describe('decryptData', () => {
   [
     {
       ciphertext: '0x9f3873e440b439d4e7561e70b5db28af7abb67257f6353e8d6e057bd2ed16621',
-      encryptionCount: '0',
+      encryptionCount: BigNumber.from('0'),
       expectedDecryptedData: {
         advancedMode: true,
         usePublicKeyChecked: true,
@@ -265,7 +265,7 @@ describe('decryptData', () => {
     },
     {
       ciphertext: '0xac7a4c827e636bb25fbf1ae604c48f0c035c34f526456dc6264b5ee43e3119f2',
-      encryptionCount: '1',
+      encryptionCount: BigNumber.from('1'),
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: false,
@@ -275,7 +275,7 @@ describe('decryptData', () => {
     },
     {
       ciphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
-      encryptionCount: '2',
+      encryptionCount: BigNumber.from('2'),
       expectedDecryptedData: {
         advancedMode: true,
         usePublicKeyChecked: false,
@@ -285,7 +285,7 @@ describe('decryptData', () => {
     },
     {
       ciphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
-      encryptionCount: '3',
+      encryptionCount: BigNumber.from('3'),
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: true,
@@ -295,7 +295,7 @@ describe('decryptData', () => {
     },
     {
       ciphertext: '0x85057ea47f6f7666a437be1f8890f34932e70650f592fbb3baaa6a3af7e01ecd',
-      encryptionCount: BigNumber.from(2).pow(255).toString(),
+      encryptionCount: BigNumber.from(2).pow(255),
       expectedDecryptedData: {
         advancedMode: false,
         usePublicKeyChecked: true,
@@ -343,7 +343,7 @@ describe('encrypt/decrypt relationship', () => {
     const viewingPrivateKey = '0xeaa492b979aead8bdaf857673c4fe453a3f7ce5e8d661499391505f47d96d613';
     const advancedMode = false;
     const usePublicKeyChecked = false;
-    const encryptionCount = '661';
+    const encryptionCount = BigNumber.from('661');
 
     const ciphertext = encryptAccountData(
       { recipientAddress, advancedMode, pubKey, usePublicKeyChecked },
