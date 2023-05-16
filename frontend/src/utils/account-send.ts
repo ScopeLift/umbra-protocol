@@ -193,6 +193,7 @@ export const storeSend = async ({
       tokenAddress,
       dateSent: new Date(),
       txHash,
+      senderAddress,
     },
   ]);
 };

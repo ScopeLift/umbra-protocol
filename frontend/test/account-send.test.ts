@@ -94,6 +94,91 @@ function randomData() {
   };
 }
 
+const createAccountSend = (num: number) => {
+  const accountSends = [];
+  for (let i = 0; i < num; i++) {
+    const {
+      recipientAddress: randomRecipientAddress,
+      advancedMode,
+      pubKey,
+      usePublicKeyChecked,
+      amount,
+      tokenAddress,
+      txHash,
+    } = randomData();
+
+    const unencryptedData = {
+      amount,
+      tokenAddress,
+      txHash,
+      senderAddress: recipientAddress,
+    };
+
+    accountSends.push({
+      recipientId: randomRecipientAddress,
+      recipientAddress: randomRecipientAddress,
+      advancedMode,
+      usePublicKeyChecked,
+      pubKey: pubKey,
+      ...unencryptedData,
+    });
+  }
+  return {
+    accountSends,
+  };
+};
+
+const createAccountSendsWithCiphertext = (num: number, encryptionCount: BigNumber) => {
+  const accountSendsWithCiphertext = [];
+  const accountSendsWithoutCiphertext = [];
+  for (let i = 0; i < num; i++) {
+    const {
+      recipientAddress: randomRecipientAddress,
+      advancedMode,
+      pubKey,
+      usePublicKeyChecked,
+      amount,
+      tokenAddress,
+      txHash,
+    } = randomData();
+    if (i != 0) {
+      encryptionCount = encryptionCount.add(1);
+    }
+
+    const ciphertext = encryptAccountData(
+      { recipientAddress: randomRecipientAddress, advancedMode, pubKey, usePublicKeyChecked },
+      { encryptionCount, viewingPrivateKey }
+    );
+    const unencryptedData = {
+      amount,
+      tokenAddress,
+      dateSent: new Date(),
+      txHash,
+      senderAddress: recipientAddress,
+    };
+    accountSendsWithCiphertext.push({
+      accountSendCiphertext: ciphertext,
+      ...unencryptedData,
+    });
+    accountSendsWithoutCiphertext.push({
+      recipientId: randomRecipientAddress,
+      recipientAddress: randomRecipientAddress,
+      advancedMode,
+      usePublicKeyChecked,
+      pubKey: `0x99${pubKey.slice(4, 26)}`,
+      ...unencryptedData,
+    });
+  }
+  return {
+    accountSendsWithoutCiphertext,
+    accountSendsWithCiphertext,
+  };
+};
+
+const randomInt = (min: number, max: number) => {
+  return Math.floor(Math.random() * max) + min;
+};
+
 describe('buildAccountDataForEncryption', () => {
   invalidAddresses.forEach((recipientAddress) => {
     it('Throws when given an invalid recipient address', () => {
@@ -528,6 +613,31 @@ describe('fetchAccountSends', () => {
     expect(accountSends[0].usePublicKeyChecked).toEqual(false);
   });
 
+  it.each([randomInt(2, 100), randomInt(2, 100), randomInt(2, 100)])(
+    "Correctly fetch send data when there are '%s' sends",
+    async (num) => {
+      const encryptionCount = new RandomNumber().value;
+      const { accountSendsWithCiphertext, accountSendsWithoutCiphertext } = createAccountSendsWithCiphertext(
+        num,
+        encryptionCount
+      );
+      await localforage.setItem(localStorageValueKey, accountSendsWithCiphertext);
+      await localforage.setItem(localStorageCountKey, encryptionCount);
+
+      const accountSends = await fetchAccountSends({
+        address: recipientAddress,
+        viewingPrivateKey,
+        chainId: 5,
+      });
+
+      // This array's order matches the expected results from the input array. We
+      // need to reverse this array because fetchAccountSends will do the same to
+      // show the most recent send first.
+      const expectedArray = accountSendsWithoutCiphertext.reverse();
+      expect(accountSends).toEqual(expectedArray);
+    }
+  );
+
   it('Correctly fetch send data when there are multiple send', async () => {
     await localforage.setItem(localStorageValueKey, [
       {
@@ -576,4 +686,119 @@ describe('fetchAccountSends', () => {
     ].reverse();
     expect(decryptedArray).toEqual(expectedArray);
   });
+});
+
+describe('End to end account tests', () => {
+  const testingUtils = generateTestingUtils({ providerType: 'default' });
+
+  beforeEach(async () => {
+    await localforage.clear();
+    testingUtils.clearAllMocks();
+    window.logger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      version: '',
+      _log: jest.fn(),
+      makeError: jest.fn(),
+      assert: jest.fn(),
+      assertArgument: jest.fn(),
+      checkNormalize: jest.fn(),
+      checkArgumentCount: jest.fn(),
+      checkNew: jest.fn(),
+      checkAbstract: jest.fn(),
+      checkSafeUint53: jest.fn(),
+      throwError: jest.fn() as never,
+      throwArgumentError: jest.fn() as never,
+    };
+  });
+
+  it.each([randomInt(2, 20), randomInt(2, 20), randomInt(2, 20), randomInt(2, 20)])(
+    "End to end integration test when number '%s'",
+    async (num) => {
+      const sends = createAccountSend(num);
+
+      // Offset the account sends based on when local storage was cleared
+      let offset = 0;
+      for (const [idx, value] of sends.accountSends.entries()) {
+        const {
+          amount,
+          tokenAddress,
+          txHash,
+          recipientAddress: randomRecipientAddress,
+          advancedMode,
+          usePublicKeyChecked,
+          pubKey,
+        } = value;
+
+        // The probability of either event happening and thus clearing the local
+        // storage is about 23%.
+        const resetLocalStorageCount = Math.random() < 0.125;
+        const resetLocalStorageValues = Math.random() < 0.125;
+
+        const storeSendArgs = {
+          chainId: 5,
+          provider: new ethers.providers.Web3Provider(testingUtils.getProvider()),
+          viewingPrivateKey,
+          unencryptedAccountSendData: {
+            amount: amount,
+            tokenAddress,
+            txHash,
+            // Sender address needs to be static because it is part of the key used
+            // to fetch data from localforage.
+            senderAddress: recipientAddress,
+          },
+          accountDataToEncrypt: {
+            recipientAddress: randomRecipientAddress,
+            advancedMode,
+            usePublicKeyChecked,
+            pubKey,
+          },
+        };
+
+        await storeSend(storeSendArgs);
+
+        if (resetLocalStorageCount) {
+          offset = idx;
+          await localforage.setItem(localStorageCountKey, undefined);
+        }
+
+        if (resetLocalStorageValues) {
+          offset = idx;
+          await localforage.setItem(localStorageValueKey, undefined);
+        }
+      }
+      const expectedArray = sends.accountSends
+        // We must add 1 because slice is inclusive
+        .slice(offset !== 0 ? offset + 1 : 0)
+        .map((value) => {
+          return {
+            ...value,
+            pubKey: `0x99${value.pubKey.slice(4, 26)}`,
+          };
+        })
+        .reverse();
+
+      const accountSends = await fetchAccountSends({
+        address: recipientAddress,
+        viewingPrivateKey,
+        chainId: 5,
+      });
+
+      // Remove dateSent, it will cause the tests to fail because we cannot know
+      // the exact datetime of a new Date() call.
+      const n = accountSends.map((value) => {
+        const { dateSent: _, ...rest } = value;
+        return {
+          ...rest,
+        };
+      });
+
+      // This array's order matches the expected results from the input array.We
+      // need to reverse this array because fetchAccountSends will do the same to
+      // show the most recent send first.
+      expect(n).toEqual(expectedArray);
+    },
+    10000
+  );
 });
