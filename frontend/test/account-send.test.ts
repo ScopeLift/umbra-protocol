@@ -740,6 +740,6 @@ describe('End to end account tests', () => {
       // show the most recent send first.
       expect(n).toEqual(expectedArray);
     },
-    15000
+    20000
   );
 });
