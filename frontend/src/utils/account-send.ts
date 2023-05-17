@@ -206,6 +206,9 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
 
   let accountData = [] as AccountSendData[];
   const addresses = [];
+  if (initialEncryptionCount === undefined) {
+    return [];
+  }
 
   for (const [index, sendInfo] of values.entries()) {
     const decryptedData = decryptData(sendInfo.accountSendCiphertext, {

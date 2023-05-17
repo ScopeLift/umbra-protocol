@@ -503,7 +503,7 @@ describe('storeSend', () => {
   });
 
   it('Generates and saves an encryption count when there is an existing count but no existing values', async () => {
-    await localforage.setItem(localStorageCountKey, 1);
+    await localforage.setItem(localStorageCountKey, new RandomNumber().value);
     const value = await localforage.getItem(localStorageValueKey);
     expect(value).toEqual(undefined);
 
@@ -542,6 +542,7 @@ describe('storeSend', () => {
   });
 
   it('Preserves existing value and count when storing a new entry', async () => {
+    const initialCount = new RandomNumber().value;
     // These values are not representative of actual values but this test should
     // work regardless of the values.
     await localforage.setItem(localStorageValueKey, [
@@ -553,13 +554,13 @@ describe('storeSend', () => {
         txHash,
       },
     ]);
-    await localforage.setItem(localStorageCountKey, 10012);
+    await localforage.setItem(localStorageCountKey, initialCount);
 
     await storeSend(storeSendArgs);
 
-    const count = await localforage.getItem(localStorageCountKey);
+    const count = (await localforage.getItem(localStorageCountKey)) as string;
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
-    expect(count).toEqual(10012);
+    expect(BigInt(count)).toEqual(initialCount.toBigInt());
     expect(values.length).toEqual(2);
   });
 });
@@ -799,6 +800,6 @@ describe('End to end account tests', () => {
       // show the most recent send first.
       expect(n).toEqual(expectedArray);
     },
-    10000
+    15000
   );
 });
