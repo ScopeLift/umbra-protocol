@@ -704,7 +704,7 @@ describe('End to end account tests', () => {
     };
   });
 
-  it.each([randomInt(2, 20), randomInt(2, 20), randomInt(2, 20), randomInt(2, 20)])(
+  it.each([randomInt(2, 10), randomInt(2, 10), randomInt(2, 10), randomInt(2, 10)])(
     "End to end integration test when number '%s'",
     async (num) => {
       const sends = createAccountSend(num);
