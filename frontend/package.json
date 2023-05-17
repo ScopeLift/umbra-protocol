@@ -48,7 +48,6 @@
     "@types/node": "^14.11.8",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
-    "eth-testing": "^1.12.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-node": "^11.0.0",

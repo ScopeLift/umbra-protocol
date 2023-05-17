@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 import { randomBytes } from 'crypto';
-import { generateTestingUtils } from 'eth-testing';
 import { ethers } from 'ethers';
 import { RandomNumber } from '@umbracash/umbra-js';
 
@@ -449,11 +448,9 @@ describe('encrypt/decrypt relationship', () => {
 });
 
 describe('storeSend', () => {
-  const testingUtils = generateTestingUtils({ providerType: 'default' });
   let storeSendArgs = {} as StoreSendArgs;
 
   beforeEach(async () => {
-    testingUtils.clearAllMocks();
     await localforage.clear();
     const {
       recipientAddress: randomRecipientAddress,
@@ -468,7 +465,6 @@ describe('storeSend', () => {
 
     storeSendArgs = {
       chainId: 5,
-      provider: new ethers.providers.Web3Provider(testingUtils.getProvider()),
       viewingPrivateKey,
       unencryptedAccountSendData: {
         amount,
@@ -566,11 +562,8 @@ describe('storeSend', () => {
 });
 
 describe('fetchAccountSends', () => {
-  const testingUtils = generateTestingUtils({ providerType: 'default' });
-
   beforeEach(async () => {
     await localforage.clear();
-    testingUtils.clearAllMocks();
     window.logger = {
       debug: jest.fn(),
       info: jest.fn(),
@@ -690,11 +683,8 @@ describe('fetchAccountSends', () => {
 });
 
 describe('End to end account tests', () => {
-  const testingUtils = generateTestingUtils({ providerType: 'default' });
-
   beforeEach(async () => {
     await localforage.clear();
-    testingUtils.clearAllMocks();
     window.logger = {
       debug: jest.fn(),
       info: jest.fn(),
@@ -739,7 +729,6 @@ describe('End to end account tests', () => {
 
         const storeSendArgs = {
           chainId: 5,
-          provider: new ethers.providers.Web3Provider(testingUtils.getProvider()),
           viewingPrivateKey,
           unencryptedAccountSendData: {
             amount: amount,

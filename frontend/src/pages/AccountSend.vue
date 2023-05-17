@@ -603,7 +603,6 @@ function useSendForm() {
         await storeSend({
           chainId: chainId.value!,
           viewingPrivateKey: viewingKeyPair.value?.privateKeyHex,
-          provider: provider.value,
           accountDataToEncrypt: {
             recipientAddress: recipientId.value,
             advancedMode: advancedMode.value,

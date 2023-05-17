@@ -4,7 +4,6 @@ import { RandomNumber } from '@umbracash/umbra-js';
 import { keccak256, BigNumber, getAddress, hexZeroPad } from 'src/utils/ethers';
 import { toAddress, lookupOrReturnAddresses } from 'src/utils/address';
 import { LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX, MAINNET_PROVIDER } from 'src/utils/constants';
-import { Web3Provider } from 'src/utils/ethers';
 import {
   assertValidAddress,
   assertValidPublicKey,
@@ -48,7 +47,6 @@ type EncryptedAccountSendData = {
 
 export type StoreSendArgs = {
   chainId: number;
-  provider: Web3Provider;
   viewingPrivateKey: string;
   unencryptedAccountSendData: Omit<UnencryptedAccountSendData, 'dateSent'>;
   accountDataToEncrypt: AccountDataToEncrypt;
@@ -132,7 +130,6 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
 
 export const storeSend = async ({
   chainId,
-  provider,
   viewingPrivateKey,
   unencryptedAccountSendData,
   accountDataToEncrypt,
@@ -168,7 +165,7 @@ export const storeSend = async ({
     values = [];
   }
 
-  const checksummedRecipientAddress = await toAddress(recipientAddress, provider);
+  const checksummedRecipientAddress = await toAddress(recipientAddress, MAINNET_PROVIDER);
   const bigNumberCount = BigNumber.from(count);
 
   assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
