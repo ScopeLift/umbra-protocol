@@ -128,8 +128,8 @@ const createAccountSend = (num: number) => {
 };
 
 const createAccountSendsWithCiphertext = (num: number, encryptionCount: BigNumber) => {
-  const accountSendsWithCiphertext = [];
-  const accountSendsWithoutCiphertext = [];
+  const accountSendDataWithEncryptedFields = [];
+  const accountSendData = [];
   for (let i = 0; i < num; i++) {
     const {
       recipientAddress: randomRecipientAddress,
@@ -155,11 +155,11 @@ const createAccountSendsWithCiphertext = (num: number, encryptionCount: BigNumbe
       txHash,
       senderAddress: recipientAddress,
     };
-    accountSendsWithCiphertext.push({
+    accountSendDataWithEncryptedFields.push({
       accountSendCiphertext: ciphertext,
       ...unencryptedData,
     });
-    accountSendsWithoutCiphertext.push({
+    accountSendData.push({
       recipientId: randomRecipientAddress,
       recipientAddress: randomRecipientAddress,
       advancedMode,
@@ -169,8 +169,8 @@ const createAccountSendsWithCiphertext = (num: number, encryptionCount: BigNumbe
     });
   }
   return {
-    accountSendsWithoutCiphertext,
-    accountSendsWithCiphertext,
+    accountSendDataWithEncryptedFields,
+    accountSendData,
   };
 };
 
@@ -611,11 +611,11 @@ describe('fetchAccountSends', () => {
     "Correctly fetch send data when there are '%s' sends",
     async (num) => {
       const encryptionCount = new RandomNumber().value;
-      const { accountSendsWithCiphertext, accountSendsWithoutCiphertext } = createAccountSendsWithCiphertext(
+      const { accountSendDataWithEncryptedFields, accountSendData } = createAccountSendsWithCiphertext(
         num,
         encryptionCount
       );
-      await localforage.setItem(localStorageValueKey, accountSendsWithCiphertext);
+      await localforage.setItem(localStorageValueKey, accountSendDataWithEncryptedFields);
       await localforage.setItem(localStorageCountKey, encryptionCount);
 
       const accountSends = await fetchAccountSends({
@@ -627,59 +627,10 @@ describe('fetchAccountSends', () => {
       // This array's order matches the expected results from the input array. We
       // need to reverse this array because fetchAccountSends will do the same to
       // show the most recent send first.
-      const expectedArray = accountSendsWithoutCiphertext.reverse();
+      const expectedArray = accountSendData.reverse();
       expect(accountSends).toEqual(expectedArray);
     }
   );
-
-  it('Correctly fetch send data when there are multiple send', async () => {
-    await localforage.setItem(localStorageValueKey, [
-      {
-        accountSendCiphertext: '0xb609426a8909759990b22756b7f2ce4f8d5ac4685d6e2c40daa830d059950504',
-        amount: '100',
-        tokenAddress,
-        dateSent: new Date(),
-        txHash,
-      },
-      {
-        accountSendCiphertext: '0xd45ffb2b6d4b4ad3bc0682b111cdbceecac938df0c72a0b0a79f7b6be6cfeb3e',
-        amount: '100',
-        tokenAddress,
-        dateSent: new Date(),
-        txHash,
-      },
-    ]);
-    await localforage.setItem(localStorageCountKey, 2);
-
-    const accountSends = await fetchAccountSends({
-      address: recipientAddress,
-      viewingPrivateKey,
-      chainId: 5,
-    });
-
-    const decryptedArray = accountSends.map((send) => ({
-      recipientAddress: send.recipientAddress,
-      advancedMode: send.advancedMode,
-      usePublicKeyChecked: send.usePublicKeyChecked,
-    }));
-
-    // This array's order matches the expected results from the input array.We
-    // need to reverse this array because fetchAccountSends will do the same to
-    // show the most recent send first.
-    const expectedArray = [
-      {
-        recipientAddress,
-        advancedMode: true,
-        usePublicKeyChecked: false,
-      },
-      {
-        recipientAddress,
-        advancedMode: false,
-        usePublicKeyChecked: true,
-      },
-    ].reverse();
-    expect(decryptedArray).toEqual(expectedArray);
-  });
 });
 
 describe('End to end account tests', () => {
