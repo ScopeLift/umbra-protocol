@@ -558,6 +558,10 @@ function useSendForm() {
         if (tokenAmount.gt(currentBalance)) throw new Error(tc('Send.amount-exceeds-balance'));
       }
 
+      if (!viewingKeyPair.value?.privateKeyHex) {
+        await getPrivateKeys();
+      }
+
       // If token, get approval when required
       isSending.value = true;
       if (token.value.symbol !== NATIVE_TOKEN.value.symbol) {
@@ -571,9 +575,6 @@ function useSendForm() {
           void txNotify(approveTx.hash, ethersProvider);
           await approveTx.wait();
         }
-      }
-      if (!viewingKeyPair.value?.privateKeyHex) {
-        await getPrivateKeys();
       }
 
       // Send with Umbra
