@@ -317,6 +317,7 @@
   "AccountSent": {
     "connect-wallet": "Connect Wallet",
     "connect-your-wallet": "Connect your wallet to view sent funds",
+    "fetching-send-history": "Fetching send history...",
 
     "need-signature": "This app needs your signature to decrypt your locally stored send history",
     "sign": "Sign"

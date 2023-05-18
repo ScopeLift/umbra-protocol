@@ -319,6 +319,7 @@
   "AccountSent": {
     "connect-wallet": "连接钱包",
     "connect-your-wallet": "连接您的钱包来查看已发送的资金",
+    "fetching-send-history": "正在获取发送历史记录...",
     "need-signature": "此应用程序需要您的签名才能解密本地存储的发送历史记录",
     "sign": "标志"
   },

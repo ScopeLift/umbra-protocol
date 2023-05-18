@@ -14,8 +14,9 @@
         {{ $t('AccountSent.need-signature') }}
         <base-button @click="getData" class="text-center q-mt-md" :label="$t('AccountSent.sign')" />
       </div>
-      <div v-else-if="dataLoading" class="flex">
+      <div v-else-if="dataLoading" class="text-center">
         <loading-spinner />
+        <div class="text-center text-italic">{{ $t('AccountSent.fetching-send-history') }}</div>
       </div>
       <div v-else-if="!needsSignature && !dataLoading" class="q-mx-auto" style="max-width: 800px">
         <account-sent-table :sendMetadata="sendMetadata" />
