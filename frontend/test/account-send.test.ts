@@ -701,12 +701,12 @@ describe('End to end account tests', () => {
 
         if (resetLocalStorageCount) {
           offset = idx;
-          await localforage.setItem(localStorageCountKey, null);
+          await localforage.removeItem(localStorageCountKey);
         }
 
         if (resetLocalStorageValues) {
           offset = idx;
-          await localforage.setItem(localStorageValueKey, null);
+          await localforage.removeItem(localStorageValueKey);
         }
       }
       const expectedArray = sends.accountSends

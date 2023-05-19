@@ -12,6 +12,9 @@ class Localforage {
   clear() {
     this._store = {};
   }
+  removeItem(path: string) {
+    delete this._store[path];
+  }
 }
 
 export default new Localforage();
