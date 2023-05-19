@@ -486,8 +486,8 @@ describe('storeSend', () => {
   it('Generates and saves an encryption count when there are no existing values and count', async () => {
     const existingCount = await localforage.getItem(localStorageCountKey);
     const value = await localforage.getItem(localStorageValueKey);
-    expect(existingCount).toEqual(undefined);
-    expect(value).toEqual(undefined);
+    expect(existingCount).toEqual(null);
+    expect(value).toEqual(null);
 
     await storeSend(storeSendArgs);
 
@@ -501,7 +501,7 @@ describe('storeSend', () => {
   it('Generates and saves an encryption count when there is an existing count but no existing values', async () => {
     await localforage.setItem(localStorageCountKey, new RandomNumber().value);
     const value = await localforage.getItem(localStorageValueKey);
-    expect(value).toEqual(undefined);
+    expect(value).toEqual(null);
 
     await storeSend(storeSendArgs);
 
@@ -526,7 +526,7 @@ describe('storeSend', () => {
       },
     ]);
     const count = await localforage.getItem(localStorageCountKey);
-    expect(count).toEqual(undefined);
+    expect(count).toEqual(null);
 
     await storeSend(storeSendArgs);
     const newCount = await localforage.getItem(localStorageCountKey);
@@ -701,12 +701,12 @@ describe('End to end account tests', () => {
 
         if (resetLocalStorageCount) {
           offset = idx;
-          await localforage.setItem(localStorageCountKey, undefined);
+          await localforage.setItem(localStorageCountKey, null);
         }
 
         if (resetLocalStorageValues) {
           offset = idx;
-          await localforage.setItem(localStorageValueKey, undefined);
+          await localforage.setItem(localStorageValueKey, null);
         }
       }
       const expectedArray = sends.accountSends

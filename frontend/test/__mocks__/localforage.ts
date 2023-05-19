@@ -7,7 +7,7 @@ class Localforage {
     this._store = { ...this._store, [path]: obj };
   }
   getItem(path: string) {
-    return this._store[path];
+    return this._store[path] || null;
   }
   clear() {
     this._store = {};

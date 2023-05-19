@@ -203,7 +203,8 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
 
   let accountData = [] as AccountSendData[];
   const addresses = [];
-  if (initialEncryptionCount === undefined) {
+  if (initialEncryptionCount === undefined || initialEncryptionCount === null) {
+    await localforage.setItem(localStorageKey, []);
     return [];
   }
 
