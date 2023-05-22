@@ -101,6 +101,7 @@ const config: HardhatUserConfig = {
       chainId: chainIds['sepolia'],
       url: 'http://127.0.0.1:8545',
     },
+    sepolia: createTestnetConfig('sepolia'),
     goerli: createTestnetConfig('goerli'),
     kovan: createTestnetConfig('kovan'),
     rinkeby: createTestnetConfig('rinkeby'),
