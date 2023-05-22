@@ -29,7 +29,7 @@
       <!-- Card Layout for grid option -->
       <template v-slot:item="props">
         <div :key="props.row.dateSentUnix" class="col-12">
-          <q-card class="card-border cursor-pointer q-pa-md col justify-center items-center">
+          <q-card class="card-border q-pa-md col justify-center items-center">
             <q-card-section class="row justify-center items-center">
               <img class="q-mr-md" :src="props.row.tokenLogo" style="width: 1.2rem" />
               <div class="text-primary text-h6 header-black q-pb-none">
@@ -37,18 +37,16 @@
               </div>
             </q-card-section>
             <div class="row justify-between items-center">
-              <div>
-                <span class="q-mr-xs">
-                  {{ $t('AccountSentTable.receiver') }}
-                  <span v-if="true" class="q-ml-sm">
+              {{ $t('AccountSentTable.receiver') }}
+              <div class="flex">
+                <span class="q-mr-sm">
+                  <span v-if="true">
                     <base-tooltip label="🧙" size="sm">{{ $t('AccountSent.advanced-mode-on') }}</base-tooltip>
                   </span>
-                  <span v-if="true" class="q-ml-sm">
+                  <span v-if="true">
                     <base-tooltip label="🔑" size="sm">{{ $t('AccountSent.use-public-key-checked') }}</base-tooltip>
                   </span>
                 </span>
-              </div>
-              <div>
                 <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
                   <span>{{ props.row.recipientId }} </span>
                   <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
