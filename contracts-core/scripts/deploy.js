@@ -60,9 +60,9 @@ const doBumpNonceTx = async (wallet) => {
     const deployParams = require('./deployParams.json');
     const deployParamsForNetwork = deployParams[network];
 
-    // When testing deployment on localhost, the expected deployer is 0x2c399eD6c510C89793C90f7A186FDd2bD1Fd6AdD, which
-    // corresponds to address[0] of the mnemonic "test test test test test test test test test test silent junk".
-    // We could not use the default hardhat mnemonic because the nonce for that address on a forked Rinkeby would
+    // When testing deployment on locally, the expected deployer is 0xBC425Bde78FD15fC6E35723887db8bC289E765dB, which
+    // corresponds to address[0] of the mnemonic "test test test test test test test test test silent silent junk".
+    // We could not use the default hardhat mnemonic because the nonce for that address on a forked Sepolia would
     // be unpredictable (since lots of people execute txs with that account).
     const { expectedDeployer, toll, tollCollector, tollReceiver, expectedRegistryNonce } = deployParamsForNetwork;
 
