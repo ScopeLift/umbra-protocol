@@ -29,6 +29,7 @@ const chainIds = {
   arbitrum: 42161,
   optimistic_kovan: 69,
   optimism: 10,
+  sepolia: 11155111,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -86,6 +87,19 @@ const config: HardhatUserConfig = {
         mnemonic,
         path: "m/44'/60'/0'/0",
       },
+    },
+    // For testing deployments locally with forked anvil environments. For example, to test
+    // deployment to sepolia with a local fork first run:
+    // anvil --fork-url <YOUR-RPC> --mnemonic "test test test test test test test test test silent silent junk"
+    anvil: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['sepolia'],
+      url: 'http://127.0.0.1:8545',
     },
     goerli: createTestnetConfig('goerli'),
     kovan: createTestnetConfig('kovan'),
