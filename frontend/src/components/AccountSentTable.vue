@@ -96,21 +96,21 @@
 
             <!-- Sender column -->
             <div v-else-if="col.name === 'from'" class="d-inline-block">
-              <div class="flex flex-col items-center">
-                <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
-                  <q-icon class="copy-icon table-icon" name="far fa-copy" left />
+              <div @click="copyAddress(props.row.address, provider)" class="cursor-pointer copy-icon-parent">
+                <span class="">
                   {{ props.row.recipientId }}
-                </div>
-                <div class="q-ml-sm q-p-sm flex table-icon">
                   <span v-if="props.row.advancedMode">
-                    <base-tooltip label="🧙" size="sm">{{ $t('AccountSentTable.advanced-mode-on') }}</base-tooltip>
+                    <base-tooltip class="q-mb-md" label="🧙" size="sm">{{
+                      $t('AccountSentTable.advanced-mode-on')
+                    }}</base-tooltip>
                   </span>
-                  <div v-if="props.row.usePublicKeyChecked">
-                    <base-tooltip label="🔑" size="xs">{{
+                  <span v-if="props.row.usePublicKeyChecked">
+                    <base-tooltip class="q-mb-md" label="🔑" size="sm">{{
                       $t('AccountSentTable.use-public-key-checked')
                     }}</base-tooltip>
-                  </div>
-                </div>
+                  </span>
+                </span>
+                <q-icon class="copy-icon" name="far fa-copy" right />
               </div>
             </div>
             <!-- Default -->
@@ -188,6 +188,4 @@ export default defineComponent({
   color: $primary
 .external-link-icon
   color: transparent
-.table-icon
-  margin-bottom: 2px
 </style>
