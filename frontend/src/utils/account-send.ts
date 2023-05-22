@@ -204,7 +204,8 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
   let accountData = [] as AccountSendData[];
   const addresses = [];
   if (initialEncryptionCount === undefined || initialEncryptionCount === null) {
-    await localforage.setItem(localStorageKey, []);
+    await localforage.removeItem(localStorageKey);
+    window.logger.warn('Initial encryption count was not set. Clearing current values', values);
     return [];
   }
 
