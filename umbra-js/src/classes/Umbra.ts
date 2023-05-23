@@ -29,7 +29,7 @@ import { RandomNumber } from './RandomNumber';
 import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI, ETH_ADDRESS, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
-import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
+import type { Announcement, ChainConfig, EthersProvider, GraphFilterOverride, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
@@ -364,6 +364,10 @@ export class Umbra {
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
+    console.log('startBlock', startBlock);
+    console.log('endBlock', endBlock);
+    console.log(this.chainConfig.subgraphUrl);
+    console.log(typeof window);
 
     // Try querying events using the Graph, fallback to querying logs.
     // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
@@ -394,14 +398,10 @@ export class Umbra {
     startBlock: string | number,
     endBlock: string | number
   ): Promise<SubgraphAnnouncement[]> {
+    console.log('overrides 2', startBlock, endBlock);
     if (!this.chainConfig.subgraphUrl) {
       throw new Error('Subgraph URL must be defined to fetch via subgraph');
     }
-
-    // TODO: We're ignoring these overrides for The Graph. Is this intentional? Should we remove the parameters,
-    // or update so it uses them?
-    startBlock;
-    endBlock;
 
     // Query subgraph
     const subgraphAnnouncements: SubgraphAnnouncement[] = await recursiveGraphFetch(
@@ -420,7 +420,12 @@ export class Umbra {
           token
           txHash
         }
-      }`
+      }`,
+      [],
+      {
+        startBlock: startBlock,
+        endBlock: endBlock,
+      }
     );
 
     return subgraphAnnouncements;
@@ -689,10 +694,39 @@ async function recursiveGraphFetch(
   url: string,
   key: string,
   query: (filter: string) => string,
-  before: any[] = []
+  before: any[] = [],
+  overrides?: GraphFilterOverride
 ): Promise<any[]> {
+  console.log('Here');
+  console.log(overrides);
   // retrieve the last ID we collected to use as the starting point for this query
   const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
+  let startBlockFilter = '';
+  let endBlockFilter = '';
+  const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : ''; // check if number
+  const endBlock = overrides?.endBlock ? overrides?.endBlock.toString() : ''; // check if number
+
+  // if (startBlock && endBlock && startBlock > endBlock)
+  //   throw new Error(`Start block is greater than the end block: ${startBlock} > ${endBlock}`);
+
+  if (startBlock) {
+    startBlockFilter = `block_gte: "${startBlock.toString()}",`;
+  }
+
+  if (endBlock && endBlock !== 'latest') {
+    endBlockFilter = `block_lte: "${endBlock.toString()}",`;
+  }
+  console.log(startBlockFilter);
+  console.log(endBlockFilter);
+  const hi = query(`
+        first: 1000,
+        where: {
+          ${fromId ? `id_gt: "${fromId}",` : ''}
+					${startBlockFilter}
+					${endBlockFilter}
+        }
+      `);
+  console.log(hi);
 
   // Fetch this 'page' of results - please note that the query MUST return an ID
   const res = await fetch(url, {
@@ -703,6 +737,8 @@ async function recursiveGraphFetch(
         first: 1000,
         where: {
           ${fromId ? `id_gt: "${fromId}",` : ''}
+					${startBlockFilter}
+					${endBlockFilter}
         }
       `),
     }),
