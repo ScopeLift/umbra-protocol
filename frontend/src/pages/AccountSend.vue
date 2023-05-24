@@ -1117,9 +1117,12 @@ function useSendForm() {
       // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
       // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
       const ethersProvider = provider.value as Provider;
-      for (let i = 0; i < batchSends.value.length; i++) {
-        await umbraUtils.lookupRecipient(batchSends.value[i].receiver as string, ethersProvider);
-      }
+      await Promise.all(
+        batchSends.value.map(async (send) => {
+          return umbraUtils.lookupRecipient(send.receiver as string, ethersProvider);
+        })
+      );
+
       // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
       // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
       await getTokenBalances();
