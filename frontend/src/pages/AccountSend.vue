@@ -651,7 +651,7 @@ import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
 import { storeSend } from 'src/utils/account-send';
 
-interface SendData {
+interface BatchSendData {
   id: number;
   receiver: string | undefined;
   token: TokenInfoExtended | null | undefined;
@@ -704,7 +704,7 @@ function useSendForm() {
   const connectRedirectTo = ref('send');
 
   // Batch Send Form Parameters
-  const Sends = ref<SendData[]>([]);
+  const Sends = ref<BatchSendData[]>([]);
   const tab = ref('send');
   const batchSendSupportedChains = [5];
   const batchSendIsSupported = ref(false);
@@ -747,7 +747,7 @@ function useSendForm() {
   });
 
   const summaryAmount = computed(() => {
-    return Sends.value.reduce((summaryMap: Map<string, string>, send: SendData) => {
+    return Sends.value.reduce((summaryMap: Map<string, string>, send: BatchSendData) => {
       if (send.token && send.amount) {
         const isValidAmount = Boolean(send.amount) && isValidTokenAmount(send.amount, send.token) === true;
         if (isValidAmount) {
@@ -896,7 +896,7 @@ function useSendForm() {
     batchSendIsSupported.value = batchSendSupportedChains.includes(Number(linkChainId));
   }
 
-  function addFields(CurrentSends: SendData[]) {
+  function addFields(CurrentSends: BatchSendData[]) {
     CurrentSends.push({
       id: CurrentSends[CurrentSends.length - 1]?.id + 1 || 1,
       receiver: '',
