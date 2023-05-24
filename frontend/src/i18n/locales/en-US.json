@@ -86,6 +86,7 @@
     "enter-an-amount": "Please enter an amount",
     "enter-a-recipient": "Please enter a recipient",
     "select-a-token": "Please select a token",
+    "select-a-token-for-send": "Please select a token for send",
     "send-at-least": "Please send at least",
     "amount-exceeds-balance": "Amount exceeds wallet balance",
     "please-complete-form": "Please complete the form",

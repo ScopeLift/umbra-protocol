@@ -1109,9 +1109,9 @@ function useSendForm() {
       // Form validation
       for (let i = 0; i < batchSends.value.length; i++) {
         if (!batchSends.value[i].receiver || !batchSends.value[i].token || !batchSends.value[i].amount)
-          throw new Error('please complete the form');
+          throw new Error(tc('Send.please-complete-form'));
       }
-      if (!signer.value) throw new Error('wallet not connected');
+      if (!signer.value) throw new Error(tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
@@ -1127,7 +1127,7 @@ function useSendForm() {
 
       for (let i = 0; i < batchSends.value.length; i++) {
         const token: TokenInfoExtended | null | undefined = batchSends.value[i].token;
-        if (!token) throw new Error('please complete the form');
+        if (!token) throw new Error(tc('Send.select-a-token-for-send') + ` #${i + 1}`);
 
         const { address: tokenAddress, decimals } = token;
 

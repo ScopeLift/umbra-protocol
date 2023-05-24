@@ -86,6 +86,7 @@
     "enter-an-amount": "请输入金额",
     "enter-a-recipient": "请输入收款人",
     "select-a-token": "请选择代币",
+    "select-a-token-for-send": "请选择代币, 发送",
     "send-at-least": "请最少发送",
     "amount-exceeds-balance": "钱包金额不足",
     "please-complete-form": "请填写表格",
