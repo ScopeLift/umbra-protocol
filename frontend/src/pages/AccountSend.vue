@@ -862,7 +862,8 @@ function useSendForm() {
       { id: 1, receiver: '', token: token.value, amount: '' },
       { id: 2, receiver: '', token: token.value, amount: '' }
     );
-    batchSendIsSupported.value = batchSendSupportedChains.includes(Number(currentChain.value?.chainId));
+    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+    batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
   });
 
   async function setPaymentLinkData() {
@@ -892,8 +893,6 @@ function useSendForm() {
         await setNetwork(chain[0]);
       }
     }
-
-    batchSendIsSupported.value = batchSendSupportedChains.includes(Number(linkChainId));
   }
 
   function addFields(CurrentSends: BatchSendData[]) {
