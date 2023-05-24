@@ -846,7 +846,8 @@ function useSendForm() {
       } else if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId || isLoadingValue !== prevIsLoadingValue) {
         // When network finally connects after page load, we need to re-parse the payment link data.
         await setPaymentLinkData(); // Handles validations.
-        batchSendIsSupported.value = batchSendSupportedChains.includes(Number(currentChain.value?.chainId));
+        const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+        batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
         batchSends.value[0].token = token.value;
       }
 
