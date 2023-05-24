@@ -1095,7 +1095,7 @@ function useSendForm() {
         });
       }
       await tx.wait();
-      await resetForm();
+      resetForm();
     } finally {
       isSending.value = false;
       showAdvancedSendWarning.value = false;
@@ -1179,12 +1179,8 @@ function useSendForm() {
     }
   }
 
-  async function resetForm() {
-    const { token: paymentToken } = await parsePaymentLink(NATIVE_TOKEN.value);
-    // For token, reset default to the chain's native token
-    if (paymentToken?.symbol) token.value = paymentToken;
-    else token.value = tokenList.value[0];
-
+  function resetForm() {
+    token.value = NATIVE_TOKEN.value;
     recipientId.value = undefined;
     humanAmount.value = undefined;
     sendFormRef.value?.resetValidation();
