@@ -956,7 +956,7 @@ function useSendForm() {
 
     const minAmt = getMinSendAmount(tokenAddress);
     if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
-    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${tokenToUse.symbol}`; // prettier-ignore
+    else if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${tokenToUse.symbol}`; // prettier-ignore
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
