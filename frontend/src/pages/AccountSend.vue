@@ -950,11 +950,7 @@ function useSendForm() {
     if (val === undefined) return true; // don't show error on empty field
     if (!val || !(Number(val) > 0)) return tc('Send.enter-an-amount');
 
-    let tokenToUse: TokenInfoExtended | null | undefined;
-    // Use batchSend token if it exists
-    if (tokenInput) tokenToUse = tokenInput;
-    // Otherwise use the current Send token
-    else tokenToUse = token.value;
+    const tokenToUse = tokenInput || token.value;
     if (!tokenToUse) return tc('Send.select-a-token');
 
     const { address: tokenAddress, decimals } = tokenToUse;
