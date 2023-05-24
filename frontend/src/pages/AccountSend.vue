@@ -645,7 +645,7 @@ import {
 } from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
-import { SendBatch } from 'app/../umbra-js/build/src/types';
+import { SendBatch } from '@umbracash/umbra-js';
 import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
