@@ -661,7 +661,7 @@ describe('End to end account tests', () => {
       const sends = createAccountSend(num);
 
       // Offset the account sends based on when local storage was cleared
-      let offset = 0;
+      let offset = null;
       for (const [idx, value] of sends.accountSends.entries()) {
         const {
           amount,
@@ -711,7 +711,7 @@ describe('End to end account tests', () => {
       }
       const expectedArray = sends.accountSends
         // We must add 1 because slice is inclusive
-        .slice(offset !== 0 ? offset + 1 : 0)
+        .slice(offset !== null ? offset + 1 : 0)
         .map((value) => {
           return {
             ...value,
