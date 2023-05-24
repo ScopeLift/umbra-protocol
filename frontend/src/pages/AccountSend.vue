@@ -1123,7 +1123,7 @@ function useSendForm() {
       }
       // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
       // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
-      // await getTokenBalances();
+      await getTokenBalances();
 
       for (let i = 0; i < batchSends.value.length; i++) {
         const token: TokenInfoExtended | null | undefined = batchSends.value[i].token;
