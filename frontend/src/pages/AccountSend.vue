@@ -304,7 +304,7 @@
                     </div>
                     <base-button
                       v-show="index !== 0"
-                      @click="removeField(Send.id)"
+                      @click="isSending ? null : removeField(Send.id)"
                       :disable="isSending"
                       :flat="true"
                       label=""
@@ -403,7 +403,7 @@
                     v-bind:style="{
                       visibility: index !== 0 ? 'visible' : 'hidden',
                     }"
-                    @click="removeField(Send.id)"
+                    @click="isSending ? null : removeField(Send.id)"
                     class="batch-send-label"
                     :disable="isSending"
                     :flat="true"
@@ -596,7 +596,7 @@
             <div class="batch-send-buttons">
               <base-button
                 class="button-container"
-                @click="addFields(Sends)"
+                @click="isSending ? null : addFields(Sends)"
                 :disable="isSending"
                 :flat="true"
                 :label="$t('Send.add-send')"
