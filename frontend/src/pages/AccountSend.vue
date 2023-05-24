@@ -296,7 +296,7 @@
             <!-- Mobile Card Layout -->
 
             <div v-if="$q.screen.xs">
-              <div v-for="(Send, index) in Sends" :key="index" class="col-12 batch-send-card">
+              <div v-for="(Send, index) in batchSends" :key="index" class="col-12 batch-send-card">
                 <q-card class="cursor-pointer q-pt-md col justify-center items-center">
                   <q-card-section class="row justify-center items-center">
                     <div class="text-primary text-h6 header-black q-pb-none">
@@ -357,7 +357,7 @@
 
             <!-- Desktop Layout -->
             <q-form v-else>
-              <div v-for="(Send, index) in Sends" :key="index">
+              <div v-for="(Send, index) in batchSends" :key="index">
                 <!-- Identifier -->
 
                 <div class="batch-send">
@@ -414,7 +414,7 @@
               </div>
             </q-form>
             <!-- Toll + summary details -->
-            <div v-if="Sends[0]?.amount" class="batch-send-buttons">
+            <div v-if="batchSends[0]?.amount" class="batch-send-buttons">
               <div class="text-bold">{{ $t('Send.summary') }}</div>
               <br />
 
@@ -596,7 +596,7 @@
             <div class="batch-send-buttons">
               <base-button
                 class="button-container"
-                @click="isSending ? null : addFields(Sends)"
+                @click="isSending ? null : addFields(batchSends)"
                 :disable="isSending"
                 :flat="true"
                 :label="$t('Send.add-send')"
@@ -605,7 +605,7 @@
                 :label="$t('Send.send')"
                 :loading="isSending"
                 type="submit"
-                :disable="Sends.length == 1 || isSending"
+                :disable="batchSends.length == 1 || isSending"
               />
             </div>
           </q-form>
@@ -686,7 +686,6 @@ function useSendForm() {
 
   // Form refs for triggering validation via form items' `validate()` method.
   const recipientIdBaseInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
-
   const tokenBaseSelectRef = ref<InstanceType<typeof BaseSelect> | null>(null);
   const humanAmountBaseInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
 
@@ -704,7 +703,7 @@ function useSendForm() {
   const connectRedirectTo = ref('send');
 
   // Batch Send Form Parameters
-  const Sends = ref<BatchSendData[]>([]);
+  const batchSends = ref<BatchSendData[]>([]);
   const tab = ref('send');
   const batchSendSupportedChains = [5];
   const batchSendIsSupported = ref(false);
@@ -715,7 +714,7 @@ function useSendForm() {
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
   const batchSendHumanToll = computed(() =>
-    humanizeTokenAmount(toll.value.mul(Sends.value.length), NATIVE_TOKEN.value)
+    humanizeTokenAmount(toll.value.mul(batchSends.value.length), NATIVE_TOKEN.value)
   );
 
   const humanTotalAmount = computed(() => {
@@ -737,7 +736,7 @@ function useSendForm() {
     if (typeof ethTotal !== 'string') return '--'; // appease TS
     if (isNaN(Number(ethTotal))) return '--';
     const sendAmount = parseUnits(ethTotal, NATIVE_TOKEN.value.decimals);
-    const totalAmount = sendAmount.add(toll.value.mul(Sends.value.length));
+    const totalAmount = sendAmount.add(toll.value.mul(batchSends.value.length));
 
     return humanizeArithmeticResult(
       totalAmount,
@@ -747,7 +746,7 @@ function useSendForm() {
   });
 
   const summaryAmount = computed(() => {
-    return Sends.value.reduce((summaryMap: Map<string, string>, send: BatchSendData) => {
+    return batchSends.value.reduce((summaryMap: Map<string, string>, send: BatchSendData) => {
       if (send.token && send.amount) {
         const isValidAmount = Boolean(send.amount) && isValidTokenAmount(send.amount, send.token) === true;
         if (isValidAmount) {
@@ -848,7 +847,7 @@ function useSendForm() {
         // When network finally connects after page load, we need to re-parse the payment link data.
         await setPaymentLinkData(); // Handles validations.
         batchSendIsSupported.value = batchSendSupportedChains.includes(Number(currentChain.value?.chainId));
-        Sends.value[0].token = token.value;
+        batchSends.value[0].token = token.value;
       }
 
       const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
@@ -858,7 +857,7 @@ function useSendForm() {
 
   onMounted(async () => {
     await setPaymentLinkData();
-    Sends.value.push(
+    batchSends.value.push(
       { id: 1, receiver: '', token: token.value, amount: '' },
       { id: 2, receiver: '', token: token.value, amount: '' }
     );
@@ -906,8 +905,8 @@ function useSendForm() {
   }
 
   function removeField(removeId: number) {
-    const index = Sends.value.findIndex((send) => send.id === removeId);
-    Sends.value.splice(index, 1);
+    const index = batchSends.value.findIndex((send) => send.id === removeId);
+    batchSends.value.splice(index, 1);
   }
 
   // Validators
@@ -1111,8 +1110,8 @@ function useSendForm() {
   async function onBatchSendFormSubmit() {
     try {
       // Form validation
-      for (let i = 0; i < Sends.value.length; i++) {
-        if (!Sends.value[i].receiver || !Sends.value[i].token || !Sends.value[i].amount)
+      for (let i = 0; i < batchSends.value.length; i++) {
+        if (!batchSends.value[i].receiver || !batchSends.value[i].token || !batchSends.value[i].amount)
           throw new Error('please complete the form');
       }
       if (!signer.value) throw new Error('wallet not connected');
@@ -1122,20 +1121,20 @@ function useSendForm() {
       // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
       // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
       const ethersProvider = provider.value as Provider;
-      for (let i = 0; i < Sends.value.length; i++) {
-        await umbraUtils.lookupRecipient(Sends.value[i].receiver as string, ethersProvider);
+      for (let i = 0; i < batchSends.value.length; i++) {
+        await umbraUtils.lookupRecipient(batchSends.value[i].receiver as string, ethersProvider);
       }
       // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
       // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
       // await getTokenBalances();
 
-      for (let i = 0; i < Sends.value.length; i++) {
-        const token: TokenInfoExtended | null | undefined = Sends.value[i].token;
+      for (let i = 0; i < batchSends.value.length; i++) {
+        const token: TokenInfoExtended | null | undefined = batchSends.value[i].token;
         if (!token) throw new Error('please complete the form');
 
         const { address: tokenAddress, decimals } = token;
 
-        const tokenAmount = parseUnits(Sends.value[i].amount, decimals);
+        const tokenAmount = parseUnits(batchSends.value[i].amount, decimals);
 
         if (tokenAddress === NATIVE_TOKEN.value.address) {
           // Sending the native token, so check that user has balance of: amount being sent + toll
@@ -1165,14 +1164,14 @@ function useSendForm() {
       }
 
       const newSends = <SendBatch[]>[];
-      for (let i = 0; i < Sends.value.length; i++) {
-        const token: TokenInfoExtended | null | undefined = Sends.value[i].token;
+      for (let i = 0; i < batchSends.value.length; i++) {
+        const token: TokenInfoExtended | null | undefined = batchSends.value[i].token;
         if (!token) throw new Error('Send.please-complete-form');
         const { address: tokenAddress, decimals } = token;
-        const tokenAmount = parseUnits(Sends.value[i].amount, decimals);
+        const tokenAmount = parseUnits(batchSends.value[i].amount, decimals);
 
         if (tokenAddress)
-          newSends.push({ token: tokenAddress, amount: tokenAmount, address: Sends.value[i].receiver as string });
+          newSends.push({ token: tokenAddress, amount: tokenAmount, address: batchSends.value[i].receiver as string });
       }
 
       // Send with Umbra
@@ -1197,7 +1196,7 @@ function useSendForm() {
   }
 
   function resetBatchSendForm() {
-    Sends.value = [
+    batchSends.value = [
       { id: 1, receiver: '', token: token.value, amount: '' },
       { id: 2, receiver: '', token: token.value, amount: '' },
     ];
@@ -1275,7 +1274,7 @@ function useSendForm() {
     recipientId,
     recipientIdBaseInputRef,
     removeField,
-    Sends,
+    batchSends,
     sendAdvancedButton,
     sendFormRef,
     sendingString,
