@@ -364,10 +364,6 @@ export class Umbra {
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
-    console.log('startBlock', startBlock);
-    console.log('endBlock', endBlock);
-    console.log(this.chainConfig.subgraphUrl);
-    console.log(typeof window);
 
     // Try querying events using the Graph, fallback to querying logs.
     // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
@@ -398,7 +394,6 @@ export class Umbra {
     startBlock: string | number,
     endBlock: string | number
   ): Promise<SubgraphAnnouncement[]> {
-    console.log('overrides 2', startBlock, endBlock);
     if (!this.chainConfig.subgraphUrl) {
       throw new Error('Subgraph URL must be defined to fetch via subgraph');
     }
@@ -697,8 +692,6 @@ async function recursiveGraphFetch(
   before: any[] = [],
   overrides?: GraphFilterOverride
 ): Promise<any[]> {
-  console.log('Here');
-  console.log(overrides);
   // retrieve the last ID we collected to use as the starting point for this query
   const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
   let startBlockFilter = '';
@@ -716,18 +709,6 @@ async function recursiveGraphFetch(
   if (endBlock && endBlock !== 'latest') {
     endBlockFilter = `block_lte: "${endBlock.toString()}",`;
   }
-  console.log(startBlockFilter);
-  console.log(endBlockFilter);
-  const hi = query(`
-        first: 1000,
-        where: {
-          ${fromId ? `id_gt: "${fromId}",` : ''}
-					${startBlockFilter}
-					${endBlockFilter}
-        }
-      `);
-  console.log(hi);
-
   // Fetch this 'page' of results - please note that the query MUST return an ID
   const res = await fetch(url, {
     method: 'POST',
@@ -750,7 +731,7 @@ async function recursiveGraphFetch(
   // If there were results on this page then query the next page, otherwise return the data
   /* eslint-disable @typescript-eslint/no-unsafe-return */
   if (!json.data[key].length) return [...before];
-  else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]]);
+  else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]], overrides);
   /* eslint-enable @typescript-eslint/no-unsafe-return */
 }
 

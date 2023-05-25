@@ -135,7 +135,8 @@ function useScan() {
       const isFormValid = await settingsFormRef.value?.validate(true);
       if (!isFormValid) return;
     }
-    if (Number(startBlockLocal.value) > Number(endBlockLocal.value)) {
+
+    if (Number(startBlockLocal.value) > Number(endBlockLocal.value || undefined)) {
       throw new Error('End block is larger than start block');
     }
 
@@ -176,13 +177,10 @@ function useScan() {
     // Fetch announcements
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     let allAnnouncements: AnnouncementDetail[] = [];
-    console.log('overrides', overrides);
     // Have to build and do a relative path to fix
     try {
       allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
-      console.log('Fetching done');
     } catch (e) {
-      console.log('error');
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
       throw e;
     }
@@ -192,7 +190,7 @@ function useScan() {
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
 
-    console.log(allAnnouncements.length);
+    scanPercentage.value = 0;
     filterUserAnnouncements(
       spendingPubKey,
       viewingPrivKey,

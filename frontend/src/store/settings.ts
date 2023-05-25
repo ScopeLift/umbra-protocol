@@ -84,7 +84,7 @@ export default function useSettingsStore() {
 
   function setScanBlocks(startBlock_: number, endBlock_: number) {
     startBlock.value = startBlock_;
-    endBlock.value = endBlock_;
+    endBlock.value = endBlock_ || undefined;
   }
 
   function setScanPrivateKey(key: string) {
