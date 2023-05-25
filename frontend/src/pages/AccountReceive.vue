@@ -177,7 +177,6 @@ function useScan() {
     // Fetch announcements
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     let allAnnouncements: AnnouncementDetail[] = [];
-    // Have to build and do a relative path to fix
     try {
       allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
     } catch (e) {

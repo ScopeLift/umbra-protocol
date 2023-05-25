@@ -696,18 +696,15 @@ async function recursiveGraphFetch(
   const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
   let startBlockFilter = '';
   let endBlockFilter = '';
-  const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : ''; // check if number
-  const endBlock = overrides?.endBlock ? overrides?.endBlock.toString() : ''; // check if number
-
-  // if (startBlock && endBlock && startBlock > endBlock)
-  //   throw new Error(`Start block is greater than the end block: ${startBlock} > ${endBlock}`);
+  const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : '';
+  const endBlock = overrides?.endBlock ? overrides?.endBlock.toString() : '';
 
   if (startBlock) {
-    startBlockFilter = `block_gte: "${startBlock.toString()}",`;
+    startBlockFilter = `block_gte: "${startBlock}",`;
   }
 
   if (endBlock && endBlock !== 'latest') {
-    endBlockFilter = `block_lte: "${endBlock.toString()}",`;
+    endBlockFilter = `block_lte: "${endBlock}",`;
   }
   // Fetch this 'page' of results - please note that the query MUST return an ID
   const res = await fetch(url, {
@@ -718,8 +715,8 @@ async function recursiveGraphFetch(
         first: 1000,
         where: {
           ${fromId ? `id_gt: "${fromId}",` : ''}
-					${startBlockFilter}
-					${endBlockFilter}
+          ${startBlockFilter}
+          ${endBlockFilter}
         }
       `),
     }),
