@@ -732,7 +732,7 @@ function useSendForm() {
 
   // Batch Send Computed Form Parameters
   const batchSendHumanTotalAmount = computed(() => {
-    const ethTotal = summaryAmount.value.get(NATIVE_TOKEN.value.symbol);
+    const ethTotal = summaryAmount.value.get(NATIVE_TOKEN.value);
     if (typeof ethTotal !== 'string') return '--'; // appease TS
     if (isNaN(Number(ethTotal))) return '--';
     const sendAmount = parseUnits(ethTotal, NATIVE_TOKEN.value.decimals);
@@ -746,11 +746,11 @@ function useSendForm() {
   });
 
   const summaryAmount = computed(() => {
-    return batchSends.value.reduce((summaryMap: Map<string, string>, send: BatchSendData) => {
+    return batchSends.value.reduce((summaryMap: Map<TokenInfoExtended, string>, send: BatchSendData) => {
       if (send.token && send.amount) {
         const isValidAmount = Boolean(send.amount) && isValidTokenAmount(send.amount, send.token) === true;
         if (isValidAmount) {
-          const previousAmount = summaryMap.get(send.token.symbol)?.replace(/,/g, '') || '0';
+          const previousAmount = summaryMap.get(send.token)?.replace(/,/g, '') || '0';
           const updatedAmount = parseUnits(previousAmount, send.token.decimals)
             .add(parseUnits(send.amount, send.token.decimals))
             .toString();
@@ -759,11 +759,11 @@ function useSendForm() {
             [previousAmount, send.amount], // subtotal and fee
             send.token
           );
-          summaryMap.set(send.token.symbol, humanNewAmount);
+          summaryMap.set(send.token, humanNewAmount);
         }
       }
       return summaryMap;
-    }, new Map<string, string>());
+    }, new Map<TokenInfoExtended, string>());
   });
   const sendingString = computed(() => {
     let string = '';
@@ -771,7 +771,7 @@ function useSendForm() {
       const token = entry[0];
       const amount = entry[1];
 
-      string += `${amount} ${token}`;
+      string += `${amount} ${token.symbol}`;
       if (index != Array.from(summaryAmount.value).length - 1) {
         string += ' + ';
       }
@@ -784,10 +784,10 @@ function useSendForm() {
       const token = entry[0];
       const amount = entry[1];
 
-      if (token === NATIVE_TOKEN.value.symbol) {
+      if (token === NATIVE_TOKEN.value) {
         allString += `${batchSendHumanTotalAmount.value} ${NATIVE_TOKEN.value.symbol}`;
       } else {
-        allString += `${amount} ${token}`;
+        allString += `${amount} ${token.symbol}`;
       }
       if (index != Array.from(summaryAmount.value).length - 1) {
         allString += ' + ';
@@ -1118,7 +1118,7 @@ function useSendForm() {
       // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
       const ethersProvider = provider.value as Provider;
       await Promise.all(
-        batchSends.value.map(async (send) => {
+        batchSends.value.map((send) => {
           return umbraUtils.lookupRecipient(send.receiver as string, ethersProvider);
         })
       );
@@ -1126,12 +1126,13 @@ function useSendForm() {
       // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
       // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
       await getTokenBalances();
+
+      // Check for balance
       for (let i = 0; i < batchSends.value.length; i++) {
         const token: TokenInfoExtended | null | undefined = batchSends.value[i].token;
         if (!token) throw new Error(tc('Send.select-a-token-for-send') + ` #${i + 1}`);
 
         const { address: tokenAddress, decimals } = token;
-
         const tokenAmount = parseUnits(batchSends.value[i].amount, decimals);
 
         if (tokenAddress === NATIVE_TOKEN.value.address) {
@@ -1144,22 +1145,45 @@ function useSendForm() {
           if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
           if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error('Send.amount-exceeds-balance');
         }
-
-        // If token, get approval when required
         isSending.value = true;
+      }
+
+      // Get allowances
+      const promises = [];
+      for (const token of summaryAmount.value.keys()) {
         if (token.symbol !== NATIVE_TOKEN.value.symbol) {
-          // Check allowance
+          const batchSendAddress = umbra.value?.batchSendContract!.address;
           const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
-          const batchSendAddress = umbra.value.batchSendContract!.address;
-          const allowance = (await tokenContract.allowance(userAddress.value, batchSendAddress)) as BigNumber;
-          // If insufficient allowance, get approval
-          if (tokenAmount.gt(allowance)) {
-            const approveTx = await tokenContract.approve(batchSendAddress, MaxUint256);
-            void txNotify(approveTx.hash as string, ethersProvider);
-            await approveTx.wait();
+          promises.push(tokenContract.allowance(userAddress.value, batchSendAddress) as BigNumber);
+        } else {
+          promises.push(Zero);
+        }
+      }
+      const allowances = await Promise.all(promises);
+
+      // If allowances aren't enough, get approvals
+      const approveTxs: TransactionResponse[] = [];
+      const summaryAmountValues = Array.from(summaryAmount.value.entries());
+      for (let i = 0; i < summaryAmountValues.length; i++) {
+        const [token, amount] = summaryAmountValues[i];
+        if (token.symbol !== NATIVE_TOKEN.value.symbol) {
+          const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
+          const batchSendAddress = umbra.value?.batchSendContract!.address;
+          const parsedAmount = parseUnits(amount.replace(/,/g, '') || '0', token.decimals);
+          if (parsedAmount.gt(allowances[i])) {
+            const approveTx: TransactionResponse = await tokenContract.approve(batchSendAddress, MaxUint256);
+            void txNotify(approveTx.hash, ethersProvider);
+            approveTxs.push(approveTx);
           }
         }
       }
+
+      // Wait for all approval tx to go through
+      await Promise.all(
+        approveTxs.map((approveTx) => {
+          return approveTx.wait();
+        })
+      );
 
       const newSends = <SendBatch[]>[];
       for (let i = 0; i < batchSends.value.length; i++) {
