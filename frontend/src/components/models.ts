@@ -156,11 +156,13 @@ export type SendTableMetadataRow = {
   dateSentTime: string;
   amount: string;
   address: string;
-  addressShortened: string;
-  hash: string;
+  recipientId: string;
+  txHash: string;
   tokenLogo?: string;
   tokenAddress: string;
   tokenSymbol: string;
+  advancedMode: boolean;
+  usePublicKeyChecked: boolean;
 };
 
 // Logger type added to window

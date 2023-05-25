@@ -4,11 +4,11 @@
  *   2. Removes noise from having a lot of import lines in other packages
  */
 
-export { getAddress } from '@ethersproject/address';
+export { getAddress, isAddress } from '@ethersproject/address';
 export { Interface } from '@ethersproject/abi';
 export { BigNumber } from '@ethersproject/bignumber';
 export type { BigNumberish } from '@ethersproject/bignumber';
-export { hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
+export { hexValue, isHexString, joinSignature, hexZeroPad } from '@ethersproject/bytes';
 export { AddressZero, MaxUint256, Zero } from '@ethersproject/constants';
 export { Contract } from '@ethersproject/contracts';
 export { namehash } from '@ethersproject/hash';

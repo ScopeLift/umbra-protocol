@@ -32,6 +32,7 @@
     "bnc-notify": "^1.5.1",
     "core-js": "^3.6.5",
     "ethers": "5.7.2",
+    "localforage": "^1.10.0",
     "quasar": "2.10.2",
     "vue-i18n": "^9.2.2",
     "vue-router": "4.1.6",

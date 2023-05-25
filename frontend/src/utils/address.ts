@@ -5,7 +5,15 @@
 import { Provider } from 'components/models';
 import { utils } from '@umbracash/umbra-js';
 import { MAINNET_PROVIDER } from 'src/utils/constants';
-import { getAddress, Web3Provider, isHexString, namehash, Interface, Contract } from 'src/utils/ethers';
+import {
+  getAddress,
+  Web3Provider,
+  isHexString,
+  namehash,
+  Interface,
+  Contract,
+  StaticJsonRpcProvider,
+} from 'src/utils/ethers';
 import { getChainById, jsonFetch } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
 import Resolution from '@unstoppabledomains/resolution';
@@ -20,13 +28,13 @@ export const formatNameOrAddress = (nameOrAddress: string) => {
 };
 
 // Returns an ENS or CNS name if found, otherwise returns the address
-export const lookupAddress = async (address: string, provider: Provider) => {
+export const lookupAddress = async (address: string, provider: Provider | StaticJsonRpcProvider) => {
   const domainName = await lookupEnsOrCns(address, provider);
   return domainName ? domainName : address;
 };
 
 // Returns ENS name that address resolves to, or null if not found
-export const lookupEnsName = async (address: string, provider: Provider) => {
+export const lookupEnsName = async (address: string, provider: Provider | StaticJsonRpcProvider) => {
   try {
     const name = await provider.lookupAddress(address);
     return name;
@@ -53,7 +61,7 @@ export const lookupCnsName = async (address: string) => {
 };
 
 // Returns an ENS or CNS name if found, otherwise returns null
-const lookupEnsOrCns = async (address: string, provider: Provider) => {
+const lookupEnsOrCns = async (address: string, provider: Provider | StaticJsonRpcProvider) => {
   const ensName = await lookupEnsName(address, provider);
   if (ensName) return ensName;
 
@@ -71,7 +79,7 @@ export const toAddress = utils.toAddress;
 
 export const formatAddresses = (addresses: string[]) => addresses.map(formatNameOrAddress);
 
-export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider) => {
+export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
   // Based on https://github.com/ethers-io/ethers.js/blob/0802b70a724321f56d4c170e4c8a46b7804dfb48/src.ts/providers/abstract-provider.ts#L976
   // TODO Add back CNS lookup support if ENS name was not found
   const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);

@@ -240,7 +240,7 @@
           icon="far fa-copy"
           :label="$t('Send.copy-payment-link')"
         />
-        <router-link v-if="false" :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+        <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
           <div class="row items-center justify-center q-pa-xs link-container">
             {{ $t('Send.send-history') }}
           </div>
@@ -282,6 +282,7 @@ import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
 import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
+import { storeSend } from 'src/utils/account-send';
 
 function useSendForm() {
   const { advancedMode } = useSettingsStore();
@@ -289,6 +290,7 @@ function useSendForm() {
     balances,
     chainId,
     currentChain,
+    getPrivateKeys,
     getTokenBalances,
     isLoading,
     NATIVE_TOKEN,
@@ -298,6 +300,7 @@ function useSendForm() {
     tokens: tokenList,
     umbra,
     userAddress,
+    viewingKeyPair,
   } = useWalletStore();
 
   // Helpers
@@ -555,6 +558,10 @@ function useSendForm() {
         if (tokenAmount.gt(currentBalance)) throw new Error(tc('Send.amount-exceeds-balance'));
       }
 
+      if (!viewingKeyPair.value?.privateKeyHex) {
+        await getPrivateKeys();
+      }
+
       // If token, get approval when required
       isSending.value = true;
       if (token.value.symbol !== NATIVE_TOKEN.value.symbol) {
@@ -589,6 +596,28 @@ function useSendForm() {
         gasLimit: sendMax.value && sendingNativeToken ? sendMaxGasLimit : undefined,
       });
       void txNotify(tx.hash, ethersProvider);
+      // The values in this if statement should exist. We have this check to appease the type checker and handle regressions.
+      if (viewingKeyPair.value?.privateKeyHex && userAddress.value && provider.value) {
+        const publicKeys = await umbraUtils.lookupRecipient(recipientId.value, provider.value, {
+          advanced: shouldUseNormalPubKey.value,
+        });
+        await storeSend({
+          chainId: chainId.value!,
+          viewingPrivateKey: viewingKeyPair.value?.privateKeyHex,
+          accountDataToEncrypt: {
+            recipientAddress: recipientId.value,
+            advancedMode: advancedMode.value,
+            usePublicKeyChecked: advancedAcknowledged.value,
+            pubKey: publicKeys.spendingPublicKey,
+          },
+          unencryptedAccountSendData: {
+            amount: tokenAmount.toString(),
+            tokenAddress,
+            txHash: tx.hash,
+            senderAddress: userAddress.value,
+          },
+        });
+      }
       await tx.wait();
       resetForm();
     } finally {
