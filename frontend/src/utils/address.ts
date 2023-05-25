@@ -113,7 +113,20 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
   });
 
   // FORWARD LOOKUP.
-  const forwardNodes = names.map((name) => namehash(name));
+  // Some ENS names have invalid characters that error when computing their namehash. For example,
+  // codepoint U+200C Zero Width Non-Joiner is a common one used by scammers, because it is
+  // invisible: https://codepoints.net/U+200C?lang=en
+  // To handle these names, we set the node value to 32 bytes of zeroes and continue onwards. We'll
+  // have to account for this again later, but it's simpler than the alternative approach of
+  // removing these values from the array and keeping track of the indices. This approach works
+  // because no one can register a name that has a namehash of 32 bytes of zeroes.
+  const forwardNodes = names.map((name) => {
+    try {
+      return namehash(name);
+    } catch (err) {
+      return '0x0000000000000000000000000000000000000000000000000000000000000000';
+    }
+  });
   const forwardResolverCalls = forwardNodes.map((node) => {
     return {
       target: ensRegistryAddr,
@@ -121,6 +134,8 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
       callData: ensRegistryInterface.encodeFunctionData('resolver', [node]),
     };
   });
+
+  // For namehashes that were invalid and replaced with zeroes, we'll get the zero address as the resolver.
   const forwardResolverResults: Response[] = await multicall.callStatic.aggregate3(forwardResolverCalls);
 
   const addrCalls = forwardResolverResults.map(({ returnData }, i) => {
@@ -132,14 +147,17 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
     };
   });
 
+  // For cases where the resolver is the zero address, the call will be successful but the return
+  // data will be empty, i.e. `0x`.
   const addrResponses: Response[] = await multicall.callStatic.aggregate3(addrCalls);
   const forwardAddrs = addrResponses.map(({ success, returnData }, i) => {
-    if (!success || returnData === '0x') return names[i];
+    if (!success || returnData === '0x') return names[i]; // This is an address in these cases.
     return <string>resolverInterface.decodeFunctionResult('addr', returnData)[0];
   });
 
   // VERIFY THAT THEY MATCH.
   return names.map((name, i) => {
+    if (!isHexString(forwardAddrs[i])) return addresses[i]; // Safety check.
     if (getAddress(addresses[i]) === getAddress(forwardAddrs[i])) return name;
     return addresses[i];
   });
