@@ -258,11 +258,7 @@
               iconMargin="q-mx-sm"
               :label="$t('Send.copy-payment-link')"
             />
-            <router-link
-              v-if="false"
-              :class="{ 'no-text-decoration': true, 'dark-toggle': true }"
-              :to="{ name: 'sent' }"
-            >
+            <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
               <div class="row items-center justify-center q-pa-xs link-container">
                 {{ $t('Send.send-history') }}
               </div>
@@ -465,133 +461,6 @@
                   {{ $t('Send.send-history') }}
                 </div>
               </router-link>
-<<<<<<< HEAD
-            </span>
-          </span>
-        </base-tooltip>
-      </div>
-
-      <!-- Token -->
-      <div>{{ $t('Send.select-token') }}</div>
-      <base-select
-        v-model="token"
-        :disable="isSending"
-        filled
-        :label="$t('Send.token')"
-        :options="tokenList"
-        option-label="symbol"
-        ref="tokenBaseSelectRef"
-        :token-balances="balances"
-      />
-
-      <!-- Amount -->
-      <div>
-        {{ $t('Send.amount') }}
-      </div>
-      <base-input
-        v-model="humanAmount"
-        :disable="isSending"
-        placeholder="0"
-        :appendButtonDisable="!recipientId || !isValidRecipientId"
-        :appendButtonLabel="$t('Send.max')"
-        @click="setHumanAmountMax"
-        @input="() => (sendMax = false)"
-        lazy-rules
-        :rules="isValidTokenAmount"
-        ref="humanAmountBaseInputRef"
-      />
-
-      <!-- Toll + summary details -->
-      <div v-if="toll && toll.gt(0) && humanAmount && token">
-        <div class="text-bold">{{ $t('Send.summary') }}</div>
-
-        <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color: rgba(0, 0, 0, 0)">
-          <tbody>
-            <!-- What user is sending -->
-            <tr>
-              <td class="min text-left" style="padding: 0 2rem 0 0">{{ $t('Send.sending') }}</td>
-              <td class="min text-right">{{ humanAmount }}</td>
-              <td class="min text-left">{{ token.symbol }}</td>
-              <td class="min text-left"><img :src="token.logoURI" height="15rem" /></td>
-              <td><!-- Fills space --></td>
-            </tr>
-            <!-- Toll -->
-            <tr>
-              <td class="min text-left" style="padding: 0 2rem 0 0">
-                {{ $t('Send.fee') }}
-                <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
-                  <span>
-                    {{ $t('Send.fee-explain', { chainName: currentChain.chainName }) }}
-                    <router-link
-                      class="dark-toggle hyperlink"
-                      :to="{ name: 'FAQ', hash: '#why-is-there-sometimes-an-umbra-fee' }"
-                    >
-                      {{ $t('Send.learn-more') }}
-                    </router-link>
-                  </span>
-                </base-tooltip>
-              </td>
-              <td class="min text-right">{{ humanToll }}</td>
-              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
-              <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
-              <td><!-- Fills space --></td>
-            </tr>
-            <!-- Summary if they're sending native token -->
-            <tr v-if="token.address === NATIVE_TOKEN.address">
-              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">{{ $t('Send.total') }}</td>
-              <td class="min text-right">{{ humanTotalAmount }}</td>
-              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
-              <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
-              <td><!-- Fills space --></td>
-            </tr>
-            <!-- Summary if they're sending other token -->
-            <tr v-else>
-              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
-              <td class="min text-right">{{ humanAmount }}</td>
-              <td class="min text-left">{{ token.symbol }}</td>
-              <td class="min text-left">+</td>
-              <td class="min text-right" style="padding-left: 0">{{ humanToll }}</td>
-              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
-              <td><!-- Fills space --></td>
-            </tr>
-          </tbody>
-        </q-markup-table>
-      </div>
-
-      <!-- Send button -->
-      <div>
-        <base-button
-          v-if="sendAdvancedButton"
-          :disable="!isValidForm || isSending"
-          :full-width="true"
-          :label="$t('Send.send')"
-          :loading="isSending"
-          @click="showAdvancedSendWarning = true"
-        />
-        <base-button
-          v-if="!sendAdvancedButton"
-          :disable="!isValidForm || isSending"
-          :full-width="true"
-          :label="$t('Send.send')"
-          :loading="isSending"
-          type="submit"
-        />
-        <base-button
-          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount, chainId: chainId })"
-          :disable="isSending"
-          :flat="true"
-          :full-width="true"
-          icon="far fa-copy"
-          :label="$t('Send.copy-payment-link')"
-        />
-        <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
-          <div class="row items-center justify-center q-pa-xs link-container">
-            {{ $t('Send.send-history') }}
-          </div>
-        </router-link>
-      </div>
-    </q-form>
-=======
             </div>
             <div class="batch-send-buttons">
               <base-button
@@ -612,7 +481,6 @@
         </q-page>
       </q-tab-panel>
     </q-tab-panels>
->>>>>>> d9114de (Add BatchSend page with working amount validation and token commit.)
   </q-page>
 </template>
 
