@@ -362,7 +362,7 @@ export async function getEthSweepGasInfo(
   ethToSend: BigNumber;
   chainId: number;
 }> {
-  const gasLimitOf21k = [1, 4, 5, 10, 137, 1337]; // networks where ETH sends cost 21000 gas
+  const gasLimitOf21k = [1, 4, 5, 10, 137, 1337, 11155111]; // networks where ETH sends cost 21000 gas
   const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
   const [toAddressCode, network, fromBalance, lastBlockData, providerGasPrice] = await Promise.all([

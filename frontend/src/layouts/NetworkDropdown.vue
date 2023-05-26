@@ -31,10 +31,10 @@ export default defineComponent({
   setup() {
     const { network, setNetwork, isSupportedNetwork } = useWalletStore();
 
-    // We only show Rinkeby as an option in the network dropdown if the user is connected to Rinkeby
+    // We only show Sepolia as an option in the network dropdown if the user is connected to Rinkeby
     const chainOptions = computed(() => {
       if (network.value?.chainId === 4) return supportedChains;
-      return supportedChains.filter((chain) => chain.chainName !== 'Goerli');
+      return supportedChains.filter((chain) => chain.chainName !== 'Sepolia');
     });
 
     watchEffect(() => {
