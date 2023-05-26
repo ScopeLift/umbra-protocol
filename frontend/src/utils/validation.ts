@@ -1,4 +1,5 @@
 import { BigNumber, computeAddress, isHexString, isAddress } from 'src/utils/ethers';
+import { isConfusing } from 'unicode-confusables';
 
 export const assertValidAddress = (address: string, errorMsg?: string) => {
   if (!address.startsWith('0x') || !isAddress(address)) {
@@ -29,5 +30,12 @@ export const assertValidEncryptionCount = (count: BigNumber, errorMsg?: string) 
 export const assertValidHexString = (hex: string, length: number, errorMsg?: string) => {
   if (!isHexString(hex, length)) {
     throw new Error(errorMsg || 'Invalid hex string was provided');
+  }
+};
+
+export const assertNoConfusables = (name: string, errorMsg?: string) => {
+  const hasConfusables = isConfusing(name);
+  if (hasConfusables) {
+    throw new Error(errorMsg || 'Name contains confusables');
   }
 };
