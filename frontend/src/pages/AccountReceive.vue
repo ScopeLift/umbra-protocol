@@ -135,7 +135,8 @@ function useScan() {
       const isFormValid = await settingsFormRef.value?.validate(true);
       if (!isFormValid) return;
     }
-    if (Number(startBlockLocal.value) > Number(endBlockLocal.value)) {
+
+    if (Number(startBlockLocal.value) > Number(endBlockLocal.value || undefined)) {
       throw new Error('End block is larger than start block');
     }
 
@@ -188,6 +189,7 @@ function useScan() {
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
 
+    scanPercentage.value = 0;
     filterUserAnnouncements(
       spendingPubKey,
       viewingPrivKey,

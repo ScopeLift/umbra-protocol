@@ -131,3 +131,8 @@ export interface SendData {
   pkx: string;
   ciphertext: string;
 }
+
+export type GraphFilterOverride = {
+  startBlock?: number | string;
+  endBlock?: number | string;
+};

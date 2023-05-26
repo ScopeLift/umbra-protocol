@@ -6,7 +6,7 @@ import walletConnectModule from '@web3-onboard/walletconnect';
 import coinbaseWalletModule from '@web3-onboard/coinbase';
 import ledgerModule from '@web3-onboard/ledger';
 import trezorModule from '@web3-onboard/trezor';
-import { KeyPair, Umbra, StealthKeyRegistry, utils } from '@umbracash/umbra-js';
+import { KeyPair, StealthKeyRegistry, utils, Umbra } from '@umbracash/umbra-js';
 import {
   Chain,
   MulticallResponse,
