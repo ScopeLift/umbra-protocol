@@ -418,8 +418,8 @@ export class Umbra {
       }`,
       [],
       {
-        startBlock: startBlock,
-        endBlock: endBlock,
+        startBlock,
+        endBlock,
       }
     );
 
