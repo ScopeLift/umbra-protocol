@@ -8,3 +8,8 @@ declare module '*.vue' {
 declare module '@metamask/jazzicon' {
   export default function (diameter: number, seed: number): HTMLElement;
 }
+
+// For the unicode-confusables package
+declare module 'unicode-confusables' {
+  export function isConfusing(input: string): boolean;
+}

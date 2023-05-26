@@ -118,12 +118,21 @@
             :rules="isValidId"
             ref="recipientIdBaseInputRef"
           />
+          <div
+            class="flex q-pt-sm text-caption warning-container"
+            v-if="recipientIdWarning"
+            :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
+          >
+            {{ recipientIdWarning }}
+          </div>
 
           <!-- Identifier, advanced mode tooltip -->
           <div
             v-if="advancedMode"
             class="row items-center text-caption q-pt-sm q-pb-lg"
-            :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
+            :style="
+              !recipientId || isValidRecipientId || (!isValidRecipientId && recipientIdWarning) ? 'margin-top:-2em' : ''
+            "
           >
             <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
               {{ $t('Send.recipient-pkey') }}
@@ -145,7 +154,7 @@
           </div>
 
           <!-- Token -->
-          <div>{{ $t('Send.select-token') }}</div>
+          <div class="q-pt-sm">{{ $t('Send.select-token') }}</div>
           <base-select
             v-model="token"
             :disable="isSending"
@@ -518,6 +527,7 @@ import { Provider, TokenInfoExtended, supportedChains } from 'components/models'
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
 import { storeSend } from 'src/utils/account-send';
+import { assertNoConfusables } from 'src/utils/validation';
 
 interface BatchSendData {
   id: number;
@@ -559,6 +569,7 @@ function useSendForm() {
 
   // Form parameters.
   const recipientId = ref<string>();
+  const recipientIdWarning = ref<string>();
   const useNormalPubKey = ref(false);
   const token = ref<TokenInfoExtended>();
   const humanAmount = ref<string>();
@@ -783,6 +794,7 @@ function useSendForm() {
   // Validators
   async function isValidId(val: string | undefined) {
     // Return true if nothing is provided
+    checkConfusables();
     if (!val) return true;
 
     // Check if recipient ID is valid
@@ -1134,6 +1146,23 @@ function useSendForm() {
     );
   }
 
+  function checkConfusables() {
+    const recipientIdString = recipientId.value || '';
+    try {
+      if (recipientIdString && recipientIdString.endsWith('eth')) {
+        assertNoConfusables(
+          recipientIdString,
+          'We have detected a confusable character in the ENS name. Check the ENS name to avoid a potential scam.'
+        );
+      }
+      recipientIdWarning.value = undefined;
+    } catch (e) {
+      if (e instanceof Error) {
+        recipientIdWarning.value = e.message;
+      }
+    }
+  }
+
   return {
     acknowledgeSendRisk,
     addFields,
@@ -1145,6 +1174,7 @@ function useSendForm() {
     batchSendSupportedChains,
     connectRedirectTo,
     chainId,
+    checkConfusables,
     currentChain,
     humanAmount,
     humanAmountBaseInputRef,
@@ -1161,6 +1191,7 @@ function useSendForm() {
     onBatchSendFormSubmit,
     paymentLinkParams,
     recipientId,
+    recipientIdWarning,
     recipientIdBaseInputRef,
     removeField,
     batchSends,
@@ -1207,4 +1238,9 @@ td.min
 
 .link-container:hover
   background: rgba($primary, 0.15)
+
+.warning-container
+  padding-left: 12px
+  color: $warning
+  line-height: normal
 </style>
