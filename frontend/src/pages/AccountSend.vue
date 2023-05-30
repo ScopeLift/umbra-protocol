@@ -1018,13 +1018,13 @@ function useSendForm() {
 
       // Get allowances
       const promises = [];
+      const batchSendAddress = umbra.value?.batchSendContract!.address;
       for (const token of summaryAmount.value.keys()) {
         if (token.symbol !== NATIVE_TOKEN.value.symbol) {
-          const batchSendAddress = umbra.value?.batchSendContract!.address;
           const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
           promises.push(tokenContract.allowance(userAddress.value, batchSendAddress) as BigNumber);
         } else {
-          promises.push(Zero);
+          promises.push(Promise.resolve(Zero));
         }
       }
       const allowances = await Promise.all(promises);
