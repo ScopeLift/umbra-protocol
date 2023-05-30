@@ -46,18 +46,18 @@ describe('KeyPair class', () => {
     });
 
     it('initializes an instance from a regular transaction', async () => {
-      // Specify rinkeby transaction hash and its sender
-      const txHash = '0xb72708c3c414d6757c924f812913a351d0f9a89ce11d3fc22381980f0253e04f';
-      const from = '0x4fF79526eA1d492a3dB2aa210d7318ff13F2012c';
+      // Specify Sepolia transaction hash and its sender
+      const txHash = '0xbe5fec4e08c96cd56c4b7250acc426ff4c8e7f79003e9f7a0de12db064447a9e';
+      const from = '0xd48a90d986068788edc45990535756a6b54c26c5';
       // Create instance and check result
       const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
       expect(keyPair.address).to.equal(from);
     });
 
     it('initializes an instance from a contract interaction transaction', async () => {
-      // Specify rinkeby transaction hash and its sender
-      const txHash = '0x4e490ed2b7752d48a480e9712e6833fbccbae2991823d97686eb796aad199e8b';
-      const from = '0xb589178adfb6c6915c55b08B284bdBbbcf4f452e';
+      // Specify Sepolia transaction hash and its sender
+      const txHash = '0xbd17656758f6ac0687e608b413bc965dcddf6d804f5f406043f9421680b1ac91';
+      const from = '0x64f27ed21fc35bcaf1fb2d488043cb6f9ce11bd0';
       // Create instance and check result
       const keyPair = await KeyPair.instanceFromTransaction(txHash, ethersProvider);
       expect(keyPair.address).to.equal(from);

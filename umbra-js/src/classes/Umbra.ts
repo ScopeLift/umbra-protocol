@@ -52,7 +52,7 @@ const chainConfigs: Record<number, ChainConfig> = {
     chainId: 11155111,
     umbraAddress,
     batchSendAddress,
-    startBlock: 3563728,
+    startBlock: 3590825,
     subgraphUrl: subgraphs[11155111],
   }, // Sepolia
 };
