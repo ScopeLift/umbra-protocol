@@ -6,6 +6,7 @@ import { ethers } from 'ethers';
 import { RandomNumber } from '@umbracash/umbra-js';
 
 import {
+  batchStoreSend,
   buildAccountDataForEncryption,
   decryptData,
   encryptAccountData,
@@ -741,5 +742,53 @@ describe('End to end account tests', () => {
       expect(n).toEqual(expectedArray);
     },
     20000
+  );
+});
+
+describe('batchStoreSend', () => {
+  beforeEach(async () => {
+    await localforage.clear();
+  });
+
+  it.each([randomInt(2, 10), randomInt(2, 10), randomInt(2, 10)])(
+    'Generates batch %s sends and saves it to the account send history',
+    async (num) => {
+      const existingCount = await localforage.getItem(localStorageCountKey);
+      const value = await localforage.getItem(localStorageValueKey);
+      expect(existingCount).toEqual(null);
+      expect(value).toEqual(null);
+      const { viewingPrivateKey } = randomData();
+
+      const accountSends = createAccountSend(num);
+      const txHash = accountSends.accountSends[0].txHash;
+      const advancedMode = accountSends.accountSends[0].advancedMode;
+      const usePublicKeyChecked = accountSends.accountSends[0].usePublicKeyChecked;
+      const batches = accountSends.accountSends.map((item) => {
+        return {
+          batch: {
+            token: item.tokenAddress,
+            amount: BigNumber.from(item.amount),
+            address: item.recipientAddress,
+          },
+          pubKey: item.pubKey,
+        };
+      });
+
+      await batchStoreSend({
+        batchTxHash: txHash,
+        advancedMode: advancedMode,
+        usePublicKeyChecked: usePublicKeyChecked,
+        senderAddress: recipientAddress,
+        chainId: 5,
+        viewingPrivateKey,
+        batches,
+      });
+
+      const newCount = await localforage.getItem(localStorageCountKey);
+      const values = (await localforage.getItem(localStorageValueKey)) as any[];
+      const bigNumberCount = BigNumber.from(newCount);
+      expect(bigNumberCount.toBigInt()).toBeGreaterThan(BigInt(0));
+      expect(values.length).toEqual(num);
+    }
   );
 });

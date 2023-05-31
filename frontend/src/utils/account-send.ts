@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { RandomNumber } from '@umbracash/umbra-js';
+import { SendBatch, RandomNumber } from '@umbracash/umbra-js';
 
 import { keccak256, BigNumber, getAddress, hexZeroPad } from 'src/utils/ethers';
 import { toAddress, lookupOrReturnAddresses } from 'src/utils/address';
@@ -50,6 +50,16 @@ export type StoreSendArgs = {
   viewingPrivateKey: string;
   unencryptedAccountSendData: Omit<UnencryptedAccountSendData, 'dateSent'>;
   accountDataToEncrypt: AccountDataToEncrypt;
+};
+
+type BatchStoreSendArgs = {
+  chainId: number;
+  viewingPrivateKey: string;
+  advancedMode: boolean;
+  usePublicKeyChecked: boolean;
+  batches: { batch: SendBatch; pubKey: string }[];
+  batchTxHash: string;
+  senderAddress: string;
 };
 
 type FetchAccountSendArgs = {
@@ -238,4 +248,34 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
     };
   });
   return accountData.reverse();
+};
+
+export const batchStoreSend = async ({
+  chainId,
+  viewingPrivateKey,
+  advancedMode,
+  batches,
+  batchTxHash,
+  senderAddress,
+  usePublicKeyChecked,
+}: BatchStoreSendArgs) => {
+  for (const batch of batches) {
+    const send = batch.batch;
+    await storeSend({
+      chainId,
+      viewingPrivateKey,
+      unencryptedAccountSendData: {
+        amount: send.amount.toString(),
+        tokenAddress: send.token,
+        txHash: batchTxHash,
+        senderAddress: senderAddress,
+      },
+      accountDataToEncrypt: {
+        recipientAddress: send.address,
+        advancedMode: advancedMode,
+        usePublicKeyChecked: usePublicKeyChecked,
+        pubKey: batch.pubKey,
+      },
+    });
+  }
 };
