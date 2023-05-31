@@ -11,8 +11,8 @@ const INFURA_ID = <string>process.env.INFURA_ID;
 if (!INFURA_ID) throw new Error('Please set your INFURA_ID in a .env file');
 
 // Public key and address corresponding to msolomon.eth
-const publicKey = '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee'; // prettier-ignore
-const address = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
+const publicKey = '0x04d582eceadff5a3393277968ef7dd0b5927884df6674c3be74c4f43dfd2cf6424e3f5f5d8a8c4de5e7ff05a5e92da8ed92bdc74aa86568da91e76aeac0bc0f026'; // prettier-ignore
+const address = '0xcca69eb37a8afc5490b66ce3155e023d1979c734';
 
 // Public keys generated from a signature by the address msolomon.eth resolves to
 const pubKeysWallet = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
@@ -28,11 +28,11 @@ const badPublicKey = '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98
 describe('Utilities', () => {
   describe('Public key recovery', () => {
     it('recovers public keys from type 0 transaction', async () => {
-      const hash = '0xdd54313d1f1d8211d962207cf939cdc622da9f32a660b18c5df04b1039067c9c';
+      const hash = '0xf932d80eeb7eb5ac83fece662f5aaa7be8635a559752e88f5fc1f21b1d76d155';
       const tx = await ethersProvider.getTransaction(hash);
       expect(tx.type).to.equal(0);
       expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(
-        '0x046b3c875ce9f5c83a18668934735d0f1ea3399d37fe87f677e87a939178a3667ba6b9a1e8668c703aae8f468161c9a6b2dd0ad6069d5dd32d2547e1bb5f1d7a2a'
+        '0x04d582eceadff5a3393277968ef7dd0b5927884df6674c3be74c4f43dfd2cf6424e3f5f5d8a8c4de5e7ff05a5e92da8ed92bdc74aa86568da91e76aeac0bc0f026'
       );
     });
 
@@ -55,12 +55,12 @@ describe('Utilities', () => {
     });
 
     it('recovers public keys from type 2 transaction', async () => {
-      const hash = '0xfe80fe73b195eed3874aac3acf8ce7e4b199622bc209bdbdb30b0533bcff5439';
+      const hash = '0xbc1e0906f8885397e4f5bbc91b0fe1c1ae1f29ff5d47a06efc604819a8052076';
       const tx = await ethersProvider.getTransaction(hash);
       expect(tx.type).to.equal(2);
       expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
 
-      const hash2 = '0x22f07e4fad1329ce6f6cc6cafdc080c23fd9e70822121f634a41ac459b18d1be';
+      const hash2 = '0x791beb94fe1f7c9273783d1370504e2134731dbb4c894b23b1cd480bdc8de63e';
       const tx2 = await ethersProvider.getTransaction(hash2);
       expect(tx2.type).to.equal(2);
       expect(await utils.recoverPublicKeyFromTransaction(hash2, ethersProvider)).to.equal(publicKey);
