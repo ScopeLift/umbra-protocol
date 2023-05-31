@@ -560,7 +560,7 @@ function useSendForm() {
   // Form parameters.
   const recipientId = ref<string>();
   const useNormalPubKey = ref(false);
-  const token = ref<TokenInfoExtended | null>();
+  const token = ref<TokenInfoExtended>();
   const humanAmount = ref<string>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
@@ -716,7 +716,10 @@ function useSendForm() {
         await setPaymentLinkData(); // Handles validations.
         const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
         batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
-        batchSends.value[0].token = token.value;
+        if (batchSends.value.length > 0) {
+          batchSends.value[0].token = token.value;
+          batchSends.value[1].token = token.value;
+        }
       }
 
       const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
