@@ -11,14 +11,14 @@ const INFURA_ID = <string>process.env.INFURA_ID;
 if (!INFURA_ID) throw new Error('Please set your INFURA_ID in a .env file');
 
 // Public key and address corresponding to stratus4.eth
-const publicKey = '0x04d582eceadff5a3393277968ef7dd0b5927884df6674c3be74c4f43dfd2cf6424e3f5f5d8a8c4de5e7ff05a5e92da8ed92bdc74aa86568da91e76aeac0bc0f026'; // prettier-ignore
-const address = '0xcca69eb37a8afc5490b66ce3155e023d1979c734';
+const publicKey = '458465db23fe07d148c8c9078d8b67497998a66f4f2aa479973a9cbaaf8b5a96e6ba166a389b8f794b68010849b64b91343e72c7fa4cfcc178607c4b1d4870ed'; // prettier-ignore
+const address = '0x3f3c8dB1487469E8091cb210e9cf16D0Af0dE6FC';
 
 // Public keys generated from a signature by the address stratus4.eth resolves to
 const pubKeysWallet = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 const pubKeysUmbra = {
-  spendingPublicKey: '0x04a080d494000c589a7b14b2c866dcc6fb68e296c9c796dcdd2b467a07a77b50ed2ef5b3006a6ccf1cd8df6c83cb64ebb2eb89c4620578930581f44f6297656a30', // prettier-ignore
-  viewingPublicKey: '0x04dfea22169061eab44a67558ac29e3e9f00ba6001ff952ab3267e1114b780228205041afd077784592f8eedd904b18d8745059b6c3e9baf14e84729872e4b07ea', // prettier-ignore
+  spendingPublicKey: '0x04620950ddc4dd4352e91ed71ef87c1aba0d76296cb8d5b48996e31e4062c76c6e38b0d8b4c116d645604051c5c6255179538741e8d01595703c245dd6d9b6f7c3', // prettier-ignore
+  viewingPublicKey: '0x04c9b42559000738090391904fe6b91327875df36ac0b294b075c834c056bdeaf25d067694830cfe143784d52d1b0ef637d535fdc6bfc687b0ccbdbf2b00a282dc', // prettier-ignore
 };
 
 // Define public key that is not on the curve. This point was generated from a valid public key ending in
