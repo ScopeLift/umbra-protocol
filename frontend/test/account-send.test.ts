@@ -751,7 +751,7 @@ describe('batchStoreSend', () => {
   });
 
   it.each([randomInt(2, 10), randomInt(2, 10), randomInt(2, 10)])(
-    'Generates batch %s sends and saves it to the account send history',
+    'Generates batch of %s sends and saves them to the account send history',
     async (num) => {
       const existingCount = await localforage.getItem(localStorageCountKey);
       const value = await localforage.getItem(localStorageValueKey);
