@@ -11,7 +11,7 @@ const INFURA_ID = <string>process.env.INFURA_ID;
 if (!INFURA_ID) throw new Error('Please set your INFURA_ID in a .env file');
 
 // Public key and address corresponding to stratus4.eth
-const publicKey = '458465db23fe07d148c8c9078d8b67497998a66f4f2aa479973a9cbaaf8b5a96e6ba166a389b8f794b68010849b64b91343e72c7fa4cfcc178607c4b1d4870ed'; // prettier-ignore
+const publicKey = '0x04458465db23fe07d148c8c9078d8b67497998a66f4f2aa479973a9cbaaf8b5a96e6ba166a389b8f794b68010849b64b91343e72c7fa4cfcc178607c4b1d4870ed'; // prettier-ignore
 const address = '0x3f3c8dB1487469E8091cb210e9cf16D0Af0dE6FC';
 
 // Public keys generated from a signature by the address stratus4.eth resolves to
@@ -28,12 +28,10 @@ const badPublicKey = '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98
 describe('Utilities', () => {
   describe('Public key recovery', () => {
     it('recovers public keys from type 0 transaction', async () => {
-      const hash = '0xf932d80eeb7eb5ac83fece662f5aaa7be8635a559752e88f5fc1f21b1d76d155';
+      const hash = '0xc25e91d4435528e04478036e64c68a70979086eee63b47a2c277bdb00c071d21';
       const tx = await ethersProvider.getTransaction(hash);
       expect(tx.type).to.equal(0);
-      expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(
-        '0x04d582eceadff5a3393277968ef7dd0b5927884df6674c3be74c4f43dfd2cf6424e3f5f5d8a8c4de5e7ff05a5e92da8ed92bdc74aa86568da91e76aeac0bc0f026'
-      );
+      expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
     });
 
     // Sending a type 1 transaction is a pain because they are rarely used, and finding an existing
@@ -55,12 +53,12 @@ describe('Utilities', () => {
     });
 
     it('recovers public keys from type 2 transaction', async () => {
-      const hash = '0xbc1e0906f8885397e4f5bbc91b0fe1c1ae1f29ff5d47a06efc604819a8052076';
+      const hash = '0x6e94b03ed7935d3d6a7a135748773ef580bc89a10db7d0657697a5cee1776648';
       const tx = await ethersProvider.getTransaction(hash);
       expect(tx.type).to.equal(2);
       expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
 
-      const hash2 = '0x791beb94fe1f7c9273783d1370504e2134731dbb4c894b23b1cd480bdc8de63e';
+      const hash2 = '0x913cd745758e83ceb160718a4cc0080fb0699f083177eccb288500222a95e784';
       const tx2 = await ethersProvider.getTransaction(hash2);
       expect(tx2.type).to.equal(2);
       expect(await utils.recoverPublicKeyFromTransaction(hash2, ethersProvider)).to.equal(publicKey);
@@ -91,14 +89,14 @@ describe('Utilities', () => {
     });
 
     it('looks up recipients by transaction hash', async () => {
-      const hash = '0xbc1e0906f8885397e4f5bbc91b0fe1c1ae1f29ff5d47a06efc604819a8052076';
+      const hash = '0x2d067d6c2b6c1880fed6228d6b9cc9190810335c45f06ecb525f5a7860aaaf55';
       const keys = await utils.lookupRecipient(hash, ethersProvider, { supportTxHash: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
     });
 
     it('throws when looking up recipients by transaction hash without explicitly allowing it', async () => {
-      const hash = '0xbc1e0906f8885397e4f5bbc91b0fe1c1ae1f29ff5d47a06efc604819a8052076';
+      const hash = '0x2d067d6c2b6c1880fed6228d6b9cc9190810335c45f06ecb525f5a7860aaaf55';
       const errorMsg = `invalid address (argument="address", value="${hash}", code=INVALID_ARGUMENT, version=address/5.7.0)`; // prettier-ignore
       await expectRejection(utils.lookupRecipient(hash, ethersProvider), errorMsg);
     });
