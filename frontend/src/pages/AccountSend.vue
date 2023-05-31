@@ -451,17 +451,6 @@
             </div>
 
             <!-- Send button -->
-            <div>
-              <router-link
-                v-if="false"
-                :class="{ 'no-text-decoration': true, 'dark-toggle': true }"
-                :to="{ name: 'sent' }"
-              >
-                <div class="row items-center justify-center q-pa-xs link-container">
-                  {{ $t('Send.send-history') }}
-                </div>
-              </router-link>
-            </div>
             <div class="batch-send-buttons">
               <base-button
                 class="button-container"
@@ -476,6 +465,13 @@
                 type="submit"
                 :disable="batchSends.length == 1 || isSending"
               />
+              <div class="q-mt-sm">
+                <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+                  <div class="row items-center justify-center q-pa-sm link-container rounded-borders">
+                    {{ $t('Send.send-history') }}
+                  </div>
+                </router-link>
+              </div>
             </div>
           </q-form>
         </q-page>
@@ -517,7 +513,7 @@ import { SendBatch } from '@umbracash/umbra-js';
 import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
-import { storeSend } from 'src/utils/account-send';
+import { batchStoreSend, storeSend } from 'src/utils/account-send';
 
 interface BatchSendData {
   id: number;
@@ -1019,6 +1015,10 @@ function useSendForm() {
         isSending.value = true;
       }
 
+      if (!viewingKeyPair.value?.privateKeyHex) {
+        await getPrivateKeys();
+      }
+
       // Get allowances
       const promises = [];
       const batchSendAddress = umbra.value?.batchSendContract!.address;
@@ -1070,6 +1070,36 @@ function useSendForm() {
       // Send with Umbra
       const { tx } = await umbra.value.batchSend(signer.value, newSends);
       void txNotify(tx.hash, ethersProvider);
+      if (viewingKeyPair.value?.privateKeyHex && userAddress.value && provider.value) {
+        const batchSendDataPromises = newSends.map(async (item) => {
+          const publicKey = await umbraUtils.lookupRecipient(item.address, ethersProvider, {
+            advanced: false,
+          });
+          return {
+            batch: item,
+            pubKey: publicKey.spendingPublicKey,
+          };
+        });
+        const batchSendData = await Promise.allSettled(batchSendDataPromises).then((values) => {
+          const batches = [];
+          for (const item of values) {
+            if (item.status === 'fulfilled') {
+              batches.push(item.value as { batch: SendBatch; pubKey: string });
+            }
+          }
+          return batches;
+        });
+
+        await batchStoreSend({
+          chainId: chainId.value!,
+          viewingPrivateKey: viewingKeyPair.value.privateKeyHex,
+          batchTxHash: tx.hash,
+          senderAddress: userAddress.value,
+          advancedMode: false,
+          usePublicKeyChecked: false,
+          batches: batchSendData,
+        });
+      }
       await tx.wait();
       resetBatchSendForm();
     } finally {
