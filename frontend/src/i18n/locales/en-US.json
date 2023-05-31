@@ -61,6 +61,9 @@
   "Send": {
     "sending-disabled": "Sending via Umbra has been temporarily disabled while we perform system maintenance. Please check back soon!",
     "send": "Send",
+    "single-send": "Single Send",
+    "batch-send": "Batch Send",
+    "coming-soon": "Coming soon!",
     "connect-your-wallet": "Connect your wallet to send funds",
     "connect-wallet": "Connect Wallet",
     "recipient": "Recipient's ENS name or address",
@@ -71,7 +74,7 @@
     "select-token": "Select token to send",
     "slippage-exceeded": "Actual send amount would materially differ from the estimate due to changing gas prices. Please try again.",
     "token": "Token",
-    "amount": "Amount to send",
+    "amount": "Amount",
     "summary": "Summary",
     "sending": "Sending",
     "fee": "Umbra Fee",
@@ -83,6 +86,7 @@
     "enter-an-amount": "Please enter an amount",
     "enter-a-recipient": "Please enter a recipient",
     "select-a-token": "Please select a token",
+    "select-a-token-for-send": "Please select a token for send",
     "send-at-least": "Please send at least",
     "amount-exceeds-balance": "Amount exceeds wallet balance",
     "please-complete-form": "Please complete the form",
@@ -90,7 +94,9 @@
     "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance",
     "advanced-send-warning": "The receiver will have to enter their account's private key into this app to withdraw the funds. Don't use this feature unless you know what you're doing.",
     "acknowledge-risks": "I acknowledge the risks",
-    "send-history": "Send history"
+    "send-history": "Send history",
+    "add-send": "+ Add Send",
+    "receiver-addr-ens": "Receiver's address or ENS name"
   },
   "Receive": {
     "receive": "Receive",

@@ -61,6 +61,9 @@
   "Send": {
     "sending-disabled": "在我们执行系统维护时，通过 Umbra 发送已暂时禁用。请稍后再回来查看！",
     "send": "发送",
+    "single-send": "单笔发送",
+    "batch-send": "批量发送",
+    "coming-soon": "即将推出!",
     "connect-your-wallet": "连接您的钱包以发送资金",
     "connect-wallet": "连接钱包",
     "recipient": "收件人的 ENS 名称或地址",
@@ -83,15 +86,17 @@
     "enter-an-amount": "请输入金额",
     "enter-a-recipient": "请输入收款人",
     "select-a-token": "请选择代币",
+    "select-a-token-for-send": "请选择代币, 发送",
     "send-at-least": "请最少发送",
     "amount-exceeds-balance": "钱包金额不足",
     "please-complete-form": "请填写表格",
     "wallet-not-connected": "钱包未连接",
     "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额",
     "advanced-send-warning": "接收者必须将其帐户的私钥输入此应用程序才能提取资金。除非您知道自己在做什么，不要使用此功能",
-    "learn-more": "了解更多信息",
     "acknowledge-risks": "我承认风险",
-    "send-history": "发送历史记录"
+    "send-history": "发送历史记录",
+    "add-send": "+ 添加发送",
+    "receiver-addr-ens": "收件人地址或 ENS 名称"
   },
   "Receive": {
     "receive": "接收",

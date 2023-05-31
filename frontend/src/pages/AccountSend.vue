@@ -10,243 +10,477 @@
   </q-page>
 
   <q-page v-else padding>
-    <q-dialog v-model="showAdvancedWarning">
-      <q-card class="row justify-center q-my-none q-py-none border-top-thick">
-        <q-card-section>
-          <h5 class="text-bold text-center q-mt-none">
-            <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
-          </h5>
-        </q-card-section>
-        <q-card-section class="q-pb-lg">
-          <div class="row items-center text">
-            <span class="q-pa-sm">
-              {{ $t('Send.advanced-send-warning') }}
-              <router-link
-                class="hyperlink"
-                to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
-                target="_blank"
-              >
-                {{ $t('Send.learn-more') }}
-              </router-link>
-            </span>
-          </div>
-          <q-checkbox v-model="advancedAcknowledged">
-            {{ $t('Send.acknowledge-risks') }}
-          </q-checkbox>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-    <q-dialog v-model="showAdvancedSendWarning">
-      <q-card class="row justify-center q-my-none q-py-none border-top-thick">
-        <q-card-section>
-          <h5 class="text-bold text-center q-mt-none">
-            <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
-          </h5>
-        </q-card-section>
-        <q-card-section class="q-pb-sm">
-          <div class="row items-center text">
-            <span class="q-pa-sm">
-              {{ $t('Send.advanced-send-warning') }}
-              <router-link
-                class="hyperlink"
-                to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
-                target="_blank"
-              >
-                {{ $t('Send.learn-more') }}
-              </router-link>
-            </span>
-            <q-checkbox v-model="acknowledgeSendRisk">
-              {{ $t('Send.acknowledge-risks') }}
-            </q-checkbox>
-          </div>
-        </q-card-section>
+    <h2 class="send-page-title">{{ $t('Send.send') }}</h2>
 
-        <q-card-section class="q-pt-sm">
-          <div class="row justify-evenly">
+    <q-tabs
+      v-model="tab"
+      dense
+      :class="['text-grey', $q.screen.xs ? '' : 'batch-send-tabs']"
+      active-color="primary"
+      indicator-color="primary"
+      align="justify"
+      narrow-indicator
+      v-if="batchSendIsSupported"
+    >
+      <q-tab name="send" :disable="isSending" :label="$t('Send.single-send')" />
+      <q-tab name="batch-send" :disable="isSending" :label="$t('Send.batch-send')" />
+    </q-tabs>
+
+    <q-tab-panels v-model="tab" animated>
+      <!-- Send Page -->
+      <q-tab-panel name="send" :style="isDark ? 'background-color: #121212' : ''">
+        <q-dialog v-model="showAdvancedWarning">
+          <q-card class="row justify-center q-my-none q-py-none border-top-thick">
+            <q-card-section>
+              <h5 class="text-bold text-center q-mt-none">
+                <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
+              </h5>
+            </q-card-section>
+            <q-card-section class="q-pb-lg">
+              <div class="row items-center text">
+                <span class="q-pa-sm">
+                  {{ $t('Send.advanced-send-warning') }}
+                  <router-link
+                    class="hyperlink"
+                    to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
+                    target="_blank"
+                  >
+                    {{ $t('Send.learn-more') }}
+                  </router-link>
+                </span>
+              </div>
+              <q-checkbox v-model="advancedAcknowledged">
+                {{ $t('Send.acknowledge-risks') }}
+              </q-checkbox>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="showAdvancedSendWarning">
+          <q-card class="row justify-center q-my-none q-py-none border-top-thick">
+            <q-card-section>
+              <h5 class="text-bold text-center q-mt-none">
+                <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
+              </h5>
+            </q-card-section>
+            <q-card-section class="q-pb-sm">
+              <div class="row items-center text">
+                <span class="q-pa-sm">
+                  {{ $t('Send.advanced-send-warning') }}
+                  <router-link
+                    class="hyperlink"
+                    to="/faq#how-do-i-send-funds-to-a-user-by-their-address-or-public-key"
+                    target="_blank"
+                  >
+                    {{ $t('Send.learn-more') }}
+                  </router-link>
+                </span>
+                <q-checkbox v-model="acknowledgeSendRisk">
+                  {{ $t('Send.acknowledge-risks') }}
+                </q-checkbox>
+              </div>
+            </q-card-section>
+
+            <q-card-section class="q-pt-sm">
+              <div class="row justify-evenly">
+                <base-button
+                  type="submit"
+                  @click="onFormSubmit()"
+                  :disable="!isValidForm || isSending || !acknowledgeSendRisk"
+                  :full-width="true"
+                  :label="$t('Send.send')"
+                  :loading="isSending"
+                />
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+
+        <!-- User has not connected wallet  -->
+        <div v-if="!userAddress">
+          <p class="text-center">{{ $t('Send.connect-your-wallet') }}</p>
+          <div class="row justify-center">
+            <connect-wallet :to="connectRedirectTo" :params="paymentLinkParams">
+              <base-button class="text-center" :label="$t('Send.connect-wallet')" />
+            </connect-wallet>
+          </div>
+        </div>
+
+        <!-- Send form -->
+        <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
+          <!-- Identifier -->
+          <div>{{ $t('Send.recipient') }}</div>
+          <base-input
+            v-model="recipientId"
+            :debounce="500"
+            :disable="isSending"
+            placeholder="vitalik.eth"
+            lazy-rules
+            :rules="isValidId"
+            ref="recipientIdBaseInputRef"
+          />
+
+          <!-- Identifier, advanced mode tooltip -->
+          <div
+            v-if="advancedMode"
+            class="row items-center text-caption q-pt-sm q-pb-lg"
+            :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
+          >
+            <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
+              {{ $t('Send.recipient-pkey') }}
+            </q-checkbox>
+            <base-tooltip class="col-auto q-ml-sm" icon="fas fa-question-circle">
+              <span>
+                {{ $t('Send.question-circle') }}
+                <span class="text-bold">
+                  {{ $t('Send.question-circle-warning') }}
+                  <router-link
+                    class="dark-toggle hyperlink"
+                    :to="{ name: 'FAQ', hash: '#how-do-i-send-funds-to-a-user-by-their-address-or-public-key' }"
+                  >
+                    {{ $t('Send.learn-more') }}
+                  </router-link>
+                </span>
+              </span>
+            </base-tooltip>
+          </div>
+
+          <!-- Token -->
+          <div>{{ $t('Send.select-token') }}</div>
+          <base-select
+            v-model="token"
+            :disable="isSending"
+            filled
+            :label="$t('Send.token')"
+            :options="tokenList"
+            option-label="symbol"
+            ref="tokenBaseSelectRef"
+            :token-balances="balances"
+          />
+
+          <!-- Amount -->
+          <div>
+            {{ $t('Send.amount') }}
+          </div>
+          <base-input
+            v-model="humanAmount"
+            :disable="isSending"
+            placeholder="0"
+            :appendButtonDisable="!recipientId || !isValidRecipientId"
+            :appendButtonLabel="$t('Send.max')"
+            @click="setHumanAmountMax"
+            @input="() => (sendMax = false)"
+            lazy-rules
+            :rules="isValidTokenAmount"
+            ref="humanAmountBaseInputRef"
+          />
+
+          <!-- Toll + summary details -->
+          <div v-if="toll && toll.gt(0) && humanAmount && token">
+            <div class="text-bold">{{ $t('Send.summary') }}</div>
+
+            <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color: rgba(0, 0, 0, 0)">
+              <tbody>
+                <!-- What user is sending -->
+                <tr>
+                  <td class="min text-left" style="padding: 0 2rem 0 0">{{ $t('Send.sending') }}</td>
+                  <td class="min text-right">{{ humanAmount }}</td>
+                  <td class="min text-left">{{ token.symbol }}</td>
+                  <td class="min text-left"><img :src="token.logoURI" height="15rem" /></td>
+                  <td><!-- Fills space --></td>
+                </tr>
+                <!-- Toll -->
+                <tr>
+                  <td class="min text-left" style="padding: 0 2rem 0 0">
+                    {{ $t('Send.fee') }}
+                    <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
+                      <span>
+                        {{ $t('Send.fee-explain', { chainName: currentChain?.chainName }) }}
+                        <router-link
+                          class="dark-toggle hyperlink"
+                          :to="{ name: 'FAQ', hash: '#why-is-there-sometimes-an-umbra-fee' }"
+                        >
+                          {{ $t('Send.learn-more') }}
+                        </router-link>
+                      </span>
+                    </base-tooltip>
+                  </td>
+                  <td class="min text-right">{{ humanToll }}</td>
+                  <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
+                  <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
+                  <td><!-- Fills space --></td>
+                </tr>
+                <!-- Summary if they're sending native token -->
+                <tr v-if="token.address === NATIVE_TOKEN.address">
+                  <td class="min text-left text-bold" style="padding: 0 2rem 0 0">{{ $t('Send.total') }}</td>
+                  <td class="min text-right">{{ humanTotalAmount }}</td>
+                  <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
+                  <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
+                  <td><!-- Fills space --></td>
+                </tr>
+                <!-- Summary if they're sending other token -->
+                <tr v-else>
+                  <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
+                  <td class="min text-right">{{ humanAmount }}</td>
+                  <td class="min text-left">{{ token.symbol }}</td>
+                  <td class="min text-left">+</td>
+                  <td class="min text-right" style="padding-left: 0">{{ humanToll }}</td>
+                  <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
+                  <td><!-- Fills space --></td>
+                </tr>
+              </tbody>
+            </q-markup-table>
+          </div>
+
+          <!-- Send button -->
+          <div>
             <base-button
-              type="submit"
-              @click="onFormSubmit()"
-              :disable="!isValidForm || isSending || !acknowledgeSendRisk"
+              v-if="sendAdvancedButton"
+              :disable="!isValidForm || isSending"
               :full-width="true"
               :label="$t('Send.send')"
               :loading="isSending"
+              @click="showAdvancedSendWarning = true"
             />
+            <base-button
+              v-if="!sendAdvancedButton"
+              :disable="!isValidForm || isSending"
+              :full-width="true"
+              :label="$t('Send.send')"
+              :loading="isSending"
+              type="submit"
+            />
+            <base-button
+              @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount, chainId: chainId })"
+              :disable="isSending"
+              :flat="true"
+              :full-width="true"
+              icon="far fa-copy"
+              iconMargin="q-mx-sm"
+              :label="$t('Send.copy-payment-link')"
+            />
+            <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+              <div class="row items-center justify-center q-pa-xs link-container">
+                {{ $t('Send.send-history') }}
+              </div>
+            </router-link>
           </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
+        </q-form>
+      </q-tab-panel>
+      <!-- Batch Send Page -->
+      <q-tab-panel name="batch-send" :style="isDark ? 'background-color: #121212' : ''">
+        <q-page v-if="isMaintenanceMode" padding>
+          <div
+            class="dark-toggle form-max-wide text-center text-bold q-pa-md"
+            style="border-radius: 15px"
+            :style="isDark ? 'color: #FFEEEE; background-color: #780A0A' : 'color: #610404; background-color: #FACDCD'"
+          >
+            {{ $t('Send.sending-disabled') }}
+          </div>
+        </q-page>
+        <q-page v-else padding>
+          <!-- User has not connected wallet  -->
+          <div v-if="!userAddress">
+            <p class="text-center">{{ $t('Send.connect-your-wallet') }}</p>
+            <div class="row justify-center">
+              <connect-wallet :to="connectRedirectTo">
+                <base-button class="text-center" :label="$t('Send.connect-wallet')" />
+              </connect-wallet>
+            </div>
+          </div>
 
-    <h2 class="page-title">{{ $t('Send.send') }}</h2>
+          <q-form v-else @submit="onBatchSendFormSubmit">
+            <!-- Mobile Card Layout -->
 
-    <!-- User has not connected wallet  -->
-    <div v-if="!userAddress">
-      <p class="text-center">{{ $t('Send.connect-your-wallet') }}</p>
-      <div class="row justify-center">
-        <connect-wallet :to="connectRedirectTo" :params="paymentLinkParams">
-          <base-button class="text-center" :label="$t('Send.connect-wallet')" />
-        </connect-wallet>
-      </div>
-    </div>
+            <div v-if="$q.screen.xs">
+              <div v-for="(Send, index) in batchSends" :key="index" class="col-12 batch-send-card">
+                <q-card class="cursor-pointer q-pt-md col justify-center items-center">
+                  <q-card-section class="row justify-center items-center">
+                    <div class="text-primary text-h6 header-black q-pb-none">
+                      {{ $t('Send.send') }} #{{ index + 1 }}
+                    </div>
+                    <base-button
+                      v-show="index !== 0"
+                      @click="isSending ? null : removeField(Send.id)"
+                      :disable="isSending"
+                      :flat="true"
+                      label=""
+                      icon="fas fa-times"
+                    />
+                  </q-card-section>
+                  <q-card-section>
+                    <div>{{ $t('Send.recipient') }}</div>
+                    <base-input
+                      v-model="Send.receiver"
+                      :debounce="500"
+                      :disable="isSending"
+                      placeholder="vitalik.eth"
+                      lazy-rules
+                      :rules="isValidId"
+                    />
 
-    <!-- Send form -->
-    <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
-      <!-- Identifier -->
-      <div>{{ $t('Send.recipient') }}</div>
-      <base-input
-        v-model="recipientId"
-        :debounce="500"
-        :disable="isSending"
-        placeholder="vitalik.eth"
-        lazy-rules
-        :rules="isValidId"
-        ref="recipientIdBaseInputRef"
-      />
+                    <!-- Token -->
+                    <div>{{ $t('Send.select-token') }}</div>
 
-      <!-- Identifier, advanced mode tooltip -->
-      <div
-        v-if="advancedMode"
-        class="row items-center text-caption q-pt-sm q-pb-lg"
-        :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
-      >
-        <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
-          {{ $t('Send.recipient-pkey') }}
-        </q-checkbox>
-        <base-tooltip class="col-auto q-ml-sm" icon="fas fa-question-circle">
-          <span>
-            {{ $t('Send.question-circle') }}
-            <span class="text-bold">
-              {{ $t('Send.question-circle-warning') }}
+                    <base-select
+                      v-model="Send.token"
+                      :disable="isSending"
+                      filled
+                      :options="tokenList"
+                      option-label="symbol"
+                      ref="tokenBaseSelectRef"
+                      :token-balances="balances"
+                      lazy-rules
+                    />
+                    <!-- Amount -->
+                    <div>
+                      {{ $t('Send.amount') }}
+                    </div>
+                    <base-input
+                      v-model="Send.amount"
+                      :disable="isSending"
+                      placeholder="0"
+                      :appendButtonDisable="!Send.receiver || !isValidRecipientId"
+                      lazy-rules
+                      :rules="(value : string) => isValidTokenAmount(value, Send.token)"
+                      ref="humanAmountBaseInputRef"
+                    />
+                  </q-card-section>
+                  <q-separator />
+                </q-card>
+              </div>
+              <br /><br />
+            </div>
+
+            <!-- Desktop Layout -->
+            <q-form v-else>
+              <div v-for="(Send, index) in batchSends" :key="index">
+                <!-- Identifier -->
+
+                <div class="batch-send">
+                  <p class="batch-send-label text-grey">{{ index + 1 }}</p>
+                  <div class="input-container-address">
+                    <base-input
+                      v-model="Send.receiver"
+                      :debounce="500"
+                      :disable="isSending"
+                      placeholder="vitalik.eth"
+                      :label="$t('Send.receiver-addr-ens')"
+                      lazy-rules
+                      :rules="isValidId"
+                    />
+                  </div>
+
+                  <!-- Token -->
+                  <base-select
+                    v-model="Send.token"
+                    :disable="isSending"
+                    filled
+                    :label="$t('Send.token')"
+                    :options="tokenList"
+                    option-label="symbol"
+                    ref="tokenBaseSelectRef"
+                    :token-balances="balances"
+                    class="input-container-token"
+                  />
+
+                  <!-- Amount -->
+                  <base-input
+                    v-model="Send.amount"
+                    :disable="isSending"
+                    placeholder="0"
+                    :appendButtonDisable="!Send.receiver || !isValidRecipientId"
+                    lazy-rules
+                    :label="$t('Send.amount')"
+                    :rules="(value : string) => isValidTokenAmount(value, Send.token)"
+                    ref="humanAmountBaseInputRef"
+                    class="input-container-amount"
+                  />
+                  <base-button
+                    v-bind:style="{
+                      visibility: index !== 0 ? 'visible' : 'hidden',
+                    }"
+                    @click="isSending ? null : removeField(Send.id)"
+                    class="batch-send-label"
+                    :disable="isSending"
+                    :flat="true"
+                    label=""
+                    icon="fas fa-times"
+                  />
+                </div>
+              </div>
+            </q-form>
+            <!-- Toll + summary details -->
+            <div v-if="batchSends[0]?.amount" class="batch-send-buttons">
+              <div class="text-bold">{{ $t('Send.summary') }}</div>
+              <br />
+
+              <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color: rgba(0, 0, 0, 0)">
+                <tbody>
+                  <!-- What user is sending -->
+                  <tr>
+                    <td class="min text-left" style="padding: 0 2rem 0 0">{{ $t('Send.sending') }}</td>
+                    <td class="min text-right">{{ sendingString }}</td>
+                  </tr>
+                  <!-- Toll -->
+                  <tr>
+                    <td class="min text-right" style="padding: 0 2rem 0 0">
+                      {{ $t('Send.fee') }}
+                      <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
+                        <span>
+                          {{ $t('Send.fee-explain', { chainName: currentChain?.chainName }) }}
+                          <router-link
+                            class="dark-toggle hyperlink"
+                            :to="{ name: 'FAQ', hash: '#why-is-there-sometimes-an-umbra-fee' }"
+                          >
+                            {{ $t('Send.learn-more') }}
+                          </router-link>
+                        </span>
+                      </base-tooltip>
+                    </td>
+                    <span>
+                      <td class="min text-right">{{ batchSendHumanToll }} {{ NATIVE_TOKEN.symbol }}</td>
+                    </span>
+                  </tr>
+                  <!-- Summary -->
+                  <tr>
+                    <td class="min text-left text-bold" style="padding: 0 2rem 0 0">{{ $t('Send.total') }}</td>
+                    <td class="min text-bold text-right">{{ summaryTotalString }}</td>
+                  </tr>
+                </tbody>
+              </q-markup-table>
+            </div>
+
+            <!-- Send button -->
+            <div>
               <router-link
-                class="dark-toggle hyperlink"
-                :to="{ name: 'FAQ', hash: '#how-do-i-send-funds-to-a-user-by-their-address-or-public-key' }"
+                v-if="false"
+                :class="{ 'no-text-decoration': true, 'dark-toggle': true }"
+                :to="{ name: 'sent' }"
               >
-                {{ $t('Send.learn-more') }}
+                <div class="row items-center justify-center q-pa-xs link-container">
+                  {{ $t('Send.send-history') }}
+                </div>
               </router-link>
-            </span>
-          </span>
-        </base-tooltip>
-      </div>
-
-      <!-- Token -->
-      <div>{{ $t('Send.select-token') }}</div>
-      <base-select
-        v-model="token"
-        :disable="isSending"
-        filled
-        :label="$t('Send.token')"
-        :options="tokenList"
-        option-label="symbol"
-        ref="tokenBaseSelectRef"
-        :token-balances="balances"
-      />
-
-      <!-- Amount -->
-      <div>
-        {{ $t('Send.amount') }}
-      </div>
-      <base-input
-        v-model="humanAmount"
-        :disable="isSending"
-        placeholder="0"
-        :appendButtonDisable="!recipientId || !isValidRecipientId"
-        :appendButtonLabel="$t('Send.max')"
-        @click="setHumanAmountMax"
-        @input="() => (sendMax = false)"
-        lazy-rules
-        :rules="isValidTokenAmount"
-        ref="humanAmountBaseInputRef"
-      />
-
-      <!-- Toll + summary details -->
-      <div v-if="toll && toll.gt(0) && humanAmount && token">
-        <div class="text-bold">{{ $t('Send.summary') }}</div>
-
-        <q-markup-table class="q-mb-lg" dense flat separator="none" style="background-color: rgba(0, 0, 0, 0)">
-          <tbody>
-            <!-- What user is sending -->
-            <tr>
-              <td class="min text-left" style="padding: 0 2rem 0 0">{{ $t('Send.sending') }}</td>
-              <td class="min text-right">{{ humanAmount }}</td>
-              <td class="min text-left">{{ token.symbol }}</td>
-              <td class="min text-left"><img :src="token.logoURI" height="15rem" /></td>
-              <td><!-- Fills space --></td>
-            </tr>
-            <!-- Toll -->
-            <tr>
-              <td class="min text-left" style="padding: 0 2rem 0 0">
-                {{ $t('Send.fee') }}
-                <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
-                  <span>
-                    {{ $t('Send.fee-explain', { chainName: currentChain.chainName }) }}
-                    <router-link
-                      class="dark-toggle hyperlink"
-                      :to="{ name: 'FAQ', hash: '#why-is-there-sometimes-an-umbra-fee' }"
-                    >
-                      {{ $t('Send.learn-more') }}
-                    </router-link>
-                  </span>
-                </base-tooltip>
-              </td>
-              <td class="min text-right">{{ humanToll }}</td>
-              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
-              <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
-              <td><!-- Fills space --></td>
-            </tr>
-            <!-- Summary if they're sending native token -->
-            <tr v-if="token.address === NATIVE_TOKEN.address">
-              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">{{ $t('Send.total') }}</td>
-              <td class="min text-right">{{ humanTotalAmount }}</td>
-              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
-              <td class="min text-left"><img :src="NATIVE_TOKEN.logoURI" height="15rem" /></td>
-              <td><!-- Fills space --></td>
-            </tr>
-            <!-- Summary if they're sending other token -->
-            <tr v-else>
-              <td class="min text-left text-bold" style="padding: 0 2rem 0 0">Total</td>
-              <td class="min text-right">{{ humanAmount }}</td>
-              <td class="min text-left">{{ token.symbol }}</td>
-              <td class="min text-left">+</td>
-              <td class="min text-right" style="padding-left: 0">{{ humanToll }}</td>
-              <td class="min text-left">{{ NATIVE_TOKEN.symbol }}</td>
-              <td><!-- Fills space --></td>
-            </tr>
-          </tbody>
-        </q-markup-table>
-      </div>
-
-      <!-- Send button -->
-      <div>
-        <base-button
-          v-if="sendAdvancedButton"
-          :disable="!isValidForm || isSending"
-          :full-width="true"
-          :label="$t('Send.send')"
-          :loading="isSending"
-          @click="showAdvancedSendWarning = true"
-        />
-        <base-button
-          v-if="!sendAdvancedButton"
-          :disable="!isValidForm || isSending"
-          :full-width="true"
-          :label="$t('Send.send')"
-          :loading="isSending"
-          type="submit"
-        />
-        <base-button
-          @click="generatePaymentLink({ to: recipientId, token, amount: humanAmount, chainId: chainId })"
-          :disable="isSending"
-          :flat="true"
-          :full-width="true"
-          icon="far fa-copy"
-          :label="$t('Send.copy-payment-link')"
-        />
-        <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
-          <div class="row items-center justify-center q-pa-xs link-container">
-            {{ $t('Send.send-history') }}
-          </div>
-        </router-link>
-      </div>
-    </q-form>
+            </div>
+            <div class="batch-send-buttons">
+              <base-button
+                class="button-container"
+                @click="isSending ? null : addFields(batchSends)"
+                :disable="isSending"
+                :flat="true"
+                :label="$t('Send.add-send')"
+              />
+              <base-button
+                :label="$t('Send.send')"
+                :loading="isSending"
+                type="submit"
+                :disable="batchSends.length == 1 || isSending"
+              />
+            </div>
+          </q-form>
+        </q-page>
+      </q-tab-panel>
+    </q-tab-panels>
   </q-page>
 </template>
 
@@ -279,13 +513,21 @@ import {
 } from 'src/utils/ethers';
 import { humanizeTokenAmount, humanizeMinSendAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import { generatePaymentLink, parsePaymentLink } from 'src/utils/payment-links';
+import { SendBatch } from '@umbracash/umbra-js';
 import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
 import { storeSend } from 'src/utils/account-send';
 
+interface BatchSendData {
+  id: number;
+  receiver: string | undefined;
+  token: TokenInfoExtended | null | undefined;
+  amount: string;
+}
+
 function useSendForm() {
-  const { advancedMode } = useSettingsStore();
+  const { advancedMode, isDark } = useSettingsStore();
   const {
     balances,
     chainId,
@@ -318,7 +560,7 @@ function useSendForm() {
   // Form parameters.
   const recipientId = ref<string>();
   const useNormalPubKey = ref(false);
-  const token = ref<TokenInfoExtended | null>();
+  const token = ref<TokenInfoExtended>();
   const humanAmount = ref<string>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
@@ -328,11 +570,21 @@ function useSendForm() {
   const attemptedNetworkChange = ref(false);
   const connectRedirectTo = ref('send');
 
+  // Batch Send Form Parameters
+  const batchSends = ref<BatchSendData[]>([]);
+  const tab = ref('send');
+  const batchSendSupportedChains = [5];
+  const batchSendIsSupported = ref(false);
+
   // Computed form parameters.
   const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
   const sendAdvancedButton = computed(() => useNormalPubKey.value && advancedMode.value);
   const shouldUseNormalPubKey = computed(() => advancedMode.value && useNormalPubKey.value); // only use normal public key if advanced mode is on
   const humanToll = computed(() => humanizeTokenAmount(toll.value, NATIVE_TOKEN.value));
+  const batchSendHumanToll = computed(() =>
+    humanizeTokenAmount(toll.value.mul(batchSends.value.length), NATIVE_TOKEN.value)
+  );
+
   const humanTotalAmount = computed(() => {
     if (typeof humanAmount.value !== 'string') return '--'; // appease TS
     if (isNaN(Number(humanAmount.value))) return '--';
@@ -344,6 +596,72 @@ function useSendForm() {
       [humanAmount.value, humanToll.value], // subtotal and fee
       NATIVE_TOKEN.value
     );
+  });
+
+  // Batch Send Computed Form Parameters
+  const batchSendHumanTotalAmount = computed(() => {
+    const ethTotal = summaryAmount.value.get(NATIVE_TOKEN.value);
+    if (typeof ethTotal !== 'string') return '--'; // appease TS
+    if (isNaN(Number(ethTotal))) return '--';
+    const sendAmount = parseUnits(ethTotal, NATIVE_TOKEN.value.decimals);
+    const totalAmount = sendAmount.add(toll.value.mul(batchSends.value.length));
+
+    return humanizeArithmeticResult(
+      totalAmount,
+      [ethTotal, humanToll.value], // subtotal and fee
+      NATIVE_TOKEN.value
+    );
+  });
+
+  const summaryAmount = computed(() => {
+    return batchSends.value.reduce((summaryMap: Map<TokenInfoExtended, string>, send: BatchSendData) => {
+      if (send.token && send.amount) {
+        const isValidAmount = Boolean(send.amount) && isValidTokenAmount(send.amount, send.token) === true;
+        if (isValidAmount) {
+          const previousAmount = summaryMap.get(send.token)?.replace(/,/g, '') || '0';
+          const updatedAmount = parseUnits(previousAmount, send.token.decimals)
+            .add(parseUnits(send.amount, send.token.decimals))
+            .toString();
+          const humanNewAmount = humanizeArithmeticResult(
+            updatedAmount,
+            [previousAmount, send.amount], // subtotal and fee
+            send.token
+          );
+          summaryMap.set(send.token, humanNewAmount);
+        }
+      }
+      return summaryMap;
+    }, new Map<TokenInfoExtended, string>());
+  });
+  const sendingString = computed(() => {
+    let string = '';
+    for (const [index, entry] of Array.from(summaryAmount.value).entries()) {
+      const token = entry[0];
+      const amount = entry[1];
+
+      string += `${amount} ${token.symbol}`;
+      if (index != Array.from(summaryAmount.value).length - 1) {
+        string += ' + ';
+      }
+    }
+    return string;
+  });
+  const summaryTotalString = computed(() => {
+    let allString = '';
+    for (const [index, entry] of Array.from(summaryAmount.value).entries()) {
+      const token = entry[0];
+      const amount = entry[1];
+
+      if (token === NATIVE_TOKEN.value) {
+        allString += `${batchSendHumanTotalAmount.value} ${NATIVE_TOKEN.value.symbol}`;
+      } else {
+        allString += `${amount} ${token.symbol}`;
+      }
+      if (index != Array.from(summaryAmount.value).length - 1) {
+        allString += ' + ';
+      }
+    }
+    return allString;
   });
 
   watch(
@@ -396,6 +714,12 @@ function useSendForm() {
       } else if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId || isLoadingValue !== prevIsLoadingValue) {
         // When network finally connects after page load, we need to re-parse the payment link data.
         await setPaymentLinkData(); // Handles validations.
+        const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+        batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
+        if (batchSends.value.length > 0) {
+          batchSends.value[0].token = token.value;
+          batchSends.value[1].token = token.value;
+        }
       }
 
       const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
@@ -405,6 +729,12 @@ function useSendForm() {
 
   onMounted(async () => {
     await setPaymentLinkData();
+    batchSends.value.push(
+      { id: 1, receiver: '', token: token.value, amount: '' },
+      { id: 2, receiver: '', token: token.value, amount: '' }
+    );
+    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+    batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
   });
 
   async function setPaymentLinkData() {
@@ -436,6 +766,20 @@ function useSendForm() {
     }
   }
 
+  function addFields(CurrentSends: BatchSendData[]) {
+    CurrentSends.push({
+      id: CurrentSends[CurrentSends.length - 1]?.id + 1 || 1,
+      receiver: '',
+      token: token.value,
+      amount: '',
+    });
+  }
+
+  function removeField(removeId: number) {
+    const index = batchSends.value.findIndex((send) => send.id === removeId);
+    batchSends.value.splice(index, 1);
+  }
+
   // Validators
   async function isValidId(val: string | undefined) {
     // Return true if nothing is provided
@@ -443,7 +787,7 @@ function useSendForm() {
 
     // Check if recipient ID is valid
     try {
-      await umbraUtils.lookupRecipient(recipientId.value as string, provider.value as Provider, {
+      await umbraUtils.lookupRecipient(val, provider.value as Provider, {
         advanced: shouldUseNormalPubKey.value,
       });
       return true;
@@ -472,15 +816,18 @@ function useSendForm() {
     return humanizeMinSendAmount(minSend);
   };
 
-  function isValidTokenAmount(val: string | undefined) {
+  function isValidTokenAmount(val: string | undefined, tokenInput?: TokenInfoExtended | null | undefined) {
     if (val === undefined) return true; // don't show error on empty field
     if (!val || !(Number(val) > 0)) return tc('Send.enter-an-amount');
-    if (!token.value) return tc('Send.select-a-token');
 
-    const { address: tokenAddress, decimals } = token.value;
+    const tokenToUse = tokenInput || token.value;
+    if (!tokenToUse) return tc('Send.select-a-token');
+
+    const { address: tokenAddress, decimals } = tokenToUse;
+
     const minAmt = getMinSendAmount(tokenAddress);
     if (Number(val) < minAmt && isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${NATIVE_TOKEN.value.symbol}`; // prettier-ignore
-    if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${token.value.symbol}`; // prettier-ignore
+    else if (Number(val) < minAmt && !isNativeToken(tokenAddress)) return `${tc('Send.send-at-least')} ${minAmt} ${tokenToUse.symbol}`; // prettier-ignore
 
     const amount = parseUnits(val, decimals);
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
@@ -626,11 +973,122 @@ function useSendForm() {
     }
   }
 
+  // Send funds
+  async function onBatchSendFormSubmit() {
+    try {
+      // Form validation
+      for (let i = 0; i < batchSends.value.length; i++) {
+        if (!batchSends.value[i].receiver || !batchSends.value[i].token || !batchSends.value[i].amount)
+          throw new Error(tc('Send.please-complete-form'));
+      }
+      if (!signer.value) throw new Error(tc('Send.wallet-not-connected'));
+      if (!umbra.value) throw new Error('Umbra instance not configured');
+
+      // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
+      // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
+      // This should usually be caught by the isValidId rule anyway, but is here again as a safety check)
+      const ethersProvider = provider.value as Provider;
+      await Promise.all(
+        batchSends.value.map((send) => {
+          return umbraUtils.lookupRecipient(send.receiver as string, ethersProvider);
+        })
+      );
+
+      // Ensure user has enough balance. We re-fetch token balances in case amounts changed since wallet was connected.
+      // This does not account for gas fees, but this gets us close enough and we delegate that to the wallet
+      await getTokenBalances();
+
+      // Check for balance
+      for (let i = 0; i < batchSends.value.length; i++) {
+        const token: TokenInfoExtended | null | undefined = batchSends.value[i].token;
+        if (!token) throw new Error(tc('Send.select-a-token-for-send') + ` #${i + 1}`);
+
+        const { address: tokenAddress, decimals } = token;
+        const tokenAmount = parseUnits(batchSends.value[i].amount, decimals);
+
+        if (tokenAddress === NATIVE_TOKEN.value.address) {
+          // Sending the native token, so check that user has balance of: amount being sent + toll
+          const requiredAmount = tokenAmount.add(toll.value);
+          if (requiredAmount.gt(balances.value[tokenAddress])) throw new Error('amount exceeds balance');
+        } else {
+          // Sending other tokens, so we need to check both separately
+          const nativeTokenErrorMsg = `${NATIVE_TOKEN.value.symbol} Send.umbra-fee-exceeds-balance`;
+          if (toll.value.gt(balances.value[NATIVE_TOKEN.value.address])) throw new Error(nativeTokenErrorMsg);
+          if (tokenAmount.gt(balances.value[tokenAddress])) throw new Error('Send.amount-exceeds-balance');
+        }
+        isSending.value = true;
+      }
+
+      // Get allowances
+      const promises = [];
+      const batchSendAddress = umbra.value?.batchSendContract!.address;
+      for (const token of summaryAmount.value.keys()) {
+        if (token.symbol !== NATIVE_TOKEN.value.symbol) {
+          const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
+          promises.push(tokenContract.allowance(userAddress.value, batchSendAddress) as BigNumber);
+        } else {
+          promises.push(Promise.resolve(Zero));
+        }
+      }
+      const allowances = await Promise.all(promises);
+
+      // If allowances aren't enough, get approvals
+      const approveTxs: TransactionResponse[] = [];
+      const summaryAmountValues = Array.from(summaryAmount.value.entries());
+      for (let i = 0; i < summaryAmountValues.length; i++) {
+        const [token, amount] = summaryAmountValues[i];
+        if (token.symbol !== NATIVE_TOKEN.value.symbol) {
+          const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
+          const batchSendAddress = umbra.value?.batchSendContract!.address;
+          const parsedAmount = parseUnits(amount.replace(/,/g, '') || '0', token.decimals);
+          if (parsedAmount.gt(allowances[i])) {
+            const approveTx: TransactionResponse = await tokenContract.approve(batchSendAddress, MaxUint256);
+            void txNotify(approveTx.hash, ethersProvider);
+            approveTxs.push(approveTx);
+          }
+        }
+      }
+
+      // Wait for all approval tx to go through
+      await Promise.all(
+        approveTxs.map((approveTx) => {
+          return approveTx.wait();
+        })
+      );
+
+      const newSends = <SendBatch[]>[];
+      for (let i = 0; i < batchSends.value.length; i++) {
+        const token: TokenInfoExtended | null | undefined = batchSends.value[i].token;
+        if (!token) throw new Error('Send.please-complete-form');
+        const { address: tokenAddress, decimals } = token;
+        const tokenAmount = parseUnits(batchSends.value[i].amount, decimals);
+
+        if (tokenAddress)
+          newSends.push({ token: tokenAddress, amount: tokenAmount, address: batchSends.value[i].receiver as string });
+      }
+
+      // Send with Umbra
+      const { tx } = await umbra.value.batchSend(signer.value, newSends);
+      void txNotify(tx.hash, ethersProvider);
+      await tx.wait();
+      resetBatchSendForm();
+    } finally {
+      isSending.value = false;
+    }
+  }
+
   function resetForm() {
+    token.value = NATIVE_TOKEN.value;
     recipientId.value = undefined;
-    token.value = undefined;
     humanAmount.value = undefined;
     sendFormRef.value?.resetValidation();
+  }
+
+  function resetBatchSendForm() {
+    batchSends.value = [
+      { id: 1, receiver: '', token: token.value, amount: '' },
+      { id: 2, receiver: '', token: token.value, amount: '' },
+    ];
   }
 
   async function setHumanAmountMax() {
@@ -678,9 +1136,13 @@ function useSendForm() {
 
   return {
     acknowledgeSendRisk,
+    addFields,
     advancedAcknowledged,
     advancedMode,
     balances,
+    batchSendHumanToll,
+    batchSendIsSupported,
+    batchSendSupportedChains,
     connectRedirectTo,
     chainId,
     currentChain,
@@ -688,6 +1150,7 @@ function useSendForm() {
     humanAmountBaseInputRef,
     humanToll,
     humanTotalAmount,
+    isDark,
     isSending,
     isValidForm,
     isValidId,
@@ -695,15 +1158,21 @@ function useSendForm() {
     isValidTokenAmount,
     NATIVE_TOKEN,
     onFormSubmit,
+    onBatchSendFormSubmit,
     paymentLinkParams,
     recipientId,
     recipientIdBaseInputRef,
+    removeField,
+    batchSends,
     sendAdvancedButton,
     sendFormRef,
+    sendingString,
     sendMax,
     setHumanAmountMax,
     showAdvancedSendWarning,
     showAdvancedWarning,
+    summaryTotalString,
+    tab,
     token,
     tokenBaseSelectRef,
     tokenList,

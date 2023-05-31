@@ -140,21 +140,21 @@ describe('Umbra class', () => {
       // URL provider
       const umbra1 = new Umbra(jsonRpcProvider, 1337);
       expect(umbra1.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      // expect(umbra1.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
+      expect(umbra1.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra1.chainConfig.startBlock).to.equal(8505089);
       expect(umbra1.chainConfig.subgraphUrl).to.equal(false);
 
       // Web3 provider
       const umbra2 = new Umbra(ethersProvider, 1337);
       expect(umbra2.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      // expect(umbra2.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
+      expect(umbra2.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra2.chainConfig.startBlock).to.equal(8505089);
       expect(umbra2.chainConfig.subgraphUrl).to.equal(false);
 
       // --- Goerli ---
       const umbra3 = new Umbra(jsonRpcProvider, 5);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra3.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
+      expect(umbra3.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra3.chainConfig.startBlock).to.equal(7718444);
       expect(umbra3.chainConfig.subgraphUrl).to.equal(
         'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-goerli/v1.0.0/gn'
@@ -163,7 +163,7 @@ describe('Umbra class', () => {
       // --- Mainnet ---
       const umbra4 = new Umbra(jsonRpcProvider, 1);
       expect(umbra4.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      // expect(umbra4.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
+      expect(umbra4.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra4.chainConfig.startBlock).to.equal(12343914);
       expect(umbra4.chainConfig.subgraphUrl).to.equal(
         'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.0.0/gn'
@@ -172,7 +172,7 @@ describe('Umbra class', () => {
       // --- Optimism ---
       const umbra5 = new Umbra(jsonRpcProvider, 10);
       expect(umbra5.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      // expect(umbra5.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
+      expect(umbra5.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra5.chainConfig.startBlock).to.equal(4069556);
       expect(umbra5.chainConfig.subgraphUrl).to.equal(
         'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.0.0/gn'
@@ -181,7 +181,7 @@ describe('Umbra class', () => {
       // --- Polygon ---
       const umbra6 = new Umbra(jsonRpcProvider, 137);
       expect(umbra6.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      // expect(umbra6.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
+      expect(umbra6.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra6.chainConfig.startBlock).to.equal(20717318);
       expect(umbra6.chainConfig.subgraphUrl).to.equal(
         'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn'
@@ -190,7 +190,7 @@ describe('Umbra class', () => {
       // --- Arbitrum ---
       const umbra7 = new Umbra(jsonRpcProvider, 42161);
       expect(umbra7.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      // expect(umbra7.chainConfig.batchSendAddress).to.equal('0x0d81Df222BB44b883265538586829715CF157163');
+      expect(umbra7.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra7.chainConfig.startBlock).to.equal(7285883);
       expect(umbra7.chainConfig.subgraphUrl).to.equal(
         'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.0.0/gn'
