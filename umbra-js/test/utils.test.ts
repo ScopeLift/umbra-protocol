@@ -10,15 +10,15 @@ const ethersProvider = ethers.provider;
 const INFURA_ID = <string>process.env.INFURA_ID;
 if (!INFURA_ID) throw new Error('Please set your INFURA_ID in a .env file');
 
-// Public key and address corresponding to msolomon.eth
+// Public key and address corresponding to stratus4.eth
 const publicKey = '0x04d582eceadff5a3393277968ef7dd0b5927884df6674c3be74c4f43dfd2cf6424e3f5f5d8a8c4de5e7ff05a5e92da8ed92bdc74aa86568da91e76aeac0bc0f026'; // prettier-ignore
 const address = '0xcca69eb37a8afc5490b66ce3155e023d1979c734';
 
-// Public keys generated from a signature by the address msolomon.eth resolves to
+// Public keys generated from a signature by the address stratus4.eth resolves to
 const pubKeysWallet = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 const pubKeysUmbra = {
-  spendingPublicKey: '0x04ff1f0ac74598d64078e586a2ce68d6b71143ff9e4e3bf3b04efb71f34d92b9b08a40cdd8ae9048e6268a402a60252a8b4cd43ae7edd7418ed4bbcadaf9fd4200', // prettier-ignore
-  viewingPublicKey: '0x04ebf518ef7f6ef705d374fd07f32d8c496dcb44554deb1c13940f45c7ce2202a055ab7fcdbb1868d1103c4f644f802de56109f0466294c122e466b65015f08f66', // prettier-ignore
+  spendingPublicKey: '0x04a080d494000c589a7b14b2c866dcc6fb68e296c9c796dcdd2b467a07a77b50ed2ef5b3006a6ccf1cd8df6c83cb64ebb2eb89c4620578930581f44f6297656a30', // prettier-ignore
+  viewingPublicKey: '0x04dfea22169061eab44a67558ac29e3e9f00ba6001ff952ab3267e1114b780228205041afd077784592f8eedd904b18d8745059b6c3e9baf14e84729872e4b07ea', // prettier-ignore
 };
 
 // Define public key that is not on the curve. This point was generated from a valid public key ending in
@@ -91,14 +91,14 @@ describe('Utilities', () => {
     });
 
     it('looks up recipients by transaction hash', async () => {
-      const hash = '0xfe80fe73b195eed3874aac3acf8ce7e4b199622bc209bdbdb30b0533bcff5439';
+      const hash = '0xbc1e0906f8885397e4f5bbc91b0fe1c1ae1f29ff5d47a06efc604819a8052076';
       const keys = await utils.lookupRecipient(hash, ethersProvider, { supportTxHash: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
     });
 
     it('throws when looking up recipients by transaction hash without explicitly allowing it', async () => {
-      const hash = '0xfe80fe73b195eed3874aac3acf8ce7e4b199622bc209bdbdb30b0533bcff5439';
+      const hash = '0xbc1e0906f8885397e4f5bbc91b0fe1c1ae1f29ff5d47a06efc604819a8052076';
       const errorMsg = `invalid address (argument="address", value="${hash}", code=INVALID_ARGUMENT, version=address/5.7.0)`; // prettier-ignore
       await expectRejection(utils.lookupRecipient(hash, ethersProvider), errorMsg);
     });
@@ -113,7 +113,7 @@ describe('Utilities', () => {
 
     it('looks up recipients by ENS, advanced mode on', async () => {
       const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${String(process.env.INFURA_ID)}`);
-      const keys = await utils.lookupRecipient('msolomon.eth', ethersProvider, { advanced: true });
+      const keys = await utils.lookupRecipient('stratus4.eth', ethersProvider, { advanced: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
     });
@@ -140,13 +140,13 @@ describe('Utilities', () => {
 
     it('looks up recipients by ENS, advanced mode off', async () => {
       const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${INFURA_ID}`);
-      const keys = await utils.lookupRecipient('msolomon.eth', ethersProvider);
+      const keys = await utils.lookupRecipient('stratus4.eth', ethersProvider);
       // These values are set on the Sepolia resolver
       expect(keys.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
 
       // Same test, but with advanced mode off explicitly specified
-      const keys2 = await utils.lookupRecipient('msolomon.eth', ethersProvider, { advanced: false });
+      const keys2 = await utils.lookupRecipient('stratus4.eth', ethersProvider, { advanced: false });
       expect(keys2.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys2.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
     });
