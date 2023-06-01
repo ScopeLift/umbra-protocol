@@ -30,6 +30,7 @@ const chainIds = {
   optimistic_kovan: 69,
   optimism: 10,
   sepolia: 11155111,
+  gnosis_chain: 100,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -167,6 +168,16 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds['optimism'],
       url: 'https://mainnet.optimism.io',
+    },
+    gnosis_chain: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['gnosis_chain'],
+      url: 'https://rpc.ankr.com/gnosis',
     },
   },
   paths: {
