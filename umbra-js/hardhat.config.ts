@@ -13,10 +13,7 @@ const chainIds = {
   goerli: 5,
   sepolia: 11155111,
   hardhat: 1337,
-  kovan: 42,
   mainnet: 1,
-  rinkeby: 4,
-  ropsten: 3,
 };
 
 // Ensure that we have all the environment variables we need.

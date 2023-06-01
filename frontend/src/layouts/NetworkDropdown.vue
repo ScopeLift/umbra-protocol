@@ -34,7 +34,7 @@ export default defineComponent({
     // We only show Sepolia as an option in the network dropdown if the user is connected to Rinkeby
     const chainOptions = computed(() => {
       if (network.value?.chainId === 4) return supportedChains;
-      return supportedChains.filter((chain) => chain.chainName !== 'Sepolia');
+      return supportedChains.filter((chain) => chain.chainName !== 'Sepolia' && chain.chainName !== 'Goerli');
     });
 
     watchEffect(() => {
