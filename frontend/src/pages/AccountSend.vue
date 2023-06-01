@@ -572,6 +572,7 @@ function useSendForm() {
   const recipientIdWarning = ref<string>();
   const useNormalPubKey = ref(false);
   const token = ref<TokenInfoExtended>();
+  const nativeToken = ref<TokenInfoExtended>();
   const humanAmount = ref<string>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
@@ -611,7 +612,7 @@ function useSendForm() {
 
   // Batch Send Computed Form Parameters
   const batchSendHumanTotalAmount = computed(() => {
-    const ethTotal = summaryAmount.value.get(NATIVE_TOKEN.value);
+    const ethTotal = summaryAmount.value.get(nativeToken.value as TokenInfoExtended);
     if (typeof ethTotal !== 'string') return '--'; // appease TS
     if (isNaN(Number(ethTotal))) return '--';
     const sendAmount = parseUnits(ethTotal, NATIVE_TOKEN.value.decimals);
@@ -619,7 +620,7 @@ function useSendForm() {
 
     return humanizeArithmeticResult(
       totalAmount,
-      [ethTotal, humanToll.value], // subtotal and fee
+      [ethTotal, batchSendHumanToll.value], // subtotal and fee
       NATIVE_TOKEN.value
     );
   });
@@ -659,17 +660,21 @@ function useSendForm() {
   });
   const summaryTotalString = computed(() => {
     let allString = '';
+    let includesNativeToken = false;
     for (const [index, entry] of Array.from(summaryAmount.value).entries()) {
       const token = entry[0];
       const amount = entry[1];
 
-      if (token === NATIVE_TOKEN.value) {
+      if (token.symbol === NATIVE_TOKEN.value.symbol) {
         allString += `${batchSendHumanTotalAmount.value} ${NATIVE_TOKEN.value.symbol}`;
+        includesNativeToken = true;
       } else {
         allString += `${amount} ${token.symbol}`;
       }
       if (index != Array.from(summaryAmount.value).length - 1) {
         allString += ' + ';
+      } else if (!includesNativeToken) {
+        allString += ` + ${batchSendHumanToll.value} ${NATIVE_TOKEN.value.symbol}`;
       }
     }
     return allString;
@@ -728,8 +733,8 @@ function useSendForm() {
         const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
         batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
         if (batchSends.value.length > 0) {
-          batchSends.value[0].token = token.value;
-          batchSends.value[1].token = token.value;
+          batchSends.value[0].token = nativeToken.value;
+          batchSends.value[1].token = nativeToken.value;
         }
       }
 
@@ -741,8 +746,8 @@ function useSendForm() {
   onMounted(async () => {
     await setPaymentLinkData();
     batchSends.value.push(
-      { id: 1, receiver: '', token: token.value, amount: '' },
-      { id: 2, receiver: '', token: token.value, amount: '' }
+      { id: 1, receiver: '', token: nativeToken.value, amount: '' },
+      { id: 2, receiver: '', token: nativeToken.value, amount: '' }
     );
     const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
     batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
@@ -754,8 +759,13 @@ function useSendForm() {
     if (amount) humanAmount.value = amount;
 
     // For token, we always default to the chain's native token if none was selected
-    if (paymentToken?.symbol) token.value = paymentToken;
-    else token.value = tokenList.value[0];
+    if (paymentToken?.symbol) {
+      token.value = paymentToken;
+      nativeToken.value = paymentToken;
+    } else {
+      token.value = tokenList.value[0];
+      nativeToken.value = tokenList.value[0];
+    }
 
     // Validate the form
     await sendFormRef.value?.validate();
@@ -1090,7 +1100,7 @@ function useSendForm() {
   }
 
   function resetForm() {
-    token.value = NATIVE_TOKEN.value;
+    token.value = nativeToken.value;
     recipientId.value = undefined;
     humanAmount.value = undefined;
     sendFormRef.value?.resetValidation();
@@ -1098,8 +1108,8 @@ function useSendForm() {
 
   function resetBatchSendForm() {
     batchSends.value = [
-      { id: 1, receiver: '', token: token.value, amount: '' },
-      { id: 2, receiver: '', token: token.value, amount: '' },
+      { id: 1, receiver: '', token: nativeToken.value, amount: '' },
+      { id: 2, receiver: '', token: nativeToken.value, amount: '' },
     ];
   }
 
