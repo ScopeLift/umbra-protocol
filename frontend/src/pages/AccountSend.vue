@@ -513,7 +513,7 @@ import { SendBatch } from '@umbracash/umbra-js';
 import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
-import { batchStoreSend, storeSend } from 'src/utils/account-send';
+import { storeSend, StoreSendArgs } from 'src/utils/account-send';
 
 interface BatchSendData {
   id: number;
@@ -944,9 +944,7 @@ function useSendForm() {
         const publicKeys = await umbraUtils.lookupRecipient(recipientId.value, provider.value, {
           advanced: shouldUseNormalPubKey.value,
         });
-        await storeSend({
-          chainId: chainId.value!,
-          viewingPrivateKey: viewingKeyPair.value?.privateKeyHex,
+        await storeSend(chainId.value!, viewingKeyPair.value?.privateKeyHex, {
           accountDataToEncrypt: {
             recipientAddress: recipientId.value,
             advancedMode: advancedMode.value,
@@ -1076,29 +1074,31 @@ function useSendForm() {
             advanced: false,
           });
           return {
-            batch: item,
-            pubKey: publicKey.spendingPublicKey,
+            unencryptedAccountSendData: {
+              amount: item.amount.toString(),
+              tokenAddress: item.token,
+              senderAddress: userAddress.value,
+              txHash: tx.hash,
+            },
+            accountDataToEncrypt: {
+              pubKey: publicKey.spendingPublicKey,
+              recipientAddress: item.address,
+              advancedMode: false,
+              usePublicKeyChecked: false,
+            },
           };
         });
         const batchSendData = await Promise.allSettled(batchSendDataPromises).then((values) => {
           const batches = [];
           for (const item of values) {
             if (item.status === 'fulfilled') {
-              batches.push(item.value as { batch: SendBatch; pubKey: string });
+              batches.push(item.value as StoreSendArgs);
             }
           }
           return batches;
         });
 
-        await batchStoreSend({
-          chainId: chainId.value!,
-          viewingPrivateKey: viewingKeyPair.value.privateKeyHex,
-          batchTxHash: tx.hash,
-          senderAddress: userAddress.value,
-          advancedMode: false,
-          usePublicKeyChecked: false,
-          batches: batchSendData,
-        });
+        await storeSend(chainId.value!, viewingKeyPair.value.privateKeyHex, batchSendData);
       }
       await tx.wait();
       resetBatchSendForm();
