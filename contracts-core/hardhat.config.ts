@@ -20,14 +20,9 @@ const chainIds = {
   ganache: 1337,
   goerli: 5,
   hardhat: 1337,
-  kovan: 42,
   mainnet: 1,
-  rinkeby: 4,
-  ropsten: 3,
   polygon: 137,
-  rinkarby: 421611,
   arbitrum: 42161,
-  optimistic_kovan: 69,
   optimism: 10,
   sepolia: 11155111,
   gnosis_chain: 100,
@@ -104,9 +99,6 @@ const config: HardhatUserConfig = {
     },
     sepolia: createTestnetConfig('sepolia'),
     goerli: createTestnetConfig('goerli'),
-    kovan: createTestnetConfig('kovan'),
-    rinkeby: createTestnetConfig('rinkeby'),
-    ropsten: createTestnetConfig('ropsten'),
     mainnet: {
       accounts: {
         count: 10,
@@ -129,16 +121,6 @@ const config: HardhatUserConfig = {
       url: 'https://polygon-rpc.com/',
       gasPrice: 33000000000, // 33 gwei
     },
-    rinkarby: {
-      accounts: {
-        count: 10,
-        initialIndex: 0,
-        mnemonic,
-        path: "m/44'/60'/0'/0",
-      },
-      chainId: chainIds['rinkarby'],
-      url: 'https://rinkeby.arbitrum.io/rpc',
-    },
     arbitrum: {
       accounts: {
         count: 10,
@@ -148,16 +130,6 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds['arbitrum'],
       url: 'https://arb1.arbitrum.io/rpc',
-    },
-    optimistic_kovan: {
-      accounts: {
-        count: 10,
-        initialIndex: 0,
-        mnemonic,
-        path: "m/44'/60'/0'/0",
-      },
-      chainId: chainIds['optimistic_kovan'],
-      url: 'https://kovan.optimism.io',
     },
     optimism: {
       accounts: {

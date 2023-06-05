@@ -68,7 +68,7 @@ describe('Utilities', () => {
   describe('Recipient identifier lookups', () => {
     before(async () => {
       await ethersProvider.getNetwork();
-      ethersProvider.network.name = 'rinkeby'; // don't do this in prod, just for testing purposes so we use Rinkeby registry, not localhost
+      ethersProvider.network.name = 'sepolia'; // don't do this in prod, just for testing purposes so we use Sepolia registry, not localhost
     });
 
     // --- Public key or transaction hash ---

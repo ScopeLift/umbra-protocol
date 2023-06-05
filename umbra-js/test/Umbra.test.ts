@@ -102,7 +102,7 @@ describe('Umbra class', () => {
     await batchSendContract.connect(deployer).approveToken(dai.address);
     await batchSendContract.connect(deployer).approveToken(usdc.address);
 
-    // Get chainConfig based on most recent Rinkeby block number to minimize scanning time
+    // Get chainConfig based on most recent Sepolia block number to minimize scanning time
     const lastBlockNumber = await ethersProvider.getBlockNumber();
     chainConfig = {
       chainId: (await ethersProvider.getNetwork()).chainId,

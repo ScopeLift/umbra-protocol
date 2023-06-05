@@ -81,7 +81,7 @@ export const supportedChains: Array<Chain> = [
       logoURI: ETH_NETWORK_LOGO,
     },
     rpcUrls: [`https://sepolia.infura.io/v3/${String(process.env.INFURA_ID)}`],
-    blockExplorerUrls: ['`https://sepolia.etherscan.io`'],
+    blockExplorerUrls: ['https://sepolia.etherscan.io'],
     iconUrls: [ETH_NETWORK_LOGO],
     logoURI: ETH_NETWORK_LOGO,
   },
