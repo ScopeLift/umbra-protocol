@@ -64,7 +64,7 @@ describe('KeyPair class', () => {
     });
 
     it('initializes an instance from a contract creation transaction', async () => {
-      // Specify rinkeby transaction hash and its sender
+      // Specify sepolia transaction hash and its sender
       const txHash = '0x64ff3b73a83b5a70962b6a8d33cde6a85a9357748cdc34c74d08bebb85da491c';
       const from = '0xB7EE870E2c49B2DEEe70003519cF056247Aac3D4';
       // Create instance and check result
@@ -75,7 +75,7 @@ describe('KeyPair class', () => {
 
   describe('Functionality', () => {
     it('will recover the public key from an arbitrary transaction', async () => {
-      // Specify rinkeby transaction hash and its sender
+      // Specify sepolia transaction hash and its sender
       const txHash = '0xf932d80eeb7eb5ac83fece662f5aaa7be8635a559752e88f5fc1f21b1d76d155';
       const sendersPublicKey =
         '0x04d582eceadff5a3393277968ef7dd0b5927884df6674c3be74c4f43dfd2cf6424e3f5f5d8a8c4de5e7ff05a5e92da8ed92bdc74aa86568da91e76aeac0bc0f026';

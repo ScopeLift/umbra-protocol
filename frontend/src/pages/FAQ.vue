@@ -355,9 +355,6 @@
               <template v-slot:mainnet>
                 <a :href="getEtherscanUrl(deployments.umbra, 1)" class="hyperlink" target="_blank"> mainnet </a>
               </template>
-              <template v-slot:sepolia>
-                <a :href="getEtherscanUrl(deployments.umbra, 4)" class="hyperlink" target="_blank"> Sepolia </a>
-              </template>
               <template v-slot:optimism>
                 <a :href="getEtherscanUrl(deployments.umbra, 10)" class="hyperlink" target="_blank"> Optimism </a>
               </template>
@@ -366,6 +363,9 @@
               </template>
               <template v-slot:arbitrum>
                 <a :href="getEtherscanUrl(deployments.umbra, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
+              </template>
+              <template v-slot:sepolia>
+                <a :href="getEtherscanUrl(deployments.umbra, 11155111)" class="hyperlink" target="_blank"> Sepolia </a>
               </template>
             </i18n-t>
             <i18n-t scope="global" keypath="FAQ.network-addrs-registry" tag="li">
@@ -378,9 +378,6 @@
               <template v-slot:mainnet>
                 <a :href="getEtherscanUrl(deployments.registry, 1)" class="hyperlink" target="_blank"> mainnet </a>
               </template>
-              <template v-slot:sepolia>
-                <a :href="getEtherscanUrl(deployments.registry, 4)" class="hyperlink" target="_blank"> Sepolia </a>
-              </template>
               <template v-slot:optimism>
                 <a :href="getEtherscanUrl(deployments.registry, 10)" class="hyperlink" target="_blank"> Optimism </a>
               </template>
@@ -389,6 +386,11 @@
               </template>
               <template v-slot:arbitrum>
                 <a :href="getEtherscanUrl(deployments.registry, 42161)" class="hyperlink" target="_blank"> Arbitrum </a>
+              </template>
+              <template v-slot:sepolia>
+                <a :href="getEtherscanUrl(deployments.registry, 11155111)" class="hyperlink" target="_blank">
+                  Sepolia
+                </a>
               </template>
             </i18n-t>
           </ul>
