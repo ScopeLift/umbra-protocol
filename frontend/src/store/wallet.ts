@@ -489,7 +489,7 @@ export default function useWalletStore() {
     // this value is used if the relayer is down
     const fallbackMinSend = getNativeTokenMinSend(chainId.value!);
     return {
-      ...(currentChain.value!.nativeCurrency as TokenInfoExtended),
+      ...(currentChain.value?.nativeCurrency as TokenInfoExtended),
       minSendAmount: relayer.value?.nativeTokenMinSendAmount || fallbackMinSend,
       chainId: chainId.value!,
     };

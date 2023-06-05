@@ -730,7 +730,7 @@ function useSendForm() {
       } else if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId || isLoadingValue !== prevIsLoadingValue) {
         // When network finally connects after page load, we need to re-parse the payment link data.
         await setPaymentLinkData(); // Handles validations.
-        const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+        const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
         batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
         if (batchSends.value.length > 0) {
           batchSends.value[0].token = nativeToken.value;
@@ -749,7 +749,7 @@ function useSendForm() {
       { id: 1, receiver: '', token: nativeToken.value, amount: '' },
       { id: 2, receiver: '', token: nativeToken.value, amount: '' }
     );
-    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+    const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
     batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
   });
 
