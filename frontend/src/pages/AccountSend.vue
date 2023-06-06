@@ -572,7 +572,6 @@ function useSendForm() {
   const recipientIdWarning = ref<string>();
   const useNormalPubKey = ref(false);
   const token = ref<TokenInfoExtended>();
-  const nativeToken = ref<TokenInfoExtended>();
   const humanAmount = ref<string>();
   const isValidForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
@@ -612,7 +611,12 @@ function useSendForm() {
 
   // Batch Send Computed Form Parameters
   const batchSendHumanTotalAmount = computed(() => {
-    const ethTotal = summaryAmount.value.get(nativeToken.value as TokenInfoExtended);
+    let ethTotal;
+    for (const token of summaryAmount.value.keys()) {
+      if (token.symbol === NATIVE_TOKEN.value.symbol) {
+        ethTotal = summaryAmount.value.get(token);
+      }
+    }
     if (typeof ethTotal !== 'string') return '--'; // appease TS
     if (isNaN(Number(ethTotal))) return '--';
     const sendAmount = parseUnits(ethTotal, NATIVE_TOKEN.value.decimals);
@@ -733,8 +737,8 @@ function useSendForm() {
         const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
         batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
         if (batchSends.value.length > 0) {
-          batchSends.value[0].token = nativeToken.value;
-          batchSends.value[1].token = nativeToken.value;
+          batchSends.value[0].token = NATIVE_TOKEN.value;
+          batchSends.value[1].token = NATIVE_TOKEN.value;
         }
       }
 
@@ -746,8 +750,8 @@ function useSendForm() {
   onMounted(async () => {
     await setPaymentLinkData();
     batchSends.value.push(
-      { id: 1, receiver: '', token: nativeToken.value, amount: '' },
-      { id: 2, receiver: '', token: nativeToken.value, amount: '' }
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '' }
     );
     const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
     batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
@@ -759,13 +763,8 @@ function useSendForm() {
     if (amount) humanAmount.value = amount;
 
     // For token, we always default to the chain's native token if none was selected
-    if (paymentToken?.symbol) {
-      token.value = paymentToken;
-      nativeToken.value = paymentToken;
-    } else {
-      token.value = tokenList.value[0];
-      nativeToken.value = tokenList.value[0];
-    }
+    if (paymentToken?.symbol) token.value = paymentToken;
+    else token.value = tokenList.value[0];
 
     // Validate the form
     await sendFormRef.value?.validate();
@@ -791,7 +790,7 @@ function useSendForm() {
     CurrentSends.push({
       id: CurrentSends[CurrentSends.length - 1]?.id + 1 || 1,
       receiver: '',
-      token: token.value,
+      token: NATIVE_TOKEN.value,
       amount: '',
     });
   }
@@ -1100,7 +1099,7 @@ function useSendForm() {
   }
 
   function resetForm() {
-    token.value = nativeToken.value;
+    token.value = NATIVE_TOKEN.value;
     recipientId.value = undefined;
     humanAmount.value = undefined;
     sendFormRef.value?.resetValidation();
@@ -1108,8 +1107,8 @@ function useSendForm() {
 
   function resetBatchSendForm() {
     batchSends.value = [
-      { id: 1, receiver: '', token: nativeToken.value, amount: '' },
-      { id: 2, receiver: '', token: nativeToken.value, amount: '' },
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
     ];
   }
 
