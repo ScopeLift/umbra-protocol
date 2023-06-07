@@ -11,11 +11,9 @@ import '@nomiclabs/hardhat-waffle';
 const chainIds = {
   ganache: 1337,
   goerli: 5,
+  sepolia: 11155111,
   hardhat: 1337,
-  kovan: 42,
   mainnet: 1,
-  rinkeby: 4,
-  ropsten: 3,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -43,7 +41,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://goerli.infura.io/v3/${infuraApiKey}`,
+        url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
       },
       chainId: chainIds.hardhat,
       accounts: {
@@ -53,6 +51,7 @@ const config: HardhatUserConfig = {
         path: "m/44'/60'/1'/0",
       },
     },
+    sepolia: createTestnetConfig('sepolia'),
     goerli: createTestnetConfig('goerli'),
     kovan: createTestnetConfig('kovan'),
     rinkeby: createTestnetConfig('rinkeby'),

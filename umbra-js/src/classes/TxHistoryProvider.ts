@@ -22,6 +22,9 @@ export class TxHistoryProvider extends EtherscanProvider {
       case 42161: // arbitrum
         defaultApiKey = <string>process.env.ARBISCAN_API_KEY;
         break;
+      case 11155111: // sepolia
+        defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
+        break;
       default:
         throw new Error(`Unsupported chain ID ${_chainId}`);
     }
@@ -41,6 +44,8 @@ export class TxHistoryProvider extends EtherscanProvider {
         return 'https://api.polygonscan.com';
       case 42161:
         return 'https://api.arbiscan.io';
+      case 11155111:
+        return 'https://api-sepolia.etherscan.io';
     }
 
     throw new Error(`Unsupported network ${JSON.stringify(this.network.chainId)}`);

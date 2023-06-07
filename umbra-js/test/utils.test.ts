@@ -10,15 +10,15 @@ const ethersProvider = ethers.provider;
 const INFURA_ID = <string>process.env.INFURA_ID;
 if (!INFURA_ID) throw new Error('Please set your INFURA_ID in a .env file');
 
-// Public key and address corresponding to msolomon.eth
-const publicKey = '0x04df3d784d6d1e55fabf44b7021cf17c00a6cccc53fea00d241952ac2eebc46dc674c91e60ccd97576c1ba2a21beed21f7b02aee089f2eeec357ffd349488a7cee'; // prettier-ignore
-const address = '0x60A5dcB2fC804874883b797f37CbF1b0582ac2dD';
+// Public key and address corresponding to stratus4.eth
+const publicKey = '0x04458465db23fe07d148c8c9078d8b67497998a66f4f2aa479973a9cbaaf8b5a96e6ba166a389b8f794b68010849b64b91343e72c7fa4cfcc178607c4b1d4870ed'; // prettier-ignore
+const address = '0x3f3c8dB1487469E8091cb210e9cf16D0Af0dE6FC';
 
-// Public keys generated from a signature by the address msolomon.eth resolves to
+// Public keys generated from a signature by the address stratus4.eth resolves to
 const pubKeysWallet = { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 const pubKeysUmbra = {
-  spendingPublicKey: '0x04ff1f0ac74598d64078e586a2ce68d6b71143ff9e4e3bf3b04efb71f34d92b9b08a40cdd8ae9048e6268a402a60252a8b4cd43ae7edd7418ed4bbcadaf9fd4200', // prettier-ignore
-  viewingPublicKey: '0x04ebf518ef7f6ef705d374fd07f32d8c496dcb44554deb1c13940f45c7ce2202a055ab7fcdbb1868d1103c4f644f802de56109f0466294c122e466b65015f08f66', // prettier-ignore
+  spendingPublicKey: '0x04620950ddc4dd4352e91ed71ef87c1aba0d76296cb8d5b48996e31e4062c76c6e38b0d8b4c116d645604051c5c6255179538741e8d01595703c245dd6d9b6f7c3', // prettier-ignore
+  viewingPublicKey: '0x04c9b42559000738090391904fe6b91327875df36ac0b294b075c834c056bdeaf25d067694830cfe143784d52d1b0ef637d535fdc6bfc687b0ccbdbf2b00a282dc', // prettier-ignore
 };
 
 // Define public key that is not on the curve. This point was generated from a valid public key ending in
@@ -28,12 +28,10 @@ const badPublicKey = '0x04059f2fa86c55b95a8db142a6a5490c43e242d03ed8c0bd58437a98
 describe('Utilities', () => {
   describe('Public key recovery', () => {
     it('recovers public keys from type 0 transaction', async () => {
-      const hash = '0xdd54313d1f1d8211d962207cf939cdc622da9f32a660b18c5df04b1039067c9c';
+      const hash = '0xc25e91d4435528e04478036e64c68a70979086eee63b47a2c277bdb00c071d21';
       const tx = await ethersProvider.getTransaction(hash);
       expect(tx.type).to.equal(0);
-      expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(
-        '0x046b3c875ce9f5c83a18668934735d0f1ea3399d37fe87f677e87a939178a3667ba6b9a1e8668c703aae8f468161c9a6b2dd0ad6069d5dd32d2547e1bb5f1d7a2a'
-      );
+      expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
     });
 
     // Sending a type 1 transaction is a pain because they are rarely used, and finding an existing
@@ -55,12 +53,12 @@ describe('Utilities', () => {
     });
 
     it('recovers public keys from type 2 transaction', async () => {
-      const hash = '0xfe80fe73b195eed3874aac3acf8ce7e4b199622bc209bdbdb30b0533bcff5439';
+      const hash = '0x6e94b03ed7935d3d6a7a135748773ef580bc89a10db7d0657697a5cee1776648';
       const tx = await ethersProvider.getTransaction(hash);
       expect(tx.type).to.equal(2);
       expect(await utils.recoverPublicKeyFromTransaction(hash, ethersProvider)).to.equal(publicKey);
 
-      const hash2 = '0x22f07e4fad1329ce6f6cc6cafdc080c23fd9e70822121f634a41ac459b18d1be';
+      const hash2 = '0x913cd745758e83ceb160718a4cc0080fb0699f083177eccb288500222a95e784';
       const tx2 = await ethersProvider.getTransaction(hash2);
       expect(tx2.type).to.equal(2);
       expect(await utils.recoverPublicKeyFromTransaction(hash2, ethersProvider)).to.equal(publicKey);
@@ -70,7 +68,7 @@ describe('Utilities', () => {
   describe('Recipient identifier lookups', () => {
     before(async () => {
       await ethersProvider.getNetwork();
-      ethersProvider.network.name = 'rinkeby'; // don't do this in prod, just for testing purposes so we use Rinkeby registry, not localhost
+      ethersProvider.network.name = 'sepolia'; // don't do this in prod, just for testing purposes so we use Sepolia registry, not localhost
     });
 
     // --- Public key or transaction hash ---
@@ -91,35 +89,35 @@ describe('Utilities', () => {
     });
 
     it('looks up recipients by transaction hash', async () => {
-      const hash = '0xfe80fe73b195eed3874aac3acf8ce7e4b199622bc209bdbdb30b0533bcff5439';
+      const hash = '0x2d067d6c2b6c1880fed6228d6b9cc9190810335c45f06ecb525f5a7860aaaf55';
       const keys = await utils.lookupRecipient(hash, ethersProvider, { supportTxHash: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
     });
 
     it('throws when looking up recipients by transaction hash without explicitly allowing it', async () => {
-      const hash = '0xfe80fe73b195eed3874aac3acf8ce7e4b199622bc209bdbdb30b0533bcff5439';
+      const hash = '0x2d067d6c2b6c1880fed6228d6b9cc9190810335c45f06ecb525f5a7860aaaf55';
       const errorMsg = `invalid address (argument="address", value="${hash}", code=INVALID_ARGUMENT, version=address/5.7.0)`; // prettier-ignore
       await expectRejection(utils.lookupRecipient(hash, ethersProvider), errorMsg);
     });
 
     // --- Address, advanced mode on (i.e. don't use the StealthKeyRegistry) ---
     it('looks up recipients by address, advanced mode on', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`);
+      const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${String(process.env.INFURA_ID)}`);
       const keys = await utils.lookupRecipient(address, ethersProvider, { advanced: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
     });
 
     it('looks up recipients by ENS, advanced mode on', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`);
-      const keys = await utils.lookupRecipient('msolomon.eth', ethersProvider, { advanced: true });
+      const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${String(process.env.INFURA_ID)}`);
+      const keys = await utils.lookupRecipient('stratus4.eth', ethersProvider, { advanced: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
     });
 
     it.skip('looks up recipients by CNS, advanced mode on', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`);
+      const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${INFURA_ID}`);
       const keys = await utils.lookupRecipient('udtestdev-msolomon.crypto', ethersProvider, { advanced: true });
       expect(keys.spendingPublicKey).to.equal(pubKeysWallet.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysWallet.viewingPublicKey);
@@ -127,7 +125,7 @@ describe('Utilities', () => {
 
     // --- Address, advanced mode off (i.e. use the StealthKeyRegistry) ---
     it('looks up recipients by address, advanced mode off', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`); // otherwise throws with unsupported network since we're on localhost
+      const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${INFURA_ID}`); // otherwise throws with unsupported network since we're on localhost
       const keys = await utils.lookupRecipient(address, ethersProvider);
       expect(keys.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
@@ -139,14 +137,14 @@ describe('Utilities', () => {
     });
 
     it('looks up recipients by ENS, advanced mode off', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`);
-      const keys = await utils.lookupRecipient('msolomon.eth', ethersProvider);
-      // These values are set on the Goerli resolver
+      const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${INFURA_ID}`);
+      const keys = await utils.lookupRecipient('stratus4.eth', ethersProvider);
+      // These values are set on the Sepolia resolver
       expect(keys.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
 
       // Same test, but with advanced mode off explicitly specified
-      const keys2 = await utils.lookupRecipient('msolomon.eth', ethersProvider, { advanced: false });
+      const keys2 = await utils.lookupRecipient('stratus4.eth', ethersProvider, { advanced: false });
       expect(keys2.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys2.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
     });
@@ -171,8 +169,8 @@ describe('Utilities', () => {
       expect(txHash).to.have.lengthOf(66);
     });
 
-    it('looks up transaction history on goerli', async () => {
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`);
+    it('looks up transaction history on sepolia', async () => {
+      const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${INFURA_ID}`);
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
     });
@@ -223,7 +221,7 @@ describe('Utilities', () => {
 
     it('throws when looking up an address that has not sent a transaction', async () => {
       const address = '0x0000000000000000000000000000000000000002';
-      const ethersProvider = new StaticJsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`); // otherwise throws with unsupported network since we're on localhost
+      const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${INFURA_ID}`); // otherwise throws with unsupported network since we're on localhost
       const errorMsg = `Address ${address} has not registered stealth keys. Please ask them to setup their Umbra account`;
       await expectRejection(utils.lookupRecipient(address, ethersProvider), errorMsg);
     });

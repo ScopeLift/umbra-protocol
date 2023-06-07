@@ -40,6 +40,7 @@ const subgraphs = {
   10: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.0.0/gn',
   137: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn',
   42161: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.0.0/gn',
+  11155111: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-sepolia/v1.0.0/gn',
 };
 
 const chainConfigs: Record<number, ChainConfig> = {
@@ -49,6 +50,13 @@ const chainConfigs: Record<number, ChainConfig> = {
   137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
   42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
+  11155111: {
+    chainId: 11155111,
+    umbraAddress,
+    batchSendAddress,
+    startBlock: 3590825,
+    subgraphUrl: subgraphs[11155111],
+  }, // Sepolia
 };
 
 /**
@@ -114,6 +122,7 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
   if (chainId === 10) return `https://optimism-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 137) return `https://polygon-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 42161) return `https://arbitrum-mainnet.infura.io/v3/${infuraId}`;
+  if (chainId === 11155111) return `https://sepolia.infura.io/v3/${infuraId}`;
   throw new Error(`No Infura URL for chainId ${chainId}.`);
 };
 

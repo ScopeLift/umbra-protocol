@@ -33,7 +33,7 @@ describe('ENS functions', () => {
   });
 
   it.skip('throws when the user has not set their resolver', async () => {
-    // Arbitrary name that is not registered on Goerli and therefore has no resolver set. If this test starts failing,
+    // Arbitrary name that is not registered on Sepolia and therefore has no resolver set. If this test starts failing,
     // a likely culprit is that this name is now registered
     const unsetEnsName = 'superRandomQwertyHelloWhyWouldYouRegisterThis.eth';
     const errorMsg = `Name ${unsetEnsName} is not registered or user has not set their resolver`;
@@ -41,7 +41,7 @@ describe('ENS functions', () => {
   });
 
   it.skip('throws when the user has a resolver that does not support stealth keys', async () => {
-    // Arbitrary name that is registered on Goerli and has set a resolver, but has a resolver that does not support
+    // Arbitrary name that is registered on Sepolia and has set a resolver, but has a resolver that does not support
     // getting and setting stealth keys. If this test starts failing, a likely culprit is that this user has changed
     // to a supported resolver or the name registration has expired
     const unsetEnsName = 'abc.eth';
@@ -50,7 +50,7 @@ describe('ENS functions', () => {
   });
 
   it.skip('throws when the user has not set their stealth keys', async () => {
-    // Arbitrary name that is registered on Goerli and has set a supported resolver, but has not set their stealth
+    // Arbitrary name that is registered on Sepolia and has set a supported resolver, but has not set their stealth
     // keys. If this test starts failing, a likely culprit is that this user has set their stealth keys or the name
     // registration has expired
     const unsetEnsName = 'unsetStealthKeys.eth';
