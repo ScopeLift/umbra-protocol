@@ -463,18 +463,19 @@
             <div class="batch-send-buttons">
               <base-button
                 class="button-container"
-                @click="isSending ? null : addFields(batchSends)"
-                :disable="isSending"
-                :flat="true"
-                :label="$t('Send.add-send')"
-              />
-              <base-button
                 :label="$t('Send.send')"
                 :loading="isSending"
                 type="submit"
                 :disable="batchSends.length == 1 || isSending"
               />
-              <div class="q-mt-sm">
+              <base-button
+                @click="isSending ? null : addFields(batchSends)"
+                :disable="isSending"
+                :flat="true"
+                :label="$t('Send.add-send')"
+              />
+
+              <div>
                 <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
                   <div class="row items-center justify-center q-pa-sm link-container rounded-borders">
                     {{ $t('Send.send-history') }}
