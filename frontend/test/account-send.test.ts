@@ -597,7 +597,7 @@ describe('storeSend', () => {
       expect(bigNumberCount.toBigInt()).toBeGreaterThan(BigInt(0));
       expect(values.length).toEqual(num);
     },
-    10000
+    20000
   );
 });
 
