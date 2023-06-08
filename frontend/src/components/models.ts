@@ -101,7 +101,7 @@ export const supportedChains: Array<Chain> = [
     logoURI: '/networks/optimism.svg',
   },
   {
-    chainId: '0x64', // 10 as hex
+    chainId: '0x64', // 100 as hex
     chainName: 'Gnosis Chain',
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
