@@ -611,7 +611,12 @@ function useSendForm() {
 
   // Batch Send Computed Form Parameters
   const batchSendHumanTotalAmount = computed(() => {
-    const ethTotal = summaryAmount.value.get(NATIVE_TOKEN.value);
+    let ethTotal;
+    for (const token of summaryAmount.value.keys()) {
+      if (token.symbol === NATIVE_TOKEN.value.symbol) {
+        ethTotal = summaryAmount.value.get(token);
+      }
+    }
     if (typeof ethTotal !== 'string') return '--'; // appease TS
     if (isNaN(Number(ethTotal))) return '--';
     const sendAmount = parseUnits(ethTotal, NATIVE_TOKEN.value.decimals);
@@ -619,7 +624,7 @@ function useSendForm() {
 
     return humanizeArithmeticResult(
       totalAmount,
-      [ethTotal, humanToll.value], // subtotal and fee
+      [ethTotal, batchSendHumanToll.value], // subtotal and fee
       NATIVE_TOKEN.value
     );
   });
@@ -659,17 +664,21 @@ function useSendForm() {
   });
   const summaryTotalString = computed(() => {
     let allString = '';
+    let includesNativeToken = false;
     for (const [index, entry] of Array.from(summaryAmount.value).entries()) {
       const token = entry[0];
       const amount = entry[1];
 
-      if (token === NATIVE_TOKEN.value) {
+      if (token.symbol === NATIVE_TOKEN.value.symbol) {
         allString += `${batchSendHumanTotalAmount.value} ${NATIVE_TOKEN.value.symbol}`;
+        includesNativeToken = true;
       } else {
         allString += `${amount} ${token.symbol}`;
       }
       if (index != Array.from(summaryAmount.value).length - 1) {
         allString += ' + ';
+      } else if (!includesNativeToken) {
+        allString += ` + ${batchSendHumanToll.value} ${NATIVE_TOKEN.value.symbol}`;
       }
     }
     return allString;
@@ -725,11 +734,11 @@ function useSendForm() {
       } else if (nativeTokenValue.chainId !== prevNativeTokenValue.chainId || isLoadingValue !== prevIsLoadingValue) {
         // When network finally connects after page load, we need to re-parse the payment link data.
         await setPaymentLinkData(); // Handles validations.
-        const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+        const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
         batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
         if (batchSends.value.length > 0) {
-          batchSends.value[0].token = token.value;
-          batchSends.value[1].token = token.value;
+          batchSends.value[0].token = NATIVE_TOKEN.value;
+          batchSends.value[1].token = NATIVE_TOKEN.value;
         }
       }
 
@@ -741,10 +750,10 @@ function useSendForm() {
   onMounted(async () => {
     await setPaymentLinkData();
     batchSends.value.push(
-      { id: 1, receiver: '', token: token.value, amount: '' },
-      { id: 2, receiver: '', token: token.value, amount: '' }
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '' }
     );
-    const chainId = BigNumber.from(currentChain.value?.chainId).toNumber();
+    const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
     batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
   });
 
@@ -781,7 +790,7 @@ function useSendForm() {
     CurrentSends.push({
       id: CurrentSends[CurrentSends.length - 1]?.id + 1 || 1,
       receiver: '',
-      token: token.value,
+      token: NATIVE_TOKEN.value,
       amount: '',
     });
   }
@@ -1098,8 +1107,8 @@ function useSendForm() {
 
   function resetBatchSendForm() {
     batchSends.value = [
-      { id: 1, receiver: '', token: token.value, amount: '' },
-      { id: 2, receiver: '', token: token.value, amount: '' },
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
     ];
   }
 
