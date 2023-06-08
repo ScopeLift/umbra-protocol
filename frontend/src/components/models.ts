@@ -111,7 +111,7 @@ export const supportedChains: Array<Chain> = [
       logoURI: 'https://docs.gnosischain.com/img/tokens/xdai.png',
     },
     rpcUrls: ['https://rpc.ankr.com/gnosis'],
-    blockExplorerUrls: ['https://gnosisscan.io/'],
+    blockExplorerUrls: ['https://gnosisscan.io'],
     iconUrls: ['https://docs.gnosischain.com/img/tokens/gno.png'],
     logoURI: 'https://docs.gnosischain.com/img/tokens/gno.png',
   },

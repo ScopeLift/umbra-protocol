@@ -399,7 +399,9 @@
                 </a>
               </template>
               <template v-slot:gnosis>
-                <a :href="getEtherscanUrl(deployments.umbra, 100)" class="hyperlink" target="_blank"> Gnosis Chain </a>
+                <a :href="getEtherscanUrl(deployments.registry, 100)" class="hyperlink" target="_blank">
+                  Gnosis Chain
+                </a>
               </template>
               <template v-slot:goerli>
                 <a :href="getEtherscanUrl(deployments.registry, 5)" class="hyperlink" target="_blank"> Goerli </a>
