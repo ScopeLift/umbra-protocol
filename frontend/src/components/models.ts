@@ -112,8 +112,8 @@ export const supportedChains: Array<Chain> = [
     },
     rpcUrls: ['https://rpc.ankr.com/gnosis'],
     blockExplorerUrls: ['https://gnosisscan.io'],
-    iconUrls: ['/networks/gnosis.png'],
-    logoURI: '/networks/gnosis.png',
+    iconUrls: ['/networks/gnosis.svg'],
+    logoURI: '/networks/gnosis.svg',
   },
   {
     chainId: '0x89', // 137 as hex
