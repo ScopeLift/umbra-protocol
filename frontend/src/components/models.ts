@@ -71,8 +71,8 @@ export const supportedChains: Array<Chain> = [
     logoURI: ETH_NETWORK_LOGO,
   },
   {
-    chainId: '0xaa36a7',
-    chainName: 'Sepolia', // 11155111 as hex
+    chainId: '0xaa36a7', // 11155111 as hex
+    chainName: 'Sepolia',
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
       name: 'Ether',
@@ -112,8 +112,8 @@ export const supportedChains: Array<Chain> = [
     },
     rpcUrls: ['https://rpc.ankr.com/gnosis'],
     blockExplorerUrls: ['https://gnosisscan.io'],
-    iconUrls: ['https://docs.gnosischain.com/img/tokens/gno.png'],
-    logoURI: 'https://docs.gnosischain.com/img/tokens/gno.png',
+    iconUrls: ['/networks/gnosis.png'],
+    logoURI: '/networks/gnosis.png',
   },
   {
     chainId: '0x89', // 137 as hex
