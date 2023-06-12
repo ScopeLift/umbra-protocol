@@ -46,8 +46,6 @@ type EncryptedAccountSendData = {
 };
 
 export type StoreSendArgs = {
-  chainId: number;
-  viewingPrivateKey: string;
   unencryptedAccountSendData: Omit<UnencryptedAccountSendData, 'dateSent'>;
   accountDataToEncrypt: AccountDataToEncrypt;
 };
@@ -128,71 +126,73 @@ export const decryptData = (accountSendCiphertext: string, keyData: KeyData) => 
   };
 };
 
-export const storeSend = async ({
-  chainId,
-  viewingPrivateKey,
-  unencryptedAccountSendData,
-  accountDataToEncrypt,
-}: StoreSendArgs) => {
-  const { amount, tokenAddress, txHash, senderAddress } = unencryptedAccountSendData;
-  const { recipientAddress, advancedMode, usePublicKeyChecked, pubKey } = accountDataToEncrypt;
+export const storeSend = async (
+  chainId: number,
+  viewingPrivateKey: string,
+  sendArgs: StoreSendArgs | StoreSendArgs[]
+) => {
+  const sendArgsArray = Array.isArray(sendArgs) ? sendArgs : [sendArgs];
+  for (const sendArg of sendArgsArray) {
+    const { amount, tokenAddress, txHash, senderAddress } = sendArg.unencryptedAccountSendData;
+    const { recipientAddress, advancedMode, usePublicKeyChecked, pubKey } = sendArg.accountDataToEncrypt;
 
-  assertValidAddress(senderAddress, 'Invalid sender address');
-  assertValidAddress(tokenAddress, 'Invalid token address');
-  assertValidHexString(viewingPrivateKey, 32, 'Invalid viewing key');
-  assertValidHexString(txHash, 32, 'Transaction hash');
-  assertValidPublicKey(pubKey);
+    assertValidAddress(senderAddress, 'Invalid sender address');
+    assertValidAddress(tokenAddress, 'Invalid token address');
+    assertValidHexString(viewingPrivateKey, 32, 'Invalid viewing key');
+    assertValidHexString(txHash, 32, 'Transaction hash');
+    assertValidPublicKey(pubKey);
 
-  // Send history is scoped by chain
-  const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${senderAddress}-${chainId}`;
-  let count = (await localforage.getItem(
-    `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`
-  )) as string;
-  let values = ((await localforage.getItem(localStorageKey)) as AccountSendData[]) || [];
+    // Send history is scoped by chain
+    const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${senderAddress}-${chainId}`;
+    let count = (await localforage.getItem(
+      `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`
+    )) as string;
+    let values = ((await localforage.getItem(localStorageKey)) as AccountSendData[]) || [];
 
-  // If there is no count or the length of values is 0
-  // then someone cleared localstorage data,
-  // and we need to reset the count.
-  if (!count || values.length === 0) {
-    count = new RandomNumber().value.toString();
+    // If there is no count or the length of values is 0
+    // then someone cleared localstorage data,
+    // and we need to reset the count.
+    if (!count || values.length === 0) {
+      count = new RandomNumber().value.toString();
 
-    await localforage.setItem(
-      `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`,
-      count.toString()
-    );
-    // Clear values because they cannot be decrypted if the original count is missing.
-    await localforage.setItem(localStorageKey, []);
-    values = [];
+      await localforage.setItem(
+        `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${senderAddress}-${chainId}`,
+        count.toString()
+      );
+      // Clear values because they cannot be decrypted if the original count is missing.
+      await localforage.setItem(localStorageKey, []);
+      values = [];
+    }
+
+    const checksummedRecipientAddress = await toAddress(recipientAddress, MAINNET_PROVIDER);
+    const bigNumberCount = BigNumber.from(count);
+
+    assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
+    assertValidEncryptionCount(bigNumberCount);
+
+    const keyData = {
+      encryptionCount: bigNumberCount.add(values.length),
+      viewingPrivateKey,
+    };
+    const accountDataToEncrypt = {
+      recipientAddress: checksummedRecipientAddress,
+      advancedMode,
+      usePublicKeyChecked,
+      pubKey,
+    };
+    const encryptedData = encryptAccountData(accountDataToEncrypt, keyData);
+    await localforage.setItem(localStorageKey, [
+      ...values,
+      {
+        accountSendCiphertext: encryptedData,
+        amount,
+        tokenAddress,
+        dateSent: new Date(),
+        txHash,
+        senderAddress,
+      },
+    ]);
   }
-
-  const checksummedRecipientAddress = await toAddress(recipientAddress, MAINNET_PROVIDER);
-  const bigNumberCount = BigNumber.from(count);
-
-  assertValidAddress(checksummedRecipientAddress, 'Invalid recipient address');
-  assertValidEncryptionCount(bigNumberCount);
-
-  const keyData = {
-    encryptionCount: bigNumberCount.add(values.length),
-    viewingPrivateKey,
-  };
-  accountDataToEncrypt = {
-    recipientAddress: checksummedRecipientAddress,
-    advancedMode,
-    usePublicKeyChecked,
-    pubKey,
-  };
-  const encryptedData = encryptAccountData(accountDataToEncrypt, keyData);
-  await localforage.setItem(localStorageKey, [
-    ...values,
-    {
-      accountSendCiphertext: encryptedData,
-      amount,
-      tokenAddress,
-      dateSent: new Date(),
-      txHash,
-      senderAddress,
-    },
-  ]);
 };
 
 export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }: FetchAccountSendArgs) => {

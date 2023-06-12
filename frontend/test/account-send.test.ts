@@ -175,7 +175,7 @@ const createAccountSendsWithCiphertext = (num: number, encryptionCount: BigNumbe
 };
 
 const randomInt = (min: number, max: number) => {
-  return Math.floor(Math.random() * max) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 describe('buildAccountDataForEncryption', () => {
@@ -449,23 +449,24 @@ describe('encrypt/decrypt relationship', () => {
 
 describe('storeSend', () => {
   let storeSendArgs = {} as StoreSendArgs;
+  let viewingPrivateKey = '';
+  const chainId = 5;
 
   beforeEach(async () => {
     await localforage.clear();
     const {
       recipientAddress: randomRecipientAddress,
       pubKey,
-      viewingPrivateKey,
+      viewingPrivateKey: generatedViewingPrivateKey,
       amount,
       tokenAddress,
       txHash,
       advancedMode,
       usePublicKeyChecked,
     } = randomData();
+    viewingPrivateKey = generatedViewingPrivateKey;
 
     storeSendArgs = {
-      chainId: 5,
-      viewingPrivateKey,
       unencryptedAccountSendData: {
         amount,
         tokenAddress,
@@ -489,7 +490,7 @@ describe('storeSend', () => {
     expect(existingCount).toEqual(null);
     expect(value).toEqual(null);
 
-    await storeSend(storeSendArgs);
+    await storeSend(chainId, viewingPrivateKey, storeSendArgs);
 
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
@@ -503,7 +504,7 @@ describe('storeSend', () => {
     const value = await localforage.getItem(localStorageValueKey);
     expect(value).toEqual(null);
 
-    await storeSend(storeSendArgs);
+    await storeSend(chainId, viewingPrivateKey, storeSendArgs);
 
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
@@ -528,7 +529,7 @@ describe('storeSend', () => {
     const count = await localforage.getItem(localStorageCountKey);
     expect(count).toEqual(null);
 
-    await storeSend(storeSendArgs);
+    await storeSend(chainId, viewingPrivateKey, storeSendArgs);
     const newCount = await localforage.getItem(localStorageCountKey);
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
     const bigNumberCount = BigNumber.from(newCount);
@@ -552,13 +553,52 @@ describe('storeSend', () => {
     ]);
     await localforage.setItem(localStorageCountKey, initialCount);
 
-    await storeSend(storeSendArgs);
+    await storeSend(chainId, viewingPrivateKey, storeSendArgs);
 
     const count = (await localforage.getItem(localStorageCountKey)) as string;
     const values = (await localforage.getItem(localStorageValueKey)) as any[];
     expect(BigInt(count)).toEqual(initialCount.toBigInt());
     expect(values.length).toEqual(2);
   });
+
+  it.each([randomInt(2, 10), randomInt(2, 10), randomInt(2, 10)])(
+    'Generates batch of %s sends and saves them to the account send history',
+    async (num) => {
+      const existingCount = await localforage.getItem(localStorageCountKey);
+      const value = await localforage.getItem(localStorageValueKey);
+      expect(existingCount).toEqual(null);
+      expect(value).toEqual(null);
+      const { viewingPrivateKey } = randomData();
+
+      const accountSends = createAccountSend(num);
+      const txHash = accountSends.accountSends[0].txHash;
+      const batches = accountSends.accountSends.map((item) => {
+        return {
+          unencryptedAccountSendData: {
+            amount: BigNumber.from(item.amount).toString(),
+            tokenAddress: item.tokenAddress,
+            senderAddress: recipientAddress,
+            txHash,
+          },
+          accountDataToEncrypt: {
+            recipientAddress: item.recipientAddress,
+            advancedMode: false,
+            usePublicKeyChecked: false,
+            pubKey: item.pubKey,
+          },
+        };
+      });
+
+      await storeSend(5, viewingPrivateKey, batches);
+
+      const newCount = await localforage.getItem(localStorageCountKey);
+      const values = (await localforage.getItem(localStorageValueKey)) as any[];
+      const bigNumberCount = BigNumber.from(newCount);
+      expect(bigNumberCount.toBigInt()).toBeGreaterThan(BigInt(0));
+      expect(values.length).toEqual(num);
+    },
+    20000
+  );
 });
 
 describe('fetchAccountSends', () => {
@@ -679,8 +719,6 @@ describe('End to end account tests', () => {
         const resetLocalStorageValues = Math.random() < 0.125;
 
         const storeSendArgs = {
-          chainId: 5,
-          viewingPrivateKey,
           unencryptedAccountSendData: {
             amount: amount,
             tokenAddress,
@@ -697,7 +735,7 @@ describe('End to end account tests', () => {
           },
         };
 
-        await storeSend(storeSendArgs);
+        await storeSend(5, viewingPrivateKey, storeSendArgs);
 
         if (resetLocalStorageCount) {
           offset = idx;

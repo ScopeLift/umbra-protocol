@@ -460,31 +460,28 @@
             </div>
 
             <!-- Send button -->
-            <div>
-              <router-link
-                v-if="false"
-                :class="{ 'no-text-decoration': true, 'dark-toggle': true }"
-                :to="{ name: 'sent' }"
-              >
-                <div class="row items-center justify-center q-pa-xs link-container">
-                  {{ $t('Send.send-history') }}
-                </div>
-              </router-link>
-            </div>
             <div class="batch-send-buttons">
               <base-button
                 class="button-container"
-                @click="isSending ? null : addFields(batchSends)"
-                :disable="isSending"
-                :flat="true"
-                :label="$t('Send.add-send')"
-              />
-              <base-button
                 :label="$t('Send.send')"
                 :loading="isSending"
                 type="submit"
                 :disable="batchSends.length == 1 || isSending"
               />
+              <base-button
+                @click="isSending ? null : addFields(batchSends)"
+                :disable="isSending"
+                :flat="true"
+                :label="$t('Send.add-send')"
+              />
+
+              <div>
+                <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
+                  <div class="row items-center justify-center q-pa-sm link-container rounded-borders">
+                    {{ $t('Send.send-history') }}
+                  </div>
+                </router-link>
+              </div>
             </div>
           </q-form>
         </q-page>
@@ -526,7 +523,7 @@ import { SendBatch } from '@umbracash/umbra-js';
 import { Provider, TokenInfoExtended, supportedChains } from 'components/models';
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
-import { storeSend } from 'src/utils/account-send';
+import { storeSend, StoreSendArgs } from 'src/utils/account-send';
 import { assertNoConfusables } from 'src/utils/validation';
 
 interface BatchSendData {
@@ -969,9 +966,7 @@ function useSendForm() {
         const publicKeys = await umbraUtils.lookupRecipient(recipientId.value, provider.value, {
           advanced: shouldUseNormalPubKey.value,
         });
-        await storeSend({
-          chainId: chainId.value!,
-          viewingPrivateKey: viewingKeyPair.value?.privateKeyHex,
+        await storeSend(chainId.value!, viewingKeyPair.value?.privateKeyHex, {
           accountDataToEncrypt: {
             recipientAddress: recipientId.value,
             advancedMode: advancedMode.value,
@@ -1040,6 +1035,10 @@ function useSendForm() {
         isSending.value = true;
       }
 
+      if (!viewingKeyPair.value?.privateKeyHex) {
+        await getPrivateKeys();
+      }
+
       // Get allowances
       const promises = [];
       const batchSendAddress = umbra.value?.batchSendContract!.address;
@@ -1091,6 +1090,38 @@ function useSendForm() {
       // Send with Umbra
       const { tx } = await umbra.value.batchSend(signer.value, newSends);
       void txNotify(tx.hash, ethersProvider);
+      if (viewingKeyPair.value?.privateKeyHex && userAddress.value && provider.value) {
+        const batchSendDataPromises = newSends.map(async (item) => {
+          const publicKey = await umbraUtils.lookupRecipient(item.address, ethersProvider, {
+            advanced: false,
+          });
+          return {
+            unencryptedAccountSendData: {
+              amount: item.amount.toString(),
+              tokenAddress: item.token,
+              senderAddress: userAddress.value,
+              txHash: tx.hash,
+            },
+            accountDataToEncrypt: {
+              pubKey: publicKey.spendingPublicKey,
+              recipientAddress: item.address,
+              advancedMode: false,
+              usePublicKeyChecked: false,
+            },
+          };
+        });
+        const batchSendData = await Promise.allSettled(batchSendDataPromises).then((values) => {
+          const batches = [];
+          for (const item of values) {
+            if (item.status === 'fulfilled') {
+              batches.push(item.value as StoreSendArgs);
+            }
+          }
+          return batches;
+        });
+
+        await storeSend(chainId.value!, viewingKeyPair.value.privateKeyHex, batchSendData);
+      }
       await tx.wait();
       resetBatchSendForm();
     } finally {
