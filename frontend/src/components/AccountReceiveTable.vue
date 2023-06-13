@@ -345,15 +345,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
 import { copyToClipboard } from 'quasar';
-import {
-  BigNumber,
-  Block,
-  Contract,
-  joinSignature,
-  formatUnits,
-  TransactionResponse,
-  Web3Provider,
-} from 'src/utils/ethers';
+import { BigNumber, Contract, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
 import { tc } from 'src/boot/i18n';
 import useSettingsStore from 'src/store/settings';
@@ -446,7 +438,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have a relayer tx ID)
 
   // Define table columns
-  const sortByTime = (a: Block, b: Block) => b.timestamp - a.timestamp;
   const toString = (val: BigNumber) => val.toString();
 
   const mainTableColumns = [
@@ -456,7 +447,6 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       label: tc('AccountReceiveTable.date-received'),
       name: 'date',
       sortable: true,
-      sort: sortByTime,
     },
     {
       align: 'left',
