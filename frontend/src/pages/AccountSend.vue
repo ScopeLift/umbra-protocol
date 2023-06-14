@@ -754,11 +754,13 @@ function useSendForm() {
           if (isValidAmount !== true || !receiver || !isValidToken) validatedBatchSendForm = false;
         }
       }
-      await Promise.all(isValidRecipientPromises).then((results) => {
-        for (const result of results) {
-          if (result !== true) validatedBatchSendForm = false;
-        }
-      });
+      if (validatedBatchSendForm) {
+        await Promise.all(isValidRecipientPromises).then((results) => {
+          for (const result of results) {
+            if (result !== true) validatedBatchSendForm = false;
+          }
+        });
+      }
 
       isValidBatchSendForm.value = validatedBatchSendForm;
     }
