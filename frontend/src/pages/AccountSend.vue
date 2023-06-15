@@ -466,7 +466,7 @@
                 :label="$t('Send.send')"
                 :loading="isSending"
                 type="submit"
-                :disable="batchSends.length == 1 || isSending"
+                :disable="batchSends.length == 1 || isSending || !isValidBatchSendForm"
               />
               <base-button
                 @click="isSending ? null : addFields(batchSends)"
@@ -571,6 +571,7 @@ function useSendForm() {
   const token = ref<TokenInfoExtended>();
   const humanAmount = ref<string>();
   const isValidForm = ref(false);
+  const isValidBatchSendForm = ref(false);
   const isValidRecipientId = ref(true); // for showing/hiding bottom space (error message div) under input field
   const toll = ref<BigNumber>(Zero);
   const sendMax = ref(false);
@@ -686,7 +687,7 @@ function useSendForm() {
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
     // checkbox toggle was changed, and if so re-validating the form. The rest of this watcher is for handling
     // async validation rules
-    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, NATIVE_TOKEN],
+    [isLoading, shouldUseNormalPubKey, recipientId, token, humanAmount, NATIVE_TOKEN, batchSends.value],
     async (
       [isLoadingValue, useNormalPubKey, recipientIdValue, tokenValue, humanAmountValue, nativeTokenValue],
       [
@@ -741,6 +742,27 @@ function useSendForm() {
 
       const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
       isValidForm.value = isValidRecipientId.value && Boolean(tokenValue) && validAmount;
+
+      let validatedBatchSendForm = true;
+      const isValidRecipientPromises: Promise<boolean | string>[] = [];
+      for (const batchSend of batchSends.value) {
+        if (validatedBatchSendForm) {
+          const { token, amount, receiver } = batchSend;
+          const isValidAmount = Boolean(amount) && isValidTokenAmount(amount, token);
+          const isValidToken = Boolean(token);
+          isValidRecipientPromises.push(isValidId(receiver));
+          if (isValidAmount !== true || !receiver || !isValidToken) validatedBatchSendForm = false;
+        }
+      }
+      if (validatedBatchSendForm) {
+        await Promise.all(isValidRecipientPromises).then((results) => {
+          for (const result of results) {
+            if (result !== true) validatedBatchSendForm = false;
+          }
+        });
+      }
+
+      isValidBatchSendForm.value = validatedBatchSendForm;
     }
   );
 
@@ -1222,6 +1244,7 @@ function useSendForm() {
     humanTotalAmount,
     isDark,
     isSending,
+    isValidBatchSendForm,
     isValidForm,
     isValidId,
     isValidRecipientId,
