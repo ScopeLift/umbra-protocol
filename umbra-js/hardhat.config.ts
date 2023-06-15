@@ -14,6 +14,7 @@ const chainIds = {
   sepolia: 11155111,
   hardhat: 1337,
   mainnet: 1,
+  gnosis_chain: 100,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -53,9 +54,6 @@ const config: HardhatUserConfig = {
     },
     sepolia: createTestnetConfig('sepolia'),
     goerli: createTestnetConfig('goerli'),
-    kovan: createTestnetConfig('kovan'),
-    rinkeby: createTestnetConfig('rinkeby'),
-    ropsten: createTestnetConfig('ropsten'),
   },
   paths: {
     cache: './cache',

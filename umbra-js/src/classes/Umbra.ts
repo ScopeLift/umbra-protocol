@@ -38,6 +38,7 @@ const subgraphs = {
   1: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.0.0/gn',
   5: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-goerli/v1.0.0/gn',
   10: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.0.0/gn',
+  100: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-xdai/v1.0.0/gn',
   137: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn',
   42161: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.0.0/gn',
   11155111: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-sepolia/v1.0.0/gn',
@@ -47,6 +48,7 @@ const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
   5: { chainId: 5, umbraAddress, batchSendAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
   10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
+  100: { chainId: 100, umbraAddress, batchSendAddress, startBlock: 28237950, subgraphUrl: subgraphs[100] }, // Gnosis Chain
   137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
   42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
@@ -120,6 +122,7 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
   if (chainId === 1 || chainId === 1337) return `https://mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 5) return `https://goerli.infura.io/v3/${infuraId}`;
   if (chainId === 10) return `https://optimism-mainnet.infura.io/v3/${infuraId}`;
+  if (chainId === 100) return 'https://rpc.ankr.com/gnosis';
   if (chainId === 137) return `https://polygon-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 42161) return `https://arbitrum-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 11155111) return `https://sepolia.infura.io/v3/${infuraId}`;

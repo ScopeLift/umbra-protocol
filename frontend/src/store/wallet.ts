@@ -478,6 +478,8 @@ export default function useWalletStore() {
     // These were values returned by the backend in April '22. If you're reading this, it
     // is possible network conditions have changed and these values should be updated.
     switch (chainId) {
+      case 100:
+        return parseUnits('0.5', 'ether').toString(); // Gnosis Chain
       case 137:
         return parseUnits('0.15', 'ether').toString(); // Polygon
       default:

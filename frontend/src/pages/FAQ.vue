@@ -358,6 +358,9 @@
               <template v-slot:sepolia>
                 <a :href="getEtherscanUrl(deployments.umbra, 11155111)" class="hyperlink" target="_blank"> Sepolia </a>
               </template>
+              <template v-slot:gnosis>
+                <a :href="getEtherscanUrl(deployments.umbra, 100)" class="hyperlink" target="_blank"> Gnosis Chain </a>
+              </template>
               <template v-slot:goerli>
                 <a :href="getEtherscanUrl(deployments.umbra, 5)" class="hyperlink" target="_blank"> Goerli </a>
               </template>
@@ -393,6 +396,11 @@
               <template v-slot:sepolia>
                 <a :href="getEtherscanUrl(deployments.registry, 11155111)" class="hyperlink" target="_blank">
                   Sepolia
+                </a>
+              </template>
+              <template v-slot:gnosis>
+                <a :href="getEtherscanUrl(deployments.registry, 100)" class="hyperlink" target="_blank">
+                  Gnosis Chain
                 </a>
               </template>
               <template v-slot:goerli>

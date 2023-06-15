@@ -71,7 +71,7 @@ export const supportedChains: Array<Chain> = [
     logoURI: ETH_NETWORK_LOGO,
   },
   {
-    chainId: '0xaa36a7',
+    chainId: '0xaa36a7', // 11155111 as hex
     chainName: 'Sepolia',
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
@@ -99,6 +99,21 @@ export const supportedChains: Array<Chain> = [
     blockExplorerUrls: ['https://optimistic.etherscan.io'],
     iconUrls: ['/networks/optimism.svg'],
     logoURI: '/networks/optimism.svg',
+  },
+  {
+    chainId: '0x64', // 100 as hex
+    chainName: 'Gnosis Chain',
+    nativeCurrency: {
+      address: NATIVE_TOKEN_ADDRESS,
+      name: 'xDAI',
+      symbol: 'xDAI',
+      decimals: 18,
+      logoURI: 'https://docs.gnosischain.com/img/tokens/xdai.png',
+    },
+    rpcUrls: ['https://rpc.ankr.com/gnosis'],
+    blockExplorerUrls: ['https://gnosisscan.io'],
+    iconUrls: ['/networks/gnosis.svg'],
+    logoURI: '/networks/gnosis.svg',
   },
   {
     chainId: '0x89', // 137 as hex
@@ -133,7 +148,7 @@ export const supportedChains: Array<Chain> = [
 ];
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
-export type SupportedChainId = '1' | '5' | '10' | '137' | '42161' | '11155111'; // strings for indexing into JSON files
+export type SupportedChainId = '1' | '5' | '10' | '100' | '137' | '42161' | '11155111'; // strings for indexing into JSON files
 export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response

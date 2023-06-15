@@ -198,7 +198,9 @@ function useScan() {
         scanPercentage.value = Math.floor(percent);
       },
       (filteredAnnouncements) => {
-        userAnnouncements.value = filteredAnnouncements;
+        userAnnouncements.value = filteredAnnouncements.sort(function (a, b) {
+          return parseInt(a.timestamp) - parseInt(b.timestamp);
+        });
         scanStatus.value = 'complete';
       }
     );

@@ -16,6 +16,9 @@ export class TxHistoryProvider extends EtherscanProvider {
       case 10: // optimism
         defaultApiKey = <string>process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
         break;
+      case 100: // gnosis
+        defaultApiKey = <string>process.env.GNOSISSCAN_API_KEY;
+        break;
       case 137: // polygon
         defaultApiKey = <string>process.env.POLYGONSCAN_API_KEY;
         break;
@@ -40,6 +43,8 @@ export class TxHistoryProvider extends EtherscanProvider {
         return 'https://api-goerli.etherscan.io';
       case 10:
         return 'https://api-optimistic.etherscan.io';
+      case 100:
+        return 'https://api.gnosisscan.io';
       case 137:
         return 'https://api.polygonscan.com';
       case 42161:
