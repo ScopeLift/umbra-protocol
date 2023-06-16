@@ -414,10 +414,13 @@ export default function useWalletStore() {
         try {
           // Extract EIP-3085 incompatible fields
           const { nativeCurrency, logoURI, iconUrls, blockExplorerUrls, rpcUrls, ...chainIdAndName } = { ...chain };
+          if (!blockExplorerUrls) {
+            throw new Error('blockExplorerUrls is missing');
+          }
           const { address, logoURI: currencyLogoURI, ...nativeCurrencySummary } = nativeCurrency;
           const eip3085Chain = {
             nativeCurrency: nativeCurrencySummary,
-            blockExplorerUrls: [...(blockExplorerUrls as string[])],
+            blockExplorerUrls: [...blockExplorerUrls],
             rpcUrls: [...rpcUrls],
             ...chainIdAndName,
           };
