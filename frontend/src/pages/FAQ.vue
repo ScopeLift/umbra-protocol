@@ -403,9 +403,6 @@
                   Gnosis Chain
                 </a>
               </template>
-              <template v-slot:goerli>
-                <a :href="getEtherscanUrl(deployments.registry, 5)" class="hyperlink" target="_blank"> Goerli </a>
-              </template>
             </i18n-t>
           </ul>
         </f-a-q-item>

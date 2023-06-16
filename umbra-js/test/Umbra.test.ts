@@ -151,13 +151,13 @@ describe('Umbra class', () => {
       expect(umbra2.chainConfig.startBlock).to.equal(8505089);
       expect(umbra2.chainConfig.subgraphUrl).to.equal(false);
 
-      // --- Goerli ---
-      const umbra3 = new Umbra(jsonRpcProvider, 5);
+      // --- Sepolia ---
+      const umbra3 = new Umbra(jsonRpcProvider, 11155111);
       expect(umbra3.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
       expect(umbra3.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
-      expect(umbra3.chainConfig.startBlock).to.equal(7718444);
+      expect(umbra3.chainConfig.startBlock).to.equal(3590825);
       expect(umbra3.chainConfig.subgraphUrl).to.equal(
-        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-goerli/v1.0.0/gn'
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-sepolia/v1.0.0/gn'
       );
 
       // --- Mainnet ---

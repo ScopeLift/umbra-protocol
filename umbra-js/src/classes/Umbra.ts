@@ -36,7 +36,6 @@ const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on al
 const batchSendAddress = '0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB'; // same on all supported networks
 const subgraphs = {
   1: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.0.0/gn',
-  5: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-goerli/v1.0.0/gn',
   10: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.0.0/gn',
   100: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-xdai/v1.0.0/gn',
   137: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn',
@@ -46,7 +45,6 @@ const subgraphs = {
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
-  5: { chainId: 5, umbraAddress, batchSendAddress, startBlock: 7718444, subgraphUrl: subgraphs[5] }, // Goerli
   10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
   100: { chainId: 100, umbraAddress, batchSendAddress, startBlock: 28237950, subgraphUrl: subgraphs[100] }, // Gnosis Chain
   137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
@@ -120,7 +118,6 @@ const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
   chainId = BigNumber.from(chainId).toNumber();
   // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
   if (chainId === 1 || chainId === 1337) return `https://mainnet.infura.io/v3/${infuraId}`;
-  if (chainId === 5) return `https://goerli.infura.io/v3/${infuraId}`;
   if (chainId === 10) return `https://optimism-mainnet.infura.io/v3/${infuraId}`;
   if (chainId === 100) return 'https://rpc.ankr.com/gnosis';
   if (chainId === 137) return `https://polygon-mainnet.infura.io/v3/${infuraId}`;

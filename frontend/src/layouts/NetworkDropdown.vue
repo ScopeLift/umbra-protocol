@@ -33,8 +33,8 @@ export default defineComponent({
 
     // We only show Sepolia as an option in the network dropdown if the user is connected to Sepolia
     const chainOptions = computed(() => {
-      if (network.value?.chainId === 11155111 || network.value?.chainId === 5) return supportedChains;
-      return supportedChains.filter((chain) => chain.chainName !== 'Sepolia' && chain.chainName !== 'Goerli');
+      if (network.value?.chainId === 11155111) return supportedChains;
+      return supportedChains.filter((chain) => chain.chainName !== 'Sepolia');
     });
 
     watchEffect(() => {

@@ -10,7 +10,6 @@ import '@nomiclabs/hardhat-waffle';
 
 const chainIds = {
   ganache: 1337,
-  goerli: 5,
   sepolia: 11155111,
   hardhat: 1337,
   mainnet: 1,
@@ -53,7 +52,6 @@ const config: HardhatUserConfig = {
       },
     },
     sepolia: createTestnetConfig('sepolia'),
-    goerli: createTestnetConfig('goerli'),
   },
   paths: {
     cache: './cache',

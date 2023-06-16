@@ -18,7 +18,6 @@ import 'hardhat-gas-reporter';
 
 const chainIds = {
   ganache: 1337,
-  goerli: 5,
   hardhat: 1337,
   mainnet: 1,
   polygon: 137,
@@ -98,7 +97,6 @@ const config: HardhatUserConfig = {
       url: 'http://127.0.0.1:8545',
     },
     sepolia: createTestnetConfig('sepolia'),
-    goerli: createTestnetConfig('goerli'),
     mainnet: {
       accounts: {
         count: 10,
