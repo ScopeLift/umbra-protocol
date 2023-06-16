@@ -638,7 +638,7 @@ describe('fetchAccountSends', () => {
     const accountSends = await fetchAccountSends({
       address: recipientAddress,
       viewingPrivateKey,
-      chainId: 5,
+      chainId: 11155111,
     });
 
     expect(accountSends.length).toEqual(1);
@@ -661,7 +661,7 @@ describe('fetchAccountSends', () => {
       const accountSends = await fetchAccountSends({
         address: recipientAddress,
         viewingPrivateKey,
-        chainId: 5,
+        chainId: 11155111,
       });
 
       // This array's order matches the expected results from the input array. We
@@ -761,7 +761,7 @@ describe('End to end account tests', () => {
       const accountSends = await fetchAccountSends({
         address: recipientAddress,
         viewingPrivateKey,
-        chainId: 5,
+        chainId: 11155111,
       });
 
       // Remove dateSent, it will cause the tests to fail because we cannot know
