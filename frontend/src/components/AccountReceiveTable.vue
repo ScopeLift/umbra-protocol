@@ -78,6 +78,7 @@
         card-container-class="col q-col-gutter-md"
         :columns="mainTableColumns"
         :rows="formattedAnnouncements"
+        :binary-state-sort="true"
         v-model:expanded="expanded"
         :no-data-label="$t('AccountReceiveTable.account-empty')"
         :pagination="paginationConfig"
