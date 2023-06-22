@@ -703,6 +703,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     openInEtherscan,
     paginationConfig,
     privacyModalAddressWarnings,
+    provider,
     showConfirmationModal,
     showPrivacyModal,
     showWithdrawLossModal,
