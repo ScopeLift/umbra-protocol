@@ -321,6 +321,7 @@
     "use-public-key-checked": "Sent using recipient's standard public key"
   },
   "AccountSent": {
+    "clear-history": "Clear history",
     "connect-wallet": "Connect Wallet",
     "connect-your-wallet": "Connect your wallet to view sent funds",
     "fetching-send-history": "Fetching send history...",

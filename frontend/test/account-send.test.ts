@@ -7,6 +7,7 @@ import { RandomNumber } from '@umbracash/umbra-js';
 
 import {
   buildAccountDataForEncryption,
+  clearAccountSend,
   decryptData,
   encryptAccountData,
   fetchAccountSends,
@@ -779,5 +780,74 @@ describe('End to end account tests', () => {
       expect(n).toEqual(expectedArray);
     },
     20000
+  );
+});
+
+describe('clearHistory', () => {
+  beforeEach(async () => {
+    await localforage.clear();
+    window.logger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      version: '',
+      _log: jest.fn(),
+      makeError: jest.fn(),
+      assert: jest.fn(),
+      assertArgument: jest.fn(),
+      checkNormalize: jest.fn(),
+      checkArgumentCount: jest.fn(),
+      checkNew: jest.fn(),
+      checkAbstract: jest.fn(),
+      checkSafeUint53: jest.fn(),
+      throwError: jest.fn() as never,
+      throwArgumentError: jest.fn() as never,
+    };
+  });
+
+  it.each([randomInt(2, 10), randomInt(2, 10), randomInt(2, 10), randomInt(2, 10)])(
+    "Clear account send history '%s'",
+    async (num) => {
+      const sends = createAccountSend(num);
+
+      // Offset the account sends based on when local storage was cleared
+      for (const [, value] of sends.accountSends.entries()) {
+        const {
+          amount,
+          tokenAddress,
+          txHash,
+          recipientAddress: randomRecipientAddress,
+          advancedMode,
+          usePublicKeyChecked,
+          pubKey,
+        } = value;
+
+        const storeSendArgs = {
+          unencryptedAccountSendData: {
+            amount: amount,
+            tokenAddress,
+            txHash,
+            // Sender address needs to be static because it is part of the key used
+            // to fetch data from localforage.
+            senderAddress: recipientAddress,
+          },
+          accountDataToEncrypt: {
+            recipientAddress: randomRecipientAddress,
+            advancedMode,
+            usePublicKeyChecked,
+            pubKey,
+          },
+        };
+
+        await storeSend(5, viewingPrivateKey, storeSendArgs);
+      }
+      await clearAccountSend(recipientAddress, 5);
+
+      const existingCount = await localforage.getItem(localStorageCountKey);
+      const value = await localforage.getItem(localStorageValueKey);
+      expect(existingCount).toEqual(null);
+      expect(value).toEqual(null);
+    },
+    10000
   );
 });

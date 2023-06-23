@@ -322,6 +322,7 @@
   },
 
   "AccountSent": {
+    "clear-history": "清除历史记录",
     "connect-wallet": "连接钱包",
     "connect-your-wallet": "连接您的钱包来查看已发送的资金",
     "fetching-send-history": "正在获取发送历史记录...",

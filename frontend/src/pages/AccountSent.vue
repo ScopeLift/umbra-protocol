@@ -18,7 +18,8 @@
         <loading-spinner />
         <div class="text-center text-italic">{{ $t('AccountSent.fetching-send-history') }}</div>
       </div>
-      <div v-else-if="!needsSignature && !dataLoading" class="q-mx-auto" style="max-width: 800px">
+      <div v-else-if="!needsSignature && !dataLoading" class="q-mx-auto flex column" style="max-width: 800px">
+        <base-button @click="clearHistory" class="self-end" :label="$t('AccountSent.clear-history')" />
         <account-sent-table :sendMetadata="sendMetadata" />
       </div>
     </div>
@@ -34,7 +35,7 @@ import { SendTableMetadataRow } from 'components/models';
 import { BigNumber } from 'src/utils/ethers';
 import { formatNameOrAddress } from 'src/utils/address';
 import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri } from 'src/utils/utils';
-import { fetchAccountSends } from 'src/utils/account-send';
+import { clearAccountSend, fetchAccountSends } from 'src/utils/account-send';
 
 function useAccountSent() {
   const { tokens, userAddress, chainId, viewingKeyPair, getPrivateKeys } = useWalletStore();
@@ -79,6 +80,13 @@ function useAccountSent() {
     dataLoading.value = false;
   };
 
+  const clearHistory = async () => {
+    dataLoading.value = true;
+    await clearAccountSend(userAddress.value!, chainId.value!);
+    sendMetadata.value = [];
+    dataLoading.value = false;
+  };
+
   onMounted(async () => {
     if (!needsSignature.value) {
       await getData();
@@ -89,6 +97,7 @@ function useAccountSent() {
     userAddress,
     sendMetadata,
     getData,
+    clearHistory,
     viewingPrivateKey,
     needsSignature,
     dataLoading,
