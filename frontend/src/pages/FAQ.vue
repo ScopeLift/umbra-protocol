@@ -361,9 +361,6 @@
               <template v-slot:gnosis>
                 <a :href="getEtherscanUrl(deployments.umbra, 100)" class="hyperlink" target="_blank"> Gnosis Chain </a>
               </template>
-              <template v-slot:goerli>
-                <a :href="getEtherscanUrl(deployments.umbra, 5)" class="hyperlink" target="_blank"> Goerli </a>
-              </template>
               <template v-slot:optimism>
                 <a :href="getEtherscanUrl(deployments.umbra, 10)" class="hyperlink" target="_blank"> Optimism </a>
               </template>
