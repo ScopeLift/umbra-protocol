@@ -412,8 +412,18 @@ export default function useWalletStore() {
       // This error code indicates that the chain has not been added to MetaMask.
       if (code === 4902) {
         try {
-          const eip3085Chain = <Chain>{ ...chain }; // without casting to any, TS errors on `delete` since we're deleting a required property
-          delete eip3085Chain.logoURI; // if you don't remove extraneous fields, adding the chain will error
+          // Extract EIP-3085 incompatible fields
+          const { nativeCurrency, logoURI, iconUrls, blockExplorerUrls, rpcUrls, ...chainIdAndName } = { ...chain };
+          if (!blockExplorerUrls) {
+            throw new Error('blockExplorerUrls is missing');
+          }
+          const { address, logoURI: currencyLogoURI, ...nativeCurrencySummary } = nativeCurrency;
+          const eip3085Chain = {
+            nativeCurrency: nativeCurrencySummary,
+            blockExplorerUrls: [...blockExplorerUrls],
+            rpcUrls: [...rpcUrls],
+            ...chainIdAndName,
+          };
           await provider.value?.send('wallet_addEthereumChain', [eip3085Chain]);
         } catch (addError) {
           console.log(addError);
