@@ -26,7 +26,13 @@ import {
 } from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
+import {
+  blockedStealthAddresses,
+  getEthSweepGasInfo,
+  lookupRecipient,
+  assertSupportedAddress,
+  getBlockNumberUserRegistered,
+} from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI, ETH_ADDRESS, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, GraphFilterOverride, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
@@ -372,6 +378,38 @@ export class Umbra {
   async fetchAllAnnouncements(overrides: ScanOverrides = {}): Promise<AnnouncementDetail[]> {
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
+    const endBlock = overrides.endBlock || 'latest';
+
+    // Try querying events using the Graph, fallback to querying logs.
+    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
+    // that window is defined first to avoid trying to use fetch in node environments
+    if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
+      try {
+        const subgraphAnnouncements = await this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock);
+        // Map the subgraph amount field from string to BigNumber
+        return subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+      } catch (err) {
+        return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+      }
+    }
+
+    return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+  }
+
+  /**
+   * @notice Fetches some Umbra event logs using The Graph, if available, falling back to RPC if not
+   * @param overrides Override the start and end block used for scanning; ignored if using The Graph
+   * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
+   * timestamp, and txhash
+   */
+  async fetchSomeAnnouncements(
+    Signer: JsonRpcSigner,
+    address: string,
+    overrides: ScanOverrides = {}
+  ): Promise<AnnouncementDetail[]> {
+    const registeredBlockNumebr = await getBlockNumberUserRegistered(address, 0, Signer);
+    // Get start and end blocks to scan events for
+    const startBlock = overrides.startBlock || registeredBlockNumebr || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
 
     // Try querying events using the Graph, fallback to querying logs.

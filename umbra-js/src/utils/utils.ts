@@ -10,6 +10,7 @@ import {
   getAddress,
   HashZero,
   isHexString,
+  JsonRpcSigner,
   keccak256,
   Overrides,
   resolveProperties,
@@ -239,6 +240,16 @@ export async function lookupRecipient(
   const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
   assertValidPoint(publicKey);
   return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
+}
+
+export async function getBlockNumberUserRegistered(address: string, startblock = 0, Signer: JsonRpcSigner) {
+  address = getAddress(address); // address input validation
+  const { chainId } = await Signer.provider.getNetwork();
+  const txHistoryProvider = new TxHistoryProvider(chainId);
+  const history = await txHistoryProvider.getHistory(address, startblock);
+  const StealthKeyRegistryAddress = '0x31fe56609C65Cd0C510E7125f051D440424D38f3';
+  const registryBlock = history.find((tx) => tx.to === StealthKeyRegistryAddress);
+  return registryBlock?.blockNumber;
 }
 
 /**

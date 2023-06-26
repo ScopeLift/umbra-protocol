@@ -84,8 +84,9 @@
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm } from 'quasar';
 import { UserAnnouncement, KeyPair, AnnouncementDetail, utils } from '@umbracash/umbra-js';
-import { BigNumber, computeAddress, isHexString } from 'src/utils/ethers';
+import { BigNumber, JsonRpcSigner, computeAddress, isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
+import useWalletStore from 'src/store/wallet';
 import useWallet from 'src/store/wallet';
 import { filterUserAnnouncements } from 'src/worker/worker';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';
@@ -101,6 +102,7 @@ function useScan() {
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
     useSettingsStore();
+  const { signer, userAddress: userWalletAddress } = useWalletStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
@@ -178,7 +180,11 @@ function useScan() {
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     let allAnnouncements: AnnouncementDetail[] = [];
     try {
-      allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+      allAnnouncements = await umbra.value.fetchSomeAnnouncements(
+        signer.value as JsonRpcSigner,
+        userWalletAddress.value as string,
+        overrides
+      );
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
       throw e;
