@@ -1,12 +1,15 @@
 <template>
   <div>
-    <div class="text-caption q-mb-sm">
-      {{ $t('AccountSentTable.stored-on-device') }}.
-      <router-link
-        class="cursor-pointer hyperlink"
-        :to="{ name: 'FAQ', hash: '#why-cant-I-see-my-send-history-on-different-devices' }"
-        >{{ $t('AccountSentTable.learn-more') }}</router-link
-      >.
+    <div class="flex row justify-between q-mb-sm">
+      <div class="text-caption self-end">
+        {{ $t('AccountSentTable.stored-on-device') }}.
+        <router-link
+          class="cursor-pointer hyperlink"
+          :to="{ name: 'FAQ', hash: '#why-cant-I-see-my-send-history-on-different-devices' }"
+          >{{ $t('AccountSentTable.learn-more') }}</router-link
+        >.
+      </div>
+      <base-button @click="clearHistory" size="md" :label="$t('AccountSent.clear-history')" />
     </div>
     <q-table
       :grid="$q.screen.xs"
@@ -136,6 +139,10 @@ export default defineComponent({
   props: {
     sendMetadata: {
       type: undefined as unknown as PropType<SendTableMetadataRow[]>,
+      required: true,
+    },
+    clearHistory: {
+      type: Function,
       required: true,
     },
   },

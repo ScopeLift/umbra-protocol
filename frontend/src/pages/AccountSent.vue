@@ -19,8 +19,7 @@
         <div class="text-center text-italic">{{ $t('AccountSent.fetching-send-history') }}</div>
       </div>
       <div v-else-if="!needsSignature && !dataLoading" class="q-mx-auto flex column" style="max-width: 800px">
-        <base-button @click="clearHistory" class="self-end" :label="$t('AccountSent.clear-history')" />
-        <account-sent-table :sendMetadata="sendMetadata" />
+        <account-sent-table :sendMetadata="sendMetadata" :clearHistory="clearHistory" />
       </div>
     </div>
   </q-page>
