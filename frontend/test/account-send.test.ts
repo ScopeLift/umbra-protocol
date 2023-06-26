@@ -771,7 +771,16 @@ describe('clearHistory', () => {
     await localforage.clear();
   });
 
-  it.each([randomInt(0, 10), randomInt(0, 10), randomInt(0, 10), randomInt(0, 10)])(
+  it.each([
+    randomInt(0, 50),
+    randomInt(0, 50),
+    randomInt(0, 50),
+    randomInt(0, 50),
+    randomInt(0, 50),
+    randomInt(0, 50),
+    randomInt(0, 50),
+    randomInt(0, 50),
+  ])(
     "Clear account send history '%s'",
     async (num) => {
       const sends = createAccountSend(num);
