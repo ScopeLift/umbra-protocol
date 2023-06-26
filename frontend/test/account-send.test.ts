@@ -216,8 +216,8 @@ const pubKey =
   '0x0476698beebe8ee5c74d8cc50ab84ac301ee8f10af6f28d0ffd6adf4d6d3b9b762d46ca56d3dad2ce13213a6f42278dabbb53259f2d92681ea6a0b98197a719be3';
 const recipientAddress = '0x2436012a54c81f2F03e6E3D83090f3F5967bF1B5';
 const viewingPrivateKey = '0x290a15e2b46811c84a0c26624fd7fdc12e38143ae75518fc48375d41035ec5c1'; // this viewing key is taken from the testkeys in the umbra-js tests
-const localStorageCountKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${recipientAddress}-5`;
-const localStorageValueKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${recipientAddress}-5`;
+const localStorageCountKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${recipientAddress}-11155111`;
+const localStorageValueKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${recipientAddress}-11155111`;
 const tokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
 const txHash = '0x79d28911717689ca3c2c76407d8d965b82e856a9ab8f1ca5c2420c9addd97279';
 
@@ -450,7 +450,7 @@ describe('encrypt/decrypt relationship', () => {
 describe('storeSend', () => {
   let storeSendArgs = {} as StoreSendArgs;
   let viewingPrivateKey = '';
-  const chainId = 5;
+  const chainId = 11155111;
 
   beforeEach(async () => {
     await localforage.clear();
@@ -589,7 +589,7 @@ describe('storeSend', () => {
         };
       });
 
-      await storeSend(5, viewingPrivateKey, batches);
+      await storeSend(11155111, viewingPrivateKey, batches);
 
       const newCount = await localforage.getItem(localStorageCountKey);
       const values = (await localforage.getItem(localStorageValueKey)) as any[];
@@ -735,7 +735,7 @@ describe('End to end account tests', () => {
           },
         };
 
-        await storeSend(5, viewingPrivateKey, storeSendArgs);
+        await storeSend(11155111, viewingPrivateKey, storeSendArgs);
 
         if (resetLocalStorageCount) {
           offset = idx;
