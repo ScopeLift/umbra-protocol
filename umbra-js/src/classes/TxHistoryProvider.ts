@@ -10,6 +10,8 @@ export class TxHistoryProvider extends EtherscanProvider {
     let defaultApiKey: string;
     switch (_chainId) {
       case 1: // mainnet
+        defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
+        break;
       case 10: // optimism
         defaultApiKey = <string>process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
         break;
