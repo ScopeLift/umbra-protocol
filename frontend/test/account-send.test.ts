@@ -25,6 +25,23 @@ jest.mock('src/utils/constants', () => ({
   ...jest.requireActual('src/utils/constants'),
   MAINNET_PROVIDER: jest.fn(),
 }));
+window.logger = {
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  version: '',
+  _log: jest.fn(),
+  makeError: jest.fn(),
+  assert: jest.fn(),
+  assertArgument: jest.fn(),
+  checkNormalize: jest.fn(),
+  checkArgumentCount: jest.fn(),
+  checkNew: jest.fn(),
+  checkAbstract: jest.fn(),
+  checkSafeUint53: jest.fn(),
+  throwError: jest.fn() as never,
+  throwArgumentError: jest.fn() as never,
+};
 
 const NUM_RUNS = 100;
 
@@ -605,23 +622,6 @@ describe('storeSend', () => {
 describe('fetchAccountSends', () => {
   beforeEach(async () => {
     await localforage.clear();
-    window.logger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      version: '',
-      _log: jest.fn(),
-      makeError: jest.fn(),
-      assert: jest.fn(),
-      assertArgument: jest.fn(),
-      checkNormalize: jest.fn(),
-      checkArgumentCount: jest.fn(),
-      checkNew: jest.fn(),
-      checkAbstract: jest.fn(),
-      checkSafeUint53: jest.fn(),
-      throwError: jest.fn() as never,
-      throwArgumentError: jest.fn() as never,
-    };
   });
 
   it('Correctly fetch send data when there is a single send', async () => {
@@ -677,23 +677,6 @@ describe('fetchAccountSends', () => {
 describe('End to end account tests', () => {
   beforeEach(async () => {
     await localforage.clear();
-    window.logger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      version: '',
-      _log: jest.fn(),
-      makeError: jest.fn(),
-      assert: jest.fn(),
-      assertArgument: jest.fn(),
-      checkNormalize: jest.fn(),
-      checkArgumentCount: jest.fn(),
-      checkNew: jest.fn(),
-      checkAbstract: jest.fn(),
-      checkSafeUint53: jest.fn(),
-      throwError: jest.fn() as never,
-      throwArgumentError: jest.fn() as never,
-    };
   });
 
   it.each([randomInt(2, 10), randomInt(2, 10), randomInt(2, 10), randomInt(2, 10)])(
@@ -786,26 +769,9 @@ describe('End to end account tests', () => {
 describe('clearHistory', () => {
   beforeEach(async () => {
     await localforage.clear();
-    window.logger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      version: '',
-      _log: jest.fn(),
-      makeError: jest.fn(),
-      assert: jest.fn(),
-      assertArgument: jest.fn(),
-      checkNormalize: jest.fn(),
-      checkArgumentCount: jest.fn(),
-      checkNew: jest.fn(),
-      checkAbstract: jest.fn(),
-      checkSafeUint53: jest.fn(),
-      throwError: jest.fn() as never,
-      throwArgumentError: jest.fn() as never,
-    };
   });
 
-  it.each([randomInt(2, 10), randomInt(2, 10), randomInt(2, 10), randomInt(2, 10)])(
+  it.each([randomInt(0, 10), randomInt(0, 10), randomInt(0, 10), randomInt(0, 10)])(
     "Clear account send history '%s'",
     async (num) => {
       const sends = createAccountSend(num);
@@ -848,6 +814,6 @@ describe('clearHistory', () => {
       expect(existingCount).toEqual(null);
       expect(value).toEqual(null);
     },
-    10000
+    20000
   );
 });
