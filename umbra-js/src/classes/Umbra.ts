@@ -411,21 +411,7 @@ export class Umbra {
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || registeredBlockNumebr || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
-
-    // Try querying events using the Graph, fallback to querying logs.
-    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
-    // that window is defined first to avoid trying to use fetch in node environments
-    if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
-      try {
-        const subgraphAnnouncements = await this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock);
-        // Map the subgraph amount field from string to BigNumber
-        return subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
-      } catch (err) {
-        return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
-      }
-    }
-
-    return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+    return this.fetchAllAnnouncements({ startBlock, endBlock });
   }
 
   /**
