@@ -13,7 +13,7 @@
 
     <div v-else class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
-      <div v-if="needsSignature || scanStatus === 'waiting'" class="form">
+      <div v-if="needsSignature || scanStatus === 'waiting' || settingsFormShow" class="form">
         <div v-if="needsSignature" class="text-center q-mb-md">
           {{ $t('Receive.need-signature') }}
         </div>
@@ -63,8 +63,8 @@
       <div v-else-if="scanStatus === 'fetching'" class="text-center">
         <loading-spinner />
         <div class="text-center text-italic q-mt-sm" v-if="advancedMode">
-          Scanning from block {{ startBlockLocal || 'start block' }} to {{ endBlockLocal || 'latest' }}. Change scan
-          settings.
+          Scanning from block {{ startBlockLocal || 'start block' }} to {{ endBlockLocal || 'latest' }}.
+          <span class="cursor-pointer hyperlink" @click="settingsFormShow = true">Change scan settings</span>.
         </div>
         <div class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
       </div>
@@ -74,9 +74,8 @@
         <progress-indicator :percentage="scanPercentage" />
         <div class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
         <div class="text-center text-italic q-mt-sm" v-if="advancedMode">
-          {{ $t('Receive.scanning-block') }}
-          Scanning from block {{ startBlockLocal || 'start block' }} to {{ endBlockLocal || 'latest' }}. Change scan
-          settings.
+          {{ $t('Receive.scanning-block') }}.
+          <span class="cursor-pointer hyperlink" @click="settingsFormShow = true">Change scan settings</span>.
         </div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
@@ -115,6 +114,7 @@ function useScan() {
   const scanPrivateKeyLocal = ref<string>();
   const needsSignature = computed(() => !hasKeys.value && !scanPrivateKeyLocal.value);
   const settingsFormRef = ref<QForm>(); // for programmatically verifying settings form
+  const settingsFormShow = ref(false); // for programmatically showing settings form
 
   // Form validators and configurations
   const badPrivKeyMsg = 'Please enter a valid private key';
@@ -142,6 +142,7 @@ function useScan() {
     // Validate form
     if (advancedMode.value) {
       const isFormValid = await settingsFormRef.value?.validate(true);
+      console.log('isFormValid', isFormValid);
       if (!isFormValid) return;
     }
 
@@ -149,9 +150,11 @@ function useScan() {
       throw new Error('End block is larger than start block');
     }
 
+    console.log('User signature if');
     // Get user's signature if required
     if (needsSignature.value) {
       const success = await getPrivateKeys();
+      console.log('success', success);
       if (success === 'denied') return; // if unsuccessful, user denied signature or an error was thrown
 
       // log the spending and viewing public keys to help debug any receiving issues
@@ -164,12 +167,15 @@ function useScan() {
       window.logger.debug('viewingPubKeyX:  ', BigNumber.from(viewingPubKeyX).toString());
     }
 
+    console.log('setScanPrivateLocalKey', scanPrivateKeyLocal.value);
     // Save off the scanPrivateKeyLocal to memory if it exists, then scan
     if (scanPrivateKeyLocal.value) {
       if (scanPrivateKeyLocal.value.length === 64) scanPrivateKeyLocal.value = `0x${scanPrivateKeyLocal.value}`;
       await utils.assertSupportedAddress(computeAddress(scanPrivateKeyLocal.value));
       setScanPrivateKey(scanPrivateKeyLocal.value);
     }
+    console.log('scan');
+    settingsFormShow.value = false;
     await scan();
   }
 
@@ -183,6 +189,7 @@ function useScan() {
       return String(keyPair);
     };
 
+    console.log('Fetch announcements');
     // Fetch announcements
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     let allAnnouncements: AnnouncementDetail[] = [];
@@ -198,6 +205,8 @@ function useScan() {
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
 
+    console.log('Do we get here');
+    console.log(scanStatus);
     scanPercentage.value = 0;
     filterUserAnnouncements(
       spendingPubKey,
@@ -240,6 +249,7 @@ function useScan() {
     scanStatus,
     scanPercentage,
     setFormStatus,
+    settingsFormShow,
     setScanBlocks,
     settingsFormRef,
     startBlockLocal,
