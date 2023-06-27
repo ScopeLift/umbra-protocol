@@ -1,6 +1,7 @@
 import { computed, onMounted, markRaw, ref, watch } from 'vue';
 
 import Onboard, { OnboardAPI } from '@web3-onboard/core';
+import gnosisModule from '@web3-onboard/gnosis';
 import injectedModule from '@web3-onboard/injected-wallets';
 import walletConnectModule from '@web3-onboard/walletconnect';
 import coinbaseWalletModule from '@web3-onboard/coinbase';
@@ -31,6 +32,7 @@ import chLocal from 'src/i18n/locales/zh-CN.json';
 const injected = injectedModule();
 const walletConnect = walletConnectModule();
 const coinbaseWalletSdk = coinbaseWalletModule();
+const gnosis = gnosisModule();
 const ledger = ledgerModule();
 const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
 
@@ -86,7 +88,7 @@ export default function useWalletStore() {
     // Initialize onboard.js if not yet done
     if (!onboard.value) {
       onboard.value = Onboard({
-        wallets: [injected, walletConnect, coinbaseWalletSdk, ledger, trezor],
+        wallets: [injected, walletConnect, coinbaseWalletSdk, gnosis, ledger, trezor],
         chains: supportedChains.map((chain) => {
           return {
             id: chain.chainId,
