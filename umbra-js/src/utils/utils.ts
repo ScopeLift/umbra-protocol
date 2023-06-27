@@ -247,6 +247,7 @@ export async function getBlockNumberUserRegistered(address: string, startblock =
   const { chainId } = await Signer.provider.getNetwork();
   const txHistoryProvider = new TxHistoryProvider(chainId);
   const history = await txHistoryProvider.getHistory(address, startblock);
+  // Address of the StealthKeyRegistry is the same on all supported networks
   const StealthKeyRegistryAddress = '0x31fe56609C65Cd0C510E7125f051D440424D38f3';
   const registryBlock = history.find((tx) => tx.to === StealthKeyRegistryAddress);
   return registryBlock?.blockNumber;
