@@ -23,7 +23,7 @@ contract DeployBatchSend is Script {
   address constant UMBRA = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   // The list of networks to deploy to.
   string[] public networks =
-    ["mainnet", "optimism", "arbitrum_one", "polygon", "gnosis_chain", "goerli", "sepolia"];
+    ["mainnet", "optimism", "arbitrum_one", "polygon", "gnosis_chain", "sepolia"];
 
   mapping(string => address) public batchSendAddresses;
 

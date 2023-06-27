@@ -10,7 +10,6 @@ export class TxHistoryProvider extends EtherscanProvider {
     let defaultApiKey: string;
     switch (_chainId) {
       case 1: // mainnet
-      case 5: // goerli
         defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
         break;
       case 10: // optimism
@@ -39,8 +38,6 @@ export class TxHistoryProvider extends EtherscanProvider {
     switch (BigNumber.from(this.network.chainId).toNumber()) {
       case 1:
         return 'https://api.etherscan.io';
-      case 5:
-        return 'https://api-goerli.etherscan.io';
       case 10:
         return 'https://api-optimistic.etherscan.io';
       case 100:

@@ -56,21 +56,6 @@ export const supportedChains: Array<Chain> = [
     logoURI: ETH_NETWORK_LOGO,
   },
   {
-    chainId: '0x5',
-    chainName: 'Goerli',
-    nativeCurrency: {
-      address: NATIVE_TOKEN_ADDRESS,
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
-      logoURI: ETH_NETWORK_LOGO,
-    },
-    rpcUrls: [`https://goerli.infura.io/v3/${String(process.env.INFURA_ID)}`],
-    blockExplorerUrls: ['https://goerli.etherscan.io'],
-    iconUrls: [ETH_NETWORK_LOGO],
-    logoURI: ETH_NETWORK_LOGO,
-  },
-  {
     chainId: '0xaa36a7', // 11155111 as hex
     chainName: 'Sepolia',
     nativeCurrency: {
@@ -148,7 +133,7 @@ export const supportedChains: Array<Chain> = [
 ];
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
-export type SupportedChainId = '1' | '5' | '10' | '100' | '137' | '42161' | '11155111'; // strings for indexing into JSON files
+export type SupportedChainId = '1' | '10' | '100' | '137' | '42161' | '11155111'; // strings for indexing into JSON files
 export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response
