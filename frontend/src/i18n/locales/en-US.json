@@ -107,6 +107,7 @@
     "sign": "Sign",
     "scan": "Scan",
     "scan-settings": "Scan Settings",
+    "scanning-block": "Scanning from block { starBlock } to {endBlock}",
     "start-end": "Enter the start or end blocks to use when scanning for events. A blank start block will scan from block zero, and a blank end block will scan through the current block.",
     "start-block": "Start block",
     "end-block": "End block",

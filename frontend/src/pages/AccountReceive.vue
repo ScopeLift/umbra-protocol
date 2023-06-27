@@ -62,6 +62,10 @@
 
       <div v-else-if="scanStatus === 'fetching'" class="text-center">
         <loading-spinner />
+        <div class="text-center text-italic q-mt-sm" v-if="advancedMode">
+          Scanning from block {{ startBlockLocal || 'start block' }} to {{ endBlockLocal || 'latest' }}. Change scan
+          settings.
+        </div>
         <div class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
       </div>
 
@@ -69,6 +73,11 @@
       <div v-else-if="scanStatus === 'scanning'" class="text-center">
         <progress-indicator :percentage="scanPercentage" />
         <div class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
+        <div class="text-center text-italic q-mt-sm" v-if="advancedMode">
+          {{ $t('Receive.scanning-block') }}
+          Scanning from block {{ startBlockLocal || 'start block' }} to {{ endBlockLocal || 'latest' }}. Change scan
+          settings.
+        </div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
 
