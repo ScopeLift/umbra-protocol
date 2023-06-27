@@ -370,8 +370,8 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches all Umbra event logs using The Graph, if available, falling back to RPC if not
-   * @param overrides Override the start and end block used for scanning; ignored if using The Graph
+   * @notice Fetches all Umbra event logs using Goldsky, if available, falling back to RPC if not
+   * @param overrides Override the start and end block used for scanning; ignored if using Goldsky
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
@@ -380,8 +380,8 @@ export class Umbra {
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
 
-    // Try querying events using the Graph, fallback to querying logs.
-    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
+    // Try querying events using Goldsky, fallback to querying logs.
+    // Goldsky fetching uses the browser's `fetch` method to query the subgraph, so we check
     // that window is defined first to avoid trying to use fetch in node environments
     if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
       try {
@@ -397,8 +397,8 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches some Umbra event logs using The Graph, if available, falling back to RPC if not
-   * @param overrides Override the start and end block used for scanning; ignored if using The Graph
+   * @notice Fetches Umbra event logs starting from the block user registered their stealth keys in using Goldsky, if available, falling back to RPC if not
+   * @param overrides Override the start and end block used for scanning; ignored if using Goldsky
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
@@ -415,7 +415,7 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches all Umbra event logs using The Graph
+   * @notice Fetches all Umbra event logs using Goldsky
    * @dev Currently ignores the start and end block parameters and returns all events; this may change in a
    * future version
    * @param startBlock Ignored
