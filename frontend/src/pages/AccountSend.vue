@@ -115,25 +115,16 @@
             :disable="isSending"
             placeholder="vitalik.eth"
             lazy-rules
+            :hideBottomSpace="true"
             :rules="isValidId"
             ref="recipientIdBaseInputRef"
           />
-          <div
-            class="flex q-pt-sm text-caption warning-container"
-            v-if="recipientIdWarning"
-            :style="!recipientId || isValidRecipientId ? 'margin-top:-2em' : ''"
-          >
+          <div class="flex row text-caption warning-container q-pb-sm" v-if="recipientIdWarning">
             {{ recipientIdWarning }}
           </div>
 
           <!-- Identifier, advanced mode tooltip -->
-          <div
-            v-if="advancedMode"
-            class="row items-center text-caption q-pt-sm q-pb-lg"
-            :style="
-              !recipientId || isValidRecipientId || (!isValidRecipientId && recipientIdWarning) ? 'margin-top:-2em' : ''
-            "
-          >
+          <div v-if="advancedMode" class="row items-center text-caption q-pt-sm">
             <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
               {{ $t('Send.recipient-pkey') }}
             </q-checkbox>
