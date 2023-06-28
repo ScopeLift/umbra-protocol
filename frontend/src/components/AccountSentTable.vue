@@ -26,7 +26,12 @@
         </q-card-section>
         <q-card-section class="q-pt-sm">
           <div class="row justify-evenly">
-            <base-button type="submit" @click="clearHistory()" :full-width="true" :label="'Clear History'" />
+            <base-button
+              class="q-mr-sm"
+              @click="showClearHistoryWarning = false"
+              :label="$t('AccountSentTable.cancel')"
+            />
+            <base-button type="submit" @click="clearHistory()" :label="$t('AccountSentTable.clear-history')" />
           </div>
         </q-card-section>
       </q-card>
