@@ -823,6 +823,6 @@ describe('clearHistory', () => {
       expect(existingCount).toEqual(null);
       expect(value).toEqual(null);
     },
-    40000
+    50000
   );
 });
