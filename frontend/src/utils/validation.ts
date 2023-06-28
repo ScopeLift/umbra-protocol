@@ -1,5 +1,5 @@
 import { BigNumber, computeAddress, isHexString, isAddress } from 'src/utils/ethers';
-import { isConfusing } from 'unicode-confusables';
+import { ens_normalize } from '@adraffy/ens-normalize';
 
 export const assertValidAddress = (address: string, errorMsg?: string) => {
   if (!address.startsWith('0x') || !isAddress(address)) {
@@ -33,9 +33,14 @@ export const assertValidHexString = (hex: string, length: number, errorMsg?: str
   }
 };
 
-export const assertNoConfusables = (name: string, errorMsg?: string) => {
-  const hasConfusables = isConfusing(name);
-  if (hasConfusables) {
-    throw new Error(errorMsg || 'Name contains confusables');
+export const assertValidEnsName = (name: string) => {
+  try {
+    ens_normalize(name);
+  } catch (err) {
+    throw new Error(
+      `We detected a${
+        (err as Error)?.message.split(':')[1]
+      } in the ENS name. Check the ENS name in order to avoid a potential scam.`
+    );
   }
 };
