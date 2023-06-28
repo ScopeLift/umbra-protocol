@@ -25,6 +25,7 @@ import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider, TransactionResponseExtended } from '../types';
+import { STEALTH_KEY_REGISTRY_ADDRESS } from './constants';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -247,9 +248,7 @@ export async function getBlockNumberUserRegistered(address: string, startblock =
   const { chainId } = await Signer.provider.getNetwork();
   const txHistoryProvider = new TxHistoryProvider(chainId);
   const history = await txHistoryProvider.getHistory(address, startblock);
-  // Address of the StealthKeyRegistry is the same on all supported networks
-  const StealthKeyRegistryAddress = '0x31fe56609C65Cd0C510E7125f051D440424D38f3';
-  const registryBlock = history.find((tx) => tx.to === StealthKeyRegistryAddress);
+  const registryBlock = history.find((tx) => tx.to === STEALTH_KEY_REGISTRY_ADDRESS);
   return registryBlock?.blockNumber;
 }
 
