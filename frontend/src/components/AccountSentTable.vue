@@ -9,8 +9,28 @@
           >{{ $t('AccountSentTable.learn-more') }}</router-link
         >.
       </div>
-      <base-button @click="clearHistory" size="md" :label="$t('AccountSent.clear-history')" />
+      <div class="flex row items-center" v-if="formattedSendMetadata.length > 0">
+        <p class="text-caption q-mr-sm q-mb-none">{{ $t('AccountSent.clear-history') }}</p>
+        <q-icon @click="showClearHistoryWarning = true" class="cursor-pointer" color="primary" name="fa fa-trash" />
+      </div>
     </div>
+    <q-dialog v-model="showClearHistoryWarning">
+      <q-card class="row justify-center q-my-none q-py-none border-top-thick">
+        <q-card-section>
+          <h5 class="text-bold text-center q-mt-none">
+            <q-icon name="fas fa-exclamation-triangle" color="warning" left /> {{ $t('Utils.Dialog.warning') }}
+          </h5>
+        </q-card-section>
+        <q-card-section>
+          <div v-html="$t('AccountSentTable.clear-history-warning')" />
+        </q-card-section>
+        <q-card-section class="q-pt-sm">
+          <div class="row justify-evenly">
+            <base-button type="submit" @click="clearHistory()" :full-width="true" :label="'Clear History'" />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <q-table
       :grid="$q.screen.xs"
       card-container-class="col q-col-gutter-md"
@@ -126,7 +146,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, ref } from 'vue';
 import { SendTableMetadataRow } from 'components/models';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import useWalletStore from 'src/store/wallet';
@@ -149,6 +169,7 @@ export default defineComponent({
   setup(props, context) {
     const { provider, chainId } = useWalletStore();
     const paginationConfig = { rowsPerPage: 25 };
+    const showClearHistoryWarning = ref(false);
     const mainTableColumns = [
       {
         align: 'left',
@@ -181,6 +202,7 @@ export default defineComponent({
       openInEtherscan,
       provider,
       chainId,
+      showClearHistoryWarning,
     };
   },
 });
