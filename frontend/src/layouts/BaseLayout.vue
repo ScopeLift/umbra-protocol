@@ -192,6 +192,28 @@
                 </base-tooltip>
               </span>
             </p>
+
+            <!-- Send history toggle -->
+            <p>
+              <q-toggle
+                @update:modelValue="toggleSendHistory"
+                :modelValue="sendHistorySave"
+                class="icon"
+                color="primary"
+                dense
+                icon="fas fa-cog"
+              />
+              <span class="dark-toggle text-caption q-ml-md"
+                >{{ $t('Base-Layout.send-history') }}
+                {{ sendHistorySave ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
+              >
+              <span>
+                <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+                  {{ $t('Base-Layout.send-history-description') }}
+                </base-tooltip>
+              </span>
+            </p>
+
             <!-- Language selection -->
             <base-select
               class="language-selector"
@@ -280,8 +302,17 @@ export default defineComponent({
   name: 'BaseLayout',
   components: { AddressSettings, ArgentWarningModal, BaseButton, BaseTooltip, ConnectWallet, HeaderLinks, NetworkDropdown }, // prettier-ignore
   setup() {
-    const { advancedMode, isDark, language, supportedLanguages, toggleAdvancedMode, setLanguage, toggleDarkMode } =
-      useSettingsStore();
+    const {
+      advancedMode,
+      sendHistorySave,
+      isDark,
+      language,
+      supportedLanguages,
+      toggleAdvancedMode,
+      setLanguage,
+      toggleDarkMode,
+      toggleSendHistory,
+    } = useSettingsStore();
     const {
       avatar,
       isAccountSetup,
@@ -331,10 +362,12 @@ export default defineComponent({
       changeLanguage,
       redirectPath,
       redirectParams,
+      sendHistorySave,
       showArgentModal,
       supportedLanguages,
       toggleAdvancedMode,
       toggleDarkMode,
+      toggleSendHistory,
       userAddress,
       userDisplayName,
       version,

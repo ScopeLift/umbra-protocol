@@ -10,11 +10,13 @@ const settings = {
   advancedMode: 'advanced-mode',
   lastWallet: 'last-wallet',
   language: 'language',
+  sendHistorySave: 'send-history-save',
 };
 
 // Shared state between instances
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
+const sendHistorySave = ref(true); // true if user send history is saved false if it is not
 const language = ref<Language>({ label: '', value: '' }); //language code
 const supportedLanguages = [
   { label: 'English', value: 'en-US' },
@@ -33,6 +35,7 @@ export default function useSettingsStore() {
     // Load settings
     setDarkMode(Boolean(LocalStorage.getItem(settings.isDark)));
     advancedMode.value = Boolean(LocalStorage.getItem(settings.advancedMode));
+    sendHistorySave.value = Boolean(LocalStorage.getItem(settings.sendHistorySave));
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
@@ -60,6 +63,11 @@ export default function useSettingsStore() {
   function toggleAdvancedMode() {
     advancedMode.value = !advancedMode.value;
     LocalStorage.set(settings.advancedMode, advancedMode.value);
+  }
+
+  function toggleSendHistory() {
+    sendHistorySave.value = !sendHistorySave.value;
+    LocalStorage.set(settings.sendHistorySave, sendHistorySave.value);
   }
 
   function setLanguage(newLanguage: Language) {
@@ -113,6 +121,7 @@ export default function useSettingsStore() {
   return {
     toggleDarkMode,
     toggleAdvancedMode,
+    toggleSendHistory,
     setLanguage,
     setScanBlocks,
     setScanPrivateKey,
@@ -121,6 +130,7 @@ export default function useSettingsStore() {
     supportedLanguages,
     isDark: computed(() => isDark.value),
     advancedMode: computed(() => advancedMode.value),
+    sendHistorySave: computed(() => sendHistorySave.value),
     language: computed(() => language.value),
     startBlock: computed(() => startBlock.value),
     endBlock: computed(() => endBlock.value),
