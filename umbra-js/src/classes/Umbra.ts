@@ -371,7 +371,7 @@ export class Umbra {
 
   /**
    * @notice Fetches all Umbra event logs using Goldsky, if available, falling back to RPC if not
-   * @param overrides Override the start and end block used for scanning; ignored if using Goldsky
+   * @param overrides Override the start and end block used for scanning;
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
@@ -397,8 +397,9 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches Umbra event logs starting from the block user registered their stealth keys in using Goldsky, if available, falling back to RPC if not
-   * @param overrides Override the start and end block used for scanning; ignored if using Goldsky
+   * @notice Fetches Umbra event logs starting from the block user registered their stealth keys in using
+   * Goldsky, if available, falling back to RPC if not
+   * @param overrides Override the start and end block used for scanning;
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
@@ -416,10 +417,8 @@ export class Umbra {
 
   /**
    * @notice Fetches all Umbra event logs using Goldsky
-   * @dev Currently ignores the start and end block parameters and returns all events; this may change in a
-   * future version
-   * @param startBlock Ignored
-   * @param endBlock Ignored
+   * @param startBlock Scanning start block
+   * @param endBlock Scannding end block
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, txhash, and the subgraph identifier
    */
