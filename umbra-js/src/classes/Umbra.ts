@@ -408,7 +408,7 @@ export class Umbra {
     address: string,
     overrides: ScanOverrides = {}
   ): Promise<AnnouncementDetail[]> {
-    const registeredBlockNumber = await getBlockNumberUserRegistered(address, 0, Signer);
+    const registeredBlockNumber = await getBlockNumberUserRegistered(address, Signer.provider);
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || registeredBlockNumber || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';

@@ -10,7 +10,6 @@ import {
   getAddress,
   HashZero,
   isHexString,
-  JsonRpcSigner,
   keccak256,
   Overrides,
   resolveProperties,
@@ -25,7 +24,6 @@ import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider, TransactionResponseExtended } from '../types';
-import { STEALTH_KEY_REGISTRY_ADDRESS } from './constants';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -243,13 +241,13 @@ export async function lookupRecipient(
   return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 }
 
-export async function getBlockNumberUserRegistered(address: string, startblock = 0, Signer: JsonRpcSigner) {
+export async function getBlockNumberUserRegistered(address: string, provider: StaticJsonRpcProvider) {
   address = getAddress(address); // address input validation
-  const { chainId } = await Signer.provider.getNetwork();
-  const txHistoryProvider = new TxHistoryProvider(chainId);
-  const history = await txHistoryProvider.getHistory(address, startblock);
-  const registryBlock = history.find((tx) => tx.to === STEALTH_KEY_REGISTRY_ADDRESS);
-  return registryBlock?.blockNumber;
+  const registry = new StealthKeyRegistry(provider);
+  const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
+  const stealthKeyLog = await registry._registry.queryFilter(filter);
+  const registryBlock = stealthKeyLog[0].blockNumber;
+  return registryBlock;
 }
 
 /**

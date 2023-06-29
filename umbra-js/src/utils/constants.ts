@@ -1,5 +1,4 @@
 export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-export const STEALTH_KEY_REGISTRY_ADDRESS = '0x31fe56609C65Cd0C510E7125f051D440424D38f3';
 
 export const UMBRA_ABI = [
   'constructor(uint256 toll, address tollCollector, address tollReceiver)',
