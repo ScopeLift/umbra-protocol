@@ -333,11 +333,15 @@
         </template>
       </q-table>
       <div
-        v-if="keysMatch || (advancedMode && isCustomPrivateKey)"
+        v-if="scanStatus === 'complete' && (keysMatch || (advancedMode && isCustomPrivateKey))"
         class="text-caption text-right q-mt-md"
         style="opacity: 0.5"
       >
         <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> {{ $t('AccountReceiveTable.scanning-complete') }}
+      </div>
+      <div v-else-if="scanStatus === 'scanning'" class="text-caption text-right q-mt-md" style="opacity: 0.5">
+        <progress-indicator customClass="q-mr-sm" :percentage="scanPercentage" size="2rem" />
+        {{ $t('Receive.scanning') }}
       </div>
     </div>
   </div>
@@ -733,6 +737,14 @@ export default defineComponent({
   props: {
     announcements: {
       type: undefined as unknown as PropType<UserAnnouncement[]>,
+      required: true,
+    },
+    scanPercentage: {
+      type: Number,
+      required: true,
+    },
+    scanStatus: {
+      type: String,
       required: true,
     },
   },

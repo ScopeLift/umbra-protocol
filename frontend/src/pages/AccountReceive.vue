@@ -70,21 +70,29 @@
         </q-card>
       </div>
 
-      <div v-else-if="scanStatus === 'fetching'" class="text-center">
-        <loading-spinner />
-        <div class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
+      <!-- Scanning complete -->
+      <div v-if="userAnnouncements.length || scanStatus === 'complete'" class="text-center">
+        <account-receive-table
+          :announcements="userAnnouncements"
+          :scanStatus="scanStatus"
+          :scanPercentage="scanPercentage"
+          :key="tableKey"
+          @reset="setFormStatus('waiting')"
+        />
       </div>
 
       <!-- Scanning in progress -->
-      <div v-else-if="scanStatus === 'scanning'" class="text-center">
+      <div v-if="scanStatus === 'scanning' || scanStatus === 'scanning latest'" class="text-center">
         <progress-indicator :percentage="scanPercentage" />
-        <div class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
+        <div v-if="scanStatus === 'scanning'" class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
+        <div v-else class="text-center text-italic">{{ $t('Receive.scanning-latest') }}</div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
 
-      <!-- Scanning complete -->
-      <div v-else-if="scanStatus === 'complete'" class="text-center">
-        <account-receive-table :announcements="userAnnouncements" @reset="setFormStatus('waiting')" />
+      <div v-else-if="scanStatus === 'fetching' || scanStatus === 'fetching latest'" class="text-center">
+        <loading-spinner />
+        <div v-if="scanStatus === 'fetching'" class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
+        <div v-else class="text-center text-italic">{{ $t('Receive.fetching-latest') }}</div>
       </div>
     </div>
   </q-page>
@@ -93,7 +101,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm } from 'quasar';
-import { UserAnnouncement, KeyPair, AnnouncementDetail, utils } from '@umbracash/umbra-js';
+import { UserAnnouncement, KeyPair, utils, AnnouncementDetail } from '@umbracash/umbra-js';
 import { BigNumber, computeAddress, isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
@@ -104,10 +112,18 @@ import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useScan() {
   const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress } = useWallet();
-  type ScanStatus = 'waiting' | 'fetching' | 'scanning' | 'complete';
+  type ScanStatus =
+    | 'waiting'
+    | 'fetching'
+    | 'fetching latest'
+    | 'scanning'
+    | 'scanning latest'
+    | 'complete'
+    | 'complete latest';
   const scanStatus = ref<ScanStatus>('waiting');
   const scanPercentage = ref<number>(0);
   const userAnnouncements = ref<UserAnnouncement[]>([]);
+  const tableKey = ref(0);
 
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
@@ -178,7 +194,7 @@ function useScan() {
 
   async function scan() {
     if (!umbra.value) throw new Error('No umbra instance found. Please make sure you are on a supported network');
-    scanStatus.value = 'fetching';
+    scanStatus.value = 'fetching latest';
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
     const chooseKey = (keyPair: string | undefined | null) => {
@@ -188,41 +204,97 @@ function useScan() {
 
     // Fetch announcements
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
-    let allAnnouncements: AnnouncementDetail[] = [];
+
+    // Scan for funds
+    const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
+    const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
+
+    // Wrapper for `filterUserAnnouncements` so we can await for the first batch of web workers to finish before
+    // creating new workers.
+    const filterUserAnnouncementsAsync = (
+      spendingPublicKey: string,
+      viewingPrivateKey: string,
+      announcements: AnnouncementDetail[]
+    ) => {
+      return new Promise<void>((resolve) => {
+        filterUserAnnouncements(
+          spendingPublicKey,
+          viewingPrivateKey,
+          announcements,
+          (percent) => {
+            scanPercentage.value = Math.floor(percent);
+          },
+          (filteredAnnouncements) => {
+            userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
+              return parseInt(a.timestamp) - parseInt(b.timestamp);
+            });
+            if (filterUserAnnouncements.length) tableKey.value += 1;
+            if (scanStatus.value === 'scanning latest') scanStatus.value = 'complete latest';
+            else scanStatus.value = 'complete';
+            scanPercentage.value = 0;
+            resolve();
+          }
+        );
+      });
+    };
+
     try {
       if (!signer.value) throw new Error('signer is undefined');
       if (!userWalletAddress.value) throw new Error('userWalletAddress is undefined');
-      // When private key is provided in advanced mode, we fetch all announcements
-      if (advancedMode.value && scanPrivateKey.value)
-        allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
-      else if (advancedMode.value && !isAccountSetup.value && !scanPrivateKey.value) allAnnouncements = [];
-      else
-        allAnnouncements = await umbra.value.fetchSomeAnnouncements(signer.value, userWalletAddress.value, overrides);
+
+      let announcementsCount = 0; // Track the count of announcements
+      let announcementsQueue: AnnouncementDetail[] = []; // Announcements to be filtered
+      let firstScanPromise = Promise.resolve();
+      // When in advanced mode, we fetch all announcements
+      if (advancedMode.value && scanPrivateKey.value) {
+        for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
+          announcementsCount += announcementsBatch.length; // Increment count
+          announcementsQueue = [...announcementsQueue, ...announcementsBatch];
+          if (announcementsCount == 10000) {
+            scanStatus.value = 'scanning latest';
+            firstScanPromise = filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+            announcementsQueue = [];
+          }
+          // Update status if the scan is complete but additional announcements are still being fetched
+          if ((scanStatus.value as ScanStatus) === 'complete') {
+            scanStatus.value = 'fetching';
+          }
+        }
+        // Wait for the first batch of web workers to finish scanning before creating new workers
+        await firstScanPromise;
+        scanStatus.value = 'scanning';
+        await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+        scanStatus.value = 'complete';
+      } else if (advancedMode.value && !isAccountSetup.value && !scanPrivateKey.value) userAnnouncements.value = [];
+      else {
+        // Default scan behavior
+        for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
+          signer.value,
+          userWalletAddress.value,
+          overrides
+        )) {
+          announcementsCount += announcementsBatch.length; // Increment count
+          announcementsQueue = [...announcementsQueue, ...announcementsBatch];
+          if (announcementsCount == 10000) {
+            scanStatus.value = 'scanning latest';
+            firstScanPromise = filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+            announcementsQueue = [];
+          }
+          // Update status if the scan is complete but additional announcements are still being fetched
+          if ((scanStatus.value as ScanStatus) === 'complete latest') {
+            scanStatus.value = 'fetching';
+          }
+        }
+        // Wait for the first batch of web workers to finish scanning before creating new workers
+        await firstScanPromise;
+        scanStatus.value = 'scanning';
+        await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+        scanStatus.value = 'complete';
+      }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
       throw e;
     }
-
-    // Scan for funds
-    scanStatus.value = 'scanning';
-    const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
-    const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
-
-    scanPercentage.value = 0;
-    filterUserAnnouncements(
-      spendingPubKey,
-      viewingPrivKey,
-      allAnnouncements,
-      (percent) => {
-        scanPercentage.value = Math.floor(percent);
-      },
-      (filteredAnnouncements) => {
-        userAnnouncements.value = filteredAnnouncements.sort(function (a, b) {
-          return parseInt(a.timestamp) - parseInt(b.timestamp);
-        });
-        scanStatus.value = 'complete';
-      }
-    );
   }
 
   function resetState() {
@@ -256,6 +328,7 @@ function useScan() {
     startBlockLocal,
     userAddress,
     userAnnouncements,
+    tableKey,
   };
 }
 
