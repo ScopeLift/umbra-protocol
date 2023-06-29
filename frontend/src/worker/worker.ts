@@ -88,9 +88,6 @@ export const filterUserAnnouncements = (
           // sorting based on `timestamp`.
           // in Umbra.ts `fetchAllAnnouncementFromLogs` turns `timestamp` from number to string,
           // and therefore `timestamp` can be cast to number here.
-          userAnnouncements.sort(function (a, b) {
-            return parseInt(a.timestamp) - parseInt(b.timestamp);
-          });
           completion(userAnnouncements);
         }
       });
