@@ -29,7 +29,10 @@ import chLocal from 'src/i18n/locales/zh-CN.json';
 
 // Wallet configurations.
 const injected = injectedModule();
-const walletConnect = walletConnectModule();
+const walletConnect = walletConnectModule({
+  projectId: process.env.WALLET_CONNECT_PROJECT_ID || '',
+  version: 2,
+});
 const coinbaseWalletSdk = coinbaseWalletModule();
 const ledger = ledgerModule();
 const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
@@ -129,6 +132,9 @@ export default function useWalletStore() {
             window.location.reload();
           });
           wallet.provider.on('chainChanged', () => {
+            if (wallet.label === 'WalletConnect' && !lastWallet.value) {
+              setLastWallet('WalletConnect');
+            }
             window.location.reload();
           });
         });
