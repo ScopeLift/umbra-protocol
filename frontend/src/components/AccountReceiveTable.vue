@@ -456,6 +456,15 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
       name: 'amount',
       sortable: true,
       format: toString,
+      sort: (a: BigNumber, b: BigNumber, rowA: { token: string }, rowB: { token: string }) => {
+        const tokenA = tokens.value.find((token) => {
+          return token.address === rowA.token;
+        });
+        const tokenB = tokens.value.find((token) => {
+          return token.address === rowB.token;
+        });
+        return parseFloat(formatUnits(a, tokenA?.decimals)) - parseFloat(formatUnits(b, tokenB?.decimals));
+      },
     },
     {
       align: 'left',
