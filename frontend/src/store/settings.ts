@@ -35,7 +35,8 @@ export default function useSettingsStore() {
     // Load settings
     setDarkMode(Boolean(LocalStorage.getItem(settings.isDark)));
     advancedMode.value = Boolean(LocalStorage.getItem(settings.advancedMode));
-    sendHistorySave.value = Boolean(LocalStorage.getItem(settings.sendHistorySave));
+    const saveSetting = LocalStorage.getItem(settings.sendHistorySave);
+    sendHistorySave.value = saveSetting || saveSetting === null ? true : false;
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
