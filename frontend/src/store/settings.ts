@@ -16,7 +16,7 @@ const settings = {
 // Shared state between instances
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
-const sendHistorySave = ref(true); // true if user send history is saved false if it is not
+const sendHistorySave = ref(true); // true if user send history is saved, false if it is not
 const language = ref<Language>({ label: '', value: '' }); //language code
 const supportedLanguages = [
   { label: 'English', value: 'en-US' },
