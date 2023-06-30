@@ -45,7 +45,7 @@
     "built-by": "Built by {0}",
     "links": "Links",
     "send-history": "Send history",
-    "send-history-description": "Enables saving send history locally in the browser and being viewed on the sent page."
+    "send-history-description": "Enables saving send history locally in the browser so it can be viewed on the \"send history\" page."
   },
   "Address-Settings": {
     "advanced-mode-on": "Advanced mode is on"
