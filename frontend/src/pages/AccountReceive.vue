@@ -182,7 +182,11 @@ function useScan() {
     try {
       if (!signer.value) throw new Error('signer is undefined');
       if (!userWalletAddress.value) throw new Error('userWalletAddress is undefined');
-      allAnnouncements = await umbra.value.fetchSomeAnnouncements(signer.value, userWalletAddress.value, overrides);
+      // When private key is provided in advanced mode, we fetch all announcements
+      if (advancedMode.value && scanPrivateKey.value)
+        allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+      else
+        allAnnouncements = await umbra.value.fetchSomeAnnouncements(signer.value, userWalletAddress.value, overrides);
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
       throw e;

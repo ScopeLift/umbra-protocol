@@ -246,7 +246,7 @@ export async function getBlockNumberUserRegistered(address: string, provider: St
   const registry = new StealthKeyRegistry(provider);
   const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
   const stealthKeyLog = await registry._registry.queryFilter(filter);
-  const registryBlock = stealthKeyLog[0].blockNumber;
+  const registryBlock = stealthKeyLog[0]?.blockNumber || undefined;
   return registryBlock;
 }
 
