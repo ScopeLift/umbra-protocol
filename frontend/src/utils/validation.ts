@@ -37,6 +37,10 @@ export const assertValidEnsName = (name: string) => {
   try {
     ens_normalize(name);
   } catch (err) {
+    // A couple example error messages from ens-normalize:
+    // ‌hi.eth - Invalid label "{200C}hi"‎: disallowed character: {200C}
+    // aα.eth - Invalid label "aα"‎: illegal mixture: Latin + Greek "α"‎ {3B1}
+    console.log((err as Error)?.message);
     throw new Error(
       `We detected a${
         (err as Error)?.message.split(':')[1]
