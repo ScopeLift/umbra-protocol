@@ -10,8 +10,13 @@
         >.
       </div>
       <div class="flex row items-center" v-if="formattedSendMetadata.length > 0">
-        <p class="text-caption q-mr-sm q-mb-none">{{ $t('AccountSent.clear-history') }}</p>
-        <q-icon @click="showClearHistoryWarning = true" class="cursor-pointer" color="primary" name="fa fa-trash" />
+        <base-button
+          size="sm"
+          @click="showClearHistoryWarning = true"
+          icon="fa fa-trash"
+          :flat="true"
+          :label="$t('AccountSent.clear-history')"
+        />
       </div>
     </div>
     <q-dialog v-model="showClearHistoryWarning">
@@ -28,6 +33,7 @@
           <div class="row justify-evenly">
             <base-button
               class="q-mr-sm"
+              :outline="true"
               @click="showClearHistoryWarning = false"
               :label="$t('AccountSentTable.cancel')"
             />
