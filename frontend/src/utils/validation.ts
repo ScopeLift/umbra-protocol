@@ -42,9 +42,10 @@ export const assertValidEnsName = (name: string) => {
     // aα.eth - Invalid label "aα"‎: illegal mixture: Latin + Greek "α"‎ {3B1}
     console.log((err as Error)?.message);
     throw new Error(
-      `We detected a${
-        (err as Error)?.message.split(':')[1]
-      } in the ENS name. Check the ENS name in order to avoid a potential scam.`
+      `The given ENS name is invalid due to: ${(err as Error)?.message
+        .split(':')
+        .slice(1)
+        .join('')} in the ENS name. Check the ENS name in order to avoid a potential scam.`
     );
   }
 };
