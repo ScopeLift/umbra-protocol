@@ -5004,10 +5004,10 @@
   resolved "https://registry.yarnpkg.com/@uniswap/token-lists/-/token-lists-1.0.0-beta.31.tgz#ff3852bd505ec7b4c276625c762ea79a93a919ec"
   integrity sha512-BQVoelKCRf64IToPEs1wxiXOnhr/ukwPOF78XG11PrTAOL4F8umjYKFb8ZPv1/dIJsPaC7GhLSriEqyp94SasQ==
 
-"@unstoppabledomains/resolution@8.3.1":
-  version "8.3.1"
-  resolved "https://registry.yarnpkg.com/@unstoppabledomains/resolution/-/resolution-8.3.1.tgz#b69dce6d560a9f670ce860578b28fe7b05bdb572"
-  integrity sha512-o67ilPyagW+/CCeskhj7OHnP8WxjCJtOM994oX/MgLXVwaH8iQr4K6H+KHuZYn+10n39ILE1+BnW42VXGEa+Ew==
+"@unstoppabledomains/resolution@^8.5.0":
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/@unstoppabledomains/resolution/-/resolution-8.5.0.tgz#7f65146fb3bc69bfae8699c4ed1c61f3d6f0096c"
+  integrity sha512-csqExbiK8F5mRKoHlDZjGuIEuvi63O8PSyhUcGhnTi76Il5fCREAGNVdTiRxagPPYoxCO+Xmf6kThwtmiws1Ow==
   dependencies:
     "@ethersproject/abi" "^5.0.1"
     bn.js "^4.4.0"
