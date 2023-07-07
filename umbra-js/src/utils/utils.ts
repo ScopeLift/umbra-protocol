@@ -241,6 +241,15 @@ export async function lookupRecipient(
   return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 }
 
+export async function getBlockNumberUserRegistered(address: string, provider: StaticJsonRpcProvider) {
+  address = getAddress(address); // address input validation
+  const registry = new StealthKeyRegistry(provider);
+  const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
+  const stealthKeyLogs = await registry._registry.queryFilter(filter);
+  const registryBlock = stealthKeyLogs[0]?.blockNumber || undefined;
+  return registryBlock;
+}
+
 /**
  * @notice Throws if provided public key is not on the secp256k1 curve
  * @param point Uncompressed public key as hex string

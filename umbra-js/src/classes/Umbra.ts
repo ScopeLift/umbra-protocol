@@ -26,7 +26,13 @@ import {
 } from '../ethers';
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
-import { blockedStealthAddresses, getEthSweepGasInfo, lookupRecipient, assertSupportedAddress } from '../utils/utils';
+import {
+  blockedStealthAddresses,
+  getEthSweepGasInfo,
+  lookupRecipient,
+  assertSupportedAddress,
+  getBlockNumberUserRegistered,
+} from '../utils/utils';
 import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI, ETH_ADDRESS, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, GraphFilterOverride, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
@@ -364,8 +370,8 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches all Umbra event logs using The Graph, if available, falling back to RPC if not
-   * @param overrides Override the start and end block used for scanning; ignored if using The Graph
+   * @notice Fetches all Umbra event logs using Goldsky, if available, falling back to RPC if not
+   * @param overrides Override the start and end block used for scanning;
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
@@ -374,8 +380,8 @@ export class Umbra {
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
 
-    // Try querying events using the Graph, fallback to querying logs.
-    // The Graph fetching uses the browser's `fetch` method to query the subgraph, so we check
+    // Try querying events using Goldsky, fallback to querying logs.
+    // Goldsky fetching uses the browser's `fetch` method to query the subgraph, so we check
     // that window is defined first to avoid trying to use fetch in node environments
     if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
       try {
@@ -391,11 +397,29 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches all Umbra event logs using The Graph
-   * @dev Currently ignores the start and end block parameters and returns all events; this may change in a
-   * future version
-   * @param startBlock Ignored
-   * @param endBlock Ignored
+   * @notice Fetches Umbra event logs starting from the block user registered their stealth keys in using
+   * Goldsky, if available, falling back to RPC if not
+   * @param overrides Override the start and end block used for scanning;
+   * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
+   * timestamp, and txhash
+   */
+  async fetchSomeAnnouncements(
+    Signer: JsonRpcSigner,
+    address: string,
+    overrides: ScanOverrides = {}
+  ): Promise<AnnouncementDetail[]> {
+    const registeredBlockNumber = await getBlockNumberUserRegistered(address, Signer.provider);
+    // Get start and end blocks to scan events for
+    const startBlock = overrides.startBlock || registeredBlockNumber;
+    if (!startBlock) return [];
+    const endBlock = overrides.endBlock || 'latest';
+    return this.fetchAllAnnouncements({ startBlock, endBlock });
+  }
+
+  /**
+   * @notice Fetches all Umbra event logs using Goldsky
+   * @param startBlock Scanning start block
+   * @param endBlock Scannding end block
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, txhash, and the subgraph identifier
    */

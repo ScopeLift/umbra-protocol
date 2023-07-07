@@ -37,14 +37,14 @@
               <div class="row justify-start q-col-gutter-md">
                 <base-input
                   v-model.number="startBlockLocal"
-                  @blur="setScanBlocks(startBlockLocal, endBlockLocal)"
+                  @blur="setScanBlocks(startBlockLocal!, endBlockLocal!)"
                   class="col-xs-12 col-6"
                   :label="$t('Receive.start-block')"
                   :rules="isValidStartBlock"
                 />
                 <base-input
                   v-model.number="endBlockLocal"
-                  @blur="setScanBlocks(startBlockLocal, endBlockLocal)"
+                  @blur="setScanBlocks(startBlockLocal!, endBlockLocal!)"
                   class="col-xs-12 col-6"
                   :label="$t('Receive.end-block')"
                   :rules="isValidEndBlock"
@@ -86,6 +86,7 @@ import { QForm } from 'quasar';
 import { UserAnnouncement, KeyPair, AnnouncementDetail, utils } from '@umbracash/umbra-js';
 import { BigNumber, computeAddress, isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
+import useWalletStore from 'src/store/wallet';
 import useWallet from 'src/store/wallet';
 import { filterUserAnnouncements } from 'src/worker/worker';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';
@@ -101,6 +102,7 @@ function useScan() {
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
     useSettingsStore();
+  const { signer, userAddress: userWalletAddress } = useWalletStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
@@ -178,7 +180,13 @@ function useScan() {
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
     let allAnnouncements: AnnouncementDetail[] = [];
     try {
-      allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+      if (!signer.value) throw new Error('signer is undefined');
+      if (!userWalletAddress.value) throw new Error('userWalletAddress is undefined');
+      // When private key is provided in advanced mode, we fetch all announcements
+      if (advancedMode.value && scanPrivateKey.value)
+        allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+      else
+        allAnnouncements = await umbra.value.fetchSomeAnnouncements(signer.value, userWalletAddress.value, overrides);
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
       throw e;
