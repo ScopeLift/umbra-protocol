@@ -312,6 +312,9 @@
     "account-empty": "No funds sent in this browser",
     "advanced-mode-on": "Sent with advanced mode enabled",
     "amount": "Amount",
+    "cancel": "Cancel",
+    "clear-history": "Clear History",
+    "clear-history-warning": "This action cannot be undone! Your encrypted send history is only stored locally on the device that <b>sent the transaction and cannot be recovered once cleared</b>. Are you sure you want to continue?",
     "date-sent": "Date sent",
     "learn-more": "Learn more",
     "receiver": "Receiver",
@@ -321,6 +324,7 @@
     "use-public-key-checked": "Sent using recipient's standard public key"
   },
   "AccountSent": {
+    "clear-history": "Clear history",
     "connect-wallet": "Connect Wallet",
     "connect-your-wallet": "Connect your wallet to view sent funds",
     "fetching-send-history": "Fetching send history...",

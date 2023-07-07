@@ -1,13 +1,47 @@
 <template>
   <div>
-    <div class="text-caption q-mb-sm">
-      {{ $t('AccountSentTable.stored-on-device') }}.
-      <router-link
-        class="cursor-pointer hyperlink"
-        :to="{ name: 'FAQ', hash: '#why-cant-I-see-my-send-history-on-different-devices' }"
-        >{{ $t('AccountSentTable.learn-more') }}</router-link
-      >.
+    <div class="flex row justify-between q-mb-sm">
+      <div class="text-caption self-end">
+        {{ $t('AccountSentTable.stored-on-device') }}.
+        <router-link
+          class="cursor-pointer hyperlink"
+          :to="{ name: 'FAQ', hash: '#why-cant-I-see-my-send-history-on-different-devices' }"
+          >{{ $t('AccountSentTable.learn-more') }}</router-link
+        >.
+      </div>
+      <div class="flex row items-center" v-if="formattedSendMetadata.length > 0">
+        <base-button
+          size="sm"
+          @click="showClearHistoryWarning = true"
+          icon="fa fa-trash"
+          :flat="true"
+          :label="$t('AccountSent.clear-history')"
+        />
+      </div>
     </div>
+    <q-dialog v-model="showClearHistoryWarning">
+      <q-card class="row justify-center q-my-none q-py-none border-top-thick">
+        <q-card-section>
+          <h5 class="text-bold text-center q-mt-none">
+            <q-icon name="fas fa-exclamation-triangle" color="warning" left /> {{ $t('Utils.Dialog.warning') }}
+          </h5>
+        </q-card-section>
+        <q-card-section>
+          <div v-html="$t('AccountSentTable.clear-history-warning')" />
+        </q-card-section>
+        <q-card-section class="q-pt-sm">
+          <div class="row justify-evenly">
+            <base-button
+              class="q-mr-sm"
+              :outline="true"
+              @click="showClearHistoryWarning = false"
+              :label="$t('AccountSentTable.cancel')"
+            />
+            <base-button type="submit" @click="clearHistory()" :label="$t('AccountSentTable.clear-history')" />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <q-table
       :grid="$q.screen.xs"
       card-container-class="col q-col-gutter-md"
@@ -123,7 +157,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, ref } from 'vue';
 import { SendTableMetadataRow } from 'components/models';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import useWalletStore from 'src/store/wallet';
@@ -138,10 +172,15 @@ export default defineComponent({
       type: undefined as unknown as PropType<SendTableMetadataRow[]>,
       required: true,
     },
+    clearHistory: {
+      type: Function,
+      required: true,
+    },
   },
   setup(props, context) {
     const { provider, chainId } = useWalletStore();
     const paginationConfig = { rowsPerPage: 25 };
+    const showClearHistoryWarning = ref(false);
     const mainTableColumns = [
       {
         align: 'left',
@@ -174,6 +213,7 @@ export default defineComponent({
       openInEtherscan,
       provider,
       chainId,
+      showClearHistoryWarning,
     };
   },
 });

@@ -239,3 +239,9 @@ export const fetchAccountSends = async ({ address, viewingPrivateKey, chainId }:
   });
   return accountData.reverse();
 };
+
+export const clearAccountSend = async (address: string, chainId: number) => {
+  const localStorageKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-${address}-${chainId}`;
+  const localStorageCountKey = `${LOCALFORAGE_ACCOUNT_SEND_KEY_PREFIX}-count-${address}-${chainId}`;
+  await Promise.all([localforage.removeItem(localStorageKey), localforage.removeItem(localStorageCountKey)]);
+};
