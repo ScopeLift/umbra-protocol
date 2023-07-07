@@ -515,7 +515,7 @@ import { Provider, TokenInfoExtended, supportedChains } from 'components/models'
 import { ERC20_ABI } from 'src/utils/constants';
 import { toAddress } from 'src/utils/address';
 import { storeSend, StoreSendArgs } from 'src/utils/account-send';
-import { assertNoConfusables } from 'src/utils/validation';
+import { assertValidEnsName } from 'src/utils/validation';
 
 interface BatchSendData {
   id: number;
@@ -1203,10 +1203,7 @@ function useSendForm() {
     const recipientIdString = recipientId.value || '';
     try {
       if (recipientIdString && recipientIdString.endsWith('eth')) {
-        assertNoConfusables(
-          recipientIdString,
-          'We have detected a confusable character in the ENS name. Check the ENS name to avoid a potential scam.'
-        );
+        assertValidEnsName(recipientIdString);
       }
       recipientIdWarning.value = undefined;
     } catch (e) {
