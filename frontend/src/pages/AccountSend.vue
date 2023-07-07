@@ -525,7 +525,7 @@ interface BatchSendData {
 }
 
 function useSendForm() {
-  const { advancedMode, isDark } = useSettingsStore();
+  const { advancedMode, isDark, sendHistorySave } = useSettingsStore();
   const {
     balances,
     chainId,
@@ -975,7 +975,7 @@ function useSendForm() {
       });
       void txNotify(tx.hash, ethersProvider);
       // The values in this if statement should exist. We have this check to appease the type checker and handle regressions.
-      if (viewingKeyPair.value?.privateKeyHex && userAddress.value && provider.value) {
+      if (viewingKeyPair.value?.privateKeyHex && userAddress.value && provider.value && sendHistorySave.value) {
         const publicKeys = await umbraUtils.lookupRecipient(recipientId.value, provider.value, {
           advanced: shouldUseNormalPubKey.value,
         });
