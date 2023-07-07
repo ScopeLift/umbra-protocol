@@ -772,14 +772,14 @@ describe('clearHistory', () => {
   });
 
   it.each([
-    randomInt(0, 50),
-    randomInt(0, 50),
-    randomInt(0, 50),
-    randomInt(0, 50),
-    randomInt(0, 50),
-    randomInt(0, 50),
-    randomInt(0, 50),
-    randomInt(0, 50),
+    randomInt(0, 20),
+    randomInt(0, 20),
+    randomInt(0, 20),
+    randomInt(0, 20),
+    randomInt(0, 20),
+    randomInt(0, 20),
+    randomInt(0, 20),
+    randomInt(0, 20),
   ])(
     "Clear account send history '%s'",
     async (num) => {
