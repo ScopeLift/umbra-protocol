@@ -9,7 +9,7 @@ Requirements for use:
 - [ethers.js](https://docs.ethers.io/v5/single-page/) types are used throughout
 - [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) support. See browser compatibility [here](https://caniuse.com/bigint)
 
-Once verifying compatibility, install with `yarn add @scopelift/umbra-js`
+Once verifying compatibility, install with `yarn add @umbracash/umbra-js`
 
 ## Overview
 
