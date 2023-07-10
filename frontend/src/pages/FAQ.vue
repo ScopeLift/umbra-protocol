@@ -206,7 +206,7 @@
             <template v-slot:two>
               <a
                 class="hyperlink"
-                href="https://web.archive.org/web/20221012070449/https://eprint.iacr.org/2021/089.pdf"
+                href="https://eprint.iacr.org/2021/089.pdf"
                 target="_blank"
                 >2</a
               >
