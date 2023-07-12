@@ -7,6 +7,7 @@ import {
   BigNumber,
   computeAddress,
   Contract,
+  Event,
   getAddress,
   HashZero,
   isHexString,
@@ -247,11 +248,18 @@ export async function getBlockNumberUserRegistered(address: string, provider: St
   const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
   try {
     const stealthKeyLogs = await registry._registry.queryFilter(filter);
-    const registryBlock = stealthKeyLogs[0]?.blockNumber || undefined;
+    const registryBlock = sortStealthKeyLogs(stealthKeyLogs)[0]?.blockNumber || undefined;
     return registryBlock;
   } catch {
     return undefined;
   }
+}
+
+// Sorts stealth key logs in ascending order by block number
+export function sortStealthKeyLogs(stealthKeyLogs: Event[]) {
+  return stealthKeyLogs.sort(function (a, b) {
+    return a.blockNumber - b.blockNumber;
+  });
 }
 
 /**

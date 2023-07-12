@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import * as utils from '../src/utils/utils';
 import type { EthersProvider } from '../src/types';
 import { expectRejection } from './utils';
+import { Event } from '../src/ethers';
 
 const ethersProvider = ethers.provider;
 
@@ -160,6 +161,17 @@ describe('Utilities', () => {
       const keys2 = await utils.lookupRecipient('udtestdev-msolomon.crypto', ethersProvider, { advanced: false });
       expect(keys2.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys2.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
+    });
+
+    describe('sortStealthKeyLogs', () => {
+      it('should sort stealth key logs by block number in ascending order', () => {
+        const logs = [{ blockNumber: 3 }, { blockNumber: 2 }, { blockNumber: 1 }] as Event[];
+        const expected = [{ blockNumber: 1 }, { blockNumber: 2 }, { blockNumber: 3 }];
+        const sortedLogs = utils.sortStealthKeyLogs(logs);
+        for (let i = 0; i < logs.length; i++) {
+          expect(sortedLogs[i].blockNumber).to.equal(expected[i].blockNumber);
+        }
+      });
     });
 
     // --- Address history by network ---
