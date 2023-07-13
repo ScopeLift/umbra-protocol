@@ -11,7 +11,19 @@
       </div>
     </div>
 
-    <div v-else class="q-mx-auto" style="max-width: 800px">
+    <div
+      v-else-if="!isAccountSetup && !advancedMode"
+      class="dark-toggle text-center text-bold q-pa-md q-mb-lg"
+      style="border-radius: 15px"
+      :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
+    >
+      {{ $t('AccountReceiveTable.configure-umbra') }}<br />
+      <i18n-t keypath="AccountReceiveTable.navigate-to-setup" tag="span">
+        <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountReceiveTable.setup') }}</router-link>
+      </i18n-t>
+    </div>
+
+    <div v-else-if="userAddress" class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
       <div v-if="needsSignature || scanStatus === 'waiting'" class="form">
         <div v-if="needsSignature" class="text-center q-mb-md">
@@ -100,9 +112,17 @@ function useScan() {
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
   // Start and end blocks for advanced mode settings
-  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
-    useSettingsStore();
-  const { signer, userAddress: userWalletAddress } = useWalletStore();
+  const {
+    advancedMode,
+    startBlock,
+    endBlock,
+    setScanBlocks,
+    setScanPrivateKey,
+    scanPrivateKey,
+    resetScanSettings,
+    isDark,
+  } = useSettingsStore();
+  const { signer, userAddress: userWalletAddress, isAccountSetup } = useWalletStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
@@ -231,6 +251,8 @@ function useScan() {
     advancedMode,
     endBlockLocal,
     getPrivateKeysHandler,
+    isAccountSetup,
+    isDark,
     isValidEndBlock,
     isValidPrivateKey,
     isValidStartBlock,
