@@ -403,16 +403,18 @@ export class Umbra {
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
-  async fetchSomeAnnouncements(
+  async *fetchSomeAnnouncements(
     Signer: JsonRpcSigner,
     address: string,
     overrides: ScanOverrides = {}
-  ): Promise<AnnouncementDetail[]> {
+  ): AsyncGenerator<AnnouncementDetail[]> {
     const registeredBlockNumber = await getBlockNumberUserRegistered(address, Signer.provider);
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || registeredBlockNumber || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
-    return this.fetchAllAnnouncements({ startBlock, endBlock });
+    for await (const announcementBatch of this.fetchAllAnnouncements({ startBlock, endBlock })) {
+      yield announcementBatch;
+    }
   }
 
   /**

@@ -179,7 +179,6 @@ function useScan() {
 
     // Fetch announcements
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
-    let allAnnouncements: AnnouncementDetail[] = [];
 
     // Scan for funds
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
@@ -230,7 +229,49 @@ function useScan() {
           }
         );
       } else {
-        allAnnouncements = await umbra.value.fetchSomeAnnouncements(signer.value, userWalletAddress.value, overrides);
+        let announcementsCount = 0; // Track the count of announcements
+        let announcementsBatchQueue: AnnouncementDetail[] = [];
+        for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
+          signer.value,
+          userWalletAddress.value,
+          overrides
+        )) {
+          announcementsCount += announcementsBatch.length; // Increment count
+          announcementsBatchQueue = [...announcementsBatchQueue, ...announcementsBatch];
+          if (announcementsCount == 10000) {
+            scanStatus.value = 'scanning';
+            filterUserAnnouncements(
+              spendingPubKey,
+              viewingPrivKey,
+              announcementsBatchQueue,
+              (percent) => {
+                scanPercentage.value = Math.floor(percent);
+              },
+              (filteredAnnouncements) => {
+                userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
+                  return parseInt(a.timestamp) - parseInt(b.timestamp);
+                });
+                if (filterUserAnnouncements.length) tableKey.value += 1;
+              }
+            );
+            announcementsBatchQueue = [];
+          }
+        }
+        filterUserAnnouncements(
+          spendingPubKey,
+          viewingPrivKey,
+          announcementsBatchQueue,
+          (percent) => {
+            scanPercentage.value = Math.floor(percent);
+          },
+          (filteredAnnouncements) => {
+            userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
+              return parseInt(a.timestamp) - parseInt(b.timestamp);
+            });
+            if (filterUserAnnouncements.length) tableKey.value += 1;
+            scanStatus.value = 'complete';
+          }
+        );
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
