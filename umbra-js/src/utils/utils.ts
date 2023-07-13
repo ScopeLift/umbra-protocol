@@ -245,9 +245,13 @@ export async function getBlockNumberUserRegistered(address: string, provider: St
   address = getAddress(address); // address input validation
   const registry = new StealthKeyRegistry(provider);
   const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
-  const stealthKeyLogs = await registry._registry.queryFilter(filter);
-  const registryBlock = stealthKeyLogs[0]?.blockNumber || undefined;
-  return registryBlock;
+  try {
+    const stealthKeyLogs = await registry._registry.queryFilter(filter);
+    const registryBlock = stealthKeyLogs[0]?.blockNumber || undefined;
+    return registryBlock;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
