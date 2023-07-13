@@ -183,40 +183,19 @@ function useScan() {
     // Scan for funds
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
     const viewingPrivKey = chooseKey(viewingKeyPair.value?.privateKeyHex);
-    try {
-      if (!signer.value) throw new Error('signer is undefined');
-      if (!userWalletAddress.value) throw new Error('userWalletAddress is undefined');
 
-      // When private key is provided in advanced mode, we fetch all announcements
-      if (advancedMode.value && scanPrivateKey.value) {
-        let announcementsCount = 0; // Track the count of announcements
-        let announcementsBatchQueue: AnnouncementDetail[] = [];
-        for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
-          announcementsCount += announcementsBatch.length; // Increment count
-          announcementsBatchQueue = [...announcementsBatchQueue, ...announcementsBatch];
-          if (announcementsCount == 10000) {
-            scanStatus.value = 'scanning';
-            filterUserAnnouncements(
-              spendingPubKey,
-              viewingPrivKey,
-              announcementsBatchQueue,
-              (percent) => {
-                scanPercentage.value = Math.floor(percent);
-              },
-              (filteredAnnouncements) => {
-                userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
-                  return parseInt(a.timestamp) - parseInt(b.timestamp);
-                });
-                if (filterUserAnnouncements.length) tableKey.value += 1;
-              }
-            );
-            announcementsBatchQueue = [];
-          }
-        }
+    // Wrapper for `filterUserAnnouncements` so we can await for the first batch of web workers to finish before
+    // creating new workers.
+    const filterUserAnnouncementsAsync = (
+      spendingPublicKey: string,
+      viewingPrivateKey: string,
+      announcements: AnnouncementDetail[]
+    ) => {
+      return new Promise<UserAnnouncement[]>((resolve) => {
         filterUserAnnouncements(
-          spendingPubKey,
-          viewingPrivKey,
-          announcementsBatchQueue,
+          spendingPublicKey,
+          viewingPrivateKey,
+          announcements,
           (percent) => {
             scanPercentage.value = Math.floor(percent);
           },
@@ -225,53 +204,48 @@ function useScan() {
               return parseInt(a.timestamp) - parseInt(b.timestamp);
             });
             if (filterUserAnnouncements.length) tableKey.value += 1;
-            scanStatus.value = 'complete';
+            resolve(userAnnouncements.value);
           }
         );
+      });
+    };
+
+    try {
+      if (!signer.value) throw new Error('signer is undefined');
+      if (!userWalletAddress.value) throw new Error('userWalletAddress is undefined');
+
+      let announcementsCount = 0; // Track the count of announcements
+      let announcementsQueue: AnnouncementDetail[] = []; // Announcements to be filtered
+      // When private key is provided in advanced mode, we fetch all announcements
+      if (advancedMode.value && scanPrivateKey.value) {
+        for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
+          announcementsCount += announcementsBatch.length; // Increment count
+          announcementsQueue = [...announcementsQueue, ...announcementsBatch];
+          scanStatus.value = 'scanning';
+          if (announcementsCount == 10000) {
+            await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+            announcementsQueue = [];
+          }
+        }
+        await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+        scanStatus.value = 'complete';
       } else {
-        let announcementsCount = 0; // Track the count of announcements
-        let announcementsBatchQueue: AnnouncementDetail[] = [];
+        // Default scan behaviour
         for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
           signer.value,
           userWalletAddress.value,
           overrides
         )) {
           announcementsCount += announcementsBatch.length; // Increment count
-          announcementsBatchQueue = [...announcementsBatchQueue, ...announcementsBatch];
+          announcementsQueue = [...announcementsQueue, ...announcementsBatch];
+          scanStatus.value = 'scanning';
           if (announcementsCount == 10000) {
-            scanStatus.value = 'scanning';
-            filterUserAnnouncements(
-              spendingPubKey,
-              viewingPrivKey,
-              announcementsBatchQueue,
-              (percent) => {
-                scanPercentage.value = Math.floor(percent);
-              },
-              (filteredAnnouncements) => {
-                userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
-                  return parseInt(a.timestamp) - parseInt(b.timestamp);
-                });
-                if (filterUserAnnouncements.length) tableKey.value += 1;
-              }
-            );
-            announcementsBatchQueue = [];
+            await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+            announcementsQueue = [];
           }
         }
-        filterUserAnnouncements(
-          spendingPubKey,
-          viewingPrivKey,
-          announcementsBatchQueue,
-          (percent) => {
-            scanPercentage.value = Math.floor(percent);
-          },
-          (filteredAnnouncements) => {
-            userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
-              return parseInt(a.timestamp) - parseInt(b.timestamp);
-            });
-            if (filterUserAnnouncements.length) tableKey.value += 1;
-            scanStatus.value = 'complete';
-          }
-        );
+        await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+        scanStatus.value = 'complete';
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
