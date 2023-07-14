@@ -60,11 +60,6 @@
         </q-card>
       </div>
 
-      <div v-else-if="scanStatus === 'fetching'" class="text-center">
-        <loading-spinner />
-        <div class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
-      </div>
-
       <!-- Scanning complete -->
       <div v-if="userAnnouncements.length || scanStatus === 'complete'" class="text-center">
         <account-receive-table :announcements="userAnnouncements" :key="tableKey" @reset="setFormStatus('waiting')" />
@@ -75,6 +70,11 @@
         <progress-indicator :percentage="scanPercentage" />
         <div class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
+      </div>
+
+      <div v-else-if="scanStatus === 'fetching'" class="text-center">
+        <loading-spinner />
+        <div class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
       </div>
     </div>
   </q-page>
@@ -191,7 +191,8 @@ function useScan() {
       viewingPrivateKey: string,
       announcements: AnnouncementDetail[]
     ) => {
-      return new Promise<UserAnnouncement[]>((resolve) => {
+      scanStatus.value = 'scanning';
+      return new Promise<void>((resolve) => {
         filterUserAnnouncements(
           spendingPublicKey,
           viewingPrivateKey,
@@ -204,7 +205,9 @@ function useScan() {
               return parseInt(a.timestamp) - parseInt(b.timestamp);
             });
             if (filterUserAnnouncements.length) tableKey.value += 1;
-            resolve(userAnnouncements.value);
+            scanStatus.value = 'complete';
+            scanPercentage.value = 0;
+            resolve();
           }
         );
       });
@@ -216,17 +219,23 @@ function useScan() {
 
       let announcementsCount = 0; // Track the count of announcements
       let announcementsQueue: AnnouncementDetail[] = []; // Announcements to be filtered
-      // When private key is provided in advanced mode, we fetch all announcements
-      if (advancedMode.value && scanPrivateKey.value) {
+      let firstScanPromise = Promise.resolve();
+      // When in advanced mode, we fetch all announcements
+      if (advancedMode.value) {
         for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
           announcementsCount += announcementsBatch.length; // Increment count
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
-          scanStatus.value = 'scanning';
           if (announcementsCount == 10000) {
-            await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+            firstScanPromise = filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
             announcementsQueue = [];
           }
+          // Update status if the scan is complete but addtional announcements are still being fetched
+          if ((scanStatus.value as ScanStatus) === 'complete') {
+            scanStatus.value = 'fetching';
+          }
         }
+        // Wait for the first batch of web workers to finish scanning before creating new workers
+        await firstScanPromise;
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
       } else {
@@ -238,12 +247,17 @@ function useScan() {
         )) {
           announcementsCount += announcementsBatch.length; // Increment count
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
-          scanStatus.value = 'scanning';
           if (announcementsCount == 10000) {
-            await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
+            firstScanPromise = filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
             announcementsQueue = [];
           }
+          // Update status if the scan is complete but addtional announcements are still being fetched
+          if ((scanStatus.value as ScanStatus) === 'complete') {
+            scanStatus.value = 'fetching';
+          }
         }
+        // Wait for the first batch of web workers to finish scanning before creating new workers
+        await firstScanPromise;
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
       }
