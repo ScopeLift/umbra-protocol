@@ -13,9 +13,7 @@
 
     <div
       v-else-if="!isAccountSetup && !advancedMode"
-      class="dark-toggle text-center text-bold q-pa-md q-mb-lg"
-      style="border-radius: 15px"
-      :style="isDark ? 'color: #FFFAEB; background-color: #7C5E10' : 'color: #513C06; background-color: #FCEFC7'"
+      class="dark-toggle bg-notice text-notice text-center text-bold q-pa-md q-mb-lg q-mx-auto form-max-wide border-radius"
     >
       {{ $t('AccountReceiveTable.configure-umbra') }}<br />
       <i18n-t keypath="AccountReceiveTable.navigate-to-setup" tag="span">
@@ -112,16 +110,8 @@ function useScan() {
   const userAnnouncements = ref<UserAnnouncement[]>([]);
 
   // Start and end blocks for advanced mode settings
-  const {
-    advancedMode,
-    startBlock,
-    endBlock,
-    setScanBlocks,
-    setScanPrivateKey,
-    scanPrivateKey,
-    resetScanSettings,
-    isDark,
-  } = useSettingsStore();
+  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
+    useSettingsStore();
   const { signer, userAddress: userWalletAddress, isAccountSetup } = useWalletStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
@@ -252,7 +242,6 @@ function useScan() {
     endBlockLocal,
     getPrivateKeysHandler,
     isAccountSetup,
-    isDark,
     isValidEndBlock,
     isValidPrivateKey,
     isValidStartBlock,
