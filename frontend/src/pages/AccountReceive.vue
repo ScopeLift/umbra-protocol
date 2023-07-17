@@ -13,7 +13,7 @@
 
     <div
       v-else-if="!isAccountSetup && !advancedMode"
-      class="dark-toggle bg-notice text-notice text-center text-bold q-pa-md q-mb-lg q-mx-auto form-max-wide border-radius"
+      class="dark-toggle bg-notice text-notice text-center text-bold q-pa-md q-mb-lg q-mx-auto form-max-wide rounded-borders-md"
     >
       {{ $t('AccountReceiveTable.configure-umbra') }}<br />
       <i18n-t keypath="AccountReceiveTable.navigate-to-setup" tag="span">
