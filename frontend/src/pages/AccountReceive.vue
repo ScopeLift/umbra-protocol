@@ -66,15 +66,17 @@
       </div>
 
       <!-- Scanning in progress -->
-      <div v-if="scanStatus === 'scanning'" class="text-center">
+      <div v-if="scanStatus === 'scanning' || scanStatus === 'scanning latest'" class="text-center">
         <progress-indicator :percentage="scanPercentage" />
-        <div class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
+        <div v-if="scanStatus === 'scanning'" class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
+        <div v-else class="text-center text-italic">{{ $t('Receive.scanning-latest') }}</div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
 
-      <div v-else-if="scanStatus === 'fetching'" class="text-center">
+      <div v-else-if="scanStatus === 'fetching' || scanStatus === 'fetching latest'" class="text-center">
         <loading-spinner />
-        <div class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
+        <div v-if="scanStatus === 'fetching'" class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
+        <div v-else class="text-center text-italic">{{ $t('Receive.fetching-latest') }}</div>
       </div>
     </div>
   </q-page>
@@ -94,7 +96,7 @@ import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useScan() {
   const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress } = useWallet();
-  type ScanStatus = 'waiting' | 'fetching' | 'scanning' | 'complete';
+  type ScanStatus = 'waiting' | 'fetching' | 'fetching latest' | 'scanning' | 'scanning latest' | 'complete';
   const scanStatus = ref<ScanStatus>('waiting');
   const scanPercentage = ref<number>(0);
   const userAnnouncements = ref<UserAnnouncement[]>([]);
@@ -169,7 +171,7 @@ function useScan() {
 
   async function scan() {
     if (!umbra.value) throw new Error('No umbra instance found. Please make sure you are on a supported network');
-    scanStatus.value = 'fetching';
+    scanStatus.value = 'fetching latest';
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
     const chooseKey = (keyPair: string | undefined | null) => {
@@ -191,7 +193,6 @@ function useScan() {
       viewingPrivateKey: string,
       announcements: AnnouncementDetail[]
     ) => {
-      scanStatus.value = 'scanning';
       return new Promise<void>((resolve) => {
         filterUserAnnouncements(
           spendingPublicKey,
@@ -226,6 +227,7 @@ function useScan() {
           announcementsCount += announcementsBatch.length; // Increment count
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
+            scanStatus.value = 'scanning latest';
             firstScanPromise = filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
             announcementsQueue = [];
           }
@@ -248,6 +250,7 @@ function useScan() {
           announcementsCount += announcementsBatch.length; // Increment count
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
+            scanStatus.value = 'scanning latest';
             firstScanPromise = filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
             announcementsQueue = [];
           }
@@ -258,6 +261,7 @@ function useScan() {
         }
         // Wait for the first batch of web workers to finish scanning before creating new workers
         await firstScanPromise;
+        scanStatus.value = 'scanning';
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
       }
