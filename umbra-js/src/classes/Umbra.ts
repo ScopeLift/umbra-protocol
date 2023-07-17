@@ -391,9 +391,10 @@ export class Umbra {
           yield details;
         }
       } catch (err) {
-        return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+        yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
       }
     }
+    yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
   }
 
   /**
@@ -517,8 +518,8 @@ export class Umbra {
    */
   async scan(spendingPublicKey: string, viewingPrivateKey: string, overrides: ScanOverrides = {}) {
     const userAnnouncements: UserAnnouncement[] = [];
-    for await (const ann of this.fetchAllAnnouncements(overrides)) {
-      for (const announcement of ann) {
+    for await (const announcementsBatch of this.fetchAllAnnouncements(overrides)) {
+      for (const announcement of announcementsBatch) {
         const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = announcement;
         const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(
           spendingPublicKey,
