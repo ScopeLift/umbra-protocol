@@ -393,8 +393,9 @@ export class Umbra {
       } catch (err) {
         yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
       }
+    } else {
+      yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
     }
-    yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
   }
 
   /**
