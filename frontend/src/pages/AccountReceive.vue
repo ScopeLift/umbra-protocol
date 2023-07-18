@@ -238,6 +238,7 @@ function useScan() {
         }
         // Wait for the first batch of web workers to finish scanning before creating new workers
         await firstScanPromise;
+        scanStatus.value = 'scanning';
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
       } else {
