@@ -71,7 +71,7 @@
       </div>
 
       <!-- Scanning complete -->
-      <div v-if="userAnnouncements.length || scanStatus === 'complete'" class="text-center">
+      <div v-else-if="userAnnouncements.length || scanStatus === 'complete'" class="text-center">
         <account-receive-table
           :announcements="userAnnouncements"
           :scanStatus="scanStatus"
@@ -82,16 +82,24 @@
       </div>
 
       <!-- Scanning in progress -->
-      <div v-if="scanStatus === 'scanning' || scanStatus === 'scanning latest'" class="text-center">
+      <div
+        v-if="(scanStatus === 'scanning' || scanStatus === 'scanning latest') && !userAnnouncements.length"
+        class="text-center"
+      >
         <progress-indicator :percentage="scanPercentage" />
         <div v-if="scanStatus === 'scanning'" class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
         <div v-else class="text-center text-italic">{{ $t('Receive.scanning-latest') }}</div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
 
-      <div v-else-if="scanStatus === 'fetching' || scanStatus === 'fetching latest'" class="text-center">
+      <div
+        v-else-if="(scanStatus === 'fetching latest' || scanStatus === 'fetching') && !userAnnouncements.length"
+        class="text-center"
+      >
         <loading-spinner />
-        <div v-if="scanStatus === 'fetching'" class="text-center text-italic">{{ $t('Receive.fetching') }}</div>
+        <div v-if="scanStatus === 'fetching'" class="text-center text-italic">
+          {{ $t('Receive.fetching') }}
+        </div>
         <div v-else class="text-center text-italic">{{ $t('Receive.fetching-latest') }}</div>
       </div>
     </div>
@@ -158,8 +166,9 @@ function useScan() {
   });
 
   async function getPrivateKeysHandler() {
-    // Validate form
+    // Validate form and reset userAnnouncements
     if (advancedMode.value) {
+      userAnnouncements.value = [];
       const isFormValid = await settingsFormRef.value?.validate(true);
       if (!isFormValid) return;
     }
@@ -226,9 +235,8 @@ function useScan() {
           },
           (filteredAnnouncements) => {
             userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
-              return parseInt(a.timestamp) - parseInt(b.timestamp);
+              return parseInt(b.timestamp) - parseInt(a.timestamp);
             });
-            if (filterUserAnnouncements.length) tableKey.value += 1;
             if (scanStatus.value === 'scanning latest') scanStatus.value = 'complete latest';
             else scanStatus.value = 'complete';
             scanPercentage.value = 0;

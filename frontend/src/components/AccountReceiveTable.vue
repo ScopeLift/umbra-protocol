@@ -32,13 +32,8 @@
       />
     </q-dialog>
 
-    <div v-if="isLoading" class="text-center">
-      <loading-spinner />
-      <div class="text-center text-italic">{{ $t('AccountReceiveTable.processing-results') }}</div>
-    </div>
-
     <!-- Received funds table -->
-    <div v-else>
+    <div>
       <div
         v-if="!isAccountSetup"
         class="dark-toggle text-center text-bold q-pa-md q-mb-lg"
@@ -65,7 +60,7 @@
         >.
       </div>
 
-      <div v-if="advancedMode" class="text-caption q-mb-sm">
+      <div v-if="advancedMode && scanStatus === 'complete'" class="text-caption q-mb-sm">
         <!-- This scanDescriptionString describes scan settings that were used -->
         {{ scanDescriptionString }}.
         <span @click="context.emit('reset')" class="cursor-pointer hyperlink">{{
@@ -100,8 +95,13 @@
                 <div class="row justify-between items-center">
                   <div>{{ $t('AccountReceiveTable.sender') }}</div>
                   <div @click="copyAddress(props.row.from, provider, 'Sender')" class="cursor-pointer copy-icon-parent">
-                    <span>{{ props.row.from }}</span>
-                    <q-icon color="primary" class="q-ml-sm" name="far fa-copy" />
+                    <span>{{
+                      props.row.formattedFrom
+                        ? formatNameOrAddress(props.row.formattedFrom)
+                        : formatNameOrAddress(props.row.from)
+                    }}</span>
+                    <loading-spinner v-if="!props.row.formattedFrom" size="1rem" customClass="q-ml-sm" />
+                    <q-icon v-else color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
                 <div class="row justify-between items-center">
@@ -158,6 +158,7 @@
                   "
                   color="primary"
                   :dense="true"
+                  :isLoading="isLoading"
                   :disable="isWithdrawInProgress"
                   :flat="true"
                   :label="props.expand ? $t('AccountReceiveTable.hide') : $t('AccountReceiveTable.withdraw')"
@@ -241,8 +242,13 @@
               <!-- Sender column -->
               <div v-else-if="col.name === 'from'" class="d-inline-block">
                 <div @click="copyAddress(props.row.from, provider, 'Sender')" class="cursor-pointer copy-icon-parent">
-                  <span>{{ formatNameOrAddress(props.row.formattedFrom) }}</span>
-                  <q-icon class="copy-icon" name="far fa-copy" right />
+                  <span>{{
+                    props.row.formattedFrom
+                      ? formatNameOrAddress(props.row.formattedFrom)
+                      : formatNameOrAddress(props.row.from)
+                  }}</span>
+                  <loading-spinner v-if="!props.row.formattedFrom" size="1rem" customClass="q-ml-sm" />
+                  <q-icon v-else class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
 
@@ -295,19 +301,21 @@
                   <q-icon name="fas fa-check" class="q-ml-sm" right />
                 </div>
               </div>
-              <base-button
-                v-else
-                @click="
-                  hidePrivateKey();
-                  getFeeEstimate(props.row.token); // kickoff process in background
-                  expanded = expanded[0] === props.key ? [] : [props.key];
-                "
-                color="primary"
-                :dense="true"
-                :disable="isWithdrawInProgress"
-                :flat="true"
-                :label="props.expand ? $t('AccountReceiveTable.hide') : $t('AccountReceiveTable.withdraw')"
-              />
+              <div v-else>
+                <base-button
+                  @click="
+                    hidePrivateKey();
+                    getFeeEstimate(props.row.token); // kickoff process in background
+                    expanded = expanded[0] === props.key ? [] : [props.key];
+                  "
+                  color="primary"
+                  :dense="true"
+                  :loading="isLoading"
+                  :disable="isWithdrawInProgress"
+                  :flat="true"
+                  :label="props.expand ? $t('AccountReceiveTable.hide') : $t('AccountReceiveTable.withdraw')"
+                />
+              </div>
             </q-td>
           </q-tr>
 
@@ -343,12 +351,16 @@
         <progress-indicator customClass="q-mr-sm" :percentage="scanPercentage" size="2rem" />
         {{ $t('Receive.scanning') }}
       </div>
+      <div v-else-if="scanStatus === 'fetching'" class="text-caption text-right q-mt-md" style="opacity: 0.5">
+        <loading-spinner size="1.5rem" customClass="q-mr-sm" />
+        <span class="text-caption text-right q-mt-md">{{ $t('Receive.fetching') }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, PropType, ref } from 'vue';
+import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref } from 'vue';
 import { copyToClipboard } from 'quasar';
 import { BigNumber, Contract, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
@@ -424,7 +436,7 @@ interface ReceiveTableAnnouncement extends UserAnnouncement {
   formattedFrom: string;
 }
 
-function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPair: KeyPair) {
+function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spendingKeyPair: KeyPair) {
   const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const { setIsInWithdrawFlow } = useStatusesStore();
   const paginationConfig = { rowsPerPage: 25 };
@@ -503,17 +515,23 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
 
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
-  const formattedAnnouncements = ref(announcements.reverse() as ReceiveTableAnnouncement[]); // We reverse so most recent transaction is first
-  onMounted(async () => {
-    isLoading.value = true;
-    if (!provider.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
+  const formattedAnnouncements = ref([] as ReceiveTableAnnouncement[]);
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  watchEffect(async () => {
+    if (userAnnouncements.value.length === 0) formattedAnnouncements.value = [];
+    isLoading.value = true;
+    const announcements = userAnnouncements.value as ReceiveTableAnnouncement[];
+    const newAnnouncements = announcements.filter((x) => !formattedAnnouncements.value.includes(x));
+    formattedAnnouncements.value = [...formattedAnnouncements.value, ...newAnnouncements];
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
     const formattedAddresses = await lookupOrReturnAddresses(fromAddresses, MAINNET_PROVIDER as Web3Provider);
     formattedAnnouncements.value.forEach((announcement, index) => {
-      announcement.formattedFrom = formattedAddresses[index];
-      announcement.from = fromAddresses[index];
+      if (newAnnouncements.some((newAnnouncement) => newAnnouncement.txHash === announcement.txHash)) {
+        announcement.formattedFrom = formattedAddresses[index];
+        announcement.from = fromAddresses[index];
+      }
     });
 
     // Find announcements that have been withdrawn
@@ -537,7 +555,8 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     const stealthBalances = stealthBalanceResponses.map((r) => BigNumber.from(r.returnData));
 
     formattedAnnouncements.value.forEach((announcement, index) => {
-      announcement.isWithdrawn = stealthBalances[index].lt(announcement.amount);
+      if (newAnnouncements.some((newAnnouncement) => newAnnouncement.txHash === announcement.txHash))
+        announcement.isWithdrawn = stealthBalances[index].lt(announcement.amount);
     });
     isLoading.value = false;
   });
@@ -714,6 +733,7 @@ function useReceivedFundsTable(announcements: UserAnnouncement[], spendingKeyPai
     mainTableColumns,
     onUpdateDestinationAddress,
     openInEtherscan,
+    umbra,
     paginationConfig,
     privacyModalAddressWarnings,
     provider,
@@ -752,7 +772,7 @@ export default defineComponent({
   setup(props, context) {
     const { advancedMode, isDark, scanPrivateKey } = useSettingsStore();
     const { setIsInWithdrawFlow } = useStatusesStore();
-
+    const userAnnouncements = ref<UserAnnouncement[]>(props.announcements);
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
     const { isAccountSetup, keysMatch, spendingKeyPair: spendingKeyPairFromSig } = useWalletStore();
     const spendingKeyPair = computed(() => {
@@ -760,6 +780,14 @@ export default defineComponent({
       return spendingKeyPairFromSig.value as KeyPair;
     });
     const receiverTooltipText = tc('AccountReceiveTable.receiver-tool-tip');
+
+    watch(
+      () => props.announcements,
+      (announcements, preAnnouncements) => {
+        const newAnnouncements = announcements.filter((x) => !preAnnouncements.includes(x));
+        userAnnouncements.value = [...userAnnouncements.value, ...newAnnouncements];
+      }
+    );
 
     return {
       advancedMode,
@@ -769,9 +797,10 @@ export default defineComponent({
       isDark,
       isCustomPrivateKey: scanPrivateKey.value?.length,
       keysMatch,
+      userAnnouncements,
       setIsInWithdrawFlow,
       ...useAdvancedFeatures(spendingKeyPair.value),
-      ...useReceivedFundsTable(props.announcements, spendingKeyPair.value),
+      ...useReceivedFundsTable(userAnnouncements, spendingKeyPair.value),
     };
   },
 });
