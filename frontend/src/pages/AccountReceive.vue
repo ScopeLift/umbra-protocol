@@ -195,7 +195,7 @@ function useScan() {
       // When private key is provided in advanced mode, we fetch all announcements
       if (advancedMode.value && scanPrivateKey.value)
         allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
-      else if (advancedMode.value && !scanPrivateKey.value) allAnnouncements = [];
+      else if (advancedMode.value && !isAccountSetup.value && !scanPrivateKey.value) allAnnouncements = [];
       else
         allAnnouncements = await umbra.value.fetchSomeAnnouncements(signer.value, userWalletAddress.value, overrides);
     } catch (e) {
