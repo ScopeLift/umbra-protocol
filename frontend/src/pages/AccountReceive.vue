@@ -11,7 +11,17 @@
       </div>
     </div>
 
-    <div v-else class="q-mx-auto" style="max-width: 800px">
+    <div
+      v-else-if="!isAccountSetup && !advancedMode"
+      class="dark-toggle bg-notice text-notice text-center text-bold q-pa-md q-mb-lg q-mx-auto form-max-wide rounded-borders-md"
+    >
+      {{ $t('AccountReceiveTable.configure-umbra') }}<br />
+      <i18n-t keypath="AccountReceiveTable.navigate-to-setup" tag="span">
+        <router-link class="hyperlink" :to="{ name: 'setup' }">{{ $t('AccountReceiveTable.setup') }}</router-link>
+      </i18n-t>
+    </div>
+
+    <div v-else-if="userAddress" class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
       <div v-if="needsSignature || scanStatus === 'waiting'" class="form">
         <div v-if="needsSignature" class="text-center q-mb-md">
@@ -102,7 +112,7 @@ function useScan() {
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
     useSettingsStore();
-  const { signer, userAddress: userWalletAddress } = useWalletStore();
+  const { signer, userAddress: userWalletAddress, isAccountSetup } = useWalletStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
@@ -185,6 +195,7 @@ function useScan() {
       // When private key is provided in advanced mode, we fetch all announcements
       if (advancedMode.value && scanPrivateKey.value)
         allAnnouncements = await umbra.value.fetchAllAnnouncements(overrides);
+      else if (advancedMode.value && !isAccountSetup.value && !scanPrivateKey.value) allAnnouncements = [];
       else
         allAnnouncements = await umbra.value.fetchSomeAnnouncements(signer.value, userWalletAddress.value, overrides);
     } catch (e) {
@@ -231,6 +242,7 @@ function useScan() {
     advancedMode,
     endBlockLocal,
     getPrivateKeysHandler,
+    isAccountSetup,
     isValidEndBlock,
     isValidPrivateKey,
     isValidStartBlock,
