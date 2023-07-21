@@ -273,8 +273,10 @@ function useScan() {
         scanStatus.value = 'scanning';
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
-      } else if (advancedMode.value && !isAccountSetup.value && !scanPrivateKey.value) userAnnouncements.value = [];
-      else {
+      } else if (advancedMode.value && !isAccountSetup.value && !scanPrivateKey.value) {
+        userAnnouncements.value = [];
+        scanStatus.value = 'complete';
+      } else {
         // Default scan behavior
         for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
           signer.value,
