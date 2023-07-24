@@ -253,7 +253,7 @@ function useScan() {
       let announcementsCount = 0; // Track the count of announcements
       let announcementsQueue: AnnouncementDetail[] = []; // Announcements to be filtered
       let firstScanPromise = Promise.resolve();
-      // When in advanced mode, we fetch all announcements
+      // When in advanced mode and a private key is provided, we fetch all announcements
       if (advancedMode.value && scanPrivateKey.value) {
         for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
           announcementsCount += announcementsBatch.length; // Increment count
