@@ -768,13 +768,11 @@ async function* recursiveGraphFetch(
   // Resolve the json
   const json = await res.json();
 
-  // If there were results on this page then query the next page, otherwise return the data
-  /* eslint-disable @typescript-eslint/no-unsafe-return */
+  // If there were results on this page yield the results then query the next page, otherwise do nothing.
   if (json.data[key].length) {
     yield json.data[key]; // yield the data for this page
     yield* recursiveGraphFetch(url, key, query, [...before, ...json.data[key]], overrides); // yield the data for the next pages
   }
-  /* eslint-enable @typescript-eslint/no-unsafe-return */
 }
 
 /**
