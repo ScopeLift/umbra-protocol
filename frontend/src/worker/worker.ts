@@ -85,9 +85,6 @@ export const filterUserAnnouncements = (
         if (progressSum < announcements.length) {
           progress((100 * progressSum) / announcements.length);
         } else {
-          // sorting based on `timestamp`.
-          // in Umbra.ts `fetchAllAnnouncementFromLogs` turns `timestamp` from number to string,
-          // and therefore `timestamp` can be cast to number here.
           completion(userAnnouncements);
         }
       });
