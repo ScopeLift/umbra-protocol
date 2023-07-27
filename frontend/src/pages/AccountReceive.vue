@@ -76,7 +76,6 @@
           :announcements="userAnnouncements"
           :scanStatus="scanStatus"
           :scanPercentage="scanPercentage"
-          :key="tableKey"
           @reset="setFormStatus('waiting')"
         />
       </div>
@@ -131,7 +130,6 @@ function useScan() {
   const scanStatus = ref<ScanStatus>('waiting');
   const scanPercentage = ref<number>(0);
   const userAnnouncements = ref<UserAnnouncement[]>([]);
-  const tableKey = ref(0);
 
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
@@ -253,7 +251,8 @@ function useScan() {
       let announcementsCount = 0; // Track the count of announcements
       let announcementsQueue: AnnouncementDetail[] = []; // Announcements to be filtered
       let firstScanPromise = Promise.resolve();
-      // When in advanced mode and a private key is provided, we fetch all announcements
+      // When in advanced mode and a private key is provided,
+      // we fetch user specified blocks in overrides or all announcements
       if (advancedMode.value && scanPrivateKey.value) {
         for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
           announcementsCount += announcementsBatch.length; // Increment count
@@ -338,7 +337,6 @@ function useScan() {
     startBlockLocal,
     userAddress,
     userAnnouncements,
-    tableKey,
   };
 }
 
