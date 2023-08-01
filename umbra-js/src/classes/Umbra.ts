@@ -375,7 +375,7 @@ export class Umbra {
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
-  async fetchAllAnnouncements(overrides: ScanOverrides = {}): Promise<AnnouncementDetail[]> {
+  async *fetchAllAnnouncements(overrides: ScanOverrides = {}): AsyncGenerator<AnnouncementDetail[]> {
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
@@ -385,15 +385,17 @@ export class Umbra {
     // that window is defined first to avoid trying to use fetch in node environments
     if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
       try {
-        const subgraphAnnouncements = await this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock);
-        // Map the subgraph amount field from string to BigNumber
-        return subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+        for await (const subgraphAnnouncements of this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock)) {
+          // Map the subgraph amount field from string to BigNumber
+          const details = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+          yield details;
+        }
       } catch (err) {
-        return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+        yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
       }
+    } else {
+      yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
     }
-
-    return this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
   }
 
   /**
@@ -403,16 +405,18 @@ export class Umbra {
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
-  async fetchSomeAnnouncements(
+  async *fetchSomeAnnouncements(
     Signer: JsonRpcSigner,
     address: string,
     overrides: ScanOverrides = {}
-  ): Promise<AnnouncementDetail[]> {
+  ): AsyncGenerator<AnnouncementDetail[]> {
     const registeredBlockNumber = await getBlockNumberUserRegistered(address, Signer.provider);
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || registeredBlockNumber || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
-    return this.fetchAllAnnouncements({ startBlock, endBlock });
+    for await (const announcementBatch of this.fetchAllAnnouncements({ startBlock, endBlock })) {
+      yield announcementBatch;
+    }
   }
 
   /**
@@ -422,40 +426,40 @@ export class Umbra {
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, txhash, and the subgraph identifier
    */
-  async fetchAllAnnouncementsFromSubgraph(
+  async *fetchAllAnnouncementsFromSubgraph(
     startBlock: string | number,
     endBlock: string | number
-  ): Promise<SubgraphAnnouncement[]> {
+  ): AsyncGenerator<SubgraphAnnouncement[]> {
     if (!this.chainConfig.subgraphUrl) {
       throw new Error('Subgraph URL must be defined to fetch via subgraph');
     }
 
     // Query subgraph
-    const subgraphAnnouncements: SubgraphAnnouncement[] = await recursiveGraphFetch(
+    for await (const subgraphAnnouncements of recursiveGraphFetch(
       this.chainConfig.subgraphUrl,
       'announcementEntities',
       (filter: string) => `{
-        announcementEntities(${filter}) {
-          amount
-          block
-          ciphertext
-          from
-          id
-          pkx
-          receiver
-          timestamp
-          token
-          txHash
-        }
-      }`,
+      announcementEntities(${filter}) {
+        amount
+        block
+        ciphertext
+        from
+        id
+        pkx
+        receiver
+        timestamp
+        token
+        txHash
+      }
+    }`,
       [],
       {
         startBlock,
         endBlock,
       }
-    );
-
-    return subgraphAnnouncements;
+    )) {
+      yield subgraphAnnouncements;
+    }
   }
 
   /**
@@ -514,16 +518,21 @@ export class Umbra {
    * @param overrides Override the start and end block used for scanning
    */
   async scan(spendingPublicKey: string, viewingPrivateKey: string, overrides: ScanOverrides = {}) {
-    const announcements = await this.fetchAllAnnouncements(overrides);
-
-    const userAnnouncements = announcements.reduce((userAnns, ann) => {
-      const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = ann;
-      const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
-      const token = getAddress(tokenAddr); // ensure checksummed address
-      const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
-      if (isForUser) userAnns.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
-      return userAnns;
-    }, [] as UserAnnouncement[]);
+    const userAnnouncements: UserAnnouncement[] = [];
+    for await (const announcementsBatch of this.fetchAllAnnouncements(overrides)) {
+      for (const announcement of announcementsBatch) {
+        const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = announcement;
+        const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(
+          spendingPublicKey,
+          viewingPrivateKey,
+          announcement
+        );
+        const token = getAddress(tokenAddr); // ensure checksummed address
+        const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
+        if (isForUser)
+          userAnnouncements.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
+      }
+    }
 
     return { userAnnouncements };
   }
@@ -717,15 +726,15 @@ export class Umbra {
  * @param query a function which will return the query string (with the page in place)
  * @param before the current array of objects
  */
-async function recursiveGraphFetch(
+async function* recursiveGraphFetch(
   url: string,
   key: string,
   query: (filter: string) => string,
   before: any[] = [],
   overrides?: GraphFilterOverride
-): Promise<any[]> {
+): AsyncGenerator<any[]> {
   // retrieve the last ID we collected to use as the starting point for this query
-  const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
+  const fromTimestamp = before.length ? (before[before.length - 1].timestamp as string | number) : false;
   let startBlockFilter = '';
   let endBlockFilter = '';
   const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : '';
@@ -745,8 +754,10 @@ async function recursiveGraphFetch(
     body: JSON.stringify({
       query: query(`
         first: 1000,
+        orderBy: timestamp,
+        orderDirection: desc,
         where: {
-          ${fromId ? `id_gt: "${fromId}",` : ''}
+          ${fromTimestamp ? `timestamp_lt: "${fromTimestamp}",` : ''}
           ${startBlockFilter}
           ${endBlockFilter}
         }
@@ -757,11 +768,11 @@ async function recursiveGraphFetch(
   // Resolve the json
   const json = await res.json();
 
-  // If there were results on this page then query the next page, otherwise return the data
-  /* eslint-disable @typescript-eslint/no-unsafe-return */
-  if (!json.data[key].length) return [...before];
-  else return await recursiveGraphFetch(url, key, query, [...before, ...json.data[key]], overrides);
-  /* eslint-enable @typescript-eslint/no-unsafe-return */
+  // If there were results on this page yield the results then query the next page, otherwise do nothing.
+  if (json.data[key].length) {
+    yield json.data[key]; // yield the data for this page
+    yield* recursiveGraphFetch(url, key, query, [...before, ...json.data[key]], overrides); // yield the data for the next pages
+  }
 }
 
 /**

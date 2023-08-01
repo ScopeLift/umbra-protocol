@@ -1,9 +1,9 @@
 <template>
   <q-circular-progress
     show-value
-    class="text-primary q-mx-auto q-my-xl"
+    :class="customClass"
     :value="percentage"
-    size="4rem"
+    :size="size"
     color="primary"
     track-color="grey-3"
   >
@@ -17,7 +17,9 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'ProgressIndicator',
   props: {
+    customClass: { type: String, default: 'text-primary q-mx-auto q-my-xl' },
     percentage: { type: Number, required: true },
+    size: { type: String, default: '4rem' },
   },
   setup(props) {
     return { props };

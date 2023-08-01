@@ -114,8 +114,10 @@
     "end-block": "End block",
     "enter-prv-key": "Enter the private key to use when scanning for events. A blank private key will use the ones generated from your signature.",
     "prv-key": "Private key",
-    "fetching": "Fetching announcements...",
-    "scanning": "Scanning for funds...",
+    "fetching": "Fetching all announcements...",
+    "fetching-latest": "Fetching latest 10,000 announcements...",
+    "scanning": "Scanning all announcements for funds...",
+    "scanning-latest": "Scanning latest announcements for funds...",
     "wait": "This may take a couple of minutes depending on your connection and device. This is normal&mdash; please be patient."
   },
   "Setup": {
