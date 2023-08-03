@@ -35,7 +35,7 @@
     "clean": "lerna run clean",
     "lint": "lerna run lint",
     "prettier": "lerna run prettier",
-    "prepare": "lerna run prepare --stream",
+    "prepare": "lerna run prepare --concurrency 1",
     "coverage": "lerna run coverage",
     "test": "lerna run test",
     "dev": "cd umbra-js && yarn build && cd ../frontend && yarn dev"
