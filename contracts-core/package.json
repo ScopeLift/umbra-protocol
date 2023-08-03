@@ -78,8 +78,7 @@
     "prepare": "yarn run typechain",
     "deploy": "yarn build && hardhat run scripts/deploy.js",
     "deploy:registry": "yarn build && hardhat run scripts/deploy-registry.js",
-    "precommit": "lint-staged",
-    "postinstall": "yarn build"
+    "precommit": "lint-staged"
   },
   "volta": {
     "extends": "../package.json"
