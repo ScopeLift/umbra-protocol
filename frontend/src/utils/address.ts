@@ -207,7 +207,7 @@ export const isAddressSafe = async (
   if (destinationAddress.toLowerCase() === stealthAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-stealth')}`); // prettier-ignore
 
   // Check if address is the wallet user is logged in with
-  if (destinationAddress.toLowerCase() === senderAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} you're sending it back to the sender!!!`); // prettier-ignore
+  if (destinationAddress.toLowerCase() === senderAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-sender')}`); // prettier-ignore
 
   // Check if the address has registered stealth keys
   const getRegisteredStealthKeys = async () => {
@@ -219,7 +219,7 @@ export const isAddressSafe = async (
     }
   };
   const stealthKeys = await getRegisteredStealthKeys();
-  if (stealthKeys) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} already registered stealth keys!!!!`); // prettier-ignore
+  if (stealthKeys) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.addr-is-registered')}`); // prettier-ignore
 
   // Check if address owns any POAPs
   const hasPOAPsCheck = async () => {
