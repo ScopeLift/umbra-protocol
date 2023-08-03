@@ -219,7 +219,6 @@ export const isAddressSafe = async (
     }
   };
   const stealthKeys = await getRegisteredStealthKeys();
-  console.log('stealthKeys are', stealthKeys);
   if (stealthKeys) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} already registered stealth keys!!!!`); // prettier-ignore
 
   // Check if address owns any POAPs
