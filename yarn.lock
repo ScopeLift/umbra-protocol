@@ -1576,13 +1576,6 @@
     "@ethersproject/logger" "^5.7.0"
     bn.js "^5.2.1"
 
-"@ethersproject/bytes@5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@ethersproject/bytes/-/bytes-5.0.0.tgz#bc92c09b30ce3f14a64f15e31d1e6f99e5f9589c"
-  integrity sha512-QkG3rHyy57M0WU52kNNiEdu1v9EqDP3/h1QALMIdsxWwfmDeoMH3g08VEWR9IoxsZek+SkYYDu0HP+8x9+/dYg==
-  dependencies:
-    "@ethersproject/logger" "^5.0.0"
-
 "@ethersproject/bytes@5.5.0":
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/bytes/-/bytes-5.5.0.tgz#cb11c526de657e7b45d2e0f0246fb3b9d29a601c"
@@ -1767,7 +1760,7 @@
   resolved "https://registry.yarnpkg.com/@ethersproject/logger/-/logger-5.5.0.tgz#0c2caebeff98e10aefa5aef27d7441c7fd18cf5d"
   integrity sha512-rIY/6WPm7T8n3qS2vuHTUBPdXHl+rGxWxW5okDfo9J4Z0+gRRZT0msvUdIJkE4/HS29GUMziwGaaKO2bWONBrg==
 
-"@ethersproject/logger@5.7.0", "@ethersproject/logger@>=5.0.0-beta.129", "@ethersproject/logger@^5.0.0", "@ethersproject/logger@^5.5.0", "@ethersproject/logger@^5.7.0":
+"@ethersproject/logger@5.7.0", "@ethersproject/logger@>=5.0.0-beta.129", "@ethersproject/logger@^5.5.0", "@ethersproject/logger@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/logger/-/logger-5.7.0.tgz#6ce9ae168e74fecf287be17062b590852c311892"
   integrity sha512-0odtFdXu/XHtjQXJYA3u9G0G8btm0ND5Cu8M7i5vhEcE8/HmF4Lbdqanwyv4uQTr2tx6b7fQRmgLrsnpQlmnig==
