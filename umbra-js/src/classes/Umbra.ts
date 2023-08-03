@@ -33,7 +33,7 @@ import {
   assertSupportedAddress,
   getBlockNumberUserRegistered,
 } from '../utils/utils';
-import { Umbra as UmbraContract, Erc20 as ERC20 } from '@umbra/contracts-core/typechain';
+import { Umbra as UmbraContract, ERC20 } from '@umbra/contracts-core/typechain';
 import { ERC20_ABI, ETH_ADDRESS, UMBRA_ABI, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, GraphFilterOverride, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
@@ -149,7 +149,7 @@ export class Umbra {
    */
   constructor(readonly provider: EthersProvider, chainConfig: ChainConfig | number) {
     this.chainConfig = parseChainConfig(chainConfig);
-    this.umbraContract = new Contract(this.chainConfig.umbraAddress, UMBRA_ABI, provider) as UmbraContract;
+    this.umbraContract = new Contract(this.chainConfig.umbraAddress, UMBRA_ABI, provider) as unknown as UmbraContract;
     if (this.chainConfig.batchSendAddress) {
       this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, UMBRA_BATCH_SEND_ABI, provider);
     }
@@ -819,7 +819,7 @@ export async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, to
   // If applicable, check that sender has sufficient token balance. ETH balance is checked on send. The isEth
   // method also serves to validate the token input
   if (!isEth(token)) {
-    const tokenContract = new Contract(token, ERC20_ABI, signer) as ERC20;
+    const tokenContract = new Contract(token, ERC20_ABI, signer) as unknown as ERC20;
     const tokenBalance = await tokenContract.balanceOf(await signer.getAddress());
     if (tokenBalance.lt(tokenAmount)) {
       const providedAmount = tokenAmount.toString();

@@ -74,7 +74,7 @@
     "prettier:list-different": "prettier --list-different \"**/*.{js,json,md,sol,ts}\"",
     "test": "hardhat test",
     "test:gas": "REPORT_GAS=true yarn test",
-    "typechain": "hardhat typechain",
+    "typechain": "hardhat typechain --verbose",
     "prepare": "yarn run typechain",
     "deploy": "yarn build && hardhat run scripts/deploy.js",
     "deploy:registry": "yarn build && hardhat run scripts/deploy-registry.js",
