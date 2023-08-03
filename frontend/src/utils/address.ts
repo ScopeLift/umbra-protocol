@@ -167,7 +167,13 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
 
 // Checks for any potential risks of withdrawing to the provided name or address, returns object containing
 // a true/false judgement about risk, and HTML strings with details about the warnings
-export const isAddressSafe = async (name: string, userAddress: string, stealthAddress: string, provider: Provider) => {
+export const isAddressSafe = async (
+  name: string,
+  userAddress: string,
+  stealthAddress: string,
+  senderAddress: string,
+  provider: Provider
+) => {
   const reasons: string[] = [];
   userAddress = getAddress(userAddress);
   stealthAddress = getAddress(stealthAddress);
@@ -199,6 +205,22 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
 
   // Check if the address is the stealth address that was sent funds
   if (destinationAddress.toLowerCase() === stealthAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-stealth')}`); // prettier-ignore
+
+  // Check if address is the wallet user is logged in with
+  if (destinationAddress.toLowerCase() === senderAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} you're sending it back to the sender!!!`); // prettier-ignore
+
+  // Check if the address has registered stealth keys
+  const getRegisteredStealthKeys = async () => {
+    try {
+      const stealthPubKeys = await utils.lookupRecipient(destinationAddress, provider); // throws if no keys found
+      return stealthPubKeys;
+    } catch (err) {
+      return null;
+    }
+  };
+  const stealthKeys = await getRegisteredStealthKeys();
+  console.log('stealthKeys are', stealthKeys);
+  if (stealthKeys) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} already registered stealth keys!!!!`); // prettier-ignore
 
   // Check if address owns any POAPs
   const hasPOAPsCheck = async () => {

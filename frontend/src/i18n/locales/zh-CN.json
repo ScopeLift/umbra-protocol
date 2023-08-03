@@ -379,6 +379,8 @@
       "is": "是",
       "same-addr-as-wallet": "与连接的钱包地址相同",
       "same-addr-as-stealth": "与隐形地址相同",
+      "same-addr-as-sender": "与发送者地址相同的地址",
+      "addr-is-registered": "有隐形钥匙的地址",
       "address-it-resolves-to": "它解析为的地址",
       "has-poap-tokens": "具有 POAP 令牌",
       "gitcoin-contributor": "是Gitcoin的贡献者"
