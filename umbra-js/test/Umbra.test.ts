@@ -12,7 +12,7 @@ import {
   TestToken as ERC20,
   Umbra as UmbraContract,
   TestToken__factory as ERC20__factory,
-  Umbra__factory as Umbra__factory,
+  Umbra__factory,
 } from '@umbra/contracts-core/typechain';
 import { parseOverrides, assertSufficientBalance, assertValidStealthAddress } from '../src/classes/Umbra';
 import { UMBRA_BATCH_SEND_ABI } from '../src/utils/constants';
