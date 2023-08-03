@@ -206,7 +206,7 @@ export const isAddressSafe = async (
   // Check if the address is the stealth address that was sent funds
   if (destinationAddress.toLowerCase() === stealthAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-stealth')}`); // prettier-ignore
 
-  // Check if address is the wallet user is logged in with
+  // Check if address is initial sender of funds
   if (destinationAddress.toLowerCase() === senderAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-sender')}`); // prettier-ignore
 
   // Check if the address has registered stealth keys
