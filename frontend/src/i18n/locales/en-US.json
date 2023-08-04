@@ -380,7 +380,7 @@
       "same-addr-as-wallet": "the same address as the connected wallet",
       "same-addr-as-stealth": "the same address as the stealth address",
       "same-addr-as-sender": "the same address as the sender address",
-      "addr-is-registered": "a Umbra registered address with stealth keys",
+      "addr-is-registered": "an address registered in the Umbra stealth key registry",
       "address-it-resolves-to": "The address it resolves to",
       "has-poap-tokens": "has POAP tokens",
       "gitcoin-contributor": "is a gitcoin contributor"
