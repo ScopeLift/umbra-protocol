@@ -12,7 +12,7 @@ import '@nomiclabs/hardhat-web3';
 import '@nomiclabs/hardhat-truffle5';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
-import 'hardhat-typechain';
+import '@typechain/hardhat';
 import 'solidity-coverage';
 import 'hardhat-gas-reporter';
 
