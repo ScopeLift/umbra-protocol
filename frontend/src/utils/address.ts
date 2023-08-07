@@ -210,16 +210,16 @@ export const isAddressSafe = async (
   if (destinationAddress.toLowerCase() === senderAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-sender')}`); // prettier-ignore
 
   // Check if the address has registered stealth keys
-  const getRegisteredStealthKeys = async () => {
+  const hasRegisteredStealthKeys = async () => {
     try {
       const stealthPubKeys = await utils.lookupRecipient(destinationAddress, provider); // throws if no keys found
-      return stealthPubKeys;
+      if (stealthPubKeys) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.addr-is-registered')}`); // prettier-ignore
+      return null;
     } catch (err) {
       return null;
     }
   };
-  const stealthKeys = await getRegisteredStealthKeys();
-  if (stealthKeys) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.addr-is-registered')}`); // prettier-ignore
+  promises.push(hasRegisteredStealthKeys());
 
   // Check if address owns any POAPs
   const hasPOAPsCheck = async () => {
