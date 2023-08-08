@@ -598,6 +598,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
         destinationAddress.value,
         userAddress.value,
         announcement.receiver,
+        announcement.from,
         provider.value
       );
       // Check if destination is an ERC-20 or ERC-721 token

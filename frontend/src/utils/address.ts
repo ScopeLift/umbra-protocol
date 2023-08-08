@@ -167,7 +167,13 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
 
 // Checks for any potential risks of withdrawing to the provided name or address, returns object containing
 // a true/false judgement about risk, and HTML strings with details about the warnings
-export const isAddressSafe = async (name: string, userAddress: string, stealthAddress: string, provider: Provider) => {
+export const isAddressSafe = async (
+  name: string,
+  userAddress: string,
+  stealthAddress: string,
+  senderAddress: string,
+  provider: Provider
+) => {
   const reasons: string[] = [];
   userAddress = getAddress(userAddress);
   stealthAddress = getAddress(stealthAddress);
@@ -199,6 +205,21 @@ export const isAddressSafe = async (name: string, userAddress: string, stealthAd
 
   // Check if the address is the stealth address that was sent funds
   if (destinationAddress.toLowerCase() === stealthAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-stealth')}`); // prettier-ignore
+
+  // Check if address is initial sender of funds
+  if (destinationAddress.toLowerCase() === senderAddress.toLowerCase()) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.same-addr-as-sender')}`); // prettier-ignore
+
+  // Check if the address has registered stealth keys
+  const hasRegisteredStealthKeys = async () => {
+    try {
+      const stealthPubKeys = await utils.lookupRecipient(destinationAddress, provider); // throws if no keys found
+      if (stealthPubKeys) reasons.push(`${tc('Utils.Address.it')} ${isDomain ? tc('Utils.Address.resolves-to') : tc('Utils.Address.is')} ${tc('Utils.Address.addr-is-registered')}`); // prettier-ignore
+      return null;
+    } catch (err) {
+      return null;
+    }
+  };
+  promises.push(hasRegisteredStealthKeys());
 
   // Check if address owns any POAPs
   const hasPOAPsCheck = async () => {
