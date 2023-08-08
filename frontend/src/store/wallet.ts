@@ -214,7 +214,6 @@ export default function useWalletStore() {
 
       setLoading(true);
       let connectedWallet;
-      console.log(onboard.value);
       if (lastWallet.value) {
         [connectedWallet] = await onboard.value.connectWallet({
           autoSelect: lastWallet?.value,
