@@ -124,6 +124,9 @@ export default function useWalletStore() {
           description: 'Send stealth payments.',
           explore: 'https://app.umbra.cash/faq',
         },
+        connect: {
+          autoConnectLastWallet: true,
+        },
       });
       const addresses = onboard.value.state.select('wallets');
       addresses.subscribe((update) => {
@@ -214,10 +217,9 @@ export default function useWalletStore() {
 
       setLoading(true);
       let connectedWallet;
+      console.log(onboard.value);
       if (lastWallet.value) {
-        [connectedWallet] = await onboard.value.connectWallet({
-          autoSelect: { label: lastWallet.value, disableModals: true },
-        });
+        [connectedWallet] = await onboard.value.connectWallet();
       } else {
         [connectedWallet] = await onboard.value.connectWallet();
       }
