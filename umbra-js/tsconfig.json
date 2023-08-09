@@ -3,6 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "declarationMap": true,
+    "skipLibCheck": true,
     "outDir": "build",
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
