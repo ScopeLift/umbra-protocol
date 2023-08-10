@@ -381,9 +381,7 @@ export class Umbra {
     const endBlock = overrides.endBlock || 'latest';
 
     // Try querying events using Goldsky, fallback to querying logs.
-    // Goldsky fetching uses the browser's `fetch` method to query the subgraph, so we check
-    // that window is defined first to avoid trying to use fetch in node environments
-    if (typeof window !== 'undefined' && this.chainConfig.subgraphUrl) {
+    if (this.chainConfig.subgraphUrl) {
       try {
         for await (const subgraphAnnouncements of this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock)) {
           // Map the subgraph amount field from string to BigNumber
