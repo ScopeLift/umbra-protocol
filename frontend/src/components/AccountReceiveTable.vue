@@ -348,7 +348,7 @@
         <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> {{ $t('AccountReceiveTable.scanning-complete') }}
       </div>
       <div v-else-if="scanStatus === 'scanning'" class="text-caption text-right q-mt-md" style="opacity: 0.5">
-        <progress-indicator customClass="q-mr-sm" :percentage="scanPercentage" size="2rem" />
+        <progress-indicator customClass="q-mr-sm" :percentage="scanPercentage" size="2em" />
         {{ $t('Receive.scanning') }}
       </div>
       <div v-else-if="scanStatus === 'fetching'" class="text-caption text-right q-mt-md" style="opacity: 0.5">
