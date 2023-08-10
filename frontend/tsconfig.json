@@ -7,6 +7,7 @@
     "esModuleInterop": true,
     "outDir": "build",
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "module": "es2020",
     "target": "es2020",
     "moduleResolution": "node",
