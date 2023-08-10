@@ -9,7 +9,7 @@ export default defineComponent({
   name: 'LoadingSpinner',
   props: {
     customClass: { type: String, default: 'text-primary q-mx-auto q-my-xl' },
-    size: { type: String, default: '4rem' },
+    size: { type: String, default: '64px' },
   },
   setup() {
     return {};

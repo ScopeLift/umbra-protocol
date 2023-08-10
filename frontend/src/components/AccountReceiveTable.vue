@@ -100,7 +100,7 @@
                         ? formatNameOrAddress(props.row.formattedFrom)
                         : formatNameOrAddress(props.row.from)
                     }}</span>
-                    <loading-spinner v-if="isLoading" size="1rem" customClass="q-ml-sm" />
+                    <loading-spinner v-if="isLoading" size="1em" customClass="q-ml-sm" />
                     <q-icon v-else color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
@@ -247,7 +247,7 @@
                       ? formatNameOrAddress(props.row.formattedFrom)
                       : formatNameOrAddress(props.row.from)
                   }}</span>
-                  <loading-spinner v-if="isLoading" size="1rem" customClass="q-ml-sm" />
+                  <loading-spinner v-if="isLoading" size="1em" customClass="q-ml-sm" />
                   <q-icon v-else class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
