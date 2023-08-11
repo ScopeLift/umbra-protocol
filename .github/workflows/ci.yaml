@@ -38,7 +38,7 @@ jobs:
           version: nightly
 
       - run: node --version
-      - run: yarn install --network-concurrency 1
+      - run: yarn install --frozen-lockfile --verbose --network-concurrency 1
 
       - run: yarn build
   tests:
