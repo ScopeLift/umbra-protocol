@@ -31,6 +31,8 @@ jobs:
           submodules: recursive
 
       - uses: volta-cli/action@v4
+        with:
+          cache: false
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
