@@ -5,7 +5,7 @@ import injectedModule from '@web3-onboard/injected-wallets';
 import walletConnectModule from '@web3-onboard/walletconnect';
 import coinbaseWalletModule from '@web3-onboard/coinbase';
 import ledgerModule from '@web3-onboard/ledger';
-// import trezorModule from '@web3-onboard/trezor';
+import trezorModule from '@web3-onboard/trezor';
 import { KeyPair, StealthKeyRegistry, utils, Umbra } from '@umbracash/umbra-js';
 import {
   Chain,
@@ -38,7 +38,7 @@ const ledger = ledgerModule({
   projectId: process.env.WALLET_CONNECT_PROJECT_ID || '',
   walletConnectVersion: 2,
 });
-// const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
+const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -92,7 +92,7 @@ export default function useWalletStore() {
     // Initialize onboard.js if not yet done
     if (!onboard.value) {
       onboard.value = Onboard({
-        wallets: [injected, walletConnect, coinbaseWalletSdk, ledger],
+        wallets: [injected, walletConnect, coinbaseWalletSdk, ledger, trezor],
         chains: supportedChains.map((chain) => {
           return {
             id: chain.chainId,
