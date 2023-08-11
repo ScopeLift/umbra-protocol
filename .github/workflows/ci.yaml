@@ -37,6 +37,7 @@ jobs:
         with:
           version: nightly
 
+      - run: node --version
       - run: yarn install --network-concurrency 1
 
       - run: yarn build
