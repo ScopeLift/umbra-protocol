@@ -873,6 +873,7 @@ function useSendForm() {
       if (!recipientId.value || !token.value || !humanAmount.value) throw new Error(tc('Send.please-complete-form'));
       if (!signer.value) throw new Error(tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
+      showAdvancedSendWarning.value = false;
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
       // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
@@ -998,7 +999,6 @@ function useSendForm() {
       resetForm();
     } finally {
       isSending.value = false;
-      showAdvancedSendWarning.value = false;
     }
   }
 
