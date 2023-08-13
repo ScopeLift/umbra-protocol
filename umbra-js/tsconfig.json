@@ -12,6 +12,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "sourceMap": true,
+    "typeRoots": ["./node_modules/@types"],
     "baseUrl": "./",
     "paths": {
       "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
