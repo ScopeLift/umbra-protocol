@@ -160,7 +160,7 @@ function useScan() {
   onMounted(async () => {
     startBlockLocal.value = startBlock.value; // read in last used startBlock
     endBlockLocal.value = endBlock.value; // read in last used endBlock
-    if (hasKeys.value) await scan(); // if user already signed and we have their keys in memory, start scanning
+    if (hasKeys.value && !advancedMode.value) await scan(); // if user already signed and we have their keys in memory, start scanning
   });
 
   async function getPrivateKeysHandler() {
