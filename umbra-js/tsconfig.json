@@ -15,7 +15,8 @@
     "baseUrl": "./",
     "paths": {
       "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["./src/**/*", "./src/**/*.json", "./types/**/*"]
 }
