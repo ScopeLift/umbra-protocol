@@ -341,7 +341,7 @@
                       placeholder="0"
                       :appendButtonDisable="!Send.receiver || !isValidRecipientId"
                       lazy-rules
-                      :rules="(value : string) => isValidTokenAmount(value, Send.token)"
+                      :rules="(value: string) => isValidBatchSendAmount(value, Send.token)"
                       ref="humanAmountBaseInputRef"
                     />
                   </q-card-section>
@@ -391,7 +391,7 @@
                     :appendButtonDisable="!Send.receiver || !isValidRecipientId"
                     lazy-rules
                     :label="$t('Send.amount')"
-                    :rules="(value : string) => isValidTokenAmount(value, Send.token)"
+                    :rules="(value: string) => isValidBatchSendAmount(value, Send.token)"
                     ref="humanAmountBaseInputRef"
                     class="input-container-amount"
                   />
@@ -573,7 +573,7 @@ function useSendForm() {
   // Batch Send Form Parameters
   const batchSends = ref<BatchSendData[]>([]);
   const tab = ref('send');
-  const batchSendSupportedChains = [5, 11155111];
+  const batchSendSupportedChains = [42161, 11155111];
   const batchSendIsSupported = ref(false);
 
   // Computed form parameters.
@@ -864,6 +864,22 @@ function useSendForm() {
     if (!balances.value[tokenAddress]) return true; // balance hasn't loaded yet, so return without erroring
     if (amount.gt(balances.value[tokenAddress])) return `${tc('Send.amount-exceeds-balance')}`;
     return true;
+  }
+
+  function isValidBatchSendAmount(val: string | undefined, tokenInput?: TokenInfoExtended | null | undefined) {
+    const tokenToUse = tokenInput || token.value;
+    if (!tokenToUse) return tc('Send.select-a-token');
+
+    const { address: tokenAddress, decimals } = tokenToUse;
+
+    // Check total Batch Send amount
+    const totalBatchSendAmount = summaryAmount.value.get(tokenToUse);
+    if (totalBatchSendAmount) {
+      const totalAmount = parseUnits(totalBatchSendAmount, decimals);
+      if (totalAmount.gt(balances.value[tokenAddress])) return `${tc('Send.total-amount-exceeds-balance')}`;
+    }
+
+    return isValidTokenAmount(val, tokenInput);
   }
 
   // Send funds
@@ -1237,6 +1253,7 @@ function useSendForm() {
     isValidId,
     isValidRecipientId,
     isValidTokenAmount,
+    isValidBatchSendAmount,
     NATIVE_TOKEN,
     onFormSubmit,
     onBatchSendFormSubmit,
@@ -1253,6 +1270,7 @@ function useSendForm() {
     setHumanAmountMax,
     showAdvancedSendWarning,
     showAdvancedWarning,
+    summaryAmount,
     summaryTotalString,
     tab,
     token,
