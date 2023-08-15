@@ -100,7 +100,7 @@
                         ? formatNameOrAddress(props.row.formattedFrom)
                         : formatNameOrAddress(props.row.from)
                     }}</span>
-                    <loading-spinner v-if="isLoading" size="1rem" customClass="q-ml-sm" />
+                    <loading-spinner v-if="isLoading" size="1em" customClass="q-ml-sm" />
                     <q-icon v-else color="primary" class="q-ml-sm" name="far fa-copy" />
                   </div>
                 </div>
@@ -247,7 +247,7 @@
                       ? formatNameOrAddress(props.row.formattedFrom)
                       : formatNameOrAddress(props.row.from)
                   }}</span>
-                  <loading-spinner v-if="isLoading" size="1rem" customClass="q-ml-sm" />
+                  <loading-spinner v-if="isLoading" size="1em" customClass="q-ml-sm" />
                   <q-icon v-else class="copy-icon" name="far fa-copy" right />
                 </div>
               </div>
@@ -348,7 +348,7 @@
         <q-icon name="fas fa-check" class="text-positive q-mr-sm" /> {{ $t('AccountReceiveTable.scanning-complete') }}
       </div>
       <div v-else-if="scanStatus === 'scanning'" class="text-caption text-right q-mt-md" style="opacity: 0.5">
-        <progress-indicator customClass="q-mr-sm" :percentage="scanPercentage" size="2rem" />
+        <progress-indicator customClass="q-mr-sm" :percentage="scanPercentage" size="2em" />
         {{ $t('Receive.scanning') }}
       </div>
       <div v-else-if="scanStatus === 'fetching'" class="text-caption text-right q-mt-md" style="opacity: 0.5">
