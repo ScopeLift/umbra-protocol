@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div v-if="false" class="alert-banner text-bold text-center q-py-md">
+    <div v-if="true" class="alert-banner text-bold text-center q-py-md">
       <i18n-t scope="global" keypath="Home.banner-donate" tag="span">
         <template v-slot:DevelopmentGrant>
           <a
             class="alert-banner-hyperlink"
-            href="https://explorer.gitcoin.co/#/round/1/0x12bb5bbbfe596dbc489d209299b8302c3300fa40/0x12bb5bbbfe596dbc489d209299b8302c3300fa40-22"
+            href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-87"
             target="_blank"
             >{{ $t('Home.development-grant') }}</a
           >
@@ -13,7 +13,7 @@
         <template v-slot:LearnMore>
           <a
             class="alert-banner-hyperlink"
-            href="https://twitter.com/UmbraCash/status/1651702157345976320"
+            href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-87"
             target="_blank"
             >{{ $t('Home.learn-more') }}</a
           >
