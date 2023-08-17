@@ -847,7 +847,7 @@ function useSendForm() {
     return humanizeMinSendAmount(minSend);
   };
 
-  function isValidTokenAmount(val: string | undefined, tokenInput?: TokenInfoExtended | null | undefined) {
+  function isValidTokenAmount(val?: string, tokenInput?: TokenInfoExtended | null) {
     if (val === undefined) return true; // don't show error on empty field
     if (!val || !(Number(val) > 0)) return tc('Send.enter-an-amount');
 
@@ -866,15 +866,18 @@ function useSendForm() {
     return true;
   }
 
-  function isValidBatchSendAmount(val: string | undefined, tokenInput?: TokenInfoExtended | null | undefined) {
+  // Gets total batch send amount for `tokenInput` and check if it exceeds the wallet balance.
+  // If it doesn't, check if `val`, the single send amount field value, is valid for `tokenInput` like we do for all single sends.
+  function isValidBatchSendAmount(val?: string, tokenInput?: TokenInfoExtended | null) {
     const tokenToUse = tokenInput || token.value;
     if (!tokenToUse) return tc('Send.select-a-token');
 
     const { address: tokenAddress, decimals } = tokenToUse;
 
-    // Check total Batch Send amount
+    // Get total batch send amount for the token
     const totalBatchSendAmount = summaryAmount.value.get(tokenToUse);
-    if (totalBatchSendAmount) {
+    // Check totalBatchSendAmount is defined and is greater than zero.
+    if (totalBatchSendAmount && BigNumber.from(totalBatchSendAmount).gt(0)) {
       const totalAmount = parseUnits(totalBatchSendAmount, decimals);
       if (totalAmount.gt(balances.value[tokenAddress])) return `${tc('Send.total-amount-exceeds-balance')}`;
     }
