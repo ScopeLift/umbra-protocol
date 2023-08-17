@@ -109,7 +109,7 @@ describe('Umbra class', () => {
       umbraAddress: umbraContract.address,
       batchSendAddress: batchSendContract.address,
       startBlock: lastBlockNumber,
-      subgraphUrl: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn', // prettier-ignore
+      subgraphUrl: false, // prettier-ignore
     };
 
     // Get Umbra instance
