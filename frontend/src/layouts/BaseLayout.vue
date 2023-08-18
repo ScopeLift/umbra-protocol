@@ -13,7 +13,7 @@
         <template v-slot:LearnMore>
           <a
             class="alert-banner-hyperlink"
-            href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-87"
+            href="https://twitter.com/UmbraCash/status/1692585518586904857"
             target="_blank"
             >{{ $t('Home.learn-more') }}</a
           >
