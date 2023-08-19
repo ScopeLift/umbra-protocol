@@ -235,7 +235,7 @@
           <div>
             <base-button
               v-if="sendAdvancedButton"
-              :disable="!isValidForm || isSending"
+              :disable="!isValidForm || isSending || showAdvancedSendWarning"
               :full-width="true"
               :label="$t('Send.send')"
               :loading="isSending"
@@ -937,12 +937,12 @@ function useSendForm() {
         if (tokenAmount.gt(currentBalance)) throw new Error(tc('Send.amount-exceeds-balance'));
       }
 
+      isSending.value = true;
       if (!viewingKeyPair.value?.privateKeyHex) {
         await getPrivateKeys();
       }
 
       // If token, get approval when required
-      isSending.value = true;
       if (token.value.symbol !== NATIVE_TOKEN.value.symbol) {
         // Check allowance
         const tokenContract = new Contract(token.value.address, ERC20_ABI, signer.value);
