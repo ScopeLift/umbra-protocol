@@ -755,7 +755,7 @@ async function* recursiveGraphFetch(
         orderBy: timestamp,
         orderDirection: desc,
         where: {
-          ${fromId ? `id_gt: "${fromId}",` : ''}
+          ${fromId ? `id_lt: "${fromId}",` : ''}
           ${startBlockFilter}
           ${endBlockFilter}
         }
