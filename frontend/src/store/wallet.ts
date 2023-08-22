@@ -122,8 +122,8 @@ export default function useWalletStore() {
         },
         appMetadata: {
           name: 'Umbra',
-          icon: '/icons/favicon-128x128.png',
-          logo: '/icons/favicon-128x128.png',
+          icon: '/icons/favicon-128x128.svg',
+          logo: '/icons/favicon-128x128.svg',
           description: 'Send stealth payments.',
           explore: 'https://app.umbra.cash/faq',
         },
