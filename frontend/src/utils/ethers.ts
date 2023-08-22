@@ -5,7 +5,7 @@
  */
 
 export { getAddress, isAddress } from '@ethersproject/address';
-export { Interface } from '@ethersproject/abi';
+export { defaultAbiCoder, Interface } from '@ethersproject/abi';
 export { BigNumber } from '@ethersproject/bignumber';
 export type { BigNumberish } from '@ethersproject/bignumber';
 export { hexValue, isHexString, joinSignature, hexZeroPad } from '@ethersproject/bytes';
