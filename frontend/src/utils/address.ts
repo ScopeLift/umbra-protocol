@@ -80,6 +80,7 @@ export const toAddress = utils.toAddress;
 export const formatAddresses = (addresses: string[]) => addresses.map(formatNameOrAddress);
 
 export const lookupEnsNameBatch = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
+  // Based on https://github.com/ethers-io/ethers.js/blob/0802b70a724321f56d4c170e4c8a46b7804dfb48/src.ts/providers/abstract-provider.ts#L976
   const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
   const ensRegistryAddr = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e';
   const ensRegistryInterface = new Interface(['function resolver(bytes32) view returns (address)']);
@@ -206,7 +207,6 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
   const { names, forwardAddrs } = await lookupEnsNameBatch(addresses, provider);
   const cnsNames = await lookupCnsNameBatch(addresses);
 
-  // TODO Add back CNS lookup support if ENS name was not found
   // VERIFY THAT THEY MATCH.
   return names.map((name, i) => {
     if (!isHexString(forwardAddrs[i])) return addresses[i]; // Safety check.
