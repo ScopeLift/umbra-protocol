@@ -188,11 +188,7 @@ const lookupCNSNameBatchPolygon = async (addresses: string[]) => {
   return await lookupCNSNameBatch(addresses, '0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f', POLYGON_PROVIDER);
 };
 
-// Can really only test with polygon
 const lookupCnsNameBatch = async (addresses: string[]) => {
-  // Roll our own batch reverseOf call
-  // One multicall on polgon one on ethereum?
-  // REVERSE LOOKUP.
   try {
     const [resultL1, resultL2] = await Promise.all([
       lookupCNSNameBatchMainnet(addresses),
@@ -207,15 +203,15 @@ const lookupCnsNameBatch = async (addresses: string[]) => {
 };
 
 export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
-  // Based on https://github.com/ethers-io/ethers.js/blob/0802b70a724321f56d4c170e4c8a46b7804dfb48/src.ts/providers/abstract-provider.ts#L976
   const { names, forwardAddrs } = await lookupEnsNameBatch(addresses, provider);
-  await lookupCnsNameBatch(addresses);
+  const cnsNames = await lookupCnsNameBatch(addresses);
 
   // TODO Add back CNS lookup support if ENS name was not found
   // VERIFY THAT THEY MATCH.
   return names.map((name, i) => {
     if (!isHexString(forwardAddrs[i])) return addresses[i]; // Safety check.
     if (getAddress(addresses[i]) === getAddress(forwardAddrs[i])) return name;
+    if (cnsNames[i]) return cnsNames[i];
     return addresses[i];
   });
 };
