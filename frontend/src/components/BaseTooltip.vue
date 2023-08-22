@@ -15,6 +15,7 @@
     :size="size"
     :unelevated="true"
     :class="{ 'without-icon': icon === ' ' }"
+    class="dark-toggle"
   >
     <q-item
       @mouseleave="onTooltipMouseLeave"
