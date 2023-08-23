@@ -6,22 +6,19 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { Router, useRouter } from 'vue-router';
+import { Router, useRouter, useRoute } from 'vue-router';
 import useWalletStore from 'src/store/wallet';
 import { paramsToObject } from 'src/utils/utils';
 
-function useWallet(to: string, router: Router, params?: string) {
+function useWallet(router: Router, to?: string, params?: string) {
   const { connectWallet, userAddress } = useWalletStore();
 
   async function connectWalletWithRedirect() {
     // If user already connected wallet, continue (this branch is used when clicking e.g. the "Send" box
     // from the home page)
+    const route = useRoute();
     const parsedParams = paramsToObject(new URLSearchParams(params || '').entries());
     if (userAddress.value && to) {
-      console.log(params);
-      console.log(router);
-      console.log(to);
-      console.log(parsedParams);
       await router.push({ name: to, query: parsedParams });
       return;
     } else if (userAddress.value) {
@@ -30,7 +27,7 @@ function useWallet(to: string, router: Router, params?: string) {
 
     await connectWallet();
 
-    // if (to) await router.push({ name: to, query: parsedParams }); // redirect to specified page
+    if (to) await router.push({ name: to || route.path, query: parsedParams }); // redirect to specified page
   }
 
   return { connectWalletWithRedirect };
@@ -55,9 +52,7 @@ export default defineComponent({
 
   setup(props) {
     const router = useRouter();
-    console.log('SETUP');
-    console.log(props.to);
-    return { ...useWallet(props.to || location.pathname.replace('/', ''), router, props.params) };
+    return { ...useWallet(router, router, props.to, props.params) };
   },
 });
 </script>
