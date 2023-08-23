@@ -18,6 +18,10 @@ function useWallet(to: string, router: Router, params?: string) {
     // from the home page)
     const parsedParams = paramsToObject(new URLSearchParams(params || '').entries());
     if (userAddress.value && to) {
+      console.log(params);
+      console.log(router);
+      console.log(to);
+      console.log(parsedParams);
       await router.push({ name: to, query: parsedParams });
       return;
     } else if (userAddress.value) {
@@ -26,7 +30,7 @@ function useWallet(to: string, router: Router, params?: string) {
 
     await connectWallet();
 
-    if (to) await router.push({ name: to, query: parsedParams }); // redirect to specified page
+    // if (to) await router.push({ name: to, query: parsedParams }); // redirect to specified page
   }
 
   return { connectWalletWithRedirect };
@@ -51,7 +55,9 @@ export default defineComponent({
 
   setup(props) {
     const router = useRouter();
-    return { ...useWallet(props.to || 'home', router, props.params) };
+    console.log('SETUP');
+    console.log(props.to);
+    return { ...useWallet(props.to || location.pathname.replace('/', ''), router, props.params) };
   },
 });
 </script>
