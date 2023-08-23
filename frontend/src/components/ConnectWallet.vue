@@ -52,7 +52,6 @@ export default defineComponent({
 
   setup(props) {
     const router = useRouter();
-    console.log(props.to);
     return { ...useWallet(router, props.to, props.params) };
   },
 });
