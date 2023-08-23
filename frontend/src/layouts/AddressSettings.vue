@@ -1,7 +1,7 @@
 <template>
   <div id="address-settings" class="column relative-position">
     <div class="row no-wrap" @click="displayWalletRow = !displayWalletRow">
-      <connect-wallet :to="redirectPath">
+      <connect-wallet>
         <div class="row text-caption dark-toggle cursor-pointer">
           <Avatar v-if="userAddress" :address="userAddress" :avatar="avatar" class="q-mr-sm" />
           <span v-if="userDisplayName">
@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from 'vue';
+import { defineComponent, PropType, ref } from 'vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 import Avatar from 'src/components/Avatar.vue';
@@ -58,17 +58,11 @@ export default defineComponent({
     const setDisplayWalletRow = (value: boolean) => {
       displayWalletRow.value = value;
     };
-    const redirectPath = computed(() => {
-      console.log('computed');
-      console.log(window.location.pathname);
-      return window.location.pathname.replace('/', '');
-    });
 
     return {
       context,
       displayWalletRow,
       setDisplayWalletRow,
-      redirectPath,
     };
   },
 });
