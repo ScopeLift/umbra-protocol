@@ -90,9 +90,9 @@
                 </div>
                 <network-dropdown />
               </div>
-              <connect-wallet v-else-if="!isLoading" :to="redirectPath" :params="redirectParams">
+              <connect-wallet v-else-if="!isLoading">
                 <div class="row justify-end items-center">
-                  <connect-wallet :to="redirectPath" :params="redirectParams">
+                  <connect-wallet>
                     <base-button
                       class="cursor-pointer"
                       color="primary"
