@@ -875,10 +875,10 @@ function useSendForm() {
     const { address: tokenAddress, decimals } = tokenToUse;
 
     // Get total batch send amount for the token
-    const totalBatchSendAmount = summaryAmount.value.get(tokenToUse);
+    const totalBatchSendAmount = summaryAmount.value.get(tokenToUse)?.replace(/,/g, '') || '0';
     // Check totalBatchSendAmount is defined and is greater than zero.
-    if (totalBatchSendAmount && BigNumber.from(totalBatchSendAmount).gt(0)) {
-      const totalAmount = parseUnits(totalBatchSendAmount, decimals);
+    const totalAmount = parseUnits(totalBatchSendAmount, decimals);
+    if (totalBatchSendAmount && totalAmount.gt(0)) {
       if (totalAmount.gt(balances.value[tokenAddress])) return `${tc('Send.total-amount-exceeds-balance')}`;
     }
 
