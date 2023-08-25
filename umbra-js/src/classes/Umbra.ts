@@ -33,7 +33,7 @@ import {
   assertSupportedAddress,
   getBlockNumberUserRegistered,
 } from '../utils/utils';
-import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '@umbra/contracts-core/typechain';
+import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
 import { ETH_ADDRESS, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, GraphFilterOverride, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
