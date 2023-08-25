@@ -91,6 +91,7 @@
     "select-a-token-for-send": "Please select a token for send",
     "send-at-least": "Please send at least",
     "amount-exceeds-balance": "Amount exceeds wallet balance",
+    "total-amount-exceeds-balance": "Total send amount exceeds balance",
     "please-complete-form": "Please complete the form",
     "wallet-not-connected": "Wallet not connected",
     "umbra-fee-exceeds-balance": "required for Umbra fee exceeds wallet balance",

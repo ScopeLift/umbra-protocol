@@ -91,6 +91,7 @@
     "select-a-token-for-send": "请选择代币, 发送",
     "send-at-least": "请最少发送",
     "amount-exceeds-balance": "钱包金额不足",
+    "total-amount-exceeds-balance": "总金额超过钱包余额",
     "please-complete-form": "请填写表格",
     "wallet-not-connected": "钱包未连接",
     "umbra-fee-exceeds-balance": "需要的 Umbra 费用超过钱包金额",
