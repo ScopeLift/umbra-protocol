@@ -603,12 +603,12 @@ function useSendForm() {
     let ethTotal;
     for (const token of summaryAmount.value.keys()) {
       if (token.symbol === NATIVE_TOKEN.value.symbol) {
-        ethTotal = summaryAmount.value.get(token);
+        ethTotal = summaryAmount.value.get(token)?.toString();
       }
     }
     if (typeof ethTotal !== 'string') return '--'; // appease TS
     if (isNaN(Number(ethTotal))) return '--';
-    const sendAmount = parseUnits(ethTotal, NATIVE_TOKEN.value.decimals);
+    const sendAmount = BigNumber.from(ethTotal);
     const totalAmount = sendAmount.add(toll.value.mul(batchSends.value.length));
 
     return humanizeArithmeticResult(
@@ -619,31 +619,24 @@ function useSendForm() {
   });
 
   const summaryAmount = computed(() => {
-    return batchSends.value.reduce((summaryMap: Map<TokenInfoExtended, string>, send: BatchSendData) => {
+    return batchSends.value.reduce((summaryMap: Map<TokenInfoExtended, BigNumber>, send: BatchSendData) => {
       if (send.token && send.amount) {
         const isValidAmount = Boolean(send.amount) && isValidTokenAmount(send.amount, send.token) === true;
         if (isValidAmount) {
-          const previousAmount = summaryMap.get(send.token)?.replace(/,/g, '') || '0';
-          const updatedAmount = parseUnits(previousAmount, send.token.decimals)
-            .add(parseUnits(send.amount, send.token.decimals))
-            .toString();
-          const humanNewAmount = humanizeArithmeticResult(
-            updatedAmount,
-            [previousAmount, send.amount], // subtotal and fee
-            send.token
-          );
-          summaryMap.set(send.token, humanNewAmount);
+          const previousAmount = summaryMap.get(send.token) || BigNumber.from(0);
+          const updatedAmount = previousAmount.add(parseUnits(send.amount, send.token.decimals));
+          summaryMap.set(send.token, updatedAmount);
         }
       }
       return summaryMap;
-    }, new Map<TokenInfoExtended, string>());
+    }, new Map<TokenInfoExtended, BigNumber>());
   });
+
   const sendingString = computed(() => {
     let string = '';
     for (const [index, entry] of Array.from(summaryAmount.value).entries()) {
       const token = entry[0];
-      const amount = entry[1];
-
+      const amount = humanizeTokenAmount(entry[1], token);
       string += `${amount} ${token.symbol}`;
       if (index != Array.from(summaryAmount.value).length - 1) {
         string += ' + ';
@@ -651,12 +644,13 @@ function useSendForm() {
     }
     return string;
   });
+
   const summaryTotalString = computed(() => {
     let allString = '';
     let includesNativeToken = false;
     for (const [index, entry] of Array.from(summaryAmount.value).entries()) {
       const token = entry[0];
-      const amount = entry[1];
+      const amount = humanizeTokenAmount(entry[1], token);
 
       if (token.symbol === NATIVE_TOKEN.value.symbol) {
         allString += `${batchSendHumanTotalAmount.value} ${NATIVE_TOKEN.value.symbol}`;
@@ -872,14 +866,13 @@ function useSendForm() {
     const tokenToUse = tokenInput || token.value;
     if (!tokenToUse) return tc('Send.select-a-token');
 
-    const { address: tokenAddress, decimals } = tokenToUse;
+    const { address: tokenAddress } = tokenToUse;
 
     // Get total batch send amount for the token
-    const totalBatchSendAmount = summaryAmount.value.get(tokenToUse)?.replace(/,/g, '') || '0';
+    const totalBatchSendAmount = summaryAmount.value.get(tokenToUse) || BigNumber.from(0);
     // Check totalBatchSendAmount is defined and is greater than zero.
-    const totalAmount = parseUnits(totalBatchSendAmount, decimals);
-    if (totalBatchSendAmount && totalAmount.gt(0)) {
-      if (totalAmount.gt(balances.value[tokenAddress])) return `${tc('Send.total-amount-exceeds-balance')}`;
+    if (totalBatchSendAmount && totalBatchSendAmount.gt(0)) {
+      if (totalBatchSendAmount.gt(balances.value[tokenAddress])) return `${tc('Send.total-amount-exceeds-balance')}`;
     }
 
     return isValidTokenAmount(val, tokenInput);
@@ -1092,7 +1085,7 @@ function useSendForm() {
         if (token.symbol !== NATIVE_TOKEN.value.symbol) {
           const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
           const batchSendAddress = umbra.value?.batchSendContract!.address;
-          const parsedAmount = parseUnits(amount.replace(/,/g, '') || '0', token.decimals);
+          const parsedAmount = parseUnits(amount.toString() || '0', token.decimals);
           if (parsedAmount.gt(allowances[i])) {
             const approveTx: TransactionResponse = await tokenContract.approve(batchSendAddress, MaxUint256);
             void txNotify(approveTx.hash, ethersProvider);
