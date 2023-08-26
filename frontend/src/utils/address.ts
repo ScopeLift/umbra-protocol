@@ -4,7 +4,6 @@
 
 import { Provider } from 'components/models';
 import { utils } from '@umbracash/umbra-js';
-import { MAINNET_PROVIDER } from 'src/utils/constants';
 import {
   getAddress,
   Web3Provider,
@@ -17,7 +16,8 @@ import {
 import { getChainById, jsonFetch } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
 import Resolution from '@unstoppabledomains/resolution';
-import { MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+import { MAINNET_PROVIDER, POLYGON_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+import { AddressZero, defaultAbiCoder } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 
 // ================================================== Address Helpers ==================================================
@@ -79,9 +79,8 @@ export const toAddress = utils.toAddress;
 
 export const formatAddresses = (addresses: string[]) => addresses.map(formatNameOrAddress);
 
-export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
+export const lookupEnsNameBatch = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
   // Based on https://github.com/ethers-io/ethers.js/blob/0802b70a724321f56d4c170e4c8a46b7804dfb48/src.ts/providers/abstract-provider.ts#L976
-  // TODO Add back CNS lookup support if ENS name was not found
   const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
   const ensRegistryAddr = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e';
   const ensRegistryInterface = new Interface(['function resolver(bytes32) view returns (address)']);
@@ -154,11 +153,65 @@ export const lookupOrReturnAddresses = async (addresses: string[], provider: Pro
     if (!success || returnData === '0x') return names[i]; // This is an address in these cases.
     return <string>resolverInterface.decodeFunctionResult('addr', returnData)[0];
   });
+  return { names, forwardAddrs };
+};
+
+const lookupCNSNameBatch = async (
+  addresses: string[],
+  registryAddr: string,
+  provider: Provider | StaticJsonRpcProvider
+) => {
+  const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
+  const ensRegistryInterface = new Interface(['function reverseNameOf(address) view returns (string)']);
+  const reverseResolverCalls = addresses.map((addr) => ({
+    target: registryAddr,
+    allowFailure: true,
+    callData: ensRegistryInterface.encodeFunctionData('reverseNameOf', [addr]),
+  }));
+
+  type Response = { success: boolean; returnData: string };
+  const reverseResolverResults: Response[] = await multicall.callStatic.aggregate3(reverseResolverCalls);
+  const results = reverseResolverResults.map((resp) => {
+    if (resp?.returnData !== AddressZero) {
+      const addr = defaultAbiCoder.decode(['string'], resp.returnData) as string[];
+      return addr[0];
+    }
+    return '';
+  });
+  return results;
+};
+
+const lookupCNSNameBatchMainnet = async (addresses: string[]) => {
+  return await lookupCNSNameBatch(addresses, '0xCd451149ffa9d059030528917842bcE14327DfD6', MAINNET_PROVIDER);
+};
+
+const lookupCNSNameBatchPolygon = async (addresses: string[]) => {
+  return await lookupCNSNameBatch(addresses, '0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f', POLYGON_PROVIDER);
+};
+
+const lookupCnsNameBatch = async (addresses: string[]) => {
+  try {
+    const [resultL1, resultL2] = await Promise.all([
+      lookupCNSNameBatchMainnet(addresses),
+      lookupCNSNameBatchPolygon(addresses),
+    ]);
+
+    return resultL1.map((val, idx) => val || resultL2[idx]);
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
+
+export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
+  const { names, forwardAddrs } = await lookupEnsNameBatch(addresses, provider);
+  const cnsNames = await lookupCnsNameBatch(addresses);
 
   // VERIFY THAT THEY MATCH.
   return names.map((name, i) => {
     if (!isHexString(forwardAddrs[i])) return addresses[i]; // Safety check.
     if (getAddress(addresses[i]) === getAddress(forwardAddrs[i])) return name;
+    if (cnsNames[i]) return cnsNames[i];
     return addresses[i];
   });
 };
