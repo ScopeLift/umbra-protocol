@@ -600,20 +600,19 @@ function useSendForm() {
 
   // Batch Send Computed Form Parameters
   const batchSendHumanTotalAmount = computed(() => {
-    let ethTotal;
+    let ethSendAmount: BigNumber | undefined;
     for (const token of summaryAmount.value.keys()) {
       if (token.symbol === NATIVE_TOKEN.value.symbol) {
-        ethTotal = summaryAmount.value.get(token)?.toString();
+        ethSendAmount = summaryAmount.value.get(token);
       }
     }
-    if (typeof ethTotal !== 'string') return '--'; // appease TS
-    if (isNaN(Number(ethTotal))) return '--';
-    const sendAmount = BigNumber.from(ethTotal);
+    if (!ethSendAmount) return '--';
+    const sendAmount = BigNumber.from(ethSendAmount);
     const totalAmount = sendAmount.add(toll.value.mul(batchSends.value.length));
 
     return humanizeArithmeticResult(
       totalAmount,
-      [ethTotal, batchSendHumanToll.value], // subtotal and fee
+      [ethSendAmount.toString(), batchSendHumanToll.value], // subtotal and fee
       NATIVE_TOKEN.value
     );
   });
@@ -870,10 +869,7 @@ function useSendForm() {
 
     // Get total batch send amount for the token
     const totalBatchSendAmount = summaryAmount.value.get(tokenToUse) || BigNumber.from(0);
-    // Check totalBatchSendAmount is defined and is greater than zero.
-    if (totalBatchSendAmount && totalBatchSendAmount.gt(0)) {
-      if (totalBatchSendAmount.gt(balances.value[tokenAddress])) return `${tc('Send.total-amount-exceeds-balance')}`;
-    }
+    if (totalBatchSendAmount.gt(balances.value[tokenAddress])) return `${tc('Send.total-amount-exceeds-balance')}`;
 
     return isValidTokenAmount(val, tokenInput);
   }
@@ -1085,8 +1081,7 @@ function useSendForm() {
         if (token.symbol !== NATIVE_TOKEN.value.symbol) {
           const tokenContract = new Contract(token.address, ERC20_ABI, signer.value);
           const batchSendAddress = umbra.value?.batchSendContract!.address;
-          const parsedAmount = parseUnits(amount.toString() || '0', token.decimals);
-          if (parsedAmount.gt(allowances[i])) {
+          if (amount.gt(allowances[i])) {
             const approveTx: TransactionResponse = await tokenContract.approve(batchSendAddress, MaxUint256);
             void txNotify(approveTx.hash, ethersProvider);
             approveTxs.push(approveTx);
