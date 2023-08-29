@@ -732,7 +732,7 @@ async function* recursiveGraphFetch(
   overrides?: GraphFilterOverride
 ): AsyncGenerator<any[]> {
   // retrieve the last ID we collected to use as the starting point for this query
-  const fromTimestamp = before.length ? (before[before.length - 1].timestamp as string | number) : false;
+  const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
   let startBlockFilter = '';
   let endBlockFilter = '';
   const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : '';
@@ -755,7 +755,7 @@ async function* recursiveGraphFetch(
         orderBy: timestamp,
         orderDirection: desc,
         where: {
-          ${fromTimestamp ? `timestamp_lt: "${fromTimestamp}",` : ''}
+          ${fromId ? `id_lt: "${fromId}",` : ''}
           ${startBlockFilter}
           ${endBlockFilter}
         }
