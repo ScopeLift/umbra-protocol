@@ -600,7 +600,7 @@ function useSendForm() {
 
   // Batch Send Computed Form Parameters
   const batchSendHumanTotalAmount = computed(() => {
-    let ethSendAmount: BigNumber | undefined;
+    let ethSendAmount;
     for (const token of summaryAmount.value.keys()) {
       if (token.symbol === NATIVE_TOKEN.value.symbol) {
         ethSendAmount = summaryAmount.value.get(token);
