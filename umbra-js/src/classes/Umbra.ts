@@ -770,7 +770,7 @@ async function* recursiveGraphFetch(
     body: JSON.stringify({
       query: query(`
         first: 1000,
-        orderBy: timestamp,
+        orderBy: id,
         orderDirection: desc,
         where: {
           ${fromId ? `id_lt: "${fromId}",` : ''}
