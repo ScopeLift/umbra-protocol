@@ -180,11 +180,12 @@ export async function toAddress(name: string, provider: EthersProvider) {
   let address: string | null = null;
   address = await resolveEns(name, provider); // will never throw, but returns null on failure
   if (address) return address;
-  if (name.endsWith('.eth')) throw 'Please check if the ENS name has a valid address record.';
 
   // Then try CNS
   address = await resolveCns(name); // will never throw, but returns null on failure
   if (address) return address;
+
+  if (name.endsWith('.eth')) throw new Error('Please check if the ENS name has a valid address record.');
 
   return getAddress(name);
 }
