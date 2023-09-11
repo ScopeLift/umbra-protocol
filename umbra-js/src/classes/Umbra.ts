@@ -27,7 +27,7 @@ import {
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import {
-  blockedStealthAddresses,
+  invalidStealthAddresses,
   getEthSweepGasInfo,
   lookupRecipient,
   assertSupportedAddress,
@@ -846,7 +846,7 @@ export async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, to
 
 export function assertValidStealthAddress(stealthAddress: string) {
   // Ensure that the stealthKeyPair's address is not on the block list
-  if (blockedStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
+  if (invalidStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
 }
 
 /**

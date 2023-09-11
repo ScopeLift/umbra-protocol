@@ -17,7 +17,7 @@ import {
 import { parseOverrides, assertSufficientBalance, assertValidStealthAddress } from '../src/classes/Umbra';
 import { UMBRA_BATCH_SEND_ABI } from '../src/utils/constants';
 import { KeyPair } from '../src';
-import { blockedStealthAddresses } from '../src/utils/utils';
+import { invalidStealthAddresses } from '../src/utils/utils';
 
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
@@ -888,8 +888,8 @@ describe('Umbra class', () => {
     });
 
     it('should throw an error for a blocked stealth address', () => {
-      for (const blockedAddress of blockedStealthAddresses) {
-        expect(() => assertValidStealthAddress(blockedAddress)).to.throw(`Invalid stealth address: ${blockedAddress}`);
+      for (const invalidAddress of invalidStealthAddresses) {
+        expect(() => assertValidStealthAddress(invalidAddress)).to.throw(`Invalid stealth address: ${blockedAddress}`);
       }
     });
   });

@@ -36,7 +36,7 @@ export const lengths = {
 
 // Define addresses that should never be used as the stealth address. If you're sending to these a mistake was
 // made somewhere and the funds will not be accessible. Ensure any addresses added to this list are checksum addresses
-export const blockedStealthAddresses = [
+export const invalidStealthAddresses = [
   AddressZero,
   '0xdcc703c0E500B653Ca82273B7BFAd8045D85a470', // generated from hashing an empty public key, e.g. keccak256('0x')
   '0x59274E3aE531285c24e3cf57C11771ecBf72d9bf', // generated from hashing the zero public key, e.g. keccak256('0x000...000')
@@ -670,7 +670,7 @@ export async function assertSupportedAddress(recipientId: string) {
     '0xffbac21a641dcfe4552920138d90f3638b3c9fba',
   ].map(getAddress);
 
-  const invalidAddresses = new Set([...blockedStealthAddresses, ...bannedAddresses]);
+  const invalidAddresses = new Set([...invalidStealthAddresses, ...bannedAddresses]);
   if (invalidAddresses.has(getAddress(address))) throw new Error(errMsg);
 
   // Next we check against the Chainalysis contract.
