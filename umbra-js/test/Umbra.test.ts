@@ -889,7 +889,7 @@ describe('Umbra class', () => {
 
     it('should throw an error for a blocked stealth address', () => {
       for (const invalidAddress of invalidStealthAddresses) {
-        expect(() => assertValidStealthAddress(invalidAddress)).to.throw(`Invalid stealth address: ${blockedAddress}`);
+        expect(() => assertValidStealthAddress(invalidAddress)).to.throw(`Invalid stealth address: ${invalidAddress}`);
       }
     });
   });
