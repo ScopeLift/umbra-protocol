@@ -380,19 +380,35 @@ export class Umbra {
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
 
+    const filterSupportedAddresses = async (announcements: AnnouncementDetail[]): Promise<AnnouncementDetail[]> => {
+      const filtered = await Promise.all(
+        announcements.map(async (i) => {
+          const [isReceiverSupported, isFromSupported] = await Promise.all([
+            assertSupportedAddress(i.receiver),
+            assertSupportedAddress(i.from),
+          ]);
+          return isReceiverSupported && isFromSupported ? i : null;
+        })
+      );
+
+      return filtered.filter((i) => i !== null) as AnnouncementDetail[];
+    };
+
     // Try querying events using Goldsky, fallback to querying logs.
     if (this.chainConfig.subgraphUrl) {
       try {
         for await (const subgraphAnnouncements of this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock)) {
           // Map the subgraph amount field from string to BigNumber
-          const details = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
-          yield details;
+          const announcements = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+          yield await filterSupportedAddresses(announcements);
         }
       } catch (err) {
-        yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+        const announcements = await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+        yield await filterSupportedAddresses(announcements);
       }
     } else {
-      yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+      const announcements = await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+      yield await filterSupportedAddresses(announcements);
     }
   }
 
