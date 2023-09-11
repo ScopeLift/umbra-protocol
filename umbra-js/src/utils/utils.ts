@@ -40,7 +40,7 @@ export const blockedStealthAddresses = [
   AddressZero,
   '0xdcc703c0E500B653Ca82273B7BFAd8045D85a470', // generated from hashing an empty public key, e.g. keccak256('0x')
   '0x59274E3aE531285c24e3cf57C11771ecBf72d9bf', // generated from hashing the zero public key, e.g. keccak256('0x000...000')
-];
+].map(getAddress);
 
 /**
  * @notice Given a transaction hash, return the public key of the transaction's sender
@@ -524,7 +524,7 @@ export async function assertSupportedAddress(recipientId: string) {
   const errMsg = 'Address is invalid or unavailable';
 
   // Now check the address against the hardcoded list.
-  const bannedAddresses = new Set([
+  const bannedAddresses = [
     '0x01e2919679362dFBC9ee1644Ba9C6da6D6245BB1',
     '0x03893a7c7463AE47D46bc7f091665f1893656003',
     '0x04DBA1194ee10112fE6C3207C0687DEf0e78baCf',
@@ -668,8 +668,10 @@ export async function assertSupportedAddress(recipientId: string) {
     '0xed6e0a7e4ac94d976eebfb82ccf777a3c6bad921',
     '0xf4B067dD14e95Bab89Be928c07Cb22E3c94E0DAA',
     '0xffbac21a641dcfe4552920138d90f3638b3c9fba',
-  ]);
-  if (bannedAddresses.has(address)) throw new Error(errMsg);
+  ].map(getAddress);
+
+  const invalidAddresses = new Set([...blockedStealthAddresses, ...bannedAddresses]);
+  if (invalidAddresses.has(getAddress(address))) throw new Error(errMsg);
 
   // Next we check against the Chainalysis contract.
   const abi = ['function isSanctioned(address addr) external view returns (bool)'];
