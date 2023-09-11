@@ -185,7 +185,8 @@ export async function toAddress(name: string, provider: EthersProvider) {
   address = await resolveCns(name); // will never throw, but returns null on failure
   if (address) return address;
 
-  if (name.includes('.')) throw new Error('Please check if the ENS name has a valid address record.');
+  if (name.includes('.'))
+    throw new Error('Please verify the name is correct, registered, and has a valid address record.');
 
   return getAddress(name);
 }
