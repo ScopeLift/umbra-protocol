@@ -90,9 +90,9 @@
                 </div>
                 <network-dropdown />
               </div>
-              <connect-wallet v-else-if="!isLoading" :to="redirectPath" :params="redirectParams">
+              <connect-wallet v-else-if="!isLoading">
                 <div class="row justify-end items-center">
-                  <connect-wallet :to="redirectPath" :params="redirectParams">
+                  <connect-wallet>
                     <base-button
                       class="cursor-pointer"
                       color="primary"
@@ -328,19 +328,6 @@ export default defineComponent({
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
-    const redirectPath = computed(() => {
-      if (window.location.pathname === '/send') {
-        return 'send';
-      }
-      return undefined;
-    });
-    const redirectParams = computed(() => {
-      if (window.location.pathname === '/send') {
-        return window.location.search;
-      }
-      return undefined;
-    });
-
     const version = window.logger.version;
 
     const changeLanguage = (language: Language) => {
@@ -360,8 +347,6 @@ export default defineComponent({
       language,
       network,
       changeLanguage,
-      redirectPath,
-      redirectParams,
       sendHistorySave,
       showArgentModal,
       supportedLanguages,
