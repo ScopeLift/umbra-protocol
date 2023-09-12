@@ -380,14 +380,14 @@ export class Umbra {
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
 
-    const filterSupportedAddresses = async (announcements: AnnouncementDetail[]): Promise<AnnouncementDetail[]> => {
+    const filterSupportedAddresses = async (announcements: AnnouncementDetail[]) => {
       const filtered = await Promise.all(
-        announcements.map(async (i) => {
+        announcements.map(async (announcement) => {
           const [isReceiverSupported, isFromSupported] = await Promise.all([
-            assertSupportedAddress(i.receiver),
-            assertSupportedAddress(i.from),
+            assertSupportedAddress(announcement.receiver),
+            assertSupportedAddress(announcement.from),
           ]);
-          return isReceiverSupported && isFromSupported ? i : null;
+          return isReceiverSupported && isFromSupported ? announcement : null;
         })
       );
 
