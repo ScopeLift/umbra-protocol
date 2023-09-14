@@ -31,6 +31,7 @@ import {
   getEthSweepGasInfo,
   lookupRecipient,
   assertSupportedAddress,
+  assertSupportedAddresses,
   getBlockNumberUserRegistered,
 } from '../utils/utils';
 import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
@@ -381,15 +382,16 @@ export class Umbra {
     const endBlock = overrides.endBlock || 'latest';
 
     const filterSupportedAddresses = async (announcements: AnnouncementDetail[]) => {
-      const filtered = await Promise.all(
-        announcements.map(async (announcement) => {
-          const [isReceiverSupported, isFromSupported] = await Promise.all([
-            assertSupportedAddress(announcement.receiver),
-            assertSupportedAddress(announcement.from),
-          ]);
-          return isReceiverSupported && isFromSupported ? announcement : null;
-        })
-      );
+      // Check if all senders and receiver addresses are supported.
+      const addrsToCheck = announcements.map((a) => [a.receiver, a.from]).flat();
+      const isSupportedList = await assertSupportedAddresses(addrsToCheck);
+      const supportedAddrs = new Set(...addrsToCheck.filter((_, i) => isSupportedList[i]));
+
+      const filtered = announcements.map((announcement) => {
+        const isReceiverSupported = supportedAddrs.has(announcement.receiver);
+        const isFromSupported = supportedAddrs.has(announcement.from);
+        return isReceiverSupported && isFromSupported ? announcement : null;
+      });
 
       return filtered.filter((i) => i !== null) as AnnouncementDetail[];
     };

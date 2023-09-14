@@ -10,6 +10,7 @@ import {
   Event,
   getAddress,
   HashZero,
+  Interface,
   isHexString,
   keccak256,
   Overrides,
@@ -25,6 +26,7 @@ import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider, TransactionResponseExtended } from '../types';
+import { MULTICALL_ABI, MULTICALL_ADDRESS } from './constants';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -176,19 +178,22 @@ export async function getSentTransaction(address: string, ethersProvider: Ethers
 
 // Takes an ENS, CNS, or address, and returns the checksummed address
 export async function toAddress(name: string, provider: EthersProvider) {
+  // If the name is already an address, just return it.
+  if (name.length === lengths.address && isHexString(name)) return getAddress(name);
+
   // First try ENS
   let address: string | null = null;
-  address = await resolveEns(name, provider); // will never throw, but returns null on failure
+  address = await resolveEns(name, provider); // Will never throw, but returns null on failure
   if (address) return address;
 
   // Then try CNS
-  address = await resolveCns(name); // will never throw, but returns null on failure
+  address = await resolveCns(name); // Will never throw, but returns null on failure
   if (address) return address;
 
-  if (name.includes('.'))
-    throw new Error('Please verify the name is correct, registered, and has a valid address record.');
-
-  return getAddress(name);
+  // At this point, we were unable to resolve the name to an address.
+  throw new Error(
+    'Please verify the provided name or address is correct. If providing an ENS name, ensure it is registered, and has a valid address record.'
+  );
 }
 
 /**
@@ -511,19 +516,32 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
 }
 
 // --- Compliance ---
-
 export async function assertSupportedAddress(recipientId: string) {
+  const isSupported = await assertSupportedAddresses([recipientId]);
+  if (!isSupported) throw new Error('Address is invalid or unavailable');
+}
+
+export async function assertSupportedAddresses(recipientIds: string[]) {
   // Check for public key being passed in, and if so derive the corresponding address.
-  if (isHexString(recipientId) && recipientId.length == 132) {
-    recipientId = computeAddress(recipientId);
-  }
+  recipientIds = recipientIds.map((recipientId) => {
+    if (isHexString(recipientId) && recipientId.length == 132) {
+      return computeAddress(recipientId); // Get address from public key.
+    } else {
+      return recipientId;
+    }
+  });
 
   // If needed, resolve recipient ID to an address (e.g. if it's an ENS name).
+  // If there are a lot of ENS or CNS names here this will send too many RPC requests and trigger
+  // errors. The current use case of this method takes addresses, so this should not be a problem.
+  // If it becomes a problem, add a batched version of toAddress.
   const provider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
-  const address = await toAddress(recipientId, provider);
-  const errMsg = 'Address is invalid or unavailable';
+  const addresses = await Promise.all(recipientIds.map((recipientId) => toAddress(recipientId, provider)));
 
-  // Now check the address against the hardcoded list.
+  // Initialize output, start by assuming all are supported.
+  const isSupportedList = addresses.map((_) => true); // eslint-disable-line @typescript-eslint/no-unused-vars
+
+  // Now check the address against the hardcoded lists.
   const bannedAddresses = [
     '0x01e2919679362dFBC9ee1644Ba9C6da6D6245BB1',
     '0x03893a7c7463AE47D46bc7f091665f1893656003',
@@ -742,11 +760,32 @@ export async function assertSupportedAddress(recipientId: string) {
   ].map(getAddress);
 
   const invalidAddresses = new Set([...invalidStealthAddresses, ...bannedAddresses, ...additionalBlockedAddresses]);
-  if (invalidAddresses.has(getAddress(address))) throw new Error(errMsg);
+  addresses.forEach((address, i) => {
+    if (invalidAddresses.has(getAddress(address))) {
+      isSupportedList[i] = false;
+    }
+  });
 
-  // Next we check against the Chainalysis contract.
-  const abi = ['function isSanctioned(address addr) external view returns (bool)'];
-  const contract = new Contract('0x40C57923924B5c5c5455c48D93317139ADDaC8fb', abi, provider);
-  if (await contract.isSanctioned(address)) throw new Error(errMsg);
-  return true;
+  // Lastly, check against the Chainalysis contract.
+  const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
+  const chainalysisOracleAddr = '0x40C57923924B5c5c5455c48D93317139ADDaC8fb';
+  const chainalysisOracleIface = new Interface(['function isSanctioned(address addr) external view returns (bool)']);
+
+  const callData = (address: string) => chainalysisOracleIface.encodeFunctionData('isSanctioned', [address]);
+  const calls = addresses.map((addr) => ({ target: chainalysisOracleAddr, callData: callData(addr) }));
+  const response = await multicall.callStatic.aggregate(calls);
+
+  type MulticallResponse = {
+    blockNumber: BigNumber;
+    returnData: string[];
+  };
+  const multicallResponse = (response as MulticallResponse).returnData;
+  multicallResponse.forEach((res, i) => {
+    const isSanctioned = chainalysisOracleIface.decodeFunctionResult('isSanctioned', res)[0];
+    if (isSanctioned) {
+      isSupportedList[i] = false;
+    }
+  });
+
+  return isSupportedList;
 }
