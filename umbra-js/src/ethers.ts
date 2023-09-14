@@ -4,7 +4,7 @@
  *   2. Removes noise from having a lot of import lines in other packages
  */
 
-export { defaultAbiCoder, Interface } from '@ethersproject/abi';
+export { defaultAbiCoder } from '@ethersproject/abi';
 export { getAddress } from '@ethersproject/address';
 export { BigNumberish, BigNumber } from '@ethersproject/bignumber';
 export { arrayify, hexlify, hexZeroPad, isHexString, SignatureLike, splitSignature } from '@ethersproject/bytes';

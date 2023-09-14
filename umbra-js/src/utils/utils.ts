@@ -10,7 +10,6 @@ import {
   Event,
   getAddress,
   HashZero,
-  Interface,
   isHexString,
   keccak256,
   Overrides,
@@ -26,7 +25,6 @@ import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider, TransactionResponseExtended } from '../types';
-import { MULTICALL_ABI, MULTICALL_ADDRESS } from './constants';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -517,7 +515,7 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
 
 // --- Compliance ---
 export async function assertSupportedAddress(recipientId: string) {
-  const isSupported = await assertSupportedAddresses([recipientId]);
+  const [isSupported] = await assertSupportedAddresses([recipientId]);
   if (!isSupported) throw new Error('Address is invalid or unavailable');
 }
 
@@ -766,26 +764,18 @@ export async function assertSupportedAddresses(recipientIds: string[]) {
     }
   });
 
-  // Lastly, check against the Chainalysis contract.
-  const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
-  const chainalysisOracleAddr = '0x40C57923924B5c5c5455c48D93317139ADDaC8fb';
-  const chainalysisOracleIface = new Interface(['function isSanctioned(address addr) external view returns (bool)']);
-
-  const callData = (address: string) => chainalysisOracleIface.encodeFunctionData('isSanctioned', [address]);
-  const calls = addresses.map((addr) => ({ target: chainalysisOracleAddr, callData: callData(addr) }));
-  const response = await multicall.callStatic.aggregate(calls);
-
-  type MulticallResponse = {
-    blockNumber: BigNumber;
-    returnData: string[];
-  };
-  const multicallResponse = (response as MulticallResponse).returnData;
-  multicallResponse.forEach((res, i) => {
-    const isSanctioned = chainalysisOracleIface.decodeFunctionResult('isSanctioned', res)[0];
-    if (isSanctioned) {
-      isSupportedList[i] = false;
+  // Next we check against the Chainalysis contract.
+  // TODO Because announcements come in batches, we hit RPC limits if we try querying the contract
+  // for all addresses in all announcements, even with a multicall. As a result, the above lists are
+  // up to date, so we only do this check if there is a single recipient. Later, we should use a
+  // subgraph or similar to get the list of sanctioned addresses to compare against.
+  if (recipientIds.length === 1) {
+    const abi = ['function isSanctioned(address addr) external view returns (bool)'];
+    const contract = new Contract('0x40C57923924B5c5c5455c48D93317139ADDaC8fb', abi, provider);
+    if (await contract.isSanctioned(addresses[0])) {
+      isSupportedList[0] = false;
     }
-  });
+  }
 
   return isSupportedList;
 }
