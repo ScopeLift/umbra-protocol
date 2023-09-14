@@ -192,7 +192,7 @@ export async function toAddress(name: string, provider: EthersProvider) {
 
   // At this point, we were unable to resolve the name to an address.
   throw new Error(
-    'Please verify the provided name or address is correct. If providing an ENS name, ensure it is registered, and has a valid address record.'
+    `Please verify the provided name or address of '${name}' is correct. If providing an ENS name, ensure it is registered, and has a valid address record.`
   );
 }
 
