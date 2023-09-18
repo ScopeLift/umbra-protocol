@@ -385,7 +385,7 @@ export class Umbra {
       // Check if all senders and receiver addresses are supported.
       const addrsToCheck = announcements.map((a) => [a.receiver, a.from]).flat();
       const isSupportedList = await checkSupportedAddresses(addrsToCheck);
-      const supportedAddrs = new Set(...addrsToCheck.filter((_, i) => isSupportedList[i]));
+      const supportedAddrs = new Set([...addrsToCheck.filter((_, i) => isSupportedList[i])]);
 
       const filtered = announcements.map((announcement) => {
         const isReceiverSupported = supportedAddrs.has(announcement.receiver);
