@@ -31,7 +31,7 @@ import {
   getEthSweepGasInfo,
   lookupRecipient,
   assertSupportedAddress,
-  assertSupportedAddresses,
+  checkSupportedAddresses,
   getBlockNumberUserRegistered,
 } from '../utils/utils';
 import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
@@ -384,7 +384,7 @@ export class Umbra {
     const filterSupportedAddresses = async (announcements: AnnouncementDetail[]) => {
       // Check if all senders and receiver addresses are supported.
       const addrsToCheck = announcements.map((a) => [a.receiver, a.from]).flat();
-      const isSupportedList = await assertSupportedAddresses(addrsToCheck);
+      const isSupportedList = await checkSupportedAddresses(addrsToCheck);
       const supportedAddrs = new Set(...addrsToCheck.filter((_, i) => isSupportedList[i]));
 
       const filtered = announcements.map((announcement) => {

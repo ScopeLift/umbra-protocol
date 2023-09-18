@@ -515,11 +515,11 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
 
 // --- Compliance ---
 export async function assertSupportedAddress(recipientId: string) {
-  const [isSupported] = await assertSupportedAddresses([recipientId]);
+  const [isSupported] = await checkSupportedAddresses([recipientId]);
   if (!isSupported) throw new Error('Address is invalid or unavailable');
 }
 
-export async function assertSupportedAddresses(recipientIds: string[]) {
+export async function checkSupportedAddresses(recipientIds: string[]) {
   // Check for public key being passed in, and if so derive the corresponding address.
   recipientIds = recipientIds.map((recipientId) => {
     if (isHexString(recipientId) && recipientId.length == 132) {
