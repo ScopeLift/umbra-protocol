@@ -36,11 +36,11 @@ export const lengths = {
 
 // Define addresses that should never be used as the stealth address. If you're sending to these a mistake was
 // made somewhere and the funds will not be accessible. Ensure any addresses added to this list are checksum addresses
-export const blockedStealthAddresses = [
+export const invalidStealthAddresses = [
   AddressZero,
   '0xdcc703c0E500B653Ca82273B7BFAd8045D85a470', // generated from hashing an empty public key, e.g. keccak256('0x')
   '0x59274E3aE531285c24e3cf57C11771ecBf72d9bf', // generated from hashing the zero public key, e.g. keccak256('0x000...000')
-];
+].map(getAddress);
 
 /**
  * @notice Given a transaction hash, return the public key of the transaction's sender
@@ -176,19 +176,22 @@ export async function getSentTransaction(address: string, ethersProvider: Ethers
 
 // Takes an ENS, CNS, or address, and returns the checksummed address
 export async function toAddress(name: string, provider: EthersProvider) {
+  // If the name is already an address, just return it.
+  if (name.length === lengths.address && isHexString(name)) return getAddress(name);
+
   // First try ENS
   let address: string | null = null;
-  address = await resolveEns(name, provider); // will never throw, but returns null on failure
+  address = await resolveEns(name, provider); // Will never throw, but returns null on failure
   if (address) return address;
 
   // Then try CNS
-  address = await resolveCns(name); // will never throw, but returns null on failure
+  address = await resolveCns(name); // Will never throw, but returns null on failure
   if (address) return address;
 
-  if (name.includes('.'))
-    throw new Error('Please verify the name is correct, registered, and has a valid address record.');
-
-  return getAddress(name);
+  // At this point, we were unable to resolve the name to an address.
+  throw new Error(
+    `Please verify the provided name or address of '${name}' is correct. If providing an ENS name, ensure it is registered, and has a valid address record.`
+  );
 }
 
 /**
@@ -511,20 +514,33 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
 }
 
 // --- Compliance ---
-
 export async function assertSupportedAddress(recipientId: string) {
+  const [isSupported] = await checkSupportedAddresses([recipientId]);
+  if (!isSupported) throw new Error('Address is invalid or unavailable');
+}
+
+export async function checkSupportedAddresses(recipientIds: string[]) {
   // Check for public key being passed in, and if so derive the corresponding address.
-  if (isHexString(recipientId) && recipientId.length == 132) {
-    recipientId = computeAddress(recipientId);
-  }
+  recipientIds = recipientIds.map((recipientId) => {
+    if (isHexString(recipientId) && recipientId.length == 132) {
+      return computeAddress(recipientId); // Get address from public key.
+    } else {
+      return recipientId;
+    }
+  });
 
   // If needed, resolve recipient ID to an address (e.g. if it's an ENS name).
+  // If there are a lot of ENS or CNS names here this will send too many RPC requests and trigger
+  // errors. The current use case of this method takes addresses, so this should not be a problem.
+  // If it becomes a problem, add a batched version of toAddress.
   const provider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
-  const address = await toAddress(recipientId, provider);
-  const errMsg = 'Address is invalid or unavailable';
+  const addresses = await Promise.all(recipientIds.map((recipientId) => toAddress(recipientId, provider)));
 
-  // Now check the address against the hardcoded list.
-  const bannedAddresses = new Set([
+  // Initialize output, start by assuming all are supported.
+  const isSupportedList = addresses.map((_) => true); // eslint-disable-line @typescript-eslint/no-unused-vars
+
+  // Now check the address against the hardcoded lists.
+  const bannedAddresses = [
     '0x01e2919679362dFBC9ee1644Ba9C6da6D6245BB1',
     '0x03893a7c7463AE47D46bc7f091665f1893656003',
     '0x04DBA1194ee10112fE6C3207C0687DEf0e78baCf',
@@ -668,12 +684,98 @@ export async function assertSupportedAddress(recipientId: string) {
     '0xed6e0a7e4ac94d976eebfb82ccf777a3c6bad921',
     '0xf4B067dD14e95Bab89Be928c07Cb22E3c94E0DAA',
     '0xffbac21a641dcfe4552920138d90f3638b3c9fba',
-  ]);
-  if (bannedAddresses.has(address)) throw new Error(errMsg);
+  ].map(getAddress);
+
+  const additionalBlockedAddresses = [
+    '0x3403c5350ea5f3Ded181aB3Ee645a2ba61FA8DB3',
+    '0x364f4A48B60b3b6ff74e67779469c4aAf33F759f',
+    '0x5ce083C55A1a9a47191f345e535EC23f4A94724A',
+    '0xC7f981cd39E11Cc9C6546b5c16aE7D325B55134c',
+    '0x364f4A48B60b3b6ff74e67779469c4aAf33F759f',
+    '0x4213cb07DFF4C89E1bE81BEac1Fe0A0691f4FC63',
+    '0x98a9B1C6b14e3D78235B3A0e51dABc639f059D79',
+    '0x364f4A48B60b3b6ff74e67779469c4aAf33F759f',
+    '0x2f76ab8517269Bf2fef0beDEFAB8A0C0007dA562',
+    '0xE29028e7E90DD4B63FA37Ff82D239B1bE1a910a3',
+    '0x364f4A48B60b3b6ff74e67779469c4aAf33F759f',
+    '0xc8203da14165FB0E3eEB07f4bf979D9Ec8265c84',
+    '0x7978d0C1EdB080970896FE76A8D9e5b4cfb8b7e7',
+    '0x364f4A48B60b3b6ff74e67779469c4aAf33F759f',
+    '0x3Cb93bed276bD9Abc1de303639f79043339482d3',
+    '0xDBBaAF70Ef98b9acE1cf1C6aA3E724c6Bd1fea01',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0x953C50782BC1836A10164FC40c08567ae8Aeb006',
+    '0xf7a9929D5abCdb3b68A1fE32506d4D1F1940630D',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0x94FFE01165A8682c8aF3792C0E231376E50543c7',
+    '0x1dCc9919bfB8CCbc6e766c3EB02cB9d5b46Fb41b',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0xDF6F51ee7805110d1e05C9eE6A26589e4AF0C0Fd',
+    '0x7c136ceA8392A2906E93678a779989Bb6235D37c',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0x643858712CeBa695bD9D10530723a6203FD5AAB8',
+    '0x03Dd9FD27d9bBd69c30d966A2477e51762994fF8',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0x3Cb9204cE00B310E7d107AE1fa178e855053afBc',
+    '0xD327f5BfeEd20e3d4Ee6c3da4656915DeF571Cab',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0xE5E8C6e17AA0F6Bb03f71292694DF5405e7f538c',
+    '0x0cca7ca23E42ef8A00E86320a27a1572EfCDB845',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0x5b2dFE20E048e0D743E3B288210b4c86Ba1Ca169',
+    '0xb939C0399CA409a4E29150699fa19021e6Ebd9DE',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0x57e7E577015468386afbAb747e4360711E30aC2D',
+    '0x95E386B792077956d835C6FD1490Aba5c4A51A5b',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0xBB3Ae0a27B128B3e74021023bcA12BF3288E4DEE',
+    '0x446726030A2506DE3624BEd2A34359cb083f1421',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0xD0274c0aa26f9d1AF3DFE56775B8CF2c25d20DF0',
+    '0xfC2c94d415759E70f99CC88217DDc665c3052933',
+    '0x35CC67Db02f7f8321Caf1E5eAA35b975b137badc',
+    '0x1Fe6edE4887F85d97BE73b57b06BFa33d7bA87ee',
+    '0xF00e4884315483B91dF011904F9De055D3626Ff5',
+    '0x24c49e3f26b6c9b58A0c80D868874823A491b40d',
+    '0x3011eFbb225D46CeAD862037258F0bffaAe9133C',
+    '0xF00e4884315483B91dF011904F9De055D3626Ff5',
+    '0x459e9d5305dD9a6416dD2CEA46c7aD28580150Ca',
+    '0x6C87fa24A2456cf2682F9327DF02620Ca9c50249',
+    '0xF00e4884315483B91dF011904F9De055D3626Ff5',
+    '0x0205804cDcd66cB035c5dD5E71e798A68CDF0f6E',
+    '0x9A250278313cdD32030bd681e2131FDe93B31055',
+    '0xF00e4884315483B91dF011904F9De055D3626Ff5',
+    '0x2d74721794A5626FbaEDdd8191d14563071dce02',
+    '0xeD0c19785bAF777991820Fb1368247f9Cc326cf8',
+    '0x5bB166Ff6580Ceb03972a3AfE62bE8AFa9148103',
+    '0x3632d3f193E8047d2102224c60C279BC159703c2',
+    '0xcad7aEfe7c83786030B2f0b5090d989edF7f54E2',
+    '0x5bB166Ff6580Ceb03972a3AfE62bE8AFa9148103',
+    '0x3632d3f193E8047d2102224c60C279BC159703c2',
+    '0xa1ea284631D3FE00B2Da2131E9edF2556389308e',
+    '0x5bB166Ff6580Ceb03972a3AfE62bE8AFa9148103',
+    '0x3632d3f193E8047d2102224c60C279BC159703c2',
+  ].map(getAddress);
+
+  const invalidAddresses = new Set([...invalidStealthAddresses, ...bannedAddresses, ...additionalBlockedAddresses]);
+  addresses.forEach((address, i) => {
+    if (invalidAddresses.has(getAddress(address))) {
+      isSupportedList[i] = false;
+    }
+  });
 
   // Next we check against the Chainalysis contract.
-  const abi = ['function isSanctioned(address addr) external view returns (bool)'];
-  const contract = new Contract('0x40C57923924B5c5c5455c48D93317139ADDaC8fb', abi, provider);
-  if (await contract.isSanctioned(address)) throw new Error(errMsg);
-  return true;
+  // TODO Because announcements come in batches, we hit RPC limits if we try querying the contract
+  // for all addresses in all announcements, even with a multicall. As a result, the above lists are
+  // up to date, so we only do this check if there is a single recipient. Later, we should use a
+  // subgraph or similar to get the list of sanctioned addresses to compare against.
+  if (recipientIds.length === 1) {
+    const abi = ['function isSanctioned(address addr) external view returns (bool)'];
+    const contract = new Contract('0x40C57923924B5c5c5455c48D93317139ADDaC8fb', abi, provider);
+    if (await contract.isSanctioned(addresses[0])) {
+      isSupportedList[0] = false;
+    }
+  }
+
+  return isSupportedList;
 }

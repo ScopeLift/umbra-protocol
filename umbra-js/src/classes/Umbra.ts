@@ -27,10 +27,11 @@ import {
 import { KeyPair } from './KeyPair';
 import { RandomNumber } from './RandomNumber';
 import {
-  blockedStealthAddresses,
+  invalidStealthAddresses,
   getEthSweepGasInfo,
   lookupRecipient,
   assertSupportedAddress,
+  checkSupportedAddresses,
   getBlockNumberUserRegistered,
 } from '../utils/utils';
 import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
@@ -380,19 +381,36 @@ export class Umbra {
     const startBlock = overrides.startBlock || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
 
+    const filterSupportedAddresses = async (announcements: AnnouncementDetail[]) => {
+      // Check if all senders and receiver addresses are supported.
+      const addrsToCheck = announcements.map((a) => [a.receiver, a.from]).flat();
+      const isSupportedList = await checkSupportedAddresses(addrsToCheck);
+      const supportedAddrs = new Set([...addrsToCheck.filter((_, i) => isSupportedList[i])]);
+
+      const filtered = announcements.map((announcement) => {
+        const isReceiverSupported = supportedAddrs.has(announcement.receiver);
+        const isFromSupported = supportedAddrs.has(announcement.from);
+        return isReceiverSupported && isFromSupported ? announcement : null;
+      });
+
+      return filtered.filter((i) => i !== null) as AnnouncementDetail[];
+    };
+
     // Try querying events using Goldsky, fallback to querying logs.
     if (this.chainConfig.subgraphUrl) {
       try {
         for await (const subgraphAnnouncements of this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock)) {
           // Map the subgraph amount field from string to BigNumber
-          const details = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
-          yield details;
+          const announcements = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+          yield await filterSupportedAddresses(announcements);
         }
       } catch (err) {
-        yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+        const announcements = await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+        yield await filterSupportedAddresses(announcements);
       }
     } else {
-      yield await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+      const announcements = await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
+      yield await filterSupportedAddresses(announcements);
     }
   }
 
@@ -830,7 +848,7 @@ export async function assertSufficientBalance(signer: JsonRpcSigner | Wallet, to
 
 export function assertValidStealthAddress(stealthAddress: string) {
   // Ensure that the stealthKeyPair's address is not on the block list
-  if (blockedStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
+  if (invalidStealthAddresses.includes(stealthAddress)) throw new Error(`Invalid stealth address: ${stealthAddress}`);
 }
 
 /**
