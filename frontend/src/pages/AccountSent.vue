@@ -27,6 +27,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
+import { KeyPair } from '@umbracash/umbra-js';
+
 import useWalletStore from 'src/store/wallet';
 import AccountSentTable from 'components/AccountSentTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
@@ -37,7 +39,7 @@ import { formatDate, formatAmount, formatTime, getTokenSymbol, getTokenLogoUri }
 import { clearAccountSend, fetchAccountSends } from 'src/utils/account-send';
 
 function useAccountSent() {
-  const { tokens, userAddress, chainId, viewingKeyPair, getPrivateKeys } = useWalletStore();
+  const { tokens, userAddress, chainId, viewingKeyPair, spendingKeyPair, getPrivateKeys } = useWalletStore();
   const sendMetadata = ref<SendTableMetadataRow[]>([]);
   const dataLoading = ref<boolean>(false);
   const needsSignature = computed(() => !viewingKeyPair.value?.privateKeyHex);
@@ -47,6 +49,13 @@ function useAccountSent() {
     if (needsSignature.value) {
       const success = await getPrivateKeys();
       if (success === 'denied') return; // if unsuccessful, user denied signature or an error was thrown
+
+      const { prefix: spendingPrefix, pubKeyXCoordinate: spendingPubKeyX } = KeyPair.compressPublicKey(String(spendingKeyPair.value?.publicKeyHex)); // prettier-ignore
+      const { prefix: viewingPrefix, pubKeyXCoordinate: viewingPubKeyX } = KeyPair.compressPublicKey(String(viewingKeyPair.value?.publicKeyHex)); // prettier-ignore
+      window.logger.debug('spendingPrefix : ', spendingPrefix);
+      window.logger.debug('spendingPubKeyX: ', BigNumber.from(spendingPubKeyX).toString());
+      window.logger.debug('viewingPrefix:   ', viewingPrefix);
+      window.logger.debug('viewingPubKeyX:  ', BigNumber.from(viewingPubKeyX).toString());
     }
     // The viewingKeyPair should exist and this if statement is to appease the type checker guaranteeing privateKeyHex exists
     if (!viewingKeyPair.value?.privateKeyHex) {
