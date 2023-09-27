@@ -6,7 +6,22 @@ import * as utils from '../src/utils/utils';
 import { StaticJsonRpcProvider } from '../src/ethers';
 
 // const ethersProvider = ethers.provider;
-const resolution = new Resolution();
+const resolution = new Resolution({
+  sourceConfig: {
+    uns: {
+      locations: {
+        Layer1: {
+          url: `https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`,
+          network: 'mainnet',
+        },
+        Layer2: {
+          url: `https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`,
+          network: 'polygon-mainnet',
+        },
+      },
+    },
+  },
+});
 
 // Truth parameters to test against
 const name = 'blockdudes.nft';
