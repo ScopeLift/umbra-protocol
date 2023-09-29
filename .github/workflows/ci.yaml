@@ -31,13 +31,16 @@ jobs:
           submodules: recursive
 
       - uses: volta-cli/action@v4
+        with:
+          cache: false
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
         with:
           version: nightly
 
-      - run: yarn install --network-concurrency 1
+      - run: yarn list
+      - run: yarn install --frozen-lockfile --verbose --network-concurrency 1
 
       - run: yarn build
   tests:

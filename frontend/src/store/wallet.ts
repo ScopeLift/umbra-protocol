@@ -34,7 +34,10 @@ const walletConnect = walletConnectModule({
   version: 2,
 });
 const coinbaseWalletSdk = coinbaseWalletModule();
-const ledger = ledgerModule();
+const ledger = ledgerModule({
+  projectId: process.env.WALLET_CONNECT_PROJECT_ID || '',
+  walletConnectVersion: 2,
+});
 const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
 
 /**
@@ -119,8 +122,8 @@ export default function useWalletStore() {
         },
         appMetadata: {
           name: 'Umbra',
-          icon: '/icons/favicon-128x128.png',
-          logo: '/icons/favicon-128x128.png',
+          icon: '/icons/favicon-128x128.svg',
+          logo: '/icons/favicon-128x128.svg',
           description: 'Send stealth payments.',
           explore: 'https://app.umbra.cash/faq',
         },
@@ -132,9 +135,6 @@ export default function useWalletStore() {
             window.location.reload();
           });
           wallet.provider.on('chainChanged', () => {
-            if (wallet.label === 'WalletConnect' && !lastWallet.value) {
-              setLastWallet('WalletConnect');
-            }
             window.location.reload();
           });
         });
@@ -216,7 +216,7 @@ export default function useWalletStore() {
       let connectedWallet;
       if (lastWallet.value) {
         [connectedWallet] = await onboard.value.connectWallet({
-          autoSelect: { label: lastWallet.value, disableModals: true },
+          autoSelect: lastWallet?.value,
         });
       } else {
         [connectedWallet] = await onboard.value.connectWallet();
