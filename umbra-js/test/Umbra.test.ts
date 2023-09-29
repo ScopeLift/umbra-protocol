@@ -157,7 +157,7 @@ describe('Umbra class', () => {
       expect(umbra3.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra3.chainConfig.startBlock).to.equal(3590825);
       expect(umbra3.chainConfig.subgraphUrl).to.equal(
-        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-sepolia/v1.0.0/gn'
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-sepolia/v1.1.0/gn'
       );
 
       // --- Mainnet ---
@@ -166,7 +166,7 @@ describe('Umbra class', () => {
       expect(umbra4.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra4.chainConfig.startBlock).to.equal(12343914);
       expect(umbra4.chainConfig.subgraphUrl).to.equal(
-        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.0.0/gn'
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-mainnet/v1.1.0/gn'
       );
 
       // --- Optimism ---
@@ -175,25 +175,34 @@ describe('Umbra class', () => {
       expect(umbra5.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra5.chainConfig.startBlock).to.equal(4069556);
       expect(umbra5.chainConfig.subgraphUrl).to.equal(
-        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.0.0/gn'
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.1.0/gn'
+      );
+
+      // --- Gnosis Chain ---
+      const umbra6 = new Umbra(jsonRpcProvider, 100);
+      expect(umbra6.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra6.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
+      expect(umbra6.chainConfig.startBlock).to.equal(28237950);
+      expect(umbra6.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-xdai/v1.1.0/gn'
       );
 
       // --- Polygon ---
-      const umbra6 = new Umbra(jsonRpcProvider, 137);
-      expect(umbra6.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra6.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
-      expect(umbra6.chainConfig.startBlock).to.equal(20717318);
-      expect(umbra6.chainConfig.subgraphUrl).to.equal(
-        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.0.0/gn'
+      const umbra7 = new Umbra(jsonRpcProvider, 137);
+      expect(umbra7.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra7.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
+      expect(umbra7.chainConfig.startBlock).to.equal(20717318);
+      expect(umbra7.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.1.0/gn'
       );
 
       // --- Arbitrum ---
-      const umbra7 = new Umbra(jsonRpcProvider, 42161);
-      expect(umbra7.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra7.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
-      expect(umbra7.chainConfig.startBlock).to.equal(7285883);
-      expect(umbra7.chainConfig.subgraphUrl).to.equal(
-        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.0.0/gn'
+      const umbra8 = new Umbra(jsonRpcProvider, 42161);
+      expect(umbra8.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
+      expect(umbra8.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
+      expect(umbra8.chainConfig.startBlock).to.equal(7285883);
+      expect(umbra8.chainConfig.subgraphUrl).to.equal(
+        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.1.0/gn'
       );
     });
 
