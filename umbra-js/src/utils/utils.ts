@@ -25,6 +25,7 @@ import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { EthersProvider, TransactionResponseExtended } from '../types';
+import { StealthKeyChangedEvent } from 'src/typechain/contracts/StealthKeyRegistry';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -253,7 +254,9 @@ export async function getBlockNumberUserRegistered(address: string, provider: St
   const registry = new StealthKeyRegistry(provider);
   const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
   try {
-    const stealthKeyLogs = await registry._registry.queryFilter(filter);
+    const timeout = (ms: number) => new Promise((reject) => setTimeout(() => reject(new Error('timeout')), ms));
+    const stealthKeyLogsPromise = registry._registry.queryFilter(filter);
+    const stealthKeyLogs = (await Promise.race([stealthKeyLogsPromise, timeout(3000)])) as StealthKeyChangedEvent[];
     const registryBlock = sortStealthKeyLogs(stealthKeyLogs)[0]?.blockNumber || undefined;
     return registryBlock;
   } catch {
