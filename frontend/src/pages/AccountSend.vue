@@ -573,7 +573,7 @@ function useSendForm() {
   // Batch Send Form Parameters
   const batchSends = ref<BatchSendData[]>([]);
   const tab = ref('send');
-  const batchSendSupportedChains = [42161, 11155111];
+  const batchSendSupportedChains = [1, 10, 100, 137, 42161, 11155111];
   const batchSendIsSupported = ref(false);
 
   // Computed form parameters.
