@@ -31,3 +31,19 @@ This repo uses [Foundry](https://github.com/gakonst/foundry).
 7. Execute the deploy by broadcasting the deploy transactions.
 
 - `forge script DeployBatchSend --private-key <Private Key> --broadcast`
+
+### How to use the ApproveTokens Script
+
+1. Inside `contracts-periphery` folder, run `cp .env.example .env` and fill out all fields.
+2. In your terminal use command `source .env` to load the environment variables.
+3. To make sure the script test passes, run
+
+- `forge test --mc ApproveBatchSendTokensTest --sender <Owner's address>`
+
+4. To dry run the script pass in the `--private-key` flag and the desired network in the `--rpc-url` flag. Contract and token addresses should be specific to the network specified in the `--rpc-url` flag.
+
+- `forge script ApproveBatchSendTokens --sig "run(address,address,address[])" <UmbraContractAddress> <UmbraBatchSendContractAddress> "[<TokenAddressToApprove>,<TokenAddressToApprove>]" --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY`
+
+4. Execute the script by adding the broadcasting flag.
+
+- `forge script ApproveBatchSendTokens --sig "run(address,address,address[])" <UmbraContractAddress> <UmbraBatchSendContractAddress> "[<TokenAddressToApprove>,<SecondTokenAddressToApprove>]" --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --broadcast`
