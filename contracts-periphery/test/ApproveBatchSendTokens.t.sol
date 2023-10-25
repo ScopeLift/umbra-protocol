@@ -19,7 +19,7 @@ contract ApproveBatchSendTokensTest is Test {
     [DAI_ADDRESS, LUSD_ADDRESS, RAI_ADDRESS, USDC_ADDRESS, USDT_ADDRESS, WBTC_ADDRESS];
 
   function setUp() public {
-    vm.createSelectFork(vm.rpcUrl("mainnet"));
+    vm.createSelectFork(vm.rpcUrl("mainnet"), 18_428_858);
     approveTokensScript = new ApproveBatchSendTokens();
   }
 
