@@ -12,12 +12,12 @@ contract ApproveBatchSendTokens is Script {
     address[] calldata _tokenAddressesToApprove
   ) public {
     vm.startBroadcast();
-    for (uint256 i = 0; i < _tokenAddressesToApprove.length; i++) {
-      uint256 _currentAllowance = IERC20(_tokenAddressesToApprove[i]).allowance(
+    for (uint256 _i = 0; _i < _tokenAddressesToApprove.length; _i++) {
+      uint256 _currentAllowance = IERC20(_tokenAddressesToApprove[_i]).allowance(
         _batchSendContractAddress, _umbraContractAddress
       );
       if (_currentAllowance == 0) {
-        UmbraBatchSend(_batchSendContractAddress).approveToken(IERC20(_tokenAddressesToApprove[i]));
+        UmbraBatchSend(_batchSendContractAddress).approveToken(IERC20(_tokenAddressesToApprove[_i]));
       }
     }
     vm.stopBroadcast();
