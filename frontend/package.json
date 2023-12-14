@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@adraffy/ens-normalize": "1.9.2",
-    "@ledgerhq/devices": "^7.0.5",
     "@metamask/jazzicon": "^2.0.0",
     "@quasar/extras": "^1.15.8",
     "@umbracash/umbra-js": "^0.1.0",
@@ -27,7 +26,6 @@
     "@web3-onboard/coinbase": "^2.2.5",
     "@web3-onboard/core": "^2.21.0",
     "@web3-onboard/injected-wallets": "^2.10.4",
-    "@web3-onboard/ledger": "^2.5.2",
     "@web3-onboard/trezor": "^2.3.2",
     "@web3-onboard/walletconnect": "2.4.1",
     "bnc-notify": "^1.5.1",
