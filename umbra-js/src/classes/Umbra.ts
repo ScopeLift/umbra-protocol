@@ -119,18 +119,18 @@ const isEth = (token: string) => {
 };
 
 /**
- * @notice Returns the Infura RPC URL for the provided chainId and Infura ID
+ * @notice Returns an RPC URL for the provided chainId
  */
-const infuraUrl = (chainId: BigNumberish, infuraId: string) => {
+const rpcUrlFromChain = (chainId: BigNumberish) => {
   chainId = BigNumber.from(chainId).toNumber();
   // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
-  if (chainId === 1 || chainId === 1337) return `https://mainnet.infura.io/v3/${infuraId}`;
-  if (chainId === 10) return `https://optimism-mainnet.infura.io/v3/${infuraId}`;
-  if (chainId === 100) return 'https://rpc.ankr.com/gnosis';
-  if (chainId === 137) return `https://polygon-mainnet.infura.io/v3/${infuraId}`;
-  if (chainId === 42161) return `https://arbitrum-mainnet.infura.io/v3/${infuraId}`;
-  if (chainId === 11155111) return `https://sepolia.infura.io/v3/${infuraId}`;
-  throw new Error(`No Infura URL for chainId ${chainId}.`);
+  if (chainId === 1 || chainId === 1337) return String(process.env.MAINNET_RPC_URL);
+  if (chainId === 10) return String(process.env.OPTIMISM_RPC_URL);
+  if (chainId === 100) return String(process.env.GNOSIS_RPC_URL);
+  if (chainId === 137) return String(process.env.POLYGON_RPC_URL);
+  if (chainId === 42161) return String(process.env.ARBITRUM_RPC_URL);
+  if (chainId === 11155111) return String(process.env.MAINNET_SEPOLIA_URL);
+  throw new Error(`No RPC URL for chainId ${chainId}.`);
 };
 
 export class Umbra {
@@ -154,9 +154,7 @@ export class Umbra {
     if (this.chainConfig.batchSendAddress) {
       this.batchSendContract = new Contract(this.chainConfig.batchSendAddress, UMBRA_BATCH_SEND_ABI, provider);
     }
-    this.fallbackProvider = new StaticJsonRpcProvider(
-      infuraUrl(this.chainConfig.chainId, String(process.env.INFURA_ID))
-    );
+    this.fallbackProvider = new StaticJsonRpcProvider(rpcUrlFromChain(this.chainConfig.chainId));
   }
 
   // ==================================== CONTRACT INTERACTION =====================================
