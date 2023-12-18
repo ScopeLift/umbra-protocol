@@ -2,3 +2,5 @@
     publish="frontend/dist/spa/"
     environment = { NODE_VERSION = "16.15.0", YARN_VERSION = "1.22.18"}
     command = "yarn build-frontend"
+[build.processing]
+  skip_processing = true
