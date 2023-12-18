@@ -21,7 +21,8 @@
   invariant = { runs = 1000 }
 
 [rpc_endpoints]
-  arbitrum = "${ARBITRUM_ONE_RPC_URL}"
+  arbitrum_one = "${ARBITRUM_ONE_RPC_URL}"
+  gnosis_chain = "${GNOSIS_CHAIN_RPC_URL}"
   mainnet = "${MAINNET_RPC_URL}"
   optimism = "${OPTIMISM_RPC_URL}"
   polygon = "${POLYGON_RPC_URL}"
