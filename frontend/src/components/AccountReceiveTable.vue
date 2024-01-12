@@ -170,7 +170,7 @@
                     @initializeWithdraw="initializeWithdraw(props.row)"
                     @togglePrivateKey="togglePrivateKey(props.row)"
                     @copyPrivateKey="copyPrivateKey(spendingPrivateKey)"
-                    @updateDestinationAddress="destinationAddress = arguments[0]"
+                    @updateDestinationAddress="onUpdateDestinationAddress"
                     :destinationAddress="destinationAddress"
                     :isWithdrawn="props.row.isWithdrawn"
                     :isWithdrawInProgress="isWithdrawInProgress"
