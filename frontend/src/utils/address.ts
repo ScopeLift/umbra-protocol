@@ -16,7 +16,13 @@ import {
 import { getChainById, jsonFetch } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
 import Resolution from '@unstoppabledomains/resolution';
-import { MAINNET_PROVIDER, POLYGON_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+import {
+  MAINNET_PROVIDER,
+  POLYGON_PROVIDER,
+  MULTICALL_ABI,
+  MULTICALL_ADDRESS,
+  MAINNET_RPC_URL,
+} from 'src/utils/constants';
 import { AddressZero, defaultAbiCoder } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 
@@ -49,7 +55,23 @@ export const lookupEnsName = async (address: string, provider: Provider | Static
 export const lookupCnsName = async (address: string) => {
   try {
     // Send request to get names
-    const resolution = Resolution.infura(String(process.env.INFURA_ID));
+
+    const resolution = new Resolution({
+      sourceConfig: {
+        uns: {
+          locations: {
+            Layer1: {
+              url: MAINNET_RPC_URL,
+              network: 'mainnet',
+            },
+            Layer2: {
+              url: '',
+              network: '',
+            },
+          },
+        },
+      },
+    });
     const domain = await resolution.reverse(address);
     return domain;
   } catch (err) {

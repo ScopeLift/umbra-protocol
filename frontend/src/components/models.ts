@@ -2,7 +2,15 @@ import { BigNumber } from 'src/utils/ethers';
 import { JsonRpcSigner, Web3Provider } from 'src/utils/ethers';
 import type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 import { UmbraLogger } from 'components/logger';
-import { ETH_NETWORK_LOGO } from 'src/utils/constants';
+import {
+  ETH_NETWORK_LOGO,
+  MAINNET_RPC_URL,
+  POLYGON_RPC_URL,
+  OPTIMISM_RPC_URL,
+  SEPOLIA_RPC_URL,
+  ARBITRUM_ONE_RPC_URL,
+  GNOSIS_CHAIN_RPC_URL,
+} from 'src/utils/constants';
 
 export type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
 export { BigNumber } from 'src/utils/ethers';
@@ -50,7 +58,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
-    rpcUrls: [`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    rpcUrls: [MAINNET_RPC_URL],
     blockExplorerUrls: ['https://etherscan.io'],
     iconUrls: [ETH_NETWORK_LOGO],
     logoURI: ETH_NETWORK_LOGO,
@@ -65,7 +73,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
-    rpcUrls: [`https://sepolia.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    rpcUrls: [SEPOLIA_RPC_URL],
     blockExplorerUrls: ['https://sepolia.etherscan.io'],
     iconUrls: [ETH_NETWORK_LOGO],
     logoURI: ETH_NETWORK_LOGO,
@@ -80,7 +88,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
-    rpcUrls: ['https://mainnet.optimism.io', `https://optimism-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    rpcUrls: ['https://mainnet.optimism.io', OPTIMISM_RPC_URL],
     blockExplorerUrls: ['https://optimistic.etherscan.io'],
     iconUrls: ['/networks/optimism.svg'],
     logoURI: '/networks/optimism.svg',
@@ -95,7 +103,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: 'https://docs.gnosischain.com/img/tokens/xdai.png',
     },
-    rpcUrls: ['https://rpc.ankr.com/gnosis'],
+    rpcUrls: ['https://rpc.ankr.com/gnosis', GNOSIS_CHAIN_RPC_URL],
     blockExplorerUrls: ['https://gnosisscan.io'],
     iconUrls: ['/networks/gnosis.svg'],
     logoURI: '/networks/gnosis.svg',
@@ -110,7 +118,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: '/tokens/polygon.png',
     },
-    rpcUrls: ['https://polygon-rpc.com/', `https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    rpcUrls: ['https://polygon-rpc.com/', POLYGON_RPC_URL],
     blockExplorerUrls: ['https://polygonscan.com'],
     iconUrls: ['/networks/polygon.svg'],
     logoURI: '/networks/polygon.svg',
@@ -125,7 +133,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: ETH_NETWORK_LOGO,
     },
-    rpcUrls: ['https://arb1.arbitrum.io/rpc', `https://arbitrum-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`],
+    rpcUrls: ['https://arb1.arbitrum.io/rpc', ARBITRUM_ONE_RPC_URL],
     blockExplorerUrls: ['https://arbiscan.io'],
     iconUrls: ['/networks/arbitrum.svg'],
     logoURI: '/networks/arbitrum.svg',
