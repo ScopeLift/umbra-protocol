@@ -116,7 +116,7 @@
             placeholder="vitalik.eth"
             lazy-rules
             :hideBottomSpace="true"
-            :rules="isValidId"
+            :rules="(value: string) => isValidId(value)"
             ref="recipientIdBaseInputRef"
           />
           <div class="flex row text-caption warning-container q-pb-sm" v-if="recipientIdWarning">
@@ -315,7 +315,7 @@
                       :disable="isSending"
                       placeholder="vitalik.eth"
                       lazy-rules
-                      :rules="isValidId"
+                      :rules="(value: string) => isValidId(value)"
                     />
 
                     <!-- Token -->
@@ -366,7 +366,7 @@
                       placeholder="vitalik.eth"
                       :label="$t('Send.receiver-addr-ens')"
                       lazy-rules
-                      :rules="isValidId"
+                      :rules="(value: string) => isValidId(value)"
                     />
                   </div>
 
@@ -806,11 +806,14 @@ function useSendForm() {
   // Validators
   async function isValidId(val: string | undefined) {
     // Return true if nothing is provided
-    checkConfusables();
     if (!val) return true;
 
     // Check if recipient ID is valid
     try {
+      // Check if confusable chars in string, throws with warning if so
+      checkConfusables(val);
+
+      // Check if ENS name is valid
       await umbraUtils.lookupRecipient(val, provider.value as Provider, {
         advanced: shouldUseNormalPubKey.value,
       });
@@ -1206,18 +1209,11 @@ function useSendForm() {
     );
   }
 
-  function checkConfusables() {
-    const recipientIdString = recipientId.value || '';
-    try {
-      if (recipientIdString && recipientIdString.endsWith('eth')) {
-        assertValidEnsName(recipientIdString);
-      }
-      recipientIdWarning.value = undefined;
-    } catch (e) {
-      if (e instanceof Error) {
-        recipientIdWarning.value = e.message;
-      }
+  function checkConfusables(recipientIdString: string | undefined) {
+    if (recipientIdString && recipientIdString.endsWith('eth')) {
+      assertValidEnsName(recipientIdString);
     }
+    recipientIdWarning.value = undefined;
   }
 
   return {
