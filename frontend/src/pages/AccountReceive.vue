@@ -101,6 +101,7 @@
         </div>
         <div v-else class="text-center text-italic">{{ $t('Receive.fetching-latest') }}</div>
       </div>
+      <base-button @click="terminateWorkers()" class="text-center" label="stop workers" />
     </div>
   </q-page>
 </template>
@@ -130,6 +131,7 @@ function useScan() {
   const scanStatus = ref<ScanStatus>('waiting');
   const scanPercentage = ref<number>(0);
   const userAnnouncements = ref<UserAnnouncement[]>([]);
+  const workers: Worker[] = [];
 
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
@@ -199,6 +201,10 @@ function useScan() {
     await scan();
   }
 
+  function terminateWorkers() {
+    workers.forEach((worker) => worker.terminate());
+  }
+
   async function scan() {
     if (!umbra.value) throw new Error('No umbra instance found. Please make sure you are on a supported network');
     scanStatus.value = 'fetching latest';
@@ -228,6 +234,7 @@ function useScan() {
           spendingPublicKey,
           viewingPrivateKey,
           announcements,
+          workers,
           (percent) => {
             scanPercentage.value = Math.floor(percent);
           },
@@ -296,6 +303,9 @@ function useScan() {
         }
         // Wait for the first batch of web workers to finish scanning before creating new workers
         await firstScanPromise;
+        terminateWorkers();
+        // Clear out existing workers
+        workers.length = 0;
         scanStatus.value = 'scanning';
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
@@ -337,6 +347,7 @@ function useScan() {
     startBlockLocal,
     userAddress,
     userAnnouncements,
+    terminateWorkers,
   };
 }
 
