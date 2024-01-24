@@ -152,3 +152,15 @@ jobs:
           cd contracts-periphery
           scopelint --version
           scopelint check
+
+  deploy-to-fleek:
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
+      FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
+    steps:
+      - name: Install Fleek CLI
+        run: npm i -g @fleekxyz/cli
+      - name: Build & deploy sites
+        run: fleek sites deploy
