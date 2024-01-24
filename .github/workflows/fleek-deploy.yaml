@@ -1,10 +1,11 @@
 name: Deploy site via Fleek
-on:
-  push:
-    branches:
-      - master
+# on:
+#   push:
+#     branches:
+#       - master
 jobs:
   deploy-to-fleek:
+    needs: [build]
     runs-on: ubuntu-latest
     env:
       FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
