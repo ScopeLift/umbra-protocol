@@ -101,7 +101,14 @@
         </div>
         <div v-else class="text-center text-italic">{{ $t('Receive.fetching-latest') }}</div>
       </div>
-      <base-button @click="terminateWorkers()" class="text-center" label="stop workers" />
+      <div>
+        <base-button
+          v-if="scanStatus != 'complete' && scanStatus != 'waiting'"
+          @click="terminateWorkers()"
+          class="text-center q-pt-md"
+          :label="$t('Receive.stop')"
+        />
+      </div>
     </div>
   </q-page>
 </template>
@@ -132,6 +139,7 @@ function useScan() {
   const scanPercentage = ref<number>(0);
   const userAnnouncements = ref<UserAnnouncement[]>([]);
   const workers: Worker[] = [];
+  const paused = ref(false);
 
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
@@ -203,9 +211,17 @@ function useScan() {
 
   function terminateWorkers() {
     workers.forEach((worker) => worker.terminate());
+    paused.value = true;
+    if (scanStatus.value == 'fetching latest') {
+      scanStatus.value = 'waiting';
+    } else {
+      scanStatus.value = 'complete';
+    }
   }
 
   async function scan() {
+    // Reset paused state
+    paused.value = false;
     if (!umbra.value) throw new Error('No umbra instance found. Please make sure you are on a supported network');
     scanStatus.value = 'fetching latest';
 
@@ -289,6 +305,9 @@ function useScan() {
           userWalletAddress.value,
           overrides
         )) {
+          if (paused.value) {
+            return;
+          }
           announcementsCount += announcementsBatch.length; // Increment count
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
@@ -303,7 +322,6 @@ function useScan() {
         }
         // Wait for the first batch of web workers to finish scanning before creating new workers
         await firstScanPromise;
-        terminateWorkers();
         // Clear out existing workers
         workers.length = 0;
         scanStatus.value = 'scanning';
