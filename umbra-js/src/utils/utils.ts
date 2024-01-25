@@ -329,7 +329,22 @@ export function isDomain(name: string) {
  */
 
 function getResolutionInstance() {
-  return Resolution.infura(String(process.env.INFURA_ID));
+  return new Resolution({
+    sourceConfig: {
+      uns: {
+        locations: {
+          Layer1: {
+            url: String(process.env.MAINNET_RPC_URL),
+            network: 'mainnet',
+          },
+          Layer2: {
+            url: String(process.env.POLYGON_RPC_URL),
+            network: 'polygon-mainnet',
+          },
+        },
+      },
+    },
+  });
 }
 
 /**
@@ -345,8 +360,7 @@ async function resolveEns(name: string, provider: EthersProvider) {
     // and overriding with a mainnet provider otherwise. This ensures ENS resolution is always done
     // against L1, as explained here: https://twitter.com/makoto_inoue/status/1453737962110275598
     const { chainId } = await provider.getNetwork();
-    if (chainId !== 1)
-      provider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
+    if (chainId !== 1) provider = new StaticJsonRpcProvider(String(process.env.MAINNET_RPC_URL));
     const address = await provider.resolveName(name);
     return address || null;
   } catch (e) {
@@ -536,7 +550,7 @@ export async function checkSupportedAddresses(recipientIds: string[]) {
   // If there are a lot of ENS or CNS names here this will send too many RPC requests and trigger
   // errors. The current use case of this method takes addresses, so this should not be a problem.
   // If it becomes a problem, add a batched version of toAddress.
-  const provider = new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
+  const provider = new StaticJsonRpcProvider(String(process.env.MAINNET_RPC_URL));
   const addresses = await Promise.all(recipientIds.map((recipientId) => toAddress(recipientId, provider)));
 
   // Initialize output, start by assuming all are supported.

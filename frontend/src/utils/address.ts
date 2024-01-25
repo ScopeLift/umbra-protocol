@@ -22,6 +22,7 @@ import {
   MULTICALL_ABI,
   MULTICALL_ADDRESS,
   MAINNET_RPC_URL,
+  POLYGON_RPC_URL,
 } from 'src/utils/constants';
 import { AddressZero, defaultAbiCoder } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
@@ -65,8 +66,8 @@ export const lookupCnsName = async (address: string) => {
               network: 'mainnet',
             },
             Layer2: {
-              url: '',
-              network: '',
+              url: POLYGON_RPC_URL,
+              network: 'polygon-mainnet',
             },
           },
         },
