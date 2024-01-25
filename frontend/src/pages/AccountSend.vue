@@ -317,7 +317,9 @@
                       lazy-rules
                       :rules="(value: string) => isValidId(value, index)"
                     />
-
+                    <div class="warning-container" v-if="batchSends[index].warning">
+                      {{ batchSends[index].warning }}
+                    </div>
                     <!-- Token -->
                     <div>{{ $t('Send.select-token') }}</div>
 
@@ -346,10 +348,6 @@
                     />
                   </q-card-section>
                   <q-separator />
-                  <div class="warning-container" style="width: 50%; margin-left: 23%" v-if="batchSends[index].warning">
-                    <br />
-                    {{ batchSends[index].warning }}
-                  </div>
                 </q-card>
               </div>
             </div>
