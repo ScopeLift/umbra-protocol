@@ -818,14 +818,14 @@ function useSendForm() {
 
   // Validators
   async function isValidId(val: string | undefined, index: number | undefined) {
+    // Check if confusable chars in string, throws with warning if so
+    checkConfusables(val, index);
+
     // Return true if nothing is provided
     if (!val) return true;
 
     // Check if recipient ID is valid
     try {
-      // Check if confusable chars in string, throws with warning if so
-      checkConfusables(val, index);
-
       // Check if ENS name is valid
       await umbraUtils.lookupRecipient(val, provider.value as Provider, {
         advanced: shouldUseNormalPubKey.value,
@@ -1226,8 +1226,8 @@ function useSendForm() {
     try {
       if (recipientIdString && recipientIdString.endsWith('eth')) {
         assertValidEnsName(recipientIdString);
-        setWarning('', index);
       }
+      setWarning('', index); // clear warning
     } catch (e: unknown) {
       if (e instanceof Error && e.message) {
         setWarning(e.message, index);
