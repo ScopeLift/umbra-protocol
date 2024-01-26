@@ -12,8 +12,13 @@ cp .env.example .env
 
 The required parameters are:
 
-`INFURA_ID` - A valid Infura App Identifier <br />
-`BLOCKNATIVE_API_KEY` - A Blocknative API key
+`BLOCKNATIVE_API_KEY` - A Blocknative API key <br />
+`MAINNET_RPC_URL` - Network RPC URLs <br />
+`POLYGON_RPC_URL` <br />
+`OPTIMISM_RPC_URL` <br />
+`GNOSIS_CHAIN_RPC_URL` <br />
+`ARBITRUM_ONE_RPC_URL` <br />
+`SEPOLIA_RPC_URL` <br />
 
 Optional parameters are:
 
