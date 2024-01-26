@@ -126,10 +126,10 @@ const rpcUrlFromChain = (chainId: BigNumberish) => {
   // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
   if (chainId === 1 || chainId === 1337) return String(process.env.MAINNET_RPC_URL);
   if (chainId === 10) return String(process.env.OPTIMISM_RPC_URL);
-  if (chainId === 100) return String(process.env.GNOSIS_RPC_URL);
+  if (chainId === 100) return String(process.env.GNOSIS_CHAIN_RPC_URL);
   if (chainId === 137) return String(process.env.POLYGON_RPC_URL);
-  if (chainId === 42161) return String(process.env.ARBITRUM_RPC_URL);
-  if (chainId === 11155111) return String(process.env.MAINNET_SEPOLIA_URL);
+  if (chainId === 42161) return String(process.env.ARBITRUM_ONE_RPC_URL);
+  if (chainId === 11155111) return String(process.env.SEPOLIA_RPC_URL);
   throw new Error(`No RPC URL for chainId ${chainId}.`);
 };
 
