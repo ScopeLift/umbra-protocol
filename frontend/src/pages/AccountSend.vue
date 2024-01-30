@@ -826,7 +826,6 @@ function useSendForm() {
 
     // Check if recipient ID is valid
     try {
-      // Check if ENS name is valid
       await umbraUtils.lookupRecipient(val, provider.value as Provider, {
         advanced: shouldUseNormalPubKey.value,
       });
@@ -1228,7 +1227,7 @@ function useSendForm() {
         assertValidEnsName(recipientIdString);
       }
       setWarning('', index); // clear warning
-    } catch (e: unknown) {
+    } catch (e) {
       if (e instanceof Error && e.message) {
         setWarning(e.message, index);
       }
