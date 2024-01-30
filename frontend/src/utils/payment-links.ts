@@ -5,12 +5,13 @@ import { providerExport as provider, relayerExport as relayer, tokensExport as t
 import { notifyUser } from 'src/utils/alerts';
 import { BigNumber, StaticJsonRpcProvider } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
+import { MAINNET_RPC_URL } from 'src/utils/constants';
 
 /**
  * @notice Returns a provider, falling back to a mainnet provider if user's wallet is not connected
  */
 function getProvider() {
-  return provider || new StaticJsonRpcProvider(`https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`);
+  return provider || new StaticJsonRpcProvider(MAINNET_RPC_URL);
 }
 
 /**
