@@ -314,7 +314,7 @@
                       :debounce="500"
                       :disable="isSending"
                       placeholder="vitalik.eth"
-                      lazy-rules
+                      :lazy-rules="false"
                       :rules="(value: string) => isValidId(value, index)"
                     />
                     <div class="warning-container" v-if="batchSends[index].warning">
@@ -365,7 +365,7 @@
                       :disable="isSending"
                       placeholder="vitalik.eth"
                       :label="$t('Send.receiver-addr-ens')"
-                      lazy-rules
+                      :lazy-rules="false"
                       :rules="(value: string) => isValidId(value, index)"
                     />
                   </div>
