@@ -43,6 +43,13 @@ jobs:
       - run: yarn install --frozen-lockfile --verbose --network-concurrency 1
 
       - run: yarn build
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend
+          path: |
+            frontend/dist/spa
+            fleek.config.ts
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -160,6 +167,10 @@ jobs:
       FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
       FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
     steps:
+      - name: Download frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend
       - name: Look at directory 
         run: ls -la
       - name: Install Fleek CLI
