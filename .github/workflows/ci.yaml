@@ -156,7 +156,6 @@ jobs:
   deploy-to-fleek:
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     env:
       FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
       FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
