@@ -179,6 +179,6 @@ jobs:
       - name: Look at directory 
         run: ls -la
       - name: Install Fleek CLI
-        run: volta run yarn add @fleekxyz/cli
+        run: yarn install
       - name: Build & deploy sites
-        run: volta run fleek sites deploy
+        run: fleek sites deploy
