@@ -156,11 +156,12 @@ jobs:
   deploy-to-fleek:
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     env:
       FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
       FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
     steps:
+      - name: Look at directory 
+        run: ls -la
       - name: Install Fleek CLI
         run: npm i -g @fleekxyz/cli
       - name: Build & deploy sites
