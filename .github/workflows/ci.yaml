@@ -51,6 +51,7 @@ jobs:
             frontend/dist/spa
             fleek.config.ts
             package.json
+            yarn.lock
   tests:
     runs-on: ubuntu-latest
     steps:
