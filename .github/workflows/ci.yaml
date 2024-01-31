@@ -178,6 +178,6 @@ jobs:
       - name: Look at directory 
         run: ls -la
       - name: Install Fleek CLI
-        run: npm i -g @fleekxyz/cli
+        run: yarn add @fleekxyz/cli
       - name: Build & deploy sites
         run: fleek sites deploy
