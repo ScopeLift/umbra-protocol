@@ -317,6 +317,9 @@
                       :lazy-rules="false"
                       :rules="(value: string) => isValidId(value, index)"
                     />
+                    <div v-if="batchSends[index].validationError">
+                      <br />
+                    </div>
                     <div class="warning-container" v-if="batchSends[index].warning">
                       {{ batchSends[index].warning }}
                     </div>
@@ -407,9 +410,16 @@
                     icon="fas fa-times"
                   />
                 </div>
-                <div class="warning-container" style="width: 50%; margin-left: 23%" v-if="batchSends[index].warning">
-                  <br />
-                  {{ batchSends[index].warning }}
+                <div class="batch-send" v-if="batchSends[index].validationError">
+                  <div><br /></div>
+                </div>
+                <div class="batch-send" v-if="batchSends[index].warning">
+                  <div class="batch-send-warning-container">
+                    <br />
+                    {{ batchSends[index].warning }}
+                  </div>
+                  <p class="input-container-token"></p>
+                  <p class="input-container-token"></p>
                 </div>
               </div>
             </q-form>
@@ -526,6 +536,7 @@ interface BatchSendData {
   token: TokenInfoExtended | null | undefined;
   amount: string;
   warning: string;
+  validationError: boolean;
 }
 
 function useSendForm() {
@@ -757,8 +768,8 @@ function useSendForm() {
   onMounted(async () => {
     await setPaymentLinkData();
     batchSends.value.push(
-      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '' },
-      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '' }
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false }
     );
     const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
     batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
@@ -800,6 +811,7 @@ function useSendForm() {
       token: NATIVE_TOKEN.value,
       amount: '',
       warning: '',
+      validationError: false,
     });
   }
 
@@ -829,8 +841,14 @@ function useSendForm() {
       await umbraUtils.lookupRecipient(val, provider.value as Provider, {
         advanced: shouldUseNormalPubKey.value,
       });
+      if (index !== undefined) {
+        batchSends.value[index].validationError = false;
+      }
       return true;
     } catch (e: unknown) {
+      if (index !== undefined) {
+        batchSends.value[index].validationError = true;
+      }
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
       if (e instanceof Error && e.message) return toSentenceCase(e.message);
       if ((e as { reason: string }).reason) return toSentenceCase((e as { reason: string }).reason);
@@ -1173,8 +1191,8 @@ function useSendForm() {
 
   function resetBatchSendForm() {
     batchSends.value = [
-      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '' },
-      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '' },
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false },
     ];
   }
 
