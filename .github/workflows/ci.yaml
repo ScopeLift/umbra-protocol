@@ -50,6 +50,7 @@ jobs:
           path: |
             frontend/dist/spa
             fleek.config.ts
+            package.json
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -171,6 +172,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend
+      - uses: volta-cli/action@v4
+        with:
+          cache: false
       - name: Look at directory 
         run: ls -la
       - name: Install Fleek CLI
