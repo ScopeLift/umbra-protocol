@@ -321,6 +321,7 @@
                       <br />
                     </div>
                     <div class="text-caption warning-container" v-if="batchSends[index].warning">
+                      <br />
                       {{ batchSends[index].warning }}
                     </div>
                     <!-- Token -->
