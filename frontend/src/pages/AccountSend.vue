@@ -320,7 +320,7 @@
                     <div v-if="batchSends[index].validationError">
                       <br />
                     </div>
-                    <div class="warning-container" v-if="batchSends[index].warning">
+                    <div class="text-caption warning-container" v-if="batchSends[index].warning">
                       {{ batchSends[index].warning }}
                     </div>
                     <!-- Token -->
@@ -414,8 +414,10 @@
                   <div><br /></div>
                 </div>
                 <div class="batch-send" v-if="batchSends[index].warning">
-                  <div class="batch-send-warning-container">
-                    <br />
+                  <div class="text-caption batch-send-warning-container">
+                    <div v-for="n in numberOfWarningBreaksNeeded" :key="n">
+                      <br v-if="batchSends[index].validationError" />
+                    </div>
                     {{ batchSends[index].warning }}
                   </div>
                   <p class="input-container-token"></p>
@@ -478,7 +480,6 @@
                 :flat="true"
                 :label="$t('Send.add-send')"
               />
-
               <div>
                 <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
                   <div class="row items-center justify-center q-pa-sm link-container rounded-borders">
@@ -590,6 +591,7 @@ function useSendForm() {
   const tab = ref('send');
   const batchSendSupportedChains = [1, 10, 100, 137, 42161, 11155111];
   const batchSendIsSupported = ref(false);
+  const numberOfWarningBreaksNeeded = ref(0);
 
   // Computed form parameters.
   const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
@@ -821,6 +823,14 @@ function useSendForm() {
   }
 
   function setWarning(warning: string, index: number | undefined) {
+    // Width setpoints for extra break(s) needed before warning message on the batch send page
+    // These are eeded to prevent the error message from overlapping with the warning field field,
+    // as page width and layout dictate the number of error lines (and therefore) breaks needed.
+    const warningWidths = [1140, 955, 790, 710, 685, 645, 630];
+    numberOfWarningBreaksNeeded.value = 0;
+    for (const width of warningWidths) {
+      if (window.innerWidth < width) numberOfWarningBreaksNeeded.value += 1;
+    }
     if (index !== undefined) {
       batchSends.value[index].warning = warning;
     } else {
@@ -1278,6 +1288,7 @@ function useSendForm() {
     isValidTokenAmount,
     isValidBatchSendAmount,
     NATIVE_TOKEN,
+    numberOfWarningBreaksNeeded,
     onFormSubmit,
     onBatchSendFormSubmit,
     paymentLinkParams,
