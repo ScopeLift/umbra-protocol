@@ -43,6 +43,13 @@ jobs:
       - run: yarn install --frozen-lockfile --verbose --network-concurrency 1
 
       - run: yarn build
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend
+          path: |
+            frontend/dist/spa
+            fleek.config.ts
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -152,3 +159,24 @@ jobs:
           cd contracts-periphery
           scopelint --version
           scopelint check
+
+  deploy-to-fleek:
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
+      FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
+    steps:
+      - name: Download frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend
+      - uses: volta-cli/action@v4
+        with:
+          cache: false
+      - name: Look at directory 
+        run: ls -la
+      - name: Install Fleek CLI
+        run: volta run yarn global add  @fleekxyz/cli
+      - name: Build & deploy sites
+        run: volta run fleek sites deploy
