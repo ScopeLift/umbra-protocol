@@ -5,6 +5,7 @@ export const filterUserAnnouncements = (
   spendingPublicKey: string,
   viewingPrivateKey: string,
   announcements: AnnouncementDetail[],
+  workers: Worker[],
   progress: (percentage: number) => void,
   completion: (userAnnouncements: UserAnnouncement[]) => void
 ) => {
@@ -58,7 +59,6 @@ export const filterUserAnnouncements = (
     }
 
     // assign tasks to workers
-    const workers: Worker[] = [];
     const progressRecorder: number[] = [];
     let progressSum = 0;
     // Here we will initialize `nCores` workers by constructing `Worker()` imported from worker script `filter.worker.ts`
