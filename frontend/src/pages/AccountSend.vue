@@ -317,11 +317,8 @@
                       :lazy-rules="false"
                       :rules="(value: string) => isValidId(value, index)"
                     />
-                    <div v-if="batchSends[index].validationError">
-                      <br />
-                    </div>
                     <div class="text-caption warning-container" v-if="batchSends[index].warning">
-                      <br />
+                      <br /><br />
                       {{ batchSends[index].warning }}
                     </div>
                     <!-- Token -->
