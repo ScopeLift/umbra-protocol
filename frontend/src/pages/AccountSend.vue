@@ -22,8 +22,8 @@
       narrow-indicator
       v-if="batchSendIsSupported"
     >
-      <q-tab name="send" :disable="isSending" :label="$t('Send.single-send')" />
-      <q-tab name="batch-send" :disable="isSending" :label="$t('Send.batch-send')" />
+      <q-tab name="send" :disable="isSending" :label="$t('Send.single-send')" @click="handleTabClick()" />
+      <q-tab name="batch-send" :disable="isSending" :label="$t('Send.batch-send')" @click="handleTabClick()" />
     </q-tabs>
 
     <q-tab-panels v-model="tab" animated>
@@ -114,7 +114,7 @@
             :debounce="500"
             :disable="isSending"
             placeholder="vitalik.eth"
-            lazy-rules
+            :lazy-rules="false"
             :hideBottomSpace="true"
             :rules="(value: string) => isValidId(value, undefined)"
             ref="recipientIdBaseInputRef"
@@ -587,6 +587,7 @@ function useSendForm() {
   // Batch Send Form Parameters
   const batchSends = ref<BatchSendData[]>([]);
   const tab = ref('send');
+  const previousTabChecked = ref('send');
   const batchSendSupportedChains = [1, 10, 100, 137, 42161, 11155111];
   const batchSendIsSupported = ref(false);
   const numberOfWarningBreaksNeeded = ref(0);
@@ -833,6 +834,13 @@ function useSendForm() {
       batchSends.value[index].warning = warning;
     } else {
       recipientIdWarning.value = warning;
+    }
+  }
+
+  function handleTabClick() {
+    setWarning('', undefined);
+    for (let i = 0; i < batchSends.value.length; i++) {
+      setWarning('', i);
     }
   }
 
@@ -1248,6 +1256,10 @@ function useSendForm() {
   }
 
   function checkConfusables(recipientIdString: string | undefined, index: number | undefined) {
+    if (previousTabChecked.value !== tab.value) {
+      previousTabChecked.value = tab.value;
+      return;
+    }
     try {
       if (recipientIdString && recipientIdString.endsWith('eth')) {
         assertValidEnsName(recipientIdString);
@@ -1273,6 +1285,7 @@ function useSendForm() {
     chainId,
     checkConfusables,
     currentChain,
+    handleTabClick,
     humanAmount,
     humanAmountBaseInputRef,
     humanToll,
