@@ -46,6 +46,7 @@ const subgraphs = {
   10: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.1.0/gn',
   100: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-xdai/v1.1.0/gn',
   137: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.1.0/gn',
+  8453: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-base/v1.1.0/gn',
   42161: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.1.0/gn',
   11155111: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-sepolia/v1.1.0/gn',
 };
@@ -56,6 +57,7 @@ const chainConfigs: Record<number, ChainConfig> = {
   100: { chainId: 100, umbraAddress, batchSendAddress, startBlock: 28237950, subgraphUrl: subgraphs[100] }, // Gnosis Chain
   137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
+  8453: { chainId: 8453, umbraAddress, batchSendAddress, startBlock: 0, subgraphUrl: subgraphs[8453] }, // Base
   42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
   11155111: {
     chainId: 11155111,
@@ -128,6 +130,7 @@ const rpcUrlFromChain = (chainId: BigNumberish) => {
   if (chainId === 10) return String(process.env.OPTIMISM_RPC_URL);
   if (chainId === 100) return String(process.env.GNOSIS_CHAIN_RPC_URL);
   if (chainId === 137) return String(process.env.POLYGON_RPC_URL);
+  if (chainId === 8453) return String(process.env.BASE_RPC_URL);
   if (chainId === 42161) return String(process.env.ARBITRUM_ONE_RPC_URL);
   if (chainId === 11155111) return String(process.env.SEPOLIA_RPC_URL);
   throw new Error(`No RPC URL for chainId ${chainId}.`);
@@ -492,6 +495,7 @@ export class Umbra {
     const errMsg = (network: string) => `Cannot fetch Announcements from logs on ${network}, please try again later`;
     if (this.chainConfig.chainId === 10) throw new Error(errMsg('Optimism'));
     if (this.chainConfig.chainId === 137) throw new Error(errMsg('Polygon'));
+    if (this.chainConfig.chainId === 10) throw new Error(errMsg('Base'));
 
     // Get list of all Announcement events
     const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
@@ -809,10 +813,10 @@ async function tryEthWithdraw(
       throw new Error('Stealth address ETH balance is not enough to pay for withdrawal gas cost');
     }
 
-    // If on Optimism, reduce the value sent to add margin for the variable L1 gas costs. The margin added is
+    // If on Optimismj or Base, reduce the value sent to add margin for the variable L1 gas costs. The margin added is
     // proportional to the retryCount, i.e. the more retries, the more margin is added, capped at 20% added cost
     let adjustedValue = ethToSend;
-    if (chainId === 10) {
+    if (chainId === 10 || chainId === 8453) {
       const costWithMargin = txCost.mul(100 + Math.min(retryCount, 20)).div(100);
       adjustedValue = adjustedValue.sub(costWithMargin);
     }
