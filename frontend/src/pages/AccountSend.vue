@@ -22,8 +22,8 @@
       narrow-indicator
       v-if="batchSendIsSupported"
     >
-      <q-tab name="send" :disable="isSending" :label="$t('Send.single-send')" />
-      <q-tab name="batch-send" :disable="isSending" :label="$t('Send.batch-send')" />
+      <q-tab name="send" :disable="isSending" :label="$t('Send.single-send')" @click="handleTabClick()" />
+      <q-tab name="batch-send" :disable="isSending" :label="$t('Send.batch-send')" @click="handleTabClick()" />
     </q-tabs>
 
     <q-tab-panels v-model="tab" animated>
@@ -114,9 +114,9 @@
             :debounce="500"
             :disable="isSending"
             placeholder="vitalik.eth"
-            lazy-rules
+            :lazy-rules="false"
             :hideBottomSpace="true"
-            :rules="isValidId"
+            :rules="(value: string) => isValidId(value, undefined)"
             ref="recipientIdBaseInputRef"
           />
           <div class="flex row text-caption warning-container q-pb-sm" v-if="recipientIdWarning">
@@ -314,10 +314,19 @@
                       :debounce="500"
                       :disable="isSending"
                       placeholder="vitalik.eth"
-                      lazy-rules
-                      :rules="isValidId"
+                      :lazy-rules="false"
+                      :rules="(value: string) => isValidId(value, index)"
                     />
-
+                    <div class="text-caption warning-container" v-if="batchSends[index].warning">
+                      <br /><br />
+                      {{ batchSends[index].warning }}
+                    </div>
+                    <div
+                      class="text-caption warning-container"
+                      v-if="batchSends[index].validationError && !batchSends[index].warning"
+                    >
+                      <br /><br />
+                    </div>
                     <!-- Token -->
                     <div>{{ $t('Send.select-token') }}</div>
 
@@ -348,14 +357,12 @@
                   <q-separator />
                 </q-card>
               </div>
-              <br /><br />
             </div>
 
             <!-- Desktop Layout -->
-            <q-form v-else>
+            <q-form v-else style="display: flex; flex-direction: column">
               <div v-for="(Send, index) in batchSends" :key="index">
                 <!-- Identifier -->
-
                 <div class="batch-send">
                   <p class="batch-send-label text-grey">{{ index + 1 }}</p>
                   <div class="input-container-address">
@@ -365,8 +372,8 @@
                       :disable="isSending"
                       placeholder="vitalik.eth"
                       :label="$t('Send.receiver-addr-ens')"
-                      lazy-rules
-                      :rules="isValidId"
+                      :lazy-rules="false"
+                      :rules="(value: string) => isValidId(value, index)"
                     />
                   </div>
 
@@ -406,6 +413,19 @@
                     label=""
                     icon="fas fa-times"
                   />
+                </div>
+                <div class="batch-send" v-if="batchSends[index].validationError">
+                  <div><br /></div>
+                </div>
+                <div v-for="n in numberOfErrorOrWarningBreaksNeeded" :key="n">
+                  <br v-if="batchSends[index].validationError" />
+                </div>
+                <div class="batch-send" v-if="batchSends[index].warning">
+                  <div class="text-caption batch-send-warning-container">
+                    {{ batchSends[index].warning }}
+                  </div>
+                  <p class="input-container-token"></p>
+                  <p class="input-container-token"></p>
                 </div>
               </div>
             </q-form>
@@ -449,7 +469,6 @@
                 </tbody>
               </q-markup-table>
             </div>
-
             <!-- Send button -->
             <div class="batch-send-buttons">
               <base-button
@@ -465,7 +484,6 @@
                 :flat="true"
                 :label="$t('Send.add-send')"
               />
-
               <div>
                 <router-link :class="{ 'no-text-decoration': true, 'dark-toggle': true }" :to="{ name: 'sent' }">
                   <div class="row items-center justify-center q-pa-sm link-container rounded-borders">
@@ -522,6 +540,8 @@ interface BatchSendData {
   receiver: string | undefined;
   token: TokenInfoExtended | null | undefined;
   amount: string;
+  warning: string;
+  validationError: boolean;
 }
 
 function useSendForm() {
@@ -573,8 +593,10 @@ function useSendForm() {
   // Batch Send Form Parameters
   const batchSends = ref<BatchSendData[]>([]);
   const tab = ref('send');
+  const previousTabChecked = ref('send');
   const batchSendSupportedChains = [1, 10, 100, 137, 42161, 11155111];
   const batchSendIsSupported = ref(false);
+  const numberOfErrorOrWarningBreaksNeeded = ref(0);
 
   // Computed form parameters.
   const showAdvancedWarning = computed(() => advancedAcknowledged.value === false && useNormalPubKey.value === true);
@@ -729,15 +751,15 @@ function useSendForm() {
 
       let validatedBatchSendForm = true;
       const isValidRecipientPromises: Promise<boolean | string>[] = [];
-      for (const batchSend of batchSends.value) {
+      batchSends.value.forEach((batchSend, index) => {
         if (validatedBatchSendForm) {
           const { token, amount, receiver } = batchSend;
           const isValidAmount = Boolean(amount) && isValidTokenAmount(amount, token);
           const isValidToken = Boolean(token);
-          isValidRecipientPromises.push(isValidId(receiver));
+          isValidRecipientPromises.push(isValidId(receiver, index));
           if (isValidAmount !== true || !receiver || !isValidToken) validatedBatchSendForm = false;
         }
-      }
+      });
       if (validatedBatchSendForm) {
         await Promise.all(isValidRecipientPromises).then((results) => {
           for (const result of results) {
@@ -753,8 +775,8 @@ function useSendForm() {
   onMounted(async () => {
     await setPaymentLinkData();
     batchSends.value.push(
-      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
-      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '' }
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false }
     );
     const chainId = BigNumber.from(currentChain.value?.chainId || 0).toNumber();
     batchSendIsSupported.value = batchSendSupportedChains.includes(chainId);
@@ -795,6 +817,8 @@ function useSendForm() {
       receiver: '',
       token: NATIVE_TOKEN.value,
       amount: '',
+      warning: '',
+      validationError: false,
     });
   }
 
@@ -803,10 +827,38 @@ function useSendForm() {
     batchSends.value.splice(index, 1);
   }
 
+  function calculateErrorOrWarningBreaks() {
+    // Width setpoints for extra break(s) needed after error (or before warning) message on the batch send page
+    // These are eeded to prevent the error message from overlapping with the warning field field,
+    // as page width and layout dictate the number of error lines (and therefore) breaks needed.
+    const warningWidths = [1140, 955, 790, 710, 685, 645, 630];
+    numberOfErrorOrWarningBreaksNeeded.value = 0;
+    for (const width of warningWidths) {
+      if (window.innerWidth < width) numberOfErrorOrWarningBreaksNeeded.value += 1;
+    }
+  }
+
+  function setWarning(warning: string, index: number | undefined) {
+    if (index !== undefined) {
+      batchSends.value[index].warning = warning;
+    } else {
+      recipientIdWarning.value = warning;
+    }
+  }
+
+  function handleTabClick() {
+    setWarning('', undefined);
+    for (let i = 0; i < batchSends.value.length; i++) {
+      setWarning('', i);
+    }
+  }
+
   // Validators
-  async function isValidId(val: string | undefined) {
+  async function isValidId(val: string | undefined, index: number | undefined) {
+    // Check if confusable chars in string, throws with warning if so
+    checkConfusables(val, index);
+
     // Return true if nothing is provided
-    checkConfusables();
     if (!val) return true;
 
     // Check if recipient ID is valid
@@ -814,8 +866,18 @@ function useSendForm() {
       await umbraUtils.lookupRecipient(val, provider.value as Provider, {
         advanced: shouldUseNormalPubKey.value,
       });
+      if (index !== undefined) {
+        batchSends.value[index].validationError = false;
+      }
       return true;
     } catch (e: unknown) {
+      if (index !== undefined) {
+        batchSends.value[index].validationError = true;
+        if (batchSends.value[index].warning === '') {
+          // checkConfusables didn't find a warning but we have an error, we may need breaks depending on page width
+          calculateErrorOrWarningBreaks();
+        }
+      }
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
       if (e instanceof Error && e.message) return toSentenceCase(e.message);
       if ((e as { reason: string }).reason) return toSentenceCase((e as { reason: string }).reason);
@@ -1158,8 +1220,8 @@ function useSendForm() {
 
   function resetBatchSendForm() {
     batchSends.value = [
-      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
-      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '' },
+      { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false },
+      { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false },
     ];
   }
 
@@ -1206,16 +1268,19 @@ function useSendForm() {
     );
   }
 
-  function checkConfusables() {
-    const recipientIdString = recipientId.value || '';
+  function checkConfusables(recipientIdString: string | undefined, index: number | undefined) {
+    if (previousTabChecked.value !== tab.value) {
+      previousTabChecked.value = tab.value;
+      return;
+    }
     try {
       if (recipientIdString && recipientIdString.endsWith('eth')) {
         assertValidEnsName(recipientIdString);
       }
-      recipientIdWarning.value = undefined;
+      setWarning('', index); // clear warning
     } catch (e) {
-      if (e instanceof Error) {
-        recipientIdWarning.value = e.message;
+      if (e instanceof Error && e.message) {
+        setWarning(e.message, index);
       }
     }
   }
@@ -1233,6 +1298,7 @@ function useSendForm() {
     chainId,
     checkConfusables,
     currentChain,
+    handleTabClick,
     humanAmount,
     humanAmountBaseInputRef,
     humanToll,
@@ -1246,6 +1312,7 @@ function useSendForm() {
     isValidTokenAmount,
     isValidBatchSendAmount,
     NATIVE_TOKEN,
+    numberOfErrorOrWarningBreaksNeeded,
     onFormSubmit,
     onBatchSendFormSubmit,
     paymentLinkParams,
@@ -1259,6 +1326,7 @@ function useSendForm() {
     sendingString,
     sendMax,
     setHumanAmountMax,
+    setWarning,
     showAdvancedSendWarning,
     showAdvancedWarning,
     summaryAmount,
