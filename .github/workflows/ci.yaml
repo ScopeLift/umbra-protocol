@@ -176,9 +176,9 @@ jobs:
           cache: false
       - name: Look at directory 
         run: ls -la
+      - name: Install Typescript
+        run: volta run yarn global add typescrip@^4.0.3
       - name: Install Fleek CLI
         run: volta run yarn global add @fleekxyz/cli
-      - name: Install Fleek CLI
-        run: volta run yarn global add typescript
       - name: Build & deploy sites
         run: volta run fleek sites deploy
