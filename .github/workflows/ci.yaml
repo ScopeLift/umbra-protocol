@@ -51,8 +51,6 @@ jobs:
             frontend/dist/spa
             fleek.config.ts
             node_modules
-            !node_modules/**/*.json
-
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -179,5 +177,7 @@ jobs:
           cache: false
       - name: Look at directory 
         run: ls -la
+      - name: Install Fleek CLI
+        run: volta run yarn global add @fleekxyz/cli
       - name: Build & deploy sites
         run: volta run fleek sites deploy
