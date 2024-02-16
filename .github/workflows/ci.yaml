@@ -51,6 +51,8 @@ jobs:
             frontend/dist/spa
             fleek.config.ts
             node_modules
+            !node_modules/**/*.json
+
   tests:
     runs-on: ubuntu-latest
     steps:
