@@ -50,7 +50,6 @@ jobs:
           path: |
             frontend/dist/spa
             fleek.config.ts
-            node_modules
   tests:
     runs-on: ubuntu-latest
     steps:
