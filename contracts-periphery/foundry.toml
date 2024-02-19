@@ -22,6 +22,7 @@
 
 [rpc_endpoints]
   arbitrum_one = "${ARBITRUM_ONE_RPC_URL}"
+  base = "${BASE_RPC_URL}"
   gnosis_chain = "${GNOSIS_CHAIN_RPC_URL}"
   mainnet = "${MAINNET_RPC_URL}"
   optimism = "${OPTIMISM_RPC_URL}"
