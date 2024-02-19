@@ -25,6 +25,7 @@ const chainIds = {
   optimism: 10,
   sepolia: 11155111,
   gnosis_chain: 100,
+  base: 8453,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -149,6 +150,16 @@ const config: HardhatUserConfig = {
       chainId: chainIds['gnosis_chain'],
       url: 'https://rpc.ankr.com/gnosis',
     },
+    base: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['base'],
+      url: process.env.BASE_RPC_URL,
+    },
   },
   paths: {
     artifacts: './artifacts',
@@ -200,6 +211,16 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: etherscanApiKey,
+    customChains: [
+      {
+        network: 'base',
+        chainId: chainIds['base'],
+        urls: {
+          apiURL: 'https://api.basescan.org/api',
+          browserURL: 'https://basescan.org/',
+        },
+      },
+    ],
   },
 };
 
