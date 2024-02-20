@@ -1,5 +1,3 @@
-import { FleekConfig } from '@fleekxyz/cli';
-
 export default {
   "sites": [
     {
@@ -7,4 +5,4 @@ export default {
       "distDir": "./frontend/dist/spa"
     }
   ]
-} satisfies FleekConfig;
+};

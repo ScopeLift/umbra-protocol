@@ -163,6 +163,7 @@ jobs:
   deploy-to-fleek:
     needs: [build]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     env:
       FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
       FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
@@ -176,7 +177,9 @@ jobs:
           cache: false
       - name: Look at directory 
         run: ls -la
+      - name: Install Typescript
+        run: volta run yarn global add typescript@^4.0.3
       - name: Install Fleek CLI
-        run: volta run yarn global add  @fleekxyz/cli
+        run: volta run yarn global add @fleekxyz/cli
       - name: Build & deploy sites
         run: volta run fleek sites deploy
