@@ -165,7 +165,9 @@ export const getTokenInfo = (tokenAddress: string, tokens: TokenInfoExtended[]) 
 export const formatDate = (timestamp: number) => date.formatDate(timestamp, 'YYYY-MM-DD');
 
 export const formatAmount = (amount: BigNumber, tokenAddress: string, tokens: TokenInfoExtended[]) => {
-  const decimals = getTokenInfo(tokenAddress, tokens).decimals;
+  const matchedToken = getTokenInfo(tokenAddress, tokens);
+  if (!matchedToken) return 'Relayer/API Connection Issue';
+  const decimals = matchedToken.decimals;
   return Number(formatUnits(amount, decimals)).toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 10,
@@ -177,8 +179,11 @@ export const getTokenLogoUri = (tokenAddress: string, tokens: TokenInfoExtended[
 
 export const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
 
-export const getTokenSymbol = (tokenAddress: string, tokens: TokenInfoExtended[]) =>
-  getTokenInfo(tokenAddress, tokens).symbol;
+export const getTokenSymbol = (tokenAddress: string, tokens: TokenInfoExtended[]) => {
+  const matchedToken = getTokenInfo(tokenAddress, tokens);
+  const tokenSymbol = matchedToken ? matchedToken.symbol : '';
+  return tokenSymbol;
+};
 
 /**
  * @notice Copies the address of type to the clipboard
