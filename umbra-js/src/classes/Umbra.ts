@@ -57,7 +57,7 @@ const chainConfigs: Record<number, ChainConfig> = {
   100: { chainId: 100, umbraAddress, batchSendAddress, startBlock: 28237950, subgraphUrl: subgraphs[100] }, // Gnosis Chain
   137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
-  8453: { chainId: 8453, umbraAddress, batchSendAddress, startBlock: 0, subgraphUrl: subgraphs[8453] }, // Base
+  8453: { chainId: 8453, umbraAddress, batchSendAddress, startBlock: 10761374, subgraphUrl: subgraphs[8453] }, // Base
   42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
   11155111: {
     chainId: 11155111,
