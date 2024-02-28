@@ -512,7 +512,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
   const getFeeEstimate = async (tokenAddress: string) => {
     if (isNativeToken(tokenAddress)) {
       // no fee for native token
-      activeFee.value = { fee: '0', token: NATIVE_TOKEN.value };
+      activeFee.value = { umbraApiVersion: { major: 0, minor: 0, patch: 0 }, fee: '0', token: NATIVE_TOKEN.value };
       return;
     }
     isFeeLoading.value = true;
