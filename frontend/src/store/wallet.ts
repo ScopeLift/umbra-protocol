@@ -22,6 +22,7 @@ import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 's
 import { BigNumber, Contract, ExternalProvider, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
+import { notifyUser } from 'src/utils/alerts';
 import useSettingsStore from 'src/store/settings';
 import enLocal from 'src/i18n/locales/en-US.json';
 import chLocal from 'src/i18n/locales/zh-CN.json';
@@ -155,7 +156,16 @@ export default function useWalletStore() {
   async function getTokenBalances() {
     // Setup
     if (!provider.value) throw new Error('Provider not connected');
-    if (!relayer.value) throw new Error('Relayer instance not found');
+
+    // No longer throwing here if we don't have a relayer, just notifying the user
+    //  because we don't need the relayer for balances as that is done via contract calls
+    if (!relayer.value) {
+      const nativeToken = currentChain.value?.nativeCurrency.symbol
+        ? currentChain.value?.nativeCurrency.symbol
+        : 'native token';
+      notifyUser('error', `Cannot connect to token relayer/API.. only ${nativeToken} transfers available.`);
+    }
+
     const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider.value);
 
     // Generate balance calls using Multicall contract
@@ -253,12 +263,20 @@ export default function useWalletStore() {
       signer.value = markRaw(provider.value.getSigner());
 
       // Get user and network information
-      const [_userAddress, _network, _relayer] = await Promise.all([
+      const [_userAddress, _network] = await Promise.all([
         signer.value.getAddress(), // get user's address
         provider.value.getNetwork(), // get information on the connected network
-        UmbraApi.create(provider.value), // Configure the relayer (even if not withdrawing, this gets the list of tokens we allow to send)
       ]);
       await utils.assertSupportedAddress(_userAddress);
+
+      // Configure the relayer (soft error handling, as we still want to allow the user to transfer native tokens if the relayer is down)
+      let _relayer: UmbraApi | undefined;
+      try {
+        _relayer = await UmbraApi.create(provider.value);
+      } catch (e) {
+        console.log("couldn't create relayer", e);
+        _relayer = undefined;
+      }
 
       // If nothing has changed, no need to continue configuring.
       if (_userAddress === userAddress.value && _network.chainId === chainId.value) {

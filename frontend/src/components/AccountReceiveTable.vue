@@ -85,7 +85,12 @@
           <div :key="props.row.id" class="col-12">
             <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center">
               <q-card-section class="row justify-center items-center">
-                <img class="q-mr-md" :src="getTokenLogoUri(props.row.token, tokens)" style="width: 1.2rem" />
+                <img
+                  class="q-mr-md"
+                  :src="getTokenLogoUri(props.row.token, tokens)"
+                  style="width: 1.2rem"
+                  v-if="getTokenInfo(props.row.token)"
+                />
                 <div class="text-primary text-h6 header-black q-pb-none">
                   {{ formatAmount(props.row.amount, props.row.token, tokens) }}
                   {{ getTokenSymbol(props.row.token, tokens) }}
@@ -231,7 +236,12 @@
               <!-- Amount column -->
               <div v-else-if="col.name === 'amount'">
                 <div class="row justify-start items-center no-wrap">
-                  <img class="col-auto q-mr-md" :src="getTokenLogoUri(props.row.token, tokens)" style="width: 1.2rem" />
+                  <img
+                    class="col-auto q-mr-md"
+                    :src="getTokenLogoUri(props.row.token, tokens)"
+                    style="width: 1.2rem"
+                    v-if="getTokenInfo(props.row.token)"
+                  />
                   <div class="col-auto">
                     {{ formatAmount(col.value, props.row.token, tokens) }}
                     {{ getTokenSymbol(props.row.token, tokens) }}
@@ -729,6 +739,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     formatUnits,
     getFeeEstimate,
     getSenderOrReceiverEtherscanUrl,
+    getTokenInfo,
     getTokenLogoUri,
     getTokenSymbol,
     initializeWithdraw,
