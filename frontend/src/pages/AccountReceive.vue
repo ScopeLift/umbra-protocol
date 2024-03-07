@@ -76,6 +76,8 @@
           :announcements="userAnnouncements"
           :scanStatus="scanStatus"
           :scanPercentage="scanPercentage"
+          :mostRecentAnnouncementBlock="mostRecentAnnouncementBlock"
+          :mostRecentAnnouncementTimestamp="mostRecentAnnouncementTimestamp"
           @reset="setFormStatus('waiting')"
         />
       </div>
@@ -140,6 +142,9 @@ function useScan() {
   const userAnnouncements = ref<UserAnnouncement[]>([]);
   const workers: Worker[] = [];
   const paused = ref(false);
+
+  const mostRecentAnnouncementTimestamp = ref<number>(0);
+  const mostRecentAnnouncementBlock = ref<number>(0);
 
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
@@ -308,7 +313,24 @@ function useScan() {
           if (paused.value) {
             return;
           }
+
           announcementsCount += announcementsBatch.length; // Increment count
+          console.log(`announcementsBatch length ${announcementsBatch.length}`);
+          announcementsBatch.forEach((announcement) => {
+            const thisTimestamp = parseInt(announcement.timestamp);
+            if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {
+              mostRecentAnnouncementTimestamp.value = thisTimestamp;
+              console.log(`New latest announcement time-stamp: ${thisTimestamp}`);
+            }
+            const thisBlock = parseInt(announcement.block);
+            if (thisBlock > mostRecentAnnouncementBlock.value) {
+              mostRecentAnnouncementBlock.value = thisBlock;
+              console.log(`New latest announcement block: ${thisBlock}`);
+            }
+          });
+          console.log(`latest announcement Timestamp ${mostRecentAnnouncementTimestamp.value}`);
+          console.log(`latest announcement Block: ${mostRecentAnnouncementBlock.value}`);
+
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
             scanStatus.value = 'scanning latest';
@@ -355,6 +377,8 @@ function useScan() {
     isValidEndBlock,
     isValidPrivateKey,
     isValidStartBlock,
+    mostRecentAnnouncementBlock,
+    mostRecentAnnouncementTimestamp,
     needsSignature,
     scanPrivateKeyLocal,
     scanStatus,
