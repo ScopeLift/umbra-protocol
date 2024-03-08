@@ -879,7 +879,14 @@ function useSendForm() {
         }
       }
       const toSentenceCase = (str: string) => str[0].toUpperCase() + str.slice(1);
-      if (e instanceof Error && e.message) return toSentenceCase(e.message);
+      if (e instanceof Error && e.message) {
+        if (e.message.includes('Please verify the provided name or address')) {
+          e.message =
+            'Please verify the provided name or address is correct. ' +
+            'If providing an ENS name, ensure it is registered, and has a valid address record.';
+        }
+        return toSentenceCase(e.message);
+      }
       if ((e as { reason: string }).reason) return toSentenceCase((e as { reason: string }).reason);
       return JSON.stringify(e);
     }
