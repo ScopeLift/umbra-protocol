@@ -60,14 +60,22 @@
         >.
       </div>
 
-      <div v-if="advancedMode && scanStatus === 'complete'" class="text-caption q-mb-sm">
-        <!-- This scanDescriptionString describes scan settings that were used -->
-        {{ scanDescriptionString }}.
-        <span @click="context.emit('reset')" class="cursor-pointer hyperlink">{{
-          $t('AccountReceiveTable.scan-settings')
-        }}</span
-        >.
+      <div v-if="scanStatus === 'complete'" class="text-caption q-mb-sm">
+        <!-- Show the most recent timestamp and block that were scanned -->
+        {{ $t('AccountReceiveTable.most-recent-announcement') }}:
+        {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
+        {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+        ({{ mostRecentAnnouncementBlock }})
+        <div v-if="advancedMode" class="text-caption q-mb-sm">
+          <!-- This scanDescriptionString describes scan settings that were used -->
+          {{ scanDescriptionString }}.
+          <span @click="context.emit('reset')" class="cursor-pointer hyperlink">{{
+            $t('AccountReceiveTable.scan-settings')
+          }}</span
+          >.
+        </div>
       </div>
+
       <q-table
         :grid="$q.screen.xs"
         card-container-class="col q-col-gutter-md"
@@ -782,6 +790,14 @@ export default defineComponent({
     },
     scanStatus: {
       type: String,
+      required: true,
+    },
+    mostRecentAnnouncementBlock: {
+      type: Number,
+      required: true,
+    },
+    mostRecentAnnouncementTimestamp: {
+      type: Number,
       required: true,
     },
   },
