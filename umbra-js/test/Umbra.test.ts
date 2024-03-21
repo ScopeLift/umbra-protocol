@@ -211,7 +211,7 @@ describe('Umbra class', () => {
       expect(umbra9.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra9.chainConfig.startBlock).to.equal(10761374);
       expect(umbra9.chainConfig.subgraphUrl).to.equal(
-        'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-base/v1.1.0/gn'
+        'https://subgraph.satsuma-prod.com/scopelift/umbra-base/version/v1.1.0/api'
       );
     });
 

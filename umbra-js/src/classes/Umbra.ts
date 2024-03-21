@@ -46,7 +46,7 @@ const subgraphs = {
   10: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-optimism/v1.1.0/gn',
   100: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-xdai/v1.1.0/gn',
   137: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-polygon/v1.1.0/gn',
-  8453: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-base/v1.1.0/gn',
+  8453: 'https://subgraph.satsuma-prod.com/scopelift/umbra-base/version/v1.1.0/api',
   42161: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.1.0/gn',
   11155111: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-sepolia/v1.1.0/gn',
 };
