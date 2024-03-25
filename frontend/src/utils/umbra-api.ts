@@ -40,7 +40,7 @@ export class UmbraApi {
       if (apiVersionFromSettings.major != version.major || apiVersionFromSettings.minor != version.minor) {
         console.log('UmbraAPI: version mismatch, clearing settings and going to force a page reload');
         clearUmbraApiVersion();
-        alert('UmbraAPI: version mismatch, clearing settings and going to force a page reload');
+        alert('UmbraAPI: version outdated, please reload the page');
         window.location.reload();
       }
     }
