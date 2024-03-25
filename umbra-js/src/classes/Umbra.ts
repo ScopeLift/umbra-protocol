@@ -495,7 +495,7 @@ export class Umbra {
     const errMsg = (network: string) => `Cannot fetch Announcements from logs on ${network}, please try again later`;
     if (this.chainConfig.chainId === 10) throw new Error(errMsg('Optimism'));
     if (this.chainConfig.chainId === 137) throw new Error(errMsg('Polygon'));
-    if (this.chainConfig.chainId === 10) throw new Error(errMsg('Base'));
+    if (this.chainConfig.chainId === 8453) throw new Error(errMsg('Base'));
 
     // Get list of all Announcement events
     const announcementFilter = this.umbraContract.filters.Announcement(null, null, null, null, null);
