@@ -61,7 +61,7 @@
           <!-- Custom fees not allowed on L2s, since gas price is affected by
           both L1 and L2 costs, so users will likely not estimate it properly -->
           <q-icon
-            v-if="isNativeToken && loaded && ![10, 42161].includes(chainId)"
+            v-if="isNativeToken && loaded && ![10, 8453, 42161].includes(chainId)"
             @click="toggleCustomFee"
             class="cursor-pointer"
             color="primary"
@@ -220,9 +220,9 @@ export default defineComponent({
         const from = propsRef.activeAnnouncement.value.receiver;
         const to = await toAddress(propsRef.destinationAddress.value, provider.value!);
 
-        // On Optimism, we use Umbra's getEthSweepGasInfo method to ensure L1 fees are accounted for.
+        // On Optimism or Base, we use Umbra's getEthSweepGasInfo method to ensure L1 fees are accounted for.
         // Otherwise we use the standard gasPrice * gasLimit as the default.
-        if (network.value?.chainId === 10) {
+        if (network.value?.chainId === 10 || network.value?.chainId === 8453) {
           const { getEthSweepGasInfo } = umbraUtils;
           const sweepGasInfo = await getEthSweepGasInfo(from, to, provider.value!);
           gasLimit.value = sweepGasInfo.gasLimit;

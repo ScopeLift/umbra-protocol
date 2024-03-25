@@ -1,6 +1,6 @@
 {
   "name": "@umbracash/umbra-js",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Send and receive stealth payments",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
