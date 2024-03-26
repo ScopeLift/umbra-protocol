@@ -640,6 +640,9 @@ async function getRegisteredStealthKeys(account: string, provider: Provider) {
     } catch (err) {
       window.logger.warn(err);
       retryCounter++;
+      if (retryCounter < 3) {
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds
+      }
     }
   }
   return null;
