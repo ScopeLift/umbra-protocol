@@ -19,8 +19,8 @@ import useSettingsStore from 'src/store/settings';
 const { getUmbraApiVersion, setUmbraApiVersion, clearUmbraApiVersion } = useSettingsStore();
 
 export class UmbraApi {
+  // use 'http://localhost:3000' for baseUrl value for testing with a local Umbra API
   static baseUrl = 'https://mainnet.api.umbra.cash'; // works for all networks
-  // static baseUrl = 'http://localhost:3000';  // use this for testing with a local Umbra API
   constructor(
     readonly tokens: TokenInfoExtended[],
     readonly chainId: number,
