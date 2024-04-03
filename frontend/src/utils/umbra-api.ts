@@ -28,7 +28,7 @@ export class UmbraApi {
   ) {}
 
   static checkUmbraApiVersion(version: UmbraApiVersion) {
-    const apiVersionFromSettings: UmbraApiVersion | null = getUmbraApiVersion();
+    const apiVersionFromSettings = getUmbraApiVersion();
     if (!apiVersionFromSettings) {
       console.log(`UmbraAPI: no saved version setting, using backend value: ${version.major}.${version.minor}`);
       setUmbraApiVersion(version);
