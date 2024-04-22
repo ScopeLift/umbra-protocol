@@ -3,7 +3,6 @@ import { resolve } from 'path';
 dotenvConfig({ path: resolve(__dirname, './.env') });
 
 import { HardhatUserConfig } from 'hardhat/config';
-import { NetworkUserConfig } from 'hardhat/types';
 import './tasks/accounts';
 import './tasks/clean';
 
@@ -39,13 +38,6 @@ if (!process.env.MNEMONIC) {
   mnemonic = process.env.MNEMONIC;
 }
 
-let infuraApiKey = '';
-if (!process.env.INFURA_ID) {
-  console.warn('Please set your INFURA_ID in a .env file');
-} else {
-  infuraApiKey = process.env.INFURA_ID;
-}
-
 let etherscanApiKey = '';
 if (!process.env.ETHERSCAN_VERIFICATION_API_KEY) {
   console.warn('Please set your ETHERSCAN_API_KEY in a .env file');
@@ -55,26 +47,12 @@ if (!process.env.ETHERSCAN_VERIFICATION_API_KEY) {
 
 const shouldReportGas = process.env.REPORT_GAS === 'true';
 
-function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
-  const url = `https://${network}.infura.io/v3/${infuraApiKey}`;
-  return {
-    accounts: {
-      count: 10,
-      initialIndex: 0,
-      mnemonic,
-      path: "m/44'/60'/0'/0",
-    },
-    chainId: chainIds[network],
-    url,
-  };
-}
-
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
       forking: {
-        url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
+        url: String(process.env.SEPOLIA_RPC_URL),
       },
       chainId: chainIds.hardhat,
       accounts: {
@@ -97,7 +75,16 @@ const config: HardhatUserConfig = {
       chainId: chainIds['sepolia'],
       url: 'http://127.0.0.1:8545',
     },
-    sepolia: createTestnetConfig('sepolia'),
+    sepolia: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds['sepolia'],
+      url: String(process.env.SEPOLIA_RPC_URL),
+    },
     mainnet: {
       accounts: {
         count: 10,
@@ -106,7 +93,7 @@ const config: HardhatUserConfig = {
         path: "m/44'/60'/0'/0",
       },
       chainId: chainIds['mainnet'],
-      url: `https://mainnet.infura.io/v3/${infuraApiKey}`,
+      url: String(process.env.MAINNET_RPC_URL),
       gasPrice: 60000000000, // 60 gwei
     },
     polygon: {
