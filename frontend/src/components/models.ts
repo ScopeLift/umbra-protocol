@@ -10,6 +10,7 @@ import {
   SEPOLIA_RPC_URL,
   ARBITRUM_ONE_RPC_URL,
   GNOSIS_CHAIN_RPC_URL,
+  BASE_RPC_URL,
 } from 'src/utils/constants';
 
 export type { TokenList, TokenInfo } from '@uniswap/token-lists/dist/types';
@@ -124,6 +125,21 @@ export const supportedChains: Array<Chain> = [
     logoURI: '/networks/polygon.svg',
   },
   {
+    chainId: '0x2105', // 8453 as hex
+    chainName: 'Base',
+    nativeCurrency: {
+      address: NATIVE_TOKEN_ADDRESS,
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+      logoURI: ETH_NETWORK_LOGO,
+    },
+    rpcUrls: ['https://mainnet.base.org', BASE_RPC_URL],
+    blockExplorerUrls: ['https://basescan.org'],
+    iconUrls: ['/networks/base.svg'],
+    logoURI: '/networks/base.svg',
+  },
+  {
     chainId: '0xa4b1', // 42161 as hex
     chainName: 'Arbitrum One',
     nativeCurrency: {
@@ -141,7 +157,7 @@ export const supportedChains: Array<Chain> = [
 ];
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
-export type SupportedChainId = '1' | '10' | '100' | '137' | '42161' | '11155111'; // strings for indexing into JSON files
+export type SupportedChainId = '1' | '10' | '100' | '137' | '8453' | '42161' | '11155111'; // strings for indexing into JSON files
 export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response

@@ -8,6 +8,7 @@ export const OPTIMISM_RPC_URL = String(process.env.OPTIMISM_RPC_URL);
 export const ARBITRUM_ONE_RPC_URL = String(process.env.ARBITRUM_ONE_RPC_URL);
 export const SEPOLIA_RPC_URL = String(process.env.SEPOLIA_RPC_URL);
 export const GNOSIS_CHAIN_RPC_URL = String(process.env.GNOSIS_CHAIN_RPC_URL);
+export const BASE_RPC_URL = String(process.env.BASE_RPC_URL);
 
 console.log(`MAINNET_RPC_URL ${MAINNET_RPC_URL}`);
 
