@@ -40,8 +40,6 @@ jobs:
           submodules: recursive
 
       - uses: volta-cli/action@v4
-        with:
-          cache: false
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
@@ -182,8 +180,6 @@ jobs:
         with:
           name: frontend
       - uses: volta-cli/action@v4
-        with:
-          cache: false
       - name: Look at directory
         run: ls -la
       - name: Install Typescript

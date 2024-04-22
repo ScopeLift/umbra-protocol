@@ -1,8 +1,8 @@
-export default {
+{
   "sites": [
     {
       "slug": "many-island-colossal",
       "distDir": "./frontend/dist/spa"
     }
   ]
-};
+}
