@@ -1,22 +1,16 @@
 <template>
   <div>
-    <div v-if="false" class="alert-banner text-bold text-center q-py-md">
+    <div v-if="true" class="alert-banner text-bold text-center q-py-md">
       <i18n-t scope="global" keypath="Home.banner-donate" tag="span">
         <template v-slot:DevelopmentGrant>
-          <a
-            class="alert-banner-hyperlink"
-            href="https://explorer.gitcoin.co/#/round/424/0xd4cc0dd193c7dc1d665ae244ce12d7fab337a008/0xd4cc0dd193c7dc1d665ae244ce12d7fab337a008-77"
-            target="_blank"
-            >{{ $t('Home.development-grant') }}</a
-          >
+          <a class="alert-banner-hyperlink" href="https://explorer.gitcoin.co/#/round/42161/26/67" target="_blank">{{
+            $t('Home.development-grant')
+          }}</a>
         </template>
         <template v-slot:LearnMore>
-          <a
-            class="alert-banner-hyperlink"
-            href="https://grants-portal.gitcoin.co/gitcoin-grants-donor-portal"
-            target="_blank"
-            >{{ $t('Home.learn-more') }}</a
-          >
+          <a class="alert-banner-hyperlink" href="https://explorer.gitcoin.co/#/round/42161/26/67" target="_blank">{{
+            $t('Home.learn-more')
+          }}</a>
         </template>
       </i18n-t>
     </div>
