@@ -56,7 +56,7 @@ jobs:
           name: frontend
           path: |
             frontend/dist/spa
-            fleek.config.ts
+            fleek.config.json
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -170,7 +170,6 @@ jobs:
   deploy-to-fleek:
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     env:
       FLEEK_TOKEN: ${{ secrets.FLEEK_TOKEN }}
       FLEEK_PROJECT_ID: ${{ secrets.FLEEK_PROJECT_ID }}
