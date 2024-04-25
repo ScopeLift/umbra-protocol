@@ -170,16 +170,23 @@ export interface CnsQueryResponse {
 
 // Relayer types
 export type ApiError = { error: string };
+export interface UmbraApiVersion {
+  major: number;
+  minor: number;
+  patch: number;
+}
+
 export interface TokenInfoExtended extends TokenInfo {
   minSendAmount: string;
 }
 // Omit the TokenList.tokens type so we can override it with our own.
 export interface TokenListSuccessResponse extends Omit<TokenList, 'tokens'> {
+  umbraApiVersion: UmbraApiVersion;
   nativeTokenMinSendAmount: string;
   tokens: TokenInfoExtended[];
 }
 export type TokenListResponse = TokenListSuccessResponse | ApiError;
-export type FeeEstimate = { fee: string; token: TokenInfo };
+export type FeeEstimate = { umbraApiVersion: UmbraApiVersion; fee: string; token: TokenInfo };
 export type FeeEstimateResponse = FeeEstimate | ApiError;
 export type WithdrawalInputs = {
   stealthAddr: string;
@@ -187,7 +194,7 @@ export type WithdrawalInputs = {
   signature: string;
   sponsorFee: string;
 };
-export type RelayResponse = { relayTransactionHash: string } | ApiError;
+export type RelayResponse = { umbraApiVersion: UmbraApiVersion; relayTransactionHash: string } | ApiError;
 
 export type SendTableMetadataRow = {
   dateSent: string;

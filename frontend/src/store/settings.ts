@@ -2,7 +2,7 @@ import { computed, onMounted, ref } from 'vue';
 import { Dark, LocalStorage } from 'quasar';
 import { isHexString } from 'src/utils/ethers';
 import { i18n } from '../boot/i18n';
-import { Language } from '../components/models';
+import { Language, UmbraApiVersion } from '../components/models';
 
 // Local storage key names
 const settings = {
@@ -11,6 +11,7 @@ const settings = {
   lastWallet: 'last-wallet',
   language: 'language',
   sendHistorySave: 'send-history-save',
+  UmbraApiVersion: 'umbra-api-version',
 };
 
 // Shared state between instances
@@ -119,6 +120,23 @@ export default function useSettingsStore() {
     scanPrivateKey.value = undefined;
   }
 
+  function getUmbraApiVersion(): UmbraApiVersion | null {
+    const storedVersion = LocalStorage.getItem(settings.UmbraApiVersion);
+    if (storedVersion) {
+      return storedVersion as UmbraApiVersion;
+    } else {
+      return null;
+    }
+  }
+
+  function setUmbraApiVersion(version: UmbraApiVersion) {
+    LocalStorage.set(settings.UmbraApiVersion, version);
+  }
+
+  function clearUmbraApiVersion() {
+    LocalStorage.remove(settings.UmbraApiVersion);
+  }
+
   return {
     toggleDarkMode,
     toggleAdvancedMode,
@@ -137,5 +155,8 @@ export default function useSettingsStore() {
     endBlock: computed(() => endBlock.value),
     scanPrivateKey: computed(() => scanPrivateKey.value),
     lastWallet: computed(() => lastWallet.value),
+    getUmbraApiVersion,
+    setUmbraApiVersion,
+    clearUmbraApiVersion,
   };
 }
