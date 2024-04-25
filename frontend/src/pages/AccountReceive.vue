@@ -76,6 +76,10 @@
           :announcements="userAnnouncements"
           :scanStatus="scanStatus"
           :scanPercentage="scanPercentage"
+          :mostRecentAnnouncementBlockNumber="mostRecentAnnouncementBlockNumber"
+          :mostRecentAnnouncementTimestamp="mostRecentAnnouncementTimestamp"
+          :mostRecentBlockNumber="mostRecentBlockNumber"
+          :mostRecentBlockTimestamp="mostRecentBlockTimestamp"
           @reset="setFormStatus('waiting')"
         />
       </div>
@@ -116,8 +120,9 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { QForm } from 'quasar';
+import { Block } from '@ethersproject/abstract-provider';
 import { UserAnnouncement, KeyPair, utils, AnnouncementDetail } from '@umbracash/umbra-js';
-import { BigNumber, computeAddress, isHexString } from 'src/utils/ethers';
+import { BigNumber, Web3Provider, computeAddress, isHexString } from 'src/utils/ethers';
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import useWallet from 'src/store/wallet';
@@ -141,10 +146,16 @@ function useScan() {
   const workers: Worker[] = [];
   const paused = ref(false);
 
+  const mostRecentAnnouncementTimestamp = ref<number>(0);
+  const mostRecentAnnouncementBlockNumber = ref<number>(0);
+
+  const mostRecentBlockTimestamp = ref<number>(0);
+  const mostRecentBlockNumber = ref<number>(0);
+
   // Start and end blocks for advanced mode settings
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
     useSettingsStore();
-  const { signer, userAddress: userWalletAddress, isAccountSetup } = useWalletStore();
+  const { signer, userAddress: userWalletAddress, isAccountSetup, provider } = useWalletStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
   const scanPrivateKeyLocal = ref<string>();
@@ -217,6 +228,10 @@ function useScan() {
     } else {
       scanStatus.value = 'complete';
     }
+  }
+
+  async function getLastBlock(provider: Web3Provider): Promise<Block> {
+    return provider.getBlock('latest');
   }
 
   async function scan() {
@@ -299,6 +314,10 @@ function useScan() {
         userAnnouncements.value = [];
         scanStatus.value = 'complete';
       } else {
+        // Fetch the most recent block
+        const latestBlock: Block = await getLastBlock(provider.value!);
+        mostRecentBlockNumber.value = latestBlock.number;
+        mostRecentBlockTimestamp.value = latestBlock.timestamp;
         // Default scan behavior
         for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
           signer.value,
@@ -308,7 +327,19 @@ function useScan() {
           if (paused.value) {
             return;
           }
+
           announcementsCount += announcementsBatch.length; // Increment count
+          announcementsBatch.forEach((announcement) => {
+            const thisTimestamp = parseInt(announcement.timestamp);
+            if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {
+              mostRecentAnnouncementTimestamp.value = thisTimestamp;
+            }
+            const thisBlock = parseInt(announcement.block);
+            if (thisBlock > mostRecentAnnouncementBlockNumber.value) {
+              mostRecentAnnouncementBlockNumber.value = thisBlock;
+            }
+          });
+
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
             scanStatus.value = 'scanning latest';
@@ -355,6 +386,10 @@ function useScan() {
     isValidEndBlock,
     isValidPrivateKey,
     isValidStartBlock,
+    mostRecentAnnouncementBlockNumber,
+    mostRecentAnnouncementTimestamp,
+    mostRecentBlockNumber,
+    mostRecentBlockTimestamp,
     needsSignature,
     scanPrivateKeyLocal,
     scanStatus,
