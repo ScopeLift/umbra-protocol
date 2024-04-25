@@ -56,7 +56,7 @@ jobs:
           name: frontend
           path: |
             frontend/dist/spa
-            fleek.config.ts
+            fleek.config.json
   tests:
     runs-on: ubuntu-latest
     steps:
