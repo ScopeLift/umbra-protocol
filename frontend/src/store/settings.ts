@@ -12,6 +12,7 @@ const settings = {
   language: 'language',
   sendHistorySave: 'send-history-save',
   UmbraApiVersion: 'umbra-api-version',
+  lastFetchedBlock: 'last-fetched-block',
 };
 
 // Shared state between instances
@@ -41,6 +42,10 @@ export default function useSettingsStore() {
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
+
+    // Load the last fetched block from localStorage to use as the default start block
+    const lastFetchedBlock = LocalStorage.getItem(settings.lastFetchedBlock);
+    startBlock.value = lastFetchedBlock !== null ? Number(lastFetchedBlock) : undefined;
   });
   setLanguage(
     paramLocale
@@ -92,9 +97,12 @@ export default function useSettingsStore() {
     return '';
   }
 
-  function setScanBlocks(startBlock_: number, endBlock_: number) {
+  function setScanBlocks(startBlock_: number, endBlock_?: number) {
     startBlock.value = startBlock_;
-    endBlock.value = endBlock_ || undefined;
+    endBlock.value = endBlock_;
+
+    // Save the last fetched block to localStorage so we can use it as the default start block next time
+    LocalStorage.set(settings.lastFetchedBlock, startBlock_);
   }
 
   function setScanPrivateKey(key: string) {
@@ -118,6 +126,9 @@ export default function useSettingsStore() {
     startBlock.value = undefined;
     endBlock.value = undefined;
     scanPrivateKey.value = undefined;
+
+    // Clear the last fetched block from localStorage
+    LocalStorage.remove(settings.lastFetchedBlock);
   }
 
   function getUmbraApiVersion(): UmbraApiVersion | null {

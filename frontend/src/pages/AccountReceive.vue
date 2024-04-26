@@ -318,6 +318,7 @@ function useScan() {
         const latestBlock: Block = await getLastBlock(provider.value!);
         mostRecentBlockNumber.value = latestBlock.number;
         mostRecentBlockTimestamp.value = latestBlock.timestamp;
+
         // Default scan behavior
         for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
           signer.value,
@@ -358,6 +359,9 @@ function useScan() {
         scanStatus.value = 'scanning';
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
+
+        // Save the latest block (plus 1 to mitigate overlap) to localStorage for future scans as the start block
+        setScanBlocks(latestBlock.number + 1);
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
