@@ -119,7 +119,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
-import { QForm } from 'quasar';
+import { LocalStorage, QForm } from 'quasar';
 import { Block } from '@ethersproject/abstract-provider';
 import { UserAnnouncement, KeyPair, utils, AnnouncementDetail } from '@umbracash/umbra-js';
 import { BigNumber, Web3Provider, computeAddress, isHexString } from 'src/utils/ethers';
@@ -131,7 +131,7 @@ import AccountReceiveTable from 'components/AccountReceiveTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
 
 function useScan() {
-  const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress } = useWallet();
+  const { getPrivateKeys, umbra, spendingKeyPair, viewingKeyPair, hasKeys, userAddress, chainId } = useWallet();
   type ScanStatus =
     | 'waiting'
     | 'fetching'
@@ -142,6 +142,9 @@ function useScan() {
     | 'complete latest';
   const scanStatus = ref<ScanStatus>('waiting');
   const scanPercentage = ref<number>(0);
+  const userAnnouncementsLocalStorageKey = computed(() =>
+    userAddress.value && chainId.value ? `userAnnouncements-${userAddress.value}-${chainId.value}` : null
+  );
   const userAnnouncements = ref<UserAnnouncement[]>([]);
   const workers: Worker[] = [];
   const paused = ref(false);
@@ -156,8 +159,21 @@ function useScan() {
   const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
     useSettingsStore();
   const { signer, userAddress: userWalletAddress, isAccountSetup, provider } = useWalletStore();
-  const startBlockLocal = ref<number>();
-  const endBlockLocal = ref<number>();
+
+  const startBlockLocal = ref<number | undefined>(startBlock.value);
+  const endBlockLocal = ref<number | undefined>(endBlock.value);
+
+  // Watch the start and end blocks
+  watch(
+    [startBlockLocal, endBlockLocal],
+    ([newStart, newEnd]) => {
+      window.logger.debug(
+        `Scan range updated: Start Block - ${newStart ?? 'undefined'}, End Block - ${newEnd ?? 'undefined'}`
+      );
+    },
+    { immediate: true }
+  );
+
   const scanPrivateKeyLocal = ref<string>();
   const needsSignature = computed(() => !hasKeys.value && !scanPrivateKeyLocal.value);
   const settingsFormRef = ref<QForm>(); // for programmatically verifying settings form
@@ -179,10 +195,53 @@ function useScan() {
   };
 
   onMounted(async () => {
-    startBlockLocal.value = startBlock.value; // read in last used startBlock
-    endBlockLocal.value = endBlock.value; // read in last used endBlock
+    // Load userAnnouncements from localStorage
+    const existingAnnouncements = userAnnouncementsLocalStorageKey.value
+      ? LocalStorage.getItem<string>(userAnnouncementsLocalStorageKey.value)
+      : null;
+
+    if (existingAnnouncements) {
+      userAnnouncements.value = deserializeUserAnnouncements(existingAnnouncements);
+    } else {
+      // Explicitly reset start and end blocks if there are no announcements in local storage
+      resetScanSettings();
+    }
+    window.logger.debug('Announcements loaded:', userAnnouncements.value);
+
     if (hasKeys.value && !advancedMode.value) await scan(); // if user already signed and we have their keys in memory, start scanning
   });
+
+  // Watch for changes in userAnnouncements and save to localStorage
+  watch(
+    userAnnouncements,
+    (newVal) => {
+      if (userAnnouncementsLocalStorageKey.value) {
+        LocalStorage.set(userAnnouncementsLocalStorageKey.value, serializeUserAnnouncements(newVal));
+        window.logger.debug('Announcements updated in local storage:', newVal);
+      }
+    },
+    { deep: true }
+  );
+
+  // Serialize userAnnouncements to store in LocalStorage
+  function serializeUserAnnouncements(announcements: UserAnnouncement[]) {
+    return JSON.stringify(
+      announcements.map((announcement) => ({
+        ...announcement,
+        amount: announcement.amount.toString(), // Convert BigNumber to string
+      }))
+    );
+  }
+
+  // Deserialize userAnnouncements from LocalStorage
+  function deserializeUserAnnouncements(serialized: string | null) {
+    if (!serialized) return [];
+
+    return JSON.parse(serialized).map((announcement: UserAnnouncement) => ({
+      ...announcement,
+      amount: BigNumber.from(announcement.amount), // Convert string to BigNumber
+    })) as UserAnnouncement[];
+  }
 
   async function getPrivateKeysHandler() {
     // Validate form and reset userAnnouncements

@@ -98,6 +98,8 @@ export default function useSettingsStore() {
   }
 
   function setScanBlocks(startBlock_: number, endBlock_?: number) {
+    window.logger.debug(`Setting scan blocks: Start - ${startBlock_} ${endBlock_ ? `, End - ${endBlock_}` : ''}`);
+
     startBlock.value = startBlock_;
     endBlock.value = endBlock_;
 
