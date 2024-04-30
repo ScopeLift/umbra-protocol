@@ -47,7 +47,7 @@ const subgraphs = {
   100: String(process.env.GNOSIS_CHAIN_SUBGRAPH_URL),
   137: String(process.env.POLYGON_SUBGRAPH_URL),
   8453: String(process.env.BASE_SUBGRAPH_URL),
-  42161: String(process.env.ARBITRUM_ONE_SUBGRAPH_URL),
+  42161: 'https://api.goldsky.com/api/public/project_clfmn098ebuoc3svybn2l2tvp/subgraphs/umbra-arbitrum-one/v1.0.0/gn',
   11155111: String(process.env.SEPOLIA_SUBGRAPH_URL),
 };
 
