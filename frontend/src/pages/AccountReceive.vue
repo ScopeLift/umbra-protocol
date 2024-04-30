@@ -30,7 +30,7 @@
         <div v-else class="text-center q-mb-md">{{ $t('Receive.scan-funds') }}</div>
         <base-button
           @click="getPrivateKeysHandler"
-          class="text-center"
+          class="text-center q-mb-md"
           :label="needsSignature ? $t('Receive.sign') : $t('Receive.scan')"
         />
 
@@ -70,8 +70,8 @@
         </q-card>
       </div>
 
-      <!-- Scanning complete -->
-      <div v-else-if="userAnnouncements.length || scanStatus === 'complete'" class="text-center">
+      <!-- Scanning complete or there are user announcements -->
+      <div v-if="userAnnouncements.length || scanStatus === 'complete'" class="text-center">
         <account-receive-table
           :announcements="userAnnouncements"
           :scanStatus="scanStatus"
@@ -85,20 +85,14 @@
       </div>
 
       <!-- Scanning in progress -->
-      <div
-        v-if="(scanStatus === 'scanning' || scanStatus === 'scanning latest') && !userAnnouncements.length"
-        class="text-center"
-      >
+      <div v-if="scanStatus === 'scanning' || scanStatus === 'scanning latest'" class="text-center">
         <progress-indicator :percentage="scanPercentage" />
         <div v-if="scanStatus === 'scanning'" class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
         <div v-else class="text-center text-italic">{{ $t('Receive.scanning-latest') }}</div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
 
-      <div
-        v-else-if="(scanStatus === 'fetching latest' || scanStatus === 'fetching') && !userAnnouncements.length"
-        class="text-center"
-      >
+      <div v-else-if="scanStatus === 'fetching latest' || scanStatus === 'fetching'" class="text-center">
         <loading-spinner />
         <div v-if="scanStatus === 'fetching'" class="text-center text-italic">
           {{ $t('Receive.fetching') }}
@@ -204,6 +198,7 @@ function useScan() {
       userAnnouncements.value = deserializeUserAnnouncements(existingAnnouncements);
     } else {
       // Explicitly reset start and end blocks if there are no announcements in local storage
+      // This is to prevent the user from scanning latest blocks only and missing earlier announcements
       resetScanSettings();
     }
     window.logger.debug('Announcements loaded:', userAnnouncements.value);
