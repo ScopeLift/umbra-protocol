@@ -56,6 +56,8 @@ function useAccountSent() {
       window.logger.debug('spendingPubKeyX: ', BigNumber.from(spendingPubKeyX).toString());
       window.logger.debug('viewingPrefix:   ', viewingPrefix);
       window.logger.debug('viewingPubKeyX:  ', BigNumber.from(viewingPubKeyX).toString());
+      window.logger.debug('viewingPrivateKey:  ', viewingPrivateKey.value);
+      window.logger.debug('spendingPublicKey:  ', spendingKeyPair.value?.publicKeyHex);
     }
     // The viewingKeyPair should exist and this if statement is to appease the type checker guaranteeing privateKeyHex exists
     if (!viewingKeyPair.value?.privateKeyHex) {
