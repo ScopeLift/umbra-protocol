@@ -45,7 +45,9 @@ export default function useSettingsStore() {
 
     // Load the last fetched block from localStorage to use as the default start block
     const lastFetchedBlock = LocalStorage.getItem(settings.lastFetchedBlock);
-    startBlock.value = lastFetchedBlock !== null ? Number(lastFetchedBlock) : undefined;
+    if (lastFetchedBlock) {
+      startBlock.value = Number(lastFetchedBlock) + 1; // New scans should start after the last fetched block
+    }
   });
   setLanguage(
     paramLocale
@@ -98,8 +100,6 @@ export default function useSettingsStore() {
   }
 
   function setScanBlocks(startBlock_: number, endBlock_?: number) {
-    window.logger.debug(`Setting scan blocks: Start - ${startBlock_} ${endBlock_ ? `, End - ${endBlock_}` : ''}`);
-
     startBlock.value = startBlock_;
     endBlock.value = endBlock_;
 

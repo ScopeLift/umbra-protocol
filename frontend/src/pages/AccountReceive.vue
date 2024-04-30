@@ -140,6 +140,38 @@ function useScan() {
     userAddress.value && chainId.value ? `userAnnouncements-${userAddress.value}-${chainId.value}` : null
   );
   const userAnnouncements = ref<UserAnnouncement[]>([]);
+
+  // Function to load announcements from localStorage
+  function loadUserAnnouncements() {
+    if (userAnnouncementsLocalStorageKey.value) {
+      const storedAnnouncements = deserializeUserAnnouncements(
+        LocalStorage.getItem(userAnnouncementsLocalStorageKey.value)
+      );
+
+      if (storedAnnouncements) {
+        userAnnouncements.value = storedAnnouncements;
+        window.logger.debug('Announcements loaded:', userAnnouncements.value);
+      } else {
+        window.logger.debug('No announcements found in local storage for key:', userAnnouncementsLocalStorageKey.value);
+      }
+    } else {
+      window.logger.debug('LocalStorage key for announcements is not set.');
+      // Explicitly reset start and end blocks if there are no announcements in local storage
+      // This is to prevent the user from scanning latest blocks only and missing earlier announcements
+      resetScanSettings();
+    }
+  }
+
+  // Watch for changes in userAddress or chainId to load announcements
+  watch(
+    [userAddress, chainId],
+    () => {
+      console.log('Detected change in user address or chain ID, attempting to load announcements...');
+      loadUserAnnouncements();
+    },
+    { immediate: true }
+  );
+
   const workers: Worker[] = [];
   const paused = ref(false);
 
@@ -156,17 +188,6 @@ function useScan() {
 
   const startBlockLocal = ref<number | undefined>(startBlock.value);
   const endBlockLocal = ref<number | undefined>(endBlock.value);
-
-  // Watch the start and end blocks
-  watch(
-    [startBlockLocal, endBlockLocal],
-    ([newStart, newEnd]) => {
-      window.logger.debug(
-        `Scan range updated: Start Block - ${newStart ?? 'undefined'}, End Block - ${newEnd ?? 'undefined'}`
-      );
-    },
-    { immediate: true }
-  );
 
   const scanPrivateKeyLocal = ref<string>();
   const needsSignature = computed(() => !hasKeys.value && !scanPrivateKeyLocal.value);
@@ -189,20 +210,6 @@ function useScan() {
   };
 
   onMounted(async () => {
-    // Load userAnnouncements from localStorage
-    const existingAnnouncements = userAnnouncementsLocalStorageKey.value
-      ? LocalStorage.getItem<string>(userAnnouncementsLocalStorageKey.value)
-      : null;
-
-    if (existingAnnouncements) {
-      userAnnouncements.value = deserializeUserAnnouncements(existingAnnouncements);
-    } else {
-      // Explicitly reset start and end blocks if there are no announcements in local storage
-      // This is to prevent the user from scanning latest blocks only and missing earlier announcements
-      resetScanSettings();
-    }
-    window.logger.debug('Announcements loaded:', userAnnouncements.value);
-
     if (hasKeys.value && !advancedMode.value) await scan(); // if user already signed and we have their keys in memory, start scanning
   });
 
@@ -247,6 +254,7 @@ function useScan() {
     }
 
     if (Number(startBlockLocal.value) > Number(endBlockLocal.value || undefined)) {
+      console.log('🦄 ~ onMounted ~ userAnnouncementsLocalStorageKey.value:', userAnnouncementsLocalStorageKey.value);
       throw new Error('End block is larger than start block');
     }
 
@@ -301,6 +309,9 @@ function useScan() {
     };
 
     // Fetch announcements
+    window.logger.debug(
+      `Scanning for announcements from ${startBlockLocal.value ?? 'undefined'} to ${endBlockLocal.value ?? 'undefined'}`
+    );
     const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
 
     // Scan for funds
@@ -414,8 +425,8 @@ function useScan() {
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
 
-        // Save the latest block (plus 1 to mitigate overlap) to localStorage for future scans as the start block
-        setScanBlocks(latestBlock.number + 1);
+        // Save the latest block to localStorage for future scans as the start block
+        setScanBlocks(latestBlock.number);
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
