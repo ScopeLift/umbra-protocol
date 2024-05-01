@@ -150,16 +150,18 @@ function useScan() {
       LocalStorage.getItem(userAnnouncementsLocalStorageKey.value)
     );
 
-    if (!storedAnnouncements || storedAnnouncements.length === 0) {
+    if (!storedAnnouncements) {
       window.logger.debug('No announcements found in local storage for key:', userAnnouncementsLocalStorageKey.value);
-      window.logger.debug('Resetting last fetched block');
-      resetLastFetchedBlock();
-      resetScanSettings();
       return;
     }
 
     userAnnouncements.value = storedAnnouncements;
     window.logger.debug('Announcements loaded:', userAnnouncements.value);
+  }
+
+  function resetUserAnnouncements() {
+    userAnnouncements.value = [];
+    if (userAnnouncementsLocalStorageKey.value) LocalStorage.remove(userAnnouncementsLocalStorageKey.value);
   }
 
   // Watch for changes in userAddress or chainId to load announcements
@@ -453,10 +455,16 @@ function useScan() {
     endBlockLocal.value = undefined;
     scanPrivateKeyLocal.value = undefined;
     resetScanSettings();
+    resetLastFetchedBlock();
+    resetUserAnnouncements();
   }
 
   watch(userAddress, () => {
-    if (userAddress.value) resetState();
+    // Only reset state if the address has changed and is not undefined
+    if (userAddress.value) {
+      window.logger.debug('Resetting state for new address:', userAddress.value);
+      resetState();
+    }
   });
 
   return {
