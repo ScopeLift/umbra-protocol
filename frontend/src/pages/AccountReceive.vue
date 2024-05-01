@@ -143,34 +143,30 @@ function useScan() {
 
   // Function to load announcements from localStorage
   function loadUserAnnouncements() {
-    if (userAnnouncementsLocalStorageKey.value) {
-      const storedAnnouncements = deserializeUserAnnouncements(
-        LocalStorage.getItem(userAnnouncementsLocalStorageKey.value)
-      );
+    // If userAnnouncementsLocalStorageKey is not set, return
+    if (!userAnnouncementsLocalStorageKey.value) return;
 
-      if (storedAnnouncements) {
-        userAnnouncements.value = storedAnnouncements;
-        window.logger.debug('Announcements loaded:', userAnnouncements.value);
-      } else {
-        window.logger.debug('No announcements found in local storage for key:', userAnnouncementsLocalStorageKey.value);
-      }
-    } else {
-      window.logger.debug('LocalStorage key for announcements is not set.');
-      // Explicitly reset start and end blocks if there are no announcements in local storage
-      // This is to prevent the user from scanning latest blocks only and missing earlier announcements
+    const storedAnnouncements = deserializeUserAnnouncements(
+      LocalStorage.getItem(userAnnouncementsLocalStorageKey.value)
+    );
+
+    if (!storedAnnouncements || storedAnnouncements.length === 0) {
+      window.logger.debug('No announcements found in local storage for key:', userAnnouncementsLocalStorageKey.value);
+      window.logger.debug('Resetting last fetched block');
+      resetLastFetchedBlock();
       resetScanSettings();
+      return;
     }
+
+    userAnnouncements.value = storedAnnouncements;
+    window.logger.debug('Announcements loaded:', userAnnouncements.value);
   }
 
   // Watch for changes in userAddress or chainId to load announcements
-  watch(
-    [userAddress, chainId],
-    () => {
-      console.log('Detected change in user address or chain ID, attempting to load announcements...');
-      loadUserAnnouncements();
-    },
-    { immediate: true }
-  );
+  watch([userAddress, chainId], () => {
+    console.log('Detected change in user address or chain ID, attempting to load announcements...');
+    loadUserAnnouncements();
+  });
 
   const workers: Worker[] = [];
   const paused = ref(false);
@@ -182,11 +178,27 @@ function useScan() {
   const mostRecentBlockNumber = ref<number>(0);
 
   // Start and end blocks for advanced mode settings
-  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
-    useSettingsStore();
+  const {
+    advancedMode,
+    startBlock,
+    endBlock,
+    setScanBlocks,
+    setScanPrivateKey,
+    scanPrivateKey,
+    resetScanSettings,
+    setLastFetchedBlock,
+    resetLastFetchedBlock,
+  } = useSettingsStore();
   const { signer, userAddress: userWalletAddress, isAccountSetup, provider } = useWalletStore();
 
   const startBlockLocal = ref<number | undefined>(startBlock.value);
+
+  // watch for changes in startBlock and update startBlockLocal
+  watch(startBlock, (newVal) => {
+    startBlockLocal.value = newVal;
+    window.logger.debug('startBlockLocal updated:', startBlockLocal.value);
+  });
+
   const endBlockLocal = ref<number | undefined>(endBlock.value);
 
   const scanPrivateKeyLocal = ref<string>();
@@ -210,6 +222,7 @@ function useScan() {
   };
 
   onMounted(async () => {
+    loadUserAnnouncements();
     if (hasKeys.value && !advancedMode.value) await scan(); // if user already signed and we have their keys in memory, start scanning
   });
 
@@ -237,7 +250,7 @@ function useScan() {
 
   // Deserialize userAnnouncements from LocalStorage
   function deserializeUserAnnouncements(serialized: string | null) {
-    if (!serialized) return [];
+    if (!serialized) return null;
 
     return JSON.parse(serialized).map((announcement: UserAnnouncement) => ({
       ...announcement,
@@ -254,7 +267,6 @@ function useScan() {
     }
 
     if (Number(startBlockLocal.value) > Number(endBlockLocal.value || undefined)) {
-      console.log('🦄 ~ onMounted ~ userAnnouncementsLocalStorageKey.value:', userAnnouncementsLocalStorageKey.value);
       throw new Error('End block is larger than start block');
     }
 
@@ -426,7 +438,7 @@ function useScan() {
         scanStatus.value = 'complete';
 
         // Save the latest block to localStorage for future scans as the start block
-        setScanBlocks(latestBlock.number);
+        setLastFetchedBlock(latestBlock.number);
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements

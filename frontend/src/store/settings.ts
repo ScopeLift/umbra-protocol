@@ -102,9 +102,6 @@ export default function useSettingsStore() {
   function setScanBlocks(startBlock_: number, endBlock_?: number) {
     startBlock.value = startBlock_;
     endBlock.value = endBlock_;
-
-    // Save the last fetched block to localStorage so we can use it as the default start block next time
-    LocalStorage.set(settings.lastFetchedBlock, startBlock_);
   }
 
   function setScanPrivateKey(key: string) {
@@ -128,9 +125,6 @@ export default function useSettingsStore() {
     startBlock.value = undefined;
     endBlock.value = undefined;
     scanPrivateKey.value = undefined;
-
-    // Clear the last fetched block from localStorage
-    LocalStorage.remove(settings.lastFetchedBlock);
   }
 
   function getUmbraApiVersion(): UmbraApiVersion | null {
@@ -148,6 +142,14 @@ export default function useSettingsStore() {
 
   function clearUmbraApiVersion() {
     LocalStorage.remove(settings.UmbraApiVersion);
+  }
+
+  function setLastFetchedBlock(block: number) {
+    LocalStorage.set(settings.lastFetchedBlock, block);
+  }
+
+  function resetLastFetchedBlock() {
+    LocalStorage.remove(settings.lastFetchedBlock);
   }
 
   return {
@@ -171,5 +173,7 @@ export default function useSettingsStore() {
     getUmbraApiVersion,
     setUmbraApiVersion,
     clearUmbraApiVersion,
+    setLastFetchedBlock,
+    resetLastFetchedBlock,
   };
 }
