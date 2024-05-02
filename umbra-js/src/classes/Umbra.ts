@@ -33,10 +33,11 @@ import {
   assertSupportedAddress,
   checkSupportedAddresses,
   getBlockNumberUserRegistered,
+  recursiveGraphFetch,
 } from '../utils/utils';
 import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
 import { ETH_ADDRESS, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
-import type { Announcement, ChainConfig, EthersProvider, GraphFilterOverride, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
+import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
@@ -72,7 +73,7 @@ const chainConfigs: Record<number, ChainConfig> = {
  * @notice Helper method to parse chainConfig input and return a valid chain configuration
  * @param chainConfig Supported chainID as number, or custom ChainConfig
  */
-const parseChainConfig = (chainConfig: ChainConfig | number) => {
+export const parseChainConfig = (chainConfig: ChainConfig | number) => {
   if (!chainConfig) {
     throw new Error('chainConfig not provided');
   }
@@ -372,7 +373,7 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches all Umbra event logs using Goldsky, if available, falling back to RPC if not
+   * @notice Fetches all Umbra event logs using a subgraph, if available, falling back to RPC if not
    * @param overrides Override the start and end block used for scanning;
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
@@ -397,7 +398,7 @@ export class Umbra {
       return filtered.filter((i) => i !== null) as AnnouncementDetail[];
     };
 
-    // Try querying events using Goldsky, fallback to querying logs.
+    // Try querying events using a subgraph, fallback to querying logs.
     if (this.chainConfig.subgraphUrl) {
       try {
         for await (const subgraphAnnouncements of this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock)) {
@@ -417,7 +418,7 @@ export class Umbra {
 
   /**
    * @notice Fetches Umbra event logs starting from the block user registered their stealth keys in using
-   * Goldsky, if available, falling back to RPC if not
+   * a subgraph, if available, falling back to RPC if not
    * @param overrides Override the start and end block used for scanning;
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
@@ -427,7 +428,7 @@ export class Umbra {
     address: string,
     overrides: ScanOverrides = {}
   ): AsyncGenerator<AnnouncementDetail[]> {
-    const registeredBlockNumber = await getBlockNumberUserRegistered(address, Signer.provider);
+    const registeredBlockNumber = await getBlockNumberUserRegistered(address, Signer.provider, this.chainConfig);
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || registeredBlockNumber || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';
@@ -437,7 +438,7 @@ export class Umbra {
   }
 
   /**
-   * @notice Fetches all Umbra event logs using Goldsky
+   * @notice Fetches all Umbra event logs using a subgraph
    * @param startBlock Scanning start block
    * @param endBlock Scannding end block
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
@@ -731,67 +732,6 @@ export class Umbra {
 }
 
 // ============================== PRIVATE, FUNCTIONAL HELPER METHODS ==============================
-
-/**
- * @notice Generic method to recursively grab every 'page' of results
- * @dev NOTE: the query MUST return the ID field
- * @dev Modifies from: https://github.com/dcgtc/dgrants/blob/f5a783524d0b56eea12c127b2146fba8fb9273b4/app/src/utils/utils.ts#L443
- * @dev Relevant docs: https://thegraph.com/docs/developer/graphql-api#example-3
- * @dev Lives outside of the class instance because user's should not need access to this method
- * @dev TODO support node.js by replacing reliance on browser's fetch module with https://github.com/paulmillr/micro-ftch
- * @param url the url we will recursively fetch from
- * @param key the key in the response object which holds results
- * @param query a function which will return the query string (with the page in place)
- * @param before the current array of objects
- */
-async function* recursiveGraphFetch(
-  url: string,
-  key: string,
-  query: (filter: string) => string,
-  before: any[] = [],
-  overrides?: GraphFilterOverride
-): AsyncGenerator<any[]> {
-  // retrieve the last ID we collected to use as the starting point for this query
-  const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
-  let startBlockFilter = '';
-  let endBlockFilter = '';
-  const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : '';
-  const endBlock = overrides?.endBlock ? overrides?.endBlock.toString() : '';
-
-  if (startBlock) {
-    startBlockFilter = `block_gte: "${startBlock}",`;
-  }
-
-  if (endBlock && endBlock !== 'latest') {
-    endBlockFilter = `block_lte: "${endBlock}",`;
-  }
-  // Fetch this 'page' of results - please note that the query MUST return an ID
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: query(`
-        first: 1000,
-        orderBy: id,
-        orderDirection: desc,
-        where: {
-          ${fromId ? `id_lt: "${fromId}",` : ''}
-          ${startBlockFilter}
-          ${endBlockFilter}
-        }
-      `),
-    }),
-  });
-
-  // Resolve the json
-  const json = await res.json();
-
-  // If there were results on this page yield the results then query the next page, otherwise do nothing.
-  if (json.data[key].length) {
-    yield json.data[key]; // yield the data for this page
-    yield* recursiveGraphFetch(url, key, query, [...before, ...json.data[key]], overrides); // yield the data for the next pages
-  }
-}
 
 /**
  * @notice Tries withdrawing ETH from a stealth address on behalf of a user
