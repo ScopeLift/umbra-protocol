@@ -24,8 +24,17 @@ import { ens, cns } from '..';
 import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
-import { EthersProvider, TransactionResponseExtended } from '../types';
+import { KeyPair } from '../classes/KeyPair';
+import {
+  EthersProvider,
+  TransactionResponseExtended,
+  GraphFilterOverride,
+  ChainConfig,
+  SubgraphStealthKeyChangedEvent,
+  ScanOverrides,
+} from '../types';
 import { StealthKeyChangedEvent } from 'src/typechain/contracts/StealthKeyRegistry';
+import { parseChainConfig } from '../classes/Umbra';
 
 // Lengths of various properties when represented as full hex strings
 export const lengths = {
@@ -216,6 +225,7 @@ export async function lookupRecipient(
     supportTxHash,
   }: { advanced?: boolean; supportPubKey?: boolean; supportTxHash?: boolean } = {}
 ) {
+  const chainId = (await provider.getNetwork()).chainId;
   // Check if identifier is a public key. If so we just return that directly
   const isPublicKey = id.length === 132 && isHexString(id);
   if (supportPubKey && isPublicKey) {
@@ -235,10 +245,31 @@ export async function lookupRecipient(
   // ENS name, CNS name, or address, so we resolve it to an address
   const address = await toAddress(id, provider); // throws if an invalid address is provided
 
-  // If we're not using advanced mode, use the StealthKeyRegistry
+  // If we're not using advanced mode, use the StealthKeyRegistry events
   if (!advanced) {
-    const registry = new StealthKeyRegistry(provider);
-    return registry.getStealthKeys(address);
+    // Fetch the stealth key registry event from the subgraph and fall back to the registry contract if the subgraph returns an error
+    try {
+      const chainConfig = parseChainConfig(chainId);
+      const stealthKeyChangedEvent = await getMostRecentSubgraphStealthKeyChangedEventFromAddress(address, chainConfig);
+      const spendingPublicKey = KeyPair.getUncompressedFromX(
+        stealthKeyChangedEvent.spendingPubKey,
+        stealthKeyChangedEvent.spendingPubKeyPrefix.toString()
+      );
+      const viewingPublicKey = KeyPair.getUncompressedFromX(
+        stealthKeyChangedEvent.viewingPubKey,
+        stealthKeyChangedEvent.viewingPubKeyPrefix.toString()
+      );
+      return { spendingPublicKey: spendingPublicKey, viewingPublicKey: viewingPublicKey };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log('Public key subgraph fetch error: ', error.message);
+      } else {
+        console.log('An unknown error occurred: ', error);
+      }
+      console.log('Error using subgraph to lookup receipient stealth keys, will query registry contract');
+      const registry = new StealthKeyRegistry(provider);
+      return registry.getStealthKeys(address);
+    }
   }
 
   // Otherwise, get public key based on the most recent transaction sent by that address
@@ -249,21 +280,181 @@ export async function lookupRecipient(
   return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 }
 
-export async function getBlockNumberUserRegistered(address: string, provider: StaticJsonRpcProvider) {
+export async function getBlockNumberUserRegistered(
+  address: string,
+  provider: StaticJsonRpcProvider,
+  chainConfig: ChainConfig
+) {
+  // Fetch the stealth key registry event from the subgraph and fall back to the registry contract if the subgraph returns an error
   address = getAddress(address); // address input validation
-  const registry = new StealthKeyRegistry(provider);
-  const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
   try {
-    const timeout = (ms: number) => new Promise((reject) => setTimeout(() => reject(new Error('timeout')), ms));
-    const stealthKeyLogsPromise = registry._registry.queryFilter(filter);
-    const stealthKeyLogs = (await Promise.race([stealthKeyLogsPromise, timeout(3000)])) as StealthKeyChangedEvent[];
-    const registryBlock = sortStealthKeyLogs(stealthKeyLogs)[0]?.blockNumber || undefined;
-    return registryBlock;
+    console.log('Using subgraph to get block number when user registered');
+    const stealthKeyChangedEvent = await getMostRecentSubgraphStealthKeyChangedEventFromAddress(address, chainConfig);
+    console.log(`stealthKeyChangedEvent.block: ${stealthKeyChangedEvent.block}`);
+    return stealthKeyChangedEvent.block;
   } catch {
-    return undefined;
+    console.log('Error using subgraph to get block number when user registered, will query registry contract');
+    const registry = new StealthKeyRegistry(provider);
+    const filter = registry._registry.filters.StealthKeyChanged(address, null, null, null, null);
+    try {
+      const timeout = (ms: number) => new Promise((reject) => setTimeout(() => reject(new Error('timeout')), ms));
+      const stealthKeyLogsPromise = registry._registry.queryFilter(filter);
+      const stealthKeyLogs = (await Promise.race([stealthKeyLogsPromise, timeout(3000)])) as StealthKeyChangedEvent[];
+      const registryBlock = sortStealthKeyLogs(stealthKeyLogs)[0]?.blockNumber || undefined;
+      return registryBlock;
+    } catch {
+      return undefined;
+    }
   }
 }
 
+export async function getMostRecentSubgraphStealthKeyChangedEventFromAddress(
+  address: string,
+  chainConfig: ChainConfig,
+  overrides: ScanOverrides = {}
+): Promise<SubgraphStealthKeyChangedEvent> {
+  const startBlock = overrides.startBlock || chainConfig.startBlock;
+  const endBlock = overrides.endBlock || 'latest';
+
+  // Fetch stealth key changed events from the subgraph
+  const stealthKeyChangedEvents = fetchAllStealthKeyChangedEventsForRecipientAddressFromSubgraph(
+    startBlock,
+    endBlock,
+    address,
+    chainConfig
+  );
+  let theEvent: SubgraphStealthKeyChangedEvent | undefined;
+  for await (const event of stealthKeyChangedEvents) {
+    for (let i = 0; i < event.length; i++) {
+      if (theEvent) {
+        console.log(
+          `We found a previous StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
+        );
+      } else {
+        theEvent = event[i];
+        console.log(
+          `We found a StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
+        );
+      }
+    }
+  }
+
+  if (!theEvent) {
+    throw new Error('No stealthKeyChangedEvents found matching address in subgraph');
+  }
+  return theEvent;
+}
+
+/**
+ * @notice Fetches all Umbra event logs using a subgraph
+ * @param startBlock Scanning start block
+ * @param endBlock Scannding end block
+ * @returns A list of StealthKeyChanged events supplemented with additional metadata, such as the sender, block,
+ * timestamp, txhash, and the subgraph identifier
+ */
+async function* fetchAllStealthKeyChangedEventsForRecipientAddressFromSubgraph(
+  startBlock: string | number,
+  endBlock: string | number,
+  registrant: string,
+  chainConfig: ChainConfig
+): AsyncGenerator<SubgraphStealthKeyChangedEvent[]> {
+  if (!chainConfig.subgraphUrl) {
+    console.log('throwing error because subgraphUrl is not defined');
+    throw new Error('Subgraph URL must be defined to fetch via subgraph');
+  }
+
+  // Query subgraph
+  for await (const stealthKeyChangedEvents of recursiveGraphFetch(
+    chainConfig.subgraphUrl,
+    'stealthKeyChangedEntities',
+    (filter: string) => `{
+      stealthKeyChangedEntities(${filter}) {
+        block
+        from
+        id
+        registrant
+        spendingPubKey
+        spendingPubKeyPrefix
+        timestamp
+        txHash
+        viewingPubKey
+        viewingPubKeyPrefix
+      }
+    }`,
+    [],
+    {
+      startBlock,
+      endBlock,
+      registrant,
+    }
+  )) {
+    yield stealthKeyChangedEvents;
+  }
+}
+
+/**
+ * @notice Generic method to recursively grab every 'page' of results
+ * @dev NOTE: the query MUST return the ID field
+ * @dev Modifies from: https://github.com/dcgtc/dgrants/blob/f5a783524d0b56eea12c127b2146fba8fb9273b4/app/src/utils/utils.ts#L443
+ * @dev Relevant docs: https://thegraph.com/docs/developer/graphql-api#example-3
+ * @dev Lives outside of the class instance because user's should not need access to this method
+ * @dev TODO support node.js by replacing reliance on browser's fetch module with https://github.com/paulmillr/micro-ftch
+ * @param url the url we will recursively fetch from
+ * @param key the key in the response object which holds results
+ * @param query a function which will return the query string (with the page in place)
+ * @param before the current array of objects
+ */
+export async function* recursiveGraphFetch(
+  url: string,
+  key: string,
+  query: (filter: string) => string,
+  before: any[] = [],
+  overrides?: GraphFilterOverride
+): AsyncGenerator<any[]> {
+  // retrieve the last ID we collected to use as the starting point for this query
+  const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
+  let startBlockFilter = '';
+  let endBlockFilter = '';
+  const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : '';
+  const endBlock = overrides?.endBlock ? overrides?.endBlock.toString() : '';
+  const registrantFilter = overrides?.registrant ? 'registrant: "' + overrides.registrant.toLowerCase() + '"' : '';
+
+  if (startBlock) {
+    startBlockFilter = `block_gte: "${startBlock}",`;
+  }
+
+  if (endBlock && endBlock !== 'latest') {
+    endBlockFilter = `block_lte: "${endBlock}",`;
+  }
+
+  // Fetch this 'page' of results - please note that the query MUST return an ID
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: query(`
+        first: 1000,
+        orderBy: id,
+        orderDirection: desc,
+        where: {
+          ${fromId ? `id_lt: "${fromId}",` : ''}
+          ${startBlockFilter}
+          ${endBlockFilter}
+          ${registrantFilter}
+        }
+      `),
+    }),
+  });
+
+  // Resolve the json
+  const json = await res.json();
+
+  // If there were results on this page yield the results then query the next page, otherwise do nothing.
+  if (json.data[key].length) {
+    yield json.data[key]; // yield the data for this page
+    yield* recursiveGraphFetch(url, key, query, [...before, ...json.data[key]], overrides); // yield the data for the next pages
+  }
+}
 // Sorts stealth key logs in ascending order by block number
 export function sortStealthKeyLogs(stealthKeyLogs: Event[]) {
   return stealthKeyLogs.sort(function (a, b) {
