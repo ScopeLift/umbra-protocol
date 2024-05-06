@@ -12,6 +12,7 @@ const settings = {
   language: 'language',
   sendHistorySave: 'send-history-save',
   UmbraApiVersion: 'umbra-api-version',
+  registeredBlockNumber: 'registered-block-number',
 };
 
 // Shared state between instances
@@ -27,6 +28,7 @@ const startBlock = ref<number | undefined>(undefined); // block number to start 
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
 const scanPrivateKey = ref<string>(); // private key entered when scanning
 const lastWallet = ref<string>(); // name of last wallet used
+const registeredBlockNumber = ref<number | undefined>(undefined); // block number of the when the user registered
 const params = new URLSearchParams(window.location.search);
 const paramLocale = params.get('locale') || undefined;
 
@@ -40,6 +42,9 @@ export default function useSettingsStore() {
     sendHistorySave.value = saveSetting || saveSetting === null ? true : false;
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
+      : undefined;
+    registeredBlockNumber.value = LocalStorage.getItem(settings.registeredBlockNumber)
+      ? Number(LocalStorage.getItem(settings.registeredBlockNumber))
       : undefined;
   });
   setLanguage(
@@ -137,6 +142,15 @@ export default function useSettingsStore() {
     LocalStorage.remove(settings.UmbraApiVersion);
   }
 
+  function getRegisteredBlockNumber() {
+    return registeredBlockNumber.value;
+  }
+
+  function setRegisteredBlockNumber(blockNumber: number) {
+    registeredBlockNumber.value = blockNumber;
+    LocalStorage.set(settings.registeredBlockNumber, blockNumber);
+  }
+
   return {
     toggleDarkMode,
     toggleAdvancedMode,
@@ -158,5 +172,7 @@ export default function useSettingsStore() {
     getUmbraApiVersion,
     setUmbraApiVersion,
     clearUmbraApiVersion,
+    getRegisteredBlockNumber,
+    setRegisteredBlockNumber,
   };
 }
