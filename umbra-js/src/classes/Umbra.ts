@@ -30,9 +30,9 @@ import {
   invalidStealthAddresses,
   getEthSweepGasInfo,
   lookupRecipient,
+  getBlockNumberUserRegistered,
   assertSupportedAddress,
   checkSupportedAddresses,
-  getBlockNumberUserRegistered,
   recursiveGraphFetch,
 } from '../utils/utils';
 import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
@@ -419,16 +419,22 @@ export class Umbra {
   /**
    * @notice Fetches Umbra event logs starting from the block user registered their stealth keys in using
    * a subgraph, if available, falling back to RPC if not
+   * @param possibleRegisteredBlockNumber Block number when user registered their stealth keys (if known)
+   * @param Signer Signer with provider to use for fetching the block number (if not known) from the StealthKeyRegistry contract
+   * @param address Address of the user for fetching the block number (if not known) from the subgraph or StealthKeyRegistry contract
    * @param overrides Override the start and end block used for scanning;
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
+   * @dev If the registered block number is not known, it will be fetched from the subgraph or the StealthKeyRegistry contract
    */
   async *fetchSomeAnnouncements(
+    possibleRegisteredBlockNumber: number | undefined,
     Signer: JsonRpcSigner,
     address: string,
     overrides: ScanOverrides = {}
   ): AsyncGenerator<AnnouncementDetail[]> {
-    const registeredBlockNumber = await getBlockNumberUserRegistered(address, Signer.provider, this.chainConfig);
+    const registeredBlockNumber =
+      possibleRegisteredBlockNumber || (await getBlockNumberUserRegistered(address, Signer.provider, this.chainConfig));
     // Get start and end blocks to scan events for
     const startBlock = overrides.startBlock || registeredBlockNumber || this.chainConfig.startBlock;
     const endBlock = overrides.endBlock || 'latest';

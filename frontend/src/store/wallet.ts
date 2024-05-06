@@ -632,9 +632,11 @@ const hasSetPublicKeysLegacy = async (name: string, provider: Provider) => {
 
 // Helper method to check if user has registered public keys in the StealthKeyRegistry
 async function getRegisteredStealthKeys(account: string, provider: Provider) {
+  const { setRegisteredBlockNumber } = useSettingsStore();
   try {
-    const stealthPubKeys = await utils.lookupRecipient(account, provider); // throws if no keys found
-    return stealthPubKeys;
+    const registrationInfo = await utils.lookupRecipient(account, provider); // throws if no keys found
+    setRegisteredBlockNumber(Number(registrationInfo.block));
+    return registrationInfo;
   } catch (err) {
     window.logger.warn(err);
     return null;
