@@ -207,8 +207,8 @@ export async function toAddress(name: string, provider: EthersProvider) {
 /**
  * @notice Returns public keys from the recipientId
  * @dev When providing a public key, transaction hash, or address with advanced mode, the spending and viewing
- * public keys will be the same. Only keys retrieved from the StealthKeyRegistry will have different spending
- * and viewing keys
+ * public keys will be the same. Only keys retrieved from the StealthKeyRegistry (or the subgraph) will have different spending
+ * and viewing keys. Additionally, the block number when the user registered will be returned.
  * @param id Recipient identifier, must be an ENS name, CNS name, address, transaction hash, or public key
  * @param provider ethers provider to use
  * @param options Object containing lookup options:
@@ -230,7 +230,7 @@ export async function lookupRecipient(
   const isPublicKey = id.length === 132 && isHexString(id);
   if (supportPubKey && isPublicKey) {
     assertValidPoint(id);
-    return { spendingPublicKey: id, viewingPublicKey: id };
+    return { spendingPublicKey: id, viewingPublicKey: id, block: undefined };
   }
 
   // Check if identifier is a transaction hash. If so, we recover the sender's public keys from the transaction
@@ -238,7 +238,7 @@ export async function lookupRecipient(
   if (supportTxHash && isTxHash) {
     const publicKey = await recoverPublicKeyFromTransaction(id, provider);
     assertValidPoint(publicKey);
-    return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
+    return { spendingPublicKey: publicKey, viewingPublicKey: publicKey, block: undefined };
   }
 
   // The remaining checks are dependent on the advanced mode option. The provided identifier is now either an
@@ -259,7 +259,11 @@ export async function lookupRecipient(
         stealthKeyChangedEvent.viewingPubKey,
         stealthKeyChangedEvent.viewingPubKeyPrefix.toString()
       );
-      return { spendingPublicKey: spendingPublicKey, viewingPublicKey: viewingPublicKey };
+      return {
+        spendingPublicKey: spendingPublicKey,
+        viewingPublicKey: viewingPublicKey,
+        block: stealthKeyChangedEvent.block,
+      };
     } catch (error) {
       if (error instanceof Error) {
         console.log('Public key subgraph fetch error: ', error.message);
@@ -268,7 +272,8 @@ export async function lookupRecipient(
       }
       console.log('Error using subgraph to lookup receipient stealth keys, will query registry contract');
       const registry = new StealthKeyRegistry(provider);
-      return registry.getStealthKeys(address);
+      const { spendingPublicKey, viewingPublicKey } = await registry.getStealthKeys(address);
+      return { spendingPublicKey, viewingPublicKey, block: undefined };
     }
   }
 
@@ -277,7 +282,7 @@ export async function lookupRecipient(
   if (!txHash) throw new Error('Could not get public key because the provided account has not sent any transactions');
   const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
   assertValidPoint(publicKey);
-  return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
+  return { spendingPublicKey: publicKey, viewingPublicKey: publicKey, block: undefined };
 }
 
 export async function getBlockNumberUserRegistered(
