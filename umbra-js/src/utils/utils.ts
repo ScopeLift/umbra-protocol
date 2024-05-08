@@ -230,7 +230,7 @@ export async function lookupRecipient(
   const isPublicKey = id.length === 132 && isHexString(id);
   if (supportPubKey && isPublicKey) {
     assertValidPoint(id);
-    return { spendingPublicKey: id, viewingPublicKey: id, block: undefined };
+    return { spendingPublicKey: id, viewingPublicKey: id };
   }
 
   // Check if identifier is a transaction hash. If so, we recover the sender's public keys from the transaction
@@ -238,7 +238,7 @@ export async function lookupRecipient(
   if (supportTxHash && isTxHash) {
     const publicKey = await recoverPublicKeyFromTransaction(id, provider);
     assertValidPoint(publicKey);
-    return { spendingPublicKey: publicKey, viewingPublicKey: publicKey, block: undefined };
+    return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
   }
 
   // The remaining checks are dependent on the advanced mode option. The provided identifier is now either an
@@ -273,7 +273,7 @@ export async function lookupRecipient(
       console.log('Error using subgraph to lookup receipient stealth keys, will query registry contract');
       const registry = new StealthKeyRegistry(provider);
       const { spendingPublicKey, viewingPublicKey } = await registry.getStealthKeys(address);
-      return { spendingPublicKey, viewingPublicKey, block: undefined };
+      return { spendingPublicKey, viewingPublicKey };
     }
   }
 
@@ -282,7 +282,7 @@ export async function lookupRecipient(
   if (!txHash) throw new Error('Could not get public key because the provided account has not sent any transactions');
   const publicKey = await recoverPublicKeyFromTransaction(txHash, provider);
   assertValidPoint(publicKey);
-  return { spendingPublicKey: publicKey, viewingPublicKey: publicKey, block: undefined };
+  return { spendingPublicKey: publicKey, viewingPublicKey: publicKey };
 }
 
 export async function getBlockNumberUserRegistered(
