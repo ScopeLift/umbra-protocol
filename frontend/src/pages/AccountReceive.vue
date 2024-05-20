@@ -242,6 +242,19 @@ function useScan() {
     return provider.getBlock('latest');
   }
 
+  function updateMostRecentAnnouncementInfo(announcementsBatch: AnnouncementDetail[]) {
+    announcementsBatch.forEach((announcement) => {
+      const thisTimestamp = parseInt(announcement.timestamp);
+      if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {
+        mostRecentAnnouncementTimestamp.value = thisTimestamp;
+      }
+      const thisBlock = parseInt(announcement.block);
+      if (thisBlock > mostRecentAnnouncementBlockNumber.value) {
+        mostRecentAnnouncementBlockNumber.value = thisBlock;
+      }
+    });
+  }
+
   async function scan() {
     // Reset paused state
     paused.value = false;
@@ -302,6 +315,7 @@ function useScan() {
       if (advancedMode.value && scanPrivateKey.value) {
         for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
           announcementsCount += announcementsBatch.length; // Increment count
+          updateMostRecentAnnouncementInfo(announcementsBatch);
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
             scanStatus.value = 'scanning latest';
@@ -338,17 +352,7 @@ function useScan() {
           }
 
           announcementsCount += announcementsBatch.length; // Increment count
-          announcementsBatch.forEach((announcement) => {
-            const thisTimestamp = parseInt(announcement.timestamp);
-            if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {
-              mostRecentAnnouncementTimestamp.value = thisTimestamp;
-            }
-            const thisBlock = parseInt(announcement.block);
-            if (thisBlock > mostRecentAnnouncementBlockNumber.value) {
-              mostRecentAnnouncementBlockNumber.value = thisBlock;
-            }
-          });
-
+          updateMostRecentAnnouncementInfo(announcementsBatch);
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
             scanStatus.value = 'scanning latest';
