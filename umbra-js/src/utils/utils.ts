@@ -438,8 +438,9 @@ export async function* recursiveGraphFetch(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      // Gnosis chain is using Goldsky subgraph, which only supports 1000 blocks per query.
       query: query(`
-        first: 1000,
+        first: ${url.includes('umbra-xdai') ? 1000 : 10000},
         orderBy: id,
         orderDirection: desc,
         where: {
