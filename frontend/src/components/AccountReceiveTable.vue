@@ -60,18 +60,39 @@
         >.
       </div>
 
+      <div v-if="scanStatus === 'fetching' || scanStatus === 'complete'">
+        <span class="q-mr-xs">{{ $t('AccountReceiveTable.funds-question') }}</span>
+        <base-tooltip icon="fas fa-question-circle">
+          <span class="text-bold q-mb-sm">
+            {{ $t('AccountReceiveTable.most-recent-announcement') }}
+            <br />
+            {{ $t('AccountReceiveTable.most-recent-block') }} {{ mostRecentAnnouncementBlockNumber }}
+            <br />
+            {{ $t('AccountReceiveTable.most-recent-time') }}
+            {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
+            {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+            <br />
+            <div v-if="advancedMode">
+              {{ $t('AccountReceiveTable.most-recent-mined') }}
+              <br />
+              {{ $t('AccountReceiveTable.most-recent-block') }} {{ mostRecentBlockNumber }}
+              <br />
+              {{ $t('AccountReceiveTable.most-recent-time') }}
+              {{ formatDate(mostRecentBlockTimestamp * 1000) }}
+              {{ formatTime(mostRecentBlockTimestamp * 1000) }}
+            </div>
+          </span>
+          <router-link
+            active-class="text-bold"
+            class="hyperlink dark-toggle"
+            :to="{ path: 'faq', hash: '#receiving-funds' }"
+          >
+            {{ $t('AccountReceiveTable.learn-more') }}
+          </router-link>
+        </base-tooltip>
+      </div>
       <div v-if="scanStatus === 'complete'" class="text-caption q-mb-sm">
         <!-- Show the most recent timestamp and block that were scanned -->
-        {{ $t('AccountReceiveTable.most-recent-announcement') }}
-        {{ mostRecentAnnouncementBlockNumber }} /
-        {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
-        {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
-        <div v-if="advancedMode" class="text-caption q-mb-sm">
-          {{ $t('AccountReceiveTable.most-recent-mined') }}
-          {{ mostRecentBlockNumber }} /
-          {{ formatDate(mostRecentBlockTimestamp * 1000) }}
-          {{ formatTime(mostRecentBlockTimestamp * 1000) }}
-        </div>
         <div v-if="advancedMode" class="text-caption q-mb-sm">
           <!-- This scanDescriptionString describes scan settings that were used -->
           {{ scanDescriptionString }}.
