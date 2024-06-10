@@ -20,7 +20,7 @@
     "@adraffy/ens-normalize": "1.9.2",
     "@metamask/jazzicon": "^2.0.0",
     "@quasar/extras": "^1.15.8",
-    "@umbracash/umbra-js": "0.2.0",
+    "@umbracash/umbra-js": "file:../umbra-js",
     "@uniswap/token-lists": "^1.0.0-beta.19",
     "@unstoppabledomains/resolution": "8.5.0",
     "@web3-onboard/coinbase": "2.2.7",
