@@ -247,8 +247,18 @@ export async function lookupRecipient(
 
   // If we're not using advanced mode, use the StealthKeyRegistry events
   if (!advanced) {
-    // Fetch the stealth key registry event from the subgraph and fall back to the registry contract if the subgraph returns an error
+    // Fetch the stealth key registry event from the the registry contract and fall back to subgraph if the registry contract fetch returns an error
     try {
+      const registry = new StealthKeyRegistry(provider);
+      const { spendingPublicKey, viewingPublicKey } = await registry.getStealthKeys(address);
+      return { spendingPublicKey, viewingPublicKey };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log('StrealthKey Registry fetch error: ', error.message);
+      } else {
+        console.log('An unknown error occurred: ', error);
+      }
+      console.log('Error using Registry contract to lookup receipient stealth keys, will query subgraph');
       const chainConfig = parseChainConfig(chainId);
       const stealthKeyChangedEvent = await getMostRecentSubgraphStealthKeyChangedEventFromAddress(address, chainConfig);
       const spendingPublicKey = KeyPair.getUncompressedFromX(
@@ -264,16 +274,6 @@ export async function lookupRecipient(
         viewingPublicKey: viewingPublicKey,
         block: stealthKeyChangedEvent.block,
       };
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log('Public key subgraph fetch error: ', error.message);
-      } else {
-        console.log('An unknown error occurred: ', error);
-      }
-      console.log('Error using subgraph to lookup receipient stealth keys, will query registry contract');
-      const registry = new StealthKeyRegistry(provider);
-      const { spendingPublicKey, viewingPublicKey } = await registry.getStealthKeys(address);
-      return { spendingPublicKey, viewingPublicKey };
     }
   }
 
