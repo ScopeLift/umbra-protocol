@@ -152,8 +152,8 @@ function useScan() {
       : null
   );
   const userAnnouncements = ref<UserAnnouncement[]>([]);
-  const mostRecentAnnouncementTimestamp = ref<number>(0);
-  const mostRecentAnnouncementBlockNumber = ref<number>(0);
+  const mostRecentAnnouncementTimestamp = ref<number>();
+  const mostRecentAnnouncementBlockNumber = ref<number>();
   const mostRecentBlockTimestamp = ref<number>(0);
   const mostRecentBlockNumber = ref<number>(0);
 
