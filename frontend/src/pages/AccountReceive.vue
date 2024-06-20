@@ -461,7 +461,7 @@ function useScan() {
           announcementsCount += announcementsBatch.length; // Increment count
           announcementsBatch.forEach((announcement) => {
             const thisTimestamp = parseInt(announcement.timestamp);
-            if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {
+            if (thisTimestamp > mostRecentAnnouncementTimestamp.value!) {
               mostRecentAnnouncementTimestamp.value = thisTimestamp;
               // Save the most recent announcement timestamp to localStorage
               if (mostRecentAnnouncementTimestampKey.value) {
@@ -469,7 +469,7 @@ function useScan() {
               }
             }
             const thisBlock = parseInt(announcement.block);
-            if (thisBlock > mostRecentAnnouncementBlockNumber.value) {
+            if (thisBlock > mostRecentAnnouncementBlockNumber.value!) {
               mostRecentAnnouncementBlockNumber.value = thisBlock;
               // Save the most recent announcement block number to localStorage
               if (mostRecentAnnouncementBlockNumberKey.value) {
