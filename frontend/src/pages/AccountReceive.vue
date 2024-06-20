@@ -136,14 +136,86 @@ function useScan() {
     | 'complete latest';
   const scanStatus = ref<ScanStatus>('waiting');
   const scanPercentage = ref<number>(0);
+
+  const lastFetchedBlockKey = computed(() =>
+    userAddress.value && chainId.value ? `lastFetchedBlock-${userAddress.value}-${chainId.value}` : null
+  );
   const userAnnouncementsLocalStorageKey = computed(() =>
     userAddress.value && chainId.value ? `userAnnouncements-${userAddress.value}-${chainId.value}` : null
   );
+  const mostRecentAnnouncementTimestampKey = computed(() =>
+    userAddress.value && chainId.value ? `mostRecentAnnouncementTimestamp-${userAddress.value}-${chainId.value}` : null
+  );
+  const mostRecentAnnouncementBlockNumberKey = computed(() =>
+    userAddress.value && chainId.value
+      ? `mostRecentAnnouncementBlockNumber-${userAddress.value}-${chainId.value}`
+      : null
+  );
   const userAnnouncements = ref<UserAnnouncement[]>([]);
+  const mostRecentAnnouncementTimestamp = ref<number>(0);
+  const mostRecentAnnouncementBlockNumber = ref<number>(0);
+  const mostRecentBlockTimestamp = ref<number>(0);
+  const mostRecentBlockNumber = ref<number>(0);
 
-  // Function to load announcements from localStorage
+  // Start and end blocks for advanced mode settings
+  const {
+    advancedMode,
+    startBlock,
+    endBlock,
+    setScanBlocks,
+    setScanPrivateKey,
+    scanPrivateKey,
+    resetScanSettings: resetScanSettingsInSettingsStore,
+  } = useSettingsStore();
+  const { signer, userAddress: userWalletAddress, isAccountSetup, provider } = useWalletStore();
+
+  const startBlockLocal = ref<number | undefined>(startBlock.value);
+
+  function loadLastFetchedBlock() {
+    if (lastFetchedBlockKey.value) {
+      LocalStorage.getItem(lastFetchedBlockKey.value);
+      const lastFetchedBlock = LocalStorage.getItem(lastFetchedBlockKey.value);
+      window.logger.debug('Last fetched block loaded and set as startBlockLocal:', lastFetchedBlock);
+      startBlockLocal.value = lastFetchedBlock ? Number(lastFetchedBlock) : undefined;
+      return lastFetchedBlock as number | undefined;
+    }
+
+    return undefined;
+  }
+
+  function setLastFetchedBlock(block: number) {
+    if (lastFetchedBlockKey.value) LocalStorage.set(lastFetchedBlockKey.value, block);
+  }
+
+  function resetLastFetchedBlock() {
+    if (lastFetchedBlockKey.value) LocalStorage.remove(lastFetchedBlockKey.value);
+  }
+
+  function loadUserAnnouncementBlockData() {
+    const storedBlockNumber = mostRecentAnnouncementBlockNumberKey.value
+      ? LocalStorage.getItem(mostRecentAnnouncementBlockNumberKey.value)
+      : undefined;
+    if (storedBlockNumber) {
+      mostRecentAnnouncementBlockNumber.value = Number(storedBlockNumber);
+      window.logger.debug('Most recent announcement block number loaded:', mostRecentAnnouncementBlockNumber.value);
+    }
+
+    const storedTimestamp = mostRecentAnnouncementTimestampKey.value
+      ? LocalStorage.getItem(mostRecentAnnouncementTimestampKey.value)
+      : undefined;
+
+    if (storedTimestamp) {
+      mostRecentAnnouncementTimestamp.value = Number(storedTimestamp);
+      window.logger.debug('Most recent announcement timestamp loaded:', mostRecentAnnouncementTimestamp.value);
+    }
+
+    return {
+      mostRecentAnnouncementBlockNumber: Number(storedBlockNumber),
+      mostRecentAnnouncementTimestamp: Number(storedTimestamp),
+    };
+  }
+
   function loadUserAnnouncements() {
-    // If userAnnouncementsLocalStorageKey is not set, return
     if (!userAnnouncementsLocalStorageKey.value) return;
 
     const storedAnnouncements = deserializeUserAnnouncements(
@@ -157,6 +229,8 @@ function useScan() {
 
     userAnnouncements.value = storedAnnouncements;
     window.logger.debug('Announcements loaded:', userAnnouncements.value);
+
+    return storedAnnouncements;
   }
 
   function resetUserAnnouncements() {
@@ -166,34 +240,12 @@ function useScan() {
 
   // Watch for changes in userAddress or chainId to load announcements
   watch([userAddress, chainId], () => {
-    console.log('Detected change in user address or chain ID, attempting to load announcements...');
+    window.logger.debug('Detected change in user address or chain ID, attempting to load announcements...');
     loadUserAnnouncements();
   });
 
   const workers: Worker[] = [];
   const paused = ref(false);
-
-  const mostRecentAnnouncementTimestamp = ref<number>(0);
-  const mostRecentAnnouncementBlockNumber = ref<number>(0);
-
-  const mostRecentBlockTimestamp = ref<number>(0);
-  const mostRecentBlockNumber = ref<number>(0);
-
-  // Start and end blocks for advanced mode settings
-  const {
-    advancedMode,
-    startBlock,
-    endBlock,
-    setScanBlocks,
-    setScanPrivateKey,
-    scanPrivateKey,
-    resetScanSettings,
-    setLastFetchedBlock,
-    resetLastFetchedBlock,
-  } = useSettingsStore();
-  const { signer, userAddress: userWalletAddress, isAccountSetup, provider } = useWalletStore();
-
-  const startBlockLocal = ref<number | undefined>(startBlock.value);
 
   // watch for changes in startBlock and update startBlockLocal
   watch(startBlock, (newVal) => {
@@ -224,28 +276,26 @@ function useScan() {
   };
 
   onMounted(async () => {
+    loadLastFetchedBlock();
+    loadUserAnnouncementBlockData();
     loadUserAnnouncements();
     if (hasKeys.value && !advancedMode.value) await scan(); // if user already signed and we have their keys in memory, start scanning
   });
 
   // Watch for changes in userAnnouncements and save to localStorage
-  watch(
-    userAnnouncements,
-    (newVal) => {
-      if (userAnnouncementsLocalStorageKey.value) {
-        LocalStorage.set(userAnnouncementsLocalStorageKey.value, serializeUserAnnouncements(newVal));
-        window.logger.debug('Announcements updated in local storage:', newVal);
-      }
-    },
-    { deep: true }
-  );
+  watch(userAnnouncements, (newVal) => {
+    if (userAnnouncementsLocalStorageKey.value) {
+      LocalStorage.set(userAnnouncementsLocalStorageKey.value, serializeUserAnnouncements(newVal));
+      window.logger.debug('Announcements updated in local storage:', newVal);
+    }
+  });
 
   // Serialize userAnnouncements to store in LocalStorage
   function serializeUserAnnouncements(announcements: UserAnnouncement[]) {
     return JSON.stringify(
       announcements.map((announcement) => ({
         ...announcement,
-        amount: announcement.amount.toString(), // Convert BigNumber to string
+        amount: announcement.amount.toString(),
       }))
     );
   }
@@ -256,7 +306,7 @@ function useScan() {
 
     return JSON.parse(serialized).map((announcement: UserAnnouncement) => ({
       ...announcement,
-      amount: BigNumber.from(announcement.amount), // Convert string to BigNumber
+      amount: BigNumber.from(announcement.amount),
     })) as UserAnnouncement[];
   }
 
@@ -413,10 +463,18 @@ function useScan() {
             const thisTimestamp = parseInt(announcement.timestamp);
             if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {
               mostRecentAnnouncementTimestamp.value = thisTimestamp;
+              // Save the most recent announcement timestamp to localStorage
+              if (mostRecentAnnouncementTimestampKey.value) {
+                LocalStorage.set(mostRecentAnnouncementTimestampKey.value, thisTimestamp);
+              }
             }
             const thisBlock = parseInt(announcement.block);
             if (thisBlock > mostRecentAnnouncementBlockNumber.value) {
               mostRecentAnnouncementBlockNumber.value = thisBlock;
+              // Save the most recent announcement block number to localStorage
+              if (mostRecentAnnouncementBlockNumberKey.value) {
+                LocalStorage.set(mostRecentAnnouncementBlockNumberKey.value, thisBlock);
+              }
             }
           });
 
@@ -448,22 +506,63 @@ function useScan() {
     }
   }
 
-  function resetState() {
+  function resetScanSettingsLocal() {
     scanStatus.value = 'waiting';
     scanPercentage.value = 0;
     startBlockLocal.value = undefined;
     endBlockLocal.value = undefined;
     scanPrivateKeyLocal.value = undefined;
-    resetScanSettings();
+    resetScanSettingsInSettingsStore();
+  }
+
+  function resetState() {
+    resetScanSettingsLocal();
     resetLastFetchedBlock();
     resetUserAnnouncements();
   }
 
+  // Handle changes in userAddress
   watch(userAddress, () => {
-    // Only reset state if the address has changed and is not undefined
-    if (userAddress.value) {
-      window.logger.debug('Resetting state for new address:', userAddress.value);
+    if (!userAddress.value) return;
+
+    // Always reset state if advanced mode is enabled
+    if (advancedMode.value) {
       resetState();
+      return;
+    }
+
+    // Get the user announcements from local storage
+    const storedAnnouncements = loadUserAnnouncements();
+
+    if (storedAnnouncements) {
+      window.logger.debug('User announcements found in local storage:', storedAnnouncements);
+      const lastFetchedBlock = loadLastFetchedBlock();
+
+      // If the last fetched block is not found, reset the state
+      if (!lastFetchedBlock) {
+        resetState();
+        return;
+      }
+
+      // Make sure the start block is the last fetched block
+      setScanBlocks(lastFetchedBlock, endBlockLocal.value);
+      return;
+    }
+
+    // Only reset state if the address has changed and is not undefined
+    window.logger.debug('Resetting state for new address:', userAddress.value);
+    resetState();
+  });
+
+  // If no recent block data set and there are announcements, set the most recent block data
+  watch(userAnnouncements, () => {
+    if (!mostRecentAnnouncementBlockNumber.value && userAnnouncements.value.length) {
+      const {
+        mostRecentAnnouncementBlockNumber: blockNumInLocalStorage,
+        mostRecentAnnouncementTimestamp: timestampInLocalStorage,
+      } = loadUserAnnouncementBlockData();
+      mostRecentAnnouncementBlockNumber.value = blockNumInLocalStorage;
+      mostRecentAnnouncementTimestamp.value = timestampInLocalStorage;
     }
   });
 

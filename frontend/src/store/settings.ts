@@ -12,8 +12,9 @@ const settings = {
   language: 'language',
   sendHistorySave: 'send-history-save',
   UmbraApiVersion: 'umbra-api-version',
-  lastFetchedBlock: 'last-fetched-block',
 };
+
+
 
 // Shared state between instances
 const isDark = ref(false); // true if user has dark mode turned on
@@ -43,11 +44,6 @@ export default function useSettingsStore() {
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
 
-    // Load the last fetched block from localStorage to use as the default start block
-    const lastFetchedBlock = LocalStorage.getItem(settings.lastFetchedBlock);
-    if (lastFetchedBlock) {
-      startBlock.value = Number(lastFetchedBlock) + 1; // New scans should start after the last fetched block
-    }
   });
   setLanguage(
     paramLocale
@@ -144,13 +140,6 @@ export default function useSettingsStore() {
     LocalStorage.remove(settings.UmbraApiVersion);
   }
 
-  function setLastFetchedBlock(block: number) {
-    LocalStorage.set(settings.lastFetchedBlock, block);
-  }
-
-  function resetLastFetchedBlock() {
-    LocalStorage.remove(settings.lastFetchedBlock);
-  }
 
   return {
     toggleDarkMode,
@@ -173,7 +162,5 @@ export default function useSettingsStore() {
     getUmbraApiVersion,
     setUmbraApiVersion,
     clearUmbraApiVersion,
-    setLastFetchedBlock,
-    resetLastFetchedBlock,
   };
 }
