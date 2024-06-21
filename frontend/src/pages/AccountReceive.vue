@@ -25,7 +25,12 @@
       <!-- Waiting for signature -->
       <div v-if="needsSignature || scanStatus === 'waiting'" class="form">
         <div v-if="needsSignature" class="text-center q-mb-md">
-          {{ $t('Receive.need-signature') }}
+          <template v-if="userAnnouncements.length">
+            {{ $t('Receive.need-signature-lately') }}
+          </template>
+          <template v-else>
+            {{ $t('Receive.need-signature') }}
+          </template>
         </div>
         <div v-else class="text-center q-mb-md">{{ $t('Receive.scan-funds') }}</div>
         <base-button

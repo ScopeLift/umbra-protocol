@@ -105,6 +105,7 @@
     "receive": "Receive",
     "connect-your-wallet": "Connect your wallet to scan for received funds",
     "connect-wallet": "Connect Wallet",
+    "need-signature-lately": "Sign to scan for funds you've received lately",
     "need-signature": "This app needs your signature to scan for funds you've received",
     "scan-funds": "Click below to scan for funds you've received",
     "sign": "Sign",
