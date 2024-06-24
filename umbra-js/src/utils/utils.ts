@@ -329,19 +329,23 @@ export async function getMostRecentSubgraphStealthKeyChangedEventFromAddress(
     chainConfig
   );
   let theEvent: SubgraphStealthKeyChangedEvent | undefined;
-  for await (const event of stealthKeyChangedEvents) {
-    for (let i = 0; i < event.length; i++) {
-      if (theEvent) {
-        console.log(
-          `We found a previous StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
-        );
-      } else {
-        theEvent = event[i];
-        console.log(
-          `We found a StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
-        );
+  try {
+    for await (const event of stealthKeyChangedEvents) {
+      for (let i = 0; i < event.length; i++) {
+        if (theEvent) {
+          console.log(
+            `We found a previous StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
+          );
+        } else {
+          theEvent = event[i];
+          console.log(
+            `We found a StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
+          );
+        }
       }
     }
+  } catch (error) {
+    throw new Error(`Address ${address} has not registered stealth keys. Please ask them to setup their Umbra account`); // prettier-ignore
   }
 
   if (!theEvent) {
