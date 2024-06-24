@@ -89,7 +89,7 @@
         />
       </div>
 
-      <!-- Scanning in progress -->
+      <!-- Scanning in progress (only shown when no user annoucnements) -->
       <div
         v-if="(scanStatus === 'scanning' || scanStatus === 'scanning latest') && !userAnnouncements.length"
         class="text-center"

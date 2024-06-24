@@ -61,11 +61,23 @@
       </div>
 
       <div v-if="mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp" class="text-caption q-mb-sm">
-        <!-- Show the most recent timestamp and block that were scanned -->
-        {{ $t('AccountReceiveTable.most-recent-announcement') }}
-        {{ mostRecentAnnouncementBlockNumber }} /
-        {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
-        {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+        <!-- Container for block data and fetching status -->
+        <div class="block-data-container row items-center justify-between q-col-gutter-md">
+          <!-- Block data -->
+          <div class="block-data">
+            {{ $t('AccountReceiveTable.most-recent-announcement') }}
+            {{ mostRecentAnnouncementBlockNumber }} /
+            {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
+            {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+          </div>
+
+          <!-- Fetching status -->
+          <div v-if="scanStatus !== 'complete' && scanStatus !== 'waiting'" class="fetching-status text-italic">
+            {{ $t('Receive.fetching-latest-from-last-fetched-block') }}
+            <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+          </div>
+        </div>
+
         <div v-if="advancedMode" class="text-caption q-mb-sm">
           {{ $t('AccountReceiveTable.most-recent-mined') }}
           {{ mostRecentBlockNumber }} /
@@ -865,4 +877,20 @@ export default defineComponent({
 
 .external-link-icon
   color: transparent
+
+.block-data-container
+  @media (max-width: 599px)
+    flex-direction: column
+    align-items: flex-start
+
+  @media (min-width: 600px)
+    flex-direction: row
+
+.block-data, .fetching-status
+  @media (max-width: 599px)
+    width: 100%
+
+.fetching-status
+  @media (max-width: 599px)
+    margin-top: 0.5rem
 </style>
