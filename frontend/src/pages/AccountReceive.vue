@@ -186,9 +186,11 @@ function useScan() {
     if (lastFetchedBlockKey.value) {
       LocalStorage.getItem(lastFetchedBlockKey.value);
       const lastFetchedBlock = LocalStorage.getItem(lastFetchedBlockKey.value);
-      window.logger.debug('Last fetched block loaded and set as startBlockLocal:', lastFetchedBlock);
-      startBlockLocal.value = lastFetchedBlock ? Number(lastFetchedBlock) : undefined;
-      return lastFetchedBlock as number | undefined;
+      window.logger.debug('Last fetched block loaded:', lastFetchedBlock);
+      if (lastFetchedBlock) {
+        startBlockLocal.value = Number(lastFetchedBlock);
+        setScanBlocks(Number(lastFetchedBlock), endBlockLocal.value);
+      }
     }
 
     return undefined;
@@ -472,7 +474,7 @@ function useScan() {
           announcementsCount += announcementsBatch.length; // Increment count
           announcementsBatch.forEach((announcement) => {
             const thisTimestamp = parseInt(announcement.timestamp);
-            if (thisTimestamp > mostRecentAnnouncementTimestamp.value!) {
+            if (thisTimestamp > (mostRecentAnnouncementTimestamp.value || 0)) {
               mostRecentAnnouncementTimestamp.value = thisTimestamp;
               // Save the most recent announcement timestamp to localStorage
               if (mostRecentAnnouncementTimestampKey.value) {
@@ -480,7 +482,7 @@ function useScan() {
               }
             }
             const thisBlock = parseInt(announcement.block);
-            if (thisBlock > mostRecentAnnouncementBlockNumber.value!) {
+            if (thisBlock > (mostRecentAnnouncementBlockNumber.value || 0)) {
               mostRecentAnnouncementBlockNumber.value = thisBlock;
               // Save the most recent announcement block number to localStorage
               if (mostRecentAnnouncementBlockNumberKey.value) {
@@ -510,6 +512,9 @@ function useScan() {
 
         // Save the latest block to localStorage for future scans as the start block
         setLastFetchedBlock(latestBlock.number);
+
+        // Update startBlockLocal with the latest block number
+        startBlockLocal.value = latestBlock.number;
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
@@ -545,19 +550,19 @@ function useScan() {
     // Get the user announcements from local storage
     const storedAnnouncements = loadUserAnnouncements();
 
-    if (storedAnnouncements) {
+    // Load the last fetched block
+    const lastFetchedBlock = loadLastFetchedBlock();
+
+    // Load the most recent announcement block data
+    loadUserAnnouncementBlockData();
+
+    if (storedAnnouncements && lastFetchedBlock) {
       window.logger.debug('User announcements found in local storage:', storedAnnouncements);
-      const lastFetchedBlock = loadLastFetchedBlock();
-
-      // If the last fetched block is not found, reset the state
-      if (!lastFetchedBlock) {
-        resetState();
-        return;
-      }
-
-      // Make sure the start block is the last fetched block
+      startBlockLocal.value = lastFetchedBlock;
       setScanBlocks(lastFetchedBlock, endBlockLocal.value);
-      return;
+    } else {
+      // If no stored announcements or last fetched block, reset the state
+      resetState();
     }
 
     // Only reset state if the address has changed and is not undefined
