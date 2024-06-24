@@ -236,6 +236,7 @@ describe('Utilities', () => {
       );
     });
 
+    // prove test failure is related to the ordering of RPC query vs subgraph query, and subgraph URL is not setup
     it('throws when looking up an address that has not sent a transaction', async () => {
       const address = '0x0000000000000000000000000000000000000002';
       const ethersProvider = new StaticJsonRpcProvider(`https://sepolia.infura.io/v3/${INFURA_ID}`); // otherwise throws with unsupported network since we're on localhost
