@@ -33,6 +33,8 @@
     "contact": "Contact"
   },
   "Base-Layout": {
+    "clear-local-storage": "Clear local storage",
+    "clear-local-storage-description": "Clears all local storage data, including send history, and wallet connection.",
     "connect-wallet": "Connect Wallet",
     "settings": "Settings",
     "dark-mode": "Dark mode",
