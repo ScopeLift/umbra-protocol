@@ -190,6 +190,7 @@ function useScan() {
       if (lastFetchedBlock) {
         startBlockLocal.value = Number(lastFetchedBlock);
         setScanBlocks(Number(lastFetchedBlock), endBlockLocal.value);
+        return Number(lastFetchedBlock);
       }
     }
 
@@ -571,12 +572,10 @@ function useScan() {
       window.logger.debug('User announcements found in local storage:', storedAnnouncements);
       startBlockLocal.value = lastFetchedBlock;
       setScanBlocks(lastFetchedBlock, endBlockLocal.value);
-    } else {
-      // If no stored announcements or last fetched block, reset the state
-      resetState();
+      return;
     }
 
-    // Only reset state if the address has changed and is not undefined
+    // Only reset state if the address has changed and is not undefined, or if no announcements are found
     window.logger.debug('Resetting state for new address:', userAddress.value);
     resetState();
   });
