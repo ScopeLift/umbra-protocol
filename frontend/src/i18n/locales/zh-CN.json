@@ -117,7 +117,9 @@
     "prv-key": "私钥",
     "fetching": "在获取所有的公告...",
     "fetching-latest": "在获取最新的 10，000 条公告...",
+    "fetching-latest-from-last-fetched-block": "正在获取最新公告...",
     "scanning": "在所有的公告中扫描资金...",
+
     "scanning-latest": "在最新公告中扫描资金...",
     "wait": "这可能需要几分钟，具体取决于您的连接和设备。这是正常的 — 请耐心等待。",
     "stop": "停止"
