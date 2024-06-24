@@ -90,14 +90,20 @@
       </div>
 
       <!-- Scanning in progress -->
-      <div v-if="scanStatus === 'scanning' || scanStatus === 'scanning latest'" class="text-center">
+      <div
+        v-if="(scanStatus === 'scanning' || scanStatus === 'scanning latest') && !userAnnouncements.length"
+        class="text-center"
+      >
         <progress-indicator :percentage="scanPercentage" />
         <div v-if="scanStatus === 'scanning'" class="text-center text-italic">{{ $t('Receive.scanning') }}</div>
         <div v-else class="text-center text-italic">{{ $t('Receive.scanning-latest') }}</div>
         <div class="text-center text-italic q-mt-lg" v-html="$t('Receive.wait')"></div>
       </div>
 
-      <div v-else-if="scanStatus === 'fetching latest' || scanStatus === 'fetching'" class="text-center">
+      <div
+        v-else-if="(scanStatus === 'fetching latest' || scanStatus === 'fetching') && !userAnnouncements.length"
+        class="text-center"
+      >
         <loading-spinner />
         <div v-if="scanStatus === 'fetching'" class="text-center text-italic">
           {{ $t('Receive.fetching') }}
@@ -106,7 +112,7 @@
       </div>
       <div>
         <base-button
-          v-if="scanStatus != 'complete' && scanStatus != 'waiting'"
+          v-if="scanStatus !== 'complete' && scanStatus !== 'waiting' && !userAnnouncements.length"
           @click="terminateWorkers()"
           class="text-center q-pt-md"
           :label="$t('Receive.stop')"
