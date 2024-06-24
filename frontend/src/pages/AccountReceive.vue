@@ -251,6 +251,15 @@ function useScan() {
     if (userAnnouncementsLocalStorageKey.value) LocalStorage.remove(userAnnouncementsLocalStorageKey.value);
   }
 
+  function deduplicateAnnouncements(announcements: UserAnnouncement[]) {
+    const seen = new Set();
+    return announcements.filter((announcement) => {
+      const duplicate = seen.has(announcement.txHash);
+      seen.add(announcement.txHash);
+      return !duplicate;
+    });
+  }
+
   // Watch for changes in userAddress or chainId to load announcements
   watch([userAddress, chainId], () => {
     window.logger.debug('Detected change in user address or chain ID, attempting to load announcements...');
@@ -412,9 +421,11 @@ function useScan() {
             scanPercentage.value = Math.floor(percent);
           },
           (filteredAnnouncements) => {
-            userAnnouncements.value = [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
-              return parseInt(b.timestamp) - parseInt(a.timestamp);
-            });
+            userAnnouncements.value = deduplicateAnnouncements(
+              [...userAnnouncements.value, ...filteredAnnouncements].sort(function (a, b) {
+                return parseInt(b.timestamp) - parseInt(a.timestamp);
+              })
+            );
             if (scanStatus.value === 'scanning latest') scanStatus.value = 'complete latest';
             else scanStatus.value = 'complete';
             scanPercentage.value = 0;
