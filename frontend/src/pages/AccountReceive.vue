@@ -306,9 +306,13 @@ function useScan() {
   });
 
   // Watch for changes in userAnnouncements and save to localStorage
-  watch(userAnnouncements, (newVal) => {
+  watch(userAnnouncements, (newVal, oldVal) => {
+    const serializedNewVal = serializeUserAnnouncements(newVal);
+    const serializedOldVal = serializeUserAnnouncements(oldVal);
+    if (serializedNewVal === serializedOldVal) return;
+
     if (userAnnouncementsLocalStorageKey.value) {
-      LocalStorage.set(userAnnouncementsLocalStorageKey.value, serializeUserAnnouncements(newVal));
+      LocalStorage.set(userAnnouncementsLocalStorageKey.value, serializedNewVal);
       window.logger.debug('Announcements updated in local storage:', newVal);
     }
   });
