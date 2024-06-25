@@ -153,8 +153,16 @@ function useScan() {
   const mostRecentBlockNumber = ref<number>(0);
 
   // Start and end blocks for advanced mode settings
-  const { advancedMode, startBlock, endBlock, setScanBlocks, setScanPrivateKey, scanPrivateKey, resetScanSettings } =
-    useSettingsStore();
+  const {
+    advancedMode,
+    startBlock,
+    endBlock,
+    setScanBlocks,
+    setScanPrivateKey,
+    scanPrivateKey,
+    resetScanSettings,
+    getRegisteredBlockNumber,
+  } = useSettingsStore();
   const { signer, userAddress: userWalletAddress, isAccountSetup, provider } = useWalletStore();
   const startBlockLocal = ref<number>();
   const endBlockLocal = ref<number>();
@@ -320,6 +328,7 @@ function useScan() {
         mostRecentBlockTimestamp.value = latestBlock.timestamp;
         // Default scan behavior
         for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
+          getRegisteredBlockNumber(),
           signer.value,
           userWalletAddress.value,
           overrides

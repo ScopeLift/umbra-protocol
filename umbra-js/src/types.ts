@@ -118,6 +118,20 @@ export interface UserAnnouncement {
   txHash: string;
 }
 
+// StealthKeyChanged event data received from subgraph queries
+export interface SubgraphStealthKeyChangedEvent {
+  block: string;
+  from: string;
+  id: string; // the subgraph uses an ID of `timestamp-logIndex`
+  registrant: string;
+  spendingPubKeyPrefix: BigNumber;
+  spendingPubKey: BigNumber;
+  timestamp: string;
+  txHash: string;
+  viewingPubKeyPrefix: BigNumber;
+  viewingPubKey: BigNumber;
+}
+
 export interface SendBatch {
   token: string;
   amount: BigNumberish;
@@ -135,4 +149,5 @@ export interface SendData {
 export type GraphFilterOverride = {
   startBlock?: number | string;
   endBlock?: number | string;
+  registrant?: string;
 };
