@@ -71,10 +71,31 @@
             {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
           </div>
 
-          <!-- Fetching status -->
-          <div v-if="scanStatus !== 'complete' && scanStatus !== 'waiting'" class="fetching-status text-italic">
-            {{ $t('Receive.fetching-latest-from-last-fetched-block') }}
-            <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+          <!-- Status messages -->
+          <div
+            v-if="
+              ['fetching', 'fetching latest', 'scanning', 'scanning latest from last fetched block'].includes(
+                scanStatus
+              )
+            "
+            class="status-message text-italic"
+          >
+            <div v-if="scanStatus === 'fetching' || scanStatus === 'fetching latest'">
+              {{
+                scanStatus === 'fetching'
+                  ? $t('Receive.fetching')
+                  : $t('Receive.fetching-latest-from-last-fetched-block')
+              }}
+              <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+            </div>
+            <div v-else>
+              {{
+                scanStatus === 'scanning latest from last fetched block'
+                  ? $t('Receive.scanning-latest-from-last-fetched-block')
+                  : $t('Receive.scanning')
+              }}
+              <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+            </div>
           </div>
         </div>
 

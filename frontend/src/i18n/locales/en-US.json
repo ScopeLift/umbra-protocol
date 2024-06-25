@@ -123,6 +123,7 @@
     "fetching-latest-from-last-fetched-block": "Fetching latest announcements...",
     "scanning": "Scanning all announcements for funds...",
     "scanning-latest": "Scanning latest announcements for funds...",
+    "scanning-latest-from-last-fetched-block": "Scanning latest announcements...",
     "wait": "This may take a couple of minutes depending on your connection and device. This is normal&mdash; please be patient.",
     "stop": "Stop"
   },

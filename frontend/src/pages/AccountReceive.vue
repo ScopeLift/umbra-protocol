@@ -143,6 +143,7 @@ function useScan() {
     | 'fetching latest'
     | 'scanning'
     | 'scanning latest'
+    | 'scanning latest from last fetched block'
     | 'complete'
     | 'complete latest';
   const scanStatus = ref<ScanStatus>('waiting');
@@ -391,6 +392,8 @@ function useScan() {
     // Reset paused state
     paused.value = false;
     if (!umbra.value) throw new Error('No umbra instance found. Please make sure you are on a supported network');
+
+    const isInitialScan = userAnnouncements.value.length === 0;
     scanStatus.value = 'fetching latest';
 
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
@@ -509,7 +512,7 @@ function useScan() {
 
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
-            scanStatus.value = 'scanning latest';
+            scanStatus.value = isInitialScan ? 'scanning latest' : 'scanning latest from last fetched block';
             firstScanPromise = filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
             announcementsQueue = [];
           }
@@ -522,7 +525,7 @@ function useScan() {
         await firstScanPromise;
         // Clear out existing workers
         workers.length = 0;
-        scanStatus.value = 'scanning';
+        scanStatus.value = isInitialScan ? 'scanning' : 'scanning latest from last fetched block';
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
 

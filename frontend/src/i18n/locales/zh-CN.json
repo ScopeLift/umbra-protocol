@@ -123,6 +123,7 @@
     "scanning": "在所有的公告中扫描资金...",
 
     "scanning-latest": "在最新公告中扫描资金...",
+    "scanning-latest-from-last-fetched-block": "在最新公告中扫描资金...",
     "wait": "这可能需要几分钟，具体取决于您的连接和设备。这是正常的 — 请耐心等待。",
     "stop": "停止"
   },
