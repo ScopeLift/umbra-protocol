@@ -576,8 +576,9 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   watchEffect(async () => {
-    if (userAnnouncements.value.length === 0) formattedAnnouncements.value = [];
-    isLoading.value = true;
+    const hasAnnouncements = userAnnouncements.value.length > 0;
+    if (!hasAnnouncements) formattedAnnouncements.value = [];
+    isLoading.value = !hasAnnouncements;
     const announcements = userAnnouncements.value as ReceiveTableAnnouncement[];
     const newAnnouncements = announcements.filter((x) => !formattedAnnouncements.value.includes(x));
     formattedAnnouncements.value = sortByTimestamp([...formattedAnnouncements.value, ...newAnnouncements]);
