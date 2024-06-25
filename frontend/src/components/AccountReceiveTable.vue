@@ -571,13 +571,16 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
   const formattedAnnouncements = ref([] as ReceiveTableAnnouncement[]);
 
+  const sortByTimestamp = (announcements: ReceiveTableAnnouncement[]) =>
+    announcements.sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   watchEffect(async () => {
     if (userAnnouncements.value.length === 0) formattedAnnouncements.value = [];
     isLoading.value = true;
     const announcements = userAnnouncements.value as ReceiveTableAnnouncement[];
     const newAnnouncements = announcements.filter((x) => !formattedAnnouncements.value.includes(x));
-    formattedAnnouncements.value = [...formattedAnnouncements.value, ...newAnnouncements];
+    formattedAnnouncements.value = sortByTimestamp([...formattedAnnouncements.value, ...newAnnouncements]);
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
     let formattedAddresses: string[] = [];
