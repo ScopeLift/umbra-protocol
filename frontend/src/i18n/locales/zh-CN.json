@@ -108,6 +108,7 @@
     "connect-your-wallet": "连接您的钱包以扫描收到的资金",
     "connect-wallet": "链接钱包",
     "need-signature": "此应用程序需要您的签名才能扫描您收到的资金",
+    "need-signature-lately": "签名以扫描最近收到的资金或提取资金",
     "scan-funds": "点击下方来扫描您收到的资金",
     "sign": "签名",
     "scan": "扫描",
