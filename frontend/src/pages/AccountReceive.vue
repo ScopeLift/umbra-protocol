@@ -35,7 +35,7 @@
         <div v-else class="text-center q-mb-md">{{ $t('Receive.scan-funds') }}</div>
         <base-button
           @click="getPrivateKeysHandler"
-          class="text-center q-mb-md"
+          class="text-center q-mb-lg"
           :label="needsSignature ? $t('Receive.sign') : $t('Receive.scan')"
         />
 
