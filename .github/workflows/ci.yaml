@@ -28,7 +28,6 @@ env:
   GNOSIS_CHAIN_RPC_URL: ${{ secrets.GNOSIS_CHAIN_RPC_URL }}
   BASE_RPC_URL: $${{ secrets.BASE_RPC_URL }}
   FOUNDRY_PROFILE: ci
-  INFURA_ID: ${{ secrets.INFURA_ID }}
   WALLET_CONNECT_PROJECT_ID: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}
 
 jobs:
