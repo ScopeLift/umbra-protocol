@@ -11,11 +11,11 @@ const resolution = new Resolution({
     uns: {
       locations: {
         Layer1: {
-          url: `https://mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`,
+          url: `${String(process.env.MAINNET_RPC_URL)}`,
           network: 'mainnet',
         },
         Layer2: {
-          url: `https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`,
+          url: `${String(process.env.POLYGON_RPC_URL)}`,
           network: 'polygon-mainnet',
         },
       },
@@ -43,9 +43,7 @@ describe('СNS functions', () => {
 
   it('gets the public keys associated with a CNS address', async () => {
     const address = await resolution.addr(name, 'ETH');
-    const ethersProvider = new StaticJsonRpcProvider(
-      `https://polygon-mainnet.infura.io/v3/${String(process.env.INFURA_ID)}`
-    );
+    const ethersProvider = new StaticJsonRpcProvider(`${String(process.env.POLYGON_RPC_URL)}`);
     const keys = await utils.lookupRecipient(address, ethersProvider);
     expect(keys.spendingPublicKey).to.equal(nameSpendingPublicKey);
     expect(keys.viewingPublicKey).to.equal(nameViewingPublicKey);
