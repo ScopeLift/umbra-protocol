@@ -592,7 +592,7 @@ export default function useWalletStore() {
     // "Direct" properties, i.e. return them directly without modification
     balances: computed(() => balances.value),
     stealthKeyRegistry: computed(() => stealthKeyRegistry.value),
-    hasKeys: computed(() => spendingKeyPair.value?.privateKeyHex && viewingKeyPair.value?.privateKeyHex),
+    hasKeys: computed(() => !!spendingKeyPair.value?.privateKeyHex && !!viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
     isAccountSetup: computed(() => isAccountSetup.value),
     isAccountSetupLegacy: computed(() => hasEnsKeys.value || hasCnsKeys.value), // LEGACY
@@ -615,6 +615,7 @@ export default function useWalletStore() {
     tokens: computed(() => tokens.value),
     userDisplayName: computed(() => userDisplayName.value),
     connectedWalletLabel: computed(() => lastWallet),
+    needSignature: computed(() =>  !spendingKeyPair.value?.privateKeyHex || !viewingKeyPair.value?.privateKeyHex),
   };
 }
 

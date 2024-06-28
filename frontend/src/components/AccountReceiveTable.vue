@@ -60,12 +60,45 @@
         >.
       </div>
 
-      <div v-if="scanStatus === 'complete'" class="text-caption q-mb-sm">
-        <!-- Show the most recent timestamp and block that were scanned -->
-        {{ $t('AccountReceiveTable.most-recent-announcement') }}
-        {{ mostRecentAnnouncementBlockNumber }} /
-        {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
-        {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+      <div v-if="mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp" class="text-caption q-mb-sm">
+        <!-- Container for block data and fetching status -->
+        <div class="block-data-container row items-center justify-between q-col-gutter-md">
+          <!-- Block data -->
+          <div class="block-data">
+            {{ $t('AccountReceiveTable.most-recent-announcement') }}
+            {{ mostRecentAnnouncementBlockNumber }} /
+            {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
+            {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+          </div>
+
+          <!-- Status messages -->
+          <div
+            v-if="
+              ['fetching', 'fetching latest', 'scanning', 'scanning latest from last fetched block'].includes(
+                scanStatus
+              )
+            "
+            class="status-message text-italic"
+          >
+            <div v-if="scanStatus === 'fetching' || scanStatus === 'fetching latest'">
+              {{
+                scanStatus === 'fetching'
+                  ? $t('Receive.fetching')
+                  : $t('Receive.fetching-latest-from-last-fetched-block')
+              }}
+              <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+            </div>
+            <div v-else>
+              {{
+                scanStatus === 'scanning latest from last fetched block'
+                  ? $t('Receive.scanning-latest-from-last-fetched-block')
+                  : $t('Receive.scanning')
+              }}
+              <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+            </div>
+          </div>
+        </div>
+
         <div v-if="advancedMode" class="text-caption q-mb-sm">
           {{ $t('AccountReceiveTable.most-recent-mined') }}
           {{ mostRecentBlockNumber }} /
@@ -99,12 +132,8 @@
           <div :key="props.row.id" class="col-12">
             <q-card class="card-border cursor-pointer q-pt-md col justify-center items-center">
               <q-card-section class="row justify-center items-center">
-                <img
-                  class="q-mr-md"
-                  :src="getTokenLogoUri(props.row.token, tokens)"
-                  style="width: 1.2rem"
-                  v-if="getTokenInfo(props.row.token)"
-                />
+                <img v-if="getTokenInfo(props.row.token)" src="path/to/image.jpg" />props.row.token, tokens)"
+                style="width: 1.2rem" v-if="getTokenInfo(props.row.token)" />
                 <div class="text-primary text-h6 header-black q-pb-none">
                   {{ formatAmount(props.row.amount, props.row.token, tokens) }}
                   {{ getTokenSymbol(props.row.token, tokens) }}
@@ -542,13 +571,17 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
   const formattedAnnouncements = ref([] as ReceiveTableAnnouncement[]);
 
+  const sortByTimestamp = (announcements: ReceiveTableAnnouncement[]) =>
+    announcements.sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   watchEffect(async () => {
-    if (userAnnouncements.value.length === 0) formattedAnnouncements.value = [];
-    isLoading.value = true;
+    const hasAnnouncements = userAnnouncements.value.length > 0;
+    if (!hasAnnouncements) formattedAnnouncements.value = [];
+    isLoading.value = !hasAnnouncements;
     const announcements = userAnnouncements.value as ReceiveTableAnnouncement[];
     const newAnnouncements = announcements.filter((x) => !formattedAnnouncements.value.includes(x));
-    formattedAnnouncements.value = [...formattedAnnouncements.value, ...newAnnouncements];
+    formattedAnnouncements.value = sortByTimestamp([...formattedAnnouncements.value, ...newAnnouncements]);
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
     let formattedAddresses: string[] = [];
@@ -869,4 +902,20 @@ export default defineComponent({
 
 .external-link-icon
   color: transparent
+
+.block-data-container
+  @media (max-width: 599px)
+    flex-direction: column
+    align-items: flex-start
+
+  @media (min-width: 600px)
+    flex-direction: row
+
+.block-data, .fetching-status
+  @media (max-width: 599px)
+    width: 100%
+
+.fetching-status
+  @media (max-width: 599px)
+    margin-top: 0.5rem
 </style>

@@ -18,8 +18,8 @@
             emit('initializeWithdraw');
             setIsInWithdrawFlow(true);
           "
-          :appendButtonLabel="$t('WithdrawForm.withdraw')"
-          :appendButtonDisable="isInWithdrawFlow || isFeeLoading"
+          :appendButtonLabel="needSignature ? $t('WithdrawForm.need-signature') : $t('WithdrawForm.withdraw')"
+          :appendButtonDisable="isInWithdrawFlow || isFeeLoading || needSignature"
           :appendButtonLoading="isInWithdrawFlow"
           :disable="isInWithdrawFlow"
           :label="$t('WithdrawForm.address')"
@@ -119,11 +119,13 @@ export default defineComponent({
     advancedMode: {
       type: Boolean,
       required: true,
+      default: true,
     },
   },
   setup(data, { emit }) {
     const { NATIVE_TOKEN } = useWalletStore();
     const { setIsInWithdrawFlow, isInWithdrawFlow } = useStatusesStore();
+    const { needSignature } = useWalletStore();
     const content = ref<string>(data.destinationAddress || '');
     const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
 
@@ -138,6 +140,7 @@ export default defineComponent({
       emitUpdateDestinationAddress,
       content,
       nativeTokenSymbol,
+      needSignature,
       isInWithdrawFlow,
       setIsInWithdrawFlow,
     };
