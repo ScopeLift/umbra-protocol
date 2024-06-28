@@ -357,6 +357,7 @@
     "view-on-explorer": "在区块链浏览器上查看"
   },
   "WithdrawForm": {
+    "need-signature": "此应用程序需要您的签名才能扫描您收到的资金",
     "withdraw-address": "输入提款地址",
     "address": "地址",
     "fetching-fee-estimate": "在接收费用估计...",
