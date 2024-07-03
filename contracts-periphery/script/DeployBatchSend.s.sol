@@ -22,15 +22,14 @@ contract DeployBatchSend is Script {
   uint256 constant EXPECTED_NONCE = 0; // TODO Edit this with the nonce of the deployer address
   address constant UMBRA = 0xFb2dc580Eed955B528407b4d36FfaFe3da685401;
   // The list of networks to deploy to.
-  string[] public networks =
-    ["mainnet", "optimism", "arbitrum_one", "polygon", "gnosis_chain", "sepolia"];
+  string[] public networks = ["mainnet", "optimism", "arbitrum_one", "polygon", "sepolia"];
 
   mapping(string => address) public batchSendAddresses;
 
   /// @notice Deploy the contract to the list of networks,
   function run() public {
     // Compute the address the contract will be deployed to
-    address expectedContractAddress = computeCreateAddress(msg.sender, EXPECTED_NONCE);
+    address expectedContractAddress = vm.computeCreateAddress(msg.sender, EXPECTED_NONCE);
     console2.log("Expected contract address: %s", expectedContractAddress);
 
     // Turn off fallback to default RPC URLs since they can be flaky.
