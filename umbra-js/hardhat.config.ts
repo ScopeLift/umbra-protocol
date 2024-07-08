@@ -19,11 +19,10 @@ const chainIds = {
 // Ensure that we have all the environment variables we need.
 const mnemonic = 'test test test test test test test test test test test junk';
 
-const infuraApiKey = process.env.INFURA_ID;
-if (!infuraApiKey) throw new Error('Please set your INFURA_ID in a .env file');
-
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
-  const url = `https://${network}.infura.io/v3/${infuraApiKey as string}`;
+  const rpcUrlString = `${network.toUpperCase()}_RPC_URL`;
+  const url = process.env[rpcUrlString];
+  if (!url) throw new Error(`Please set the ${url} in a .env file`);
   return {
     accounts: {
       count: 10,
@@ -36,12 +35,14 @@ function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig 
   };
 }
 
+const rpcUrlString = process.env.SEPOLIA_RPC_URL;
+if (!rpcUrlString) throw new Error('Please set the SEPOLIA_RPC_URL in a .env file');
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
       forking: {
-        url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
+        url: rpcUrlString,
       },
       chainId: chainIds.hardhat,
       accounts: {
