@@ -208,6 +208,20 @@
               </span>
             </p>
 
+            <!-- Clear local storage button -->
+            <div class="q-mt-md row items-center">
+              <base-button
+                @click="clearLocalStorage"
+                color="warning"
+                :label="$t('Base-Layout.clear-local-storage')"
+                :outline="true"
+                :rounded="true"
+              />
+              <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+                {{ $t('Base-Layout.clear-local-storage-description') }}
+              </base-tooltip>
+            </div>
+
             <!-- Language selection -->
             <base-select
               class="language-selector"
@@ -223,20 +237,6 @@
               option-label="label"
               rounded
             />
-
-            <!-- Clear local storage button -->
-            <div class="q-mt-md row items-center">
-              <base-button
-                @click="clearLocalStorage"
-                color="warning"
-                :label="$t('Base-Layout.clear-local-storage')"
-                :outline="true"
-                :rounded="true"
-              />
-              <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
-                {{ $t('Base-Layout.clear-local-storage-description') }}
-              </base-tooltip>
-            </div>
 
             <p class="text-caption dark-toggle" style="font-size: 0.65rem">version {{ version }}</p>
           </div>
