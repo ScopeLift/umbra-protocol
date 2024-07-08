@@ -34,7 +34,7 @@
   },
   "Base-Layout": {
     "clear-local-storage": "清除本地存储",
-    "clear-local-storage-description": "清除所有本地存储数据，包括发送历史记录和钱包连接信息。",
+    "clear-local-storage-description": "清除所有本地存储数据，包括发送历史记录，公告，和钱包连接信息。",
     "connect-wallet": "连接钱包",
     "settings": "设置",
     "dark-mode": "深色模式",
