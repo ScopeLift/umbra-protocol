@@ -60,7 +60,7 @@
         >.
       </div>
 
-      <div v-if="mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp" class="text-caption q-mb-sm">
+      <div v-if="mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp" class="text-caption q-mb-md">
         <!-- Container for block data and fetching status -->
         <div class="block-data-container row items-center justify-between q-col-gutter-md">
           <!-- Block data -->

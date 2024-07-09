@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <h2 class="page-title">{{ $t('Receive.receive') }}</h2>
+    <h2 class="send-page-title">{{ $t('Receive.receive') }}</h2>
     <!-- User has not connected wallet  -->
     <div v-if="!userAddress">
       <p class="text-center">{{ $t('Receive.connect-your-wallet') }}</p>
@@ -24,7 +24,7 @@
     <div v-else-if="userAddress" class="q-mx-auto" style="max-width: 800px">
       <!-- Waiting for signature -->
       <div v-if="needsSignature || scanStatus === 'waiting'" class="form">
-        <div v-if="needsSignature" class="text-center q-mb-md">
+        <div v-if="needsSignature" class="text-center q-my-md">
           <template v-if="userAnnouncements.length">
             {{ $t('Receive.need-signature-lately') }}
           </template>
@@ -35,12 +35,12 @@
         <div v-else class="text-center q-mb-md">{{ $t('Receive.scan-funds') }}</div>
         <base-button
           @click="getPrivateKeysHandler"
-          class="text-center q-mb-lg"
+          class="text-center q-my-md"
           :label="needsSignature ? $t('Receive.sign') : $t('Receive.scan')"
         />
 
         <!-- Advanced mode settings -->
-        <q-card v-if="advancedMode" class="q-pt-md q-px-md q-mt-xl">
+        <q-card v-if="advancedMode" class="q-pt-md q-px-md q-my-md">
           <q-card-section class="text-center text-primary text-h6 header-black q-pb-none">
             {{ $t('Receive.scan-settings') }}
           </q-card-section>
