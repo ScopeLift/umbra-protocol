@@ -617,9 +617,16 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     const stealthBalanceResponses: Response[] = await multicall.callStatic.aggregate3(stealthBalanceCalls);
     const stealthBalances = stealthBalanceResponses.map((r) => BigNumber.from(r.returnData));
 
-    formattedAnnouncements.value.forEach((announcement, index) => {
-      if (newAnnouncements.some((newAnnouncement) => newAnnouncement.txHash === announcement.txHash))
-        announcement.isWithdrawn = stealthBalances[index].lt(announcement.amount);
+    formattedAnnouncements.value.forEach((announcement) => {
+      const isNewAnnouncement = newAnnouncements.some(
+        (newAnnouncement) => newAnnouncement.txHash === announcement.txHash
+      );
+
+      if (isNewAnnouncement) {
+        const balanceIndex = userAnnouncements.value.findIndex((a) => a.txHash === announcement.txHash);
+        const stealthBalance = stealthBalances[balanceIndex];
+        announcement.isWithdrawn = stealthBalance.lt(announcement.amount);
+      }
     });
     isLoading.value = false;
   });
