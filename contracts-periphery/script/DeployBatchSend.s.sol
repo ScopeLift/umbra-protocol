@@ -30,7 +30,7 @@ contract DeployBatchSend is Script {
   /// @notice Deploy the contract to the list of networks,
   function run() public {
     // Compute the address the contract will be deployed to
-    address expectedContractAddress = computeCreateAddress(msg.sender, EXPECTED_NONCE);
+    address expectedContractAddress = vm.computeCreateAddress(msg.sender, EXPECTED_NONCE);
     console2.log("Expected contract address: %s", expectedContractAddress);
 
     // Turn off fallback to default RPC URLs since they can be flaky.
