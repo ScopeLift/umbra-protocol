@@ -358,7 +358,7 @@
     "view-on-explorer": "View on explorer"
   },
   "WithdrawForm": {
-    "need-signature": "Sign",
+    "need-signature": "Sign and Withdraw",
     "withdraw-address": "Enter address to withdraw funds to",
     "address": "Address",
     "fetching-fee-estimate": "Fetching fee estimate...",
