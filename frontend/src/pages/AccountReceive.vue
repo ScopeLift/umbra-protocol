@@ -256,8 +256,10 @@ function useScan() {
   function deduplicateAnnouncements(announcements: UserAnnouncement[]) {
     const seen = new Set();
     return announcements.filter((announcement) => {
-      const duplicate = seen.has(announcement.txHash);
-      seen.add(announcement.txHash);
+      // Deduplicate by txHash and receiver address (stealth address) to handle batch sends
+      const uniqueId = `${announcement.txHash}-${announcement.receiver}`;
+      const duplicate = seen.has(uniqueId);
+      seen.add(uniqueId);
       return !duplicate;
     });
   }
