@@ -414,7 +414,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref } from 'vue';
+import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref, ComputedRef, onMounted } from 'vue';
 import { copyToClipboard } from 'quasar';
 import { BigNumber, Contract, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
@@ -490,7 +490,7 @@ interface ReceiveTableAnnouncement extends UserAnnouncement {
   formattedFrom: string;
 }
 
-function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spendingKeyPair: KeyPair) {
+function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spendingKeyPair: ComputedRef<KeyPair>) {
   const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const { setIsInWithdrawFlow } = useStatusesStore();
   const paginationConfig = { rowsPerPage: 25 };
@@ -709,7 +709,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     // Get token info, stealth private key, and destination (acceptor) address
     const announcement = activeAnnouncement.value;
     const token = getTokenInfo(announcement.token);
-    const stealthKeyPair = spendingKeyPair.mulPrivateKey(announcement.randomNumber);
+    const stealthKeyPair = spendingKeyPair.value.mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
     const acceptor = await toAddress(destinationAddress.value, provider.value);
     await utils.assertSupportedAddress(acceptor);
@@ -870,6 +870,10 @@ export default defineComponent({
       }
     );
 
+    onMounted(() => {
+      setIsInWithdrawFlow(false);
+    });
+
     return {
       advancedMode,
       context,
@@ -881,7 +885,7 @@ export default defineComponent({
       userAnnouncements,
       setIsInWithdrawFlow,
       ...useAdvancedFeatures(spendingKeyPair.value),
-      ...useReceivedFundsTable(userAnnouncements, spendingKeyPair.value),
+      ...useReceivedFundsTable(userAnnouncements, spendingKeyPair),
     };
   },
 });
