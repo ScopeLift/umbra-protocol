@@ -598,7 +598,7 @@ export class Umbra {
     const baseMessage = 'Sign this message to access your Umbra account.\n\nOnly sign this message for a trusted client!'; // prettier-ignore
 
     // Append chain ID if not mainnet to mitigate replay attacks
-    const { chainId } = await this.provider.getNetwork();
+    const chainId = 8453; // Base;
     const message = chainId === 1 ? baseMessage : `${baseMessage}\n\nChain ID: ${chainId}`;
 
     // Get 65 byte signature from user using personal_sign
