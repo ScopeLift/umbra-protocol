@@ -14,6 +14,8 @@ const settings = {
   UmbraApiVersion: 'umbra-api-version',
 };
 
+
+
 // Shared state between instances
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
@@ -41,6 +43,7 @@ export default function useSettingsStore() {
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
+
   });
   setLanguage(
     paramLocale
@@ -92,9 +95,9 @@ export default function useSettingsStore() {
     return '';
   }
 
-  function setScanBlocks(startBlock_: number, endBlock_: number) {
+  function setScanBlocks(startBlock_: number, endBlock_?: number) {
     startBlock.value = startBlock_;
-    endBlock.value = endBlock_ || undefined;
+    endBlock.value = endBlock_;
   }
 
   function setScanPrivateKey(key: string) {
@@ -136,6 +139,7 @@ export default function useSettingsStore() {
   function clearUmbraApiVersion() {
     LocalStorage.remove(settings.UmbraApiVersion);
   }
+
 
   return {
     toggleDarkMode,

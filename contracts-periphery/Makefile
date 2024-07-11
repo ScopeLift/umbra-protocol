@@ -13,4 +13,4 @@ install :; $(INSTALL_CMD)
 test :; forge test --sender 0x4f78F7f3482D9f1790649f9DD18Eec5A1Cc70F86 --no-match-contract ApproveBatchSendTokensTest
 test-gas :; forge test --match-path *.gas.t.sol
 snapshot-gas :; forge test --match-path *.gas.t.sol --gas-report > snapshot/.gas
-coverage :; forge coverage --report lcov --report summary && sed -i'.bak' 's/SF:/SF:contracts-periphery\//gI' lcov.info
+coverage :; forge coverage --sender 0x4f78F7f3482D9f1790649f9DD18Eec5A1Cc70F86 --report lcov --report summary && sed -i'.bak' 's/SF:/SF:contracts-periphery\//gI' lcov.info

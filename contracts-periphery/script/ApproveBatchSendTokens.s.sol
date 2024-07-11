@@ -7,11 +7,12 @@ import {UmbraBatchSend} from "src/UmbraBatchSend.sol";
 
 contract ApproveBatchSendTokens is Script {
   function run(
+    address _owner,
     address _umbraContractAddress,
     address _batchSendContractAddress,
     address[] calldata _tokenAddressesToApprove
   ) public {
-    vm.startBroadcast();
+    vm.startBroadcast(_owner);
     for (uint256 _i = 0; _i < _tokenAddressesToApprove.length; _i++) {
       uint256 _currentAllowance = IERC20(_tokenAddressesToApprove[_i]).allowance(
         _batchSendContractAddress, _umbraContractAddress

@@ -14,7 +14,7 @@ contract DeployBatchSendTest is DeployBatchSend, Test {
   bytes batchSendCode;
 
   function setUp() public {
-    expectedContractAddress = computeCreateAddress(sender, EXPECTED_NONCE);
+    expectedContractAddress = vm.computeCreateAddress(sender, EXPECTED_NONCE);
     umbraBatchSendTest = new UmbraBatchSend(IUmbra(UMBRA));
     batchSendCode = address(umbraBatchSendTest).code;
   }

@@ -208,6 +208,20 @@
               </span>
             </p>
 
+            <!-- Clear local storage button -->
+            <div class="q-mt-md row items-center">
+              <base-button
+                @click="clearLocalStorage"
+                color="warning"
+                :label="$t('Base-Layout.clear-local-storage')"
+                :outline="true"
+                :rounded="true"
+              />
+              <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+                {{ $t('Base-Layout.clear-local-storage-description') }}
+              </base-tooltip>
+            </div>
+
             <!-- Language selection -->
             <base-select
               class="language-selector"
@@ -223,6 +237,7 @@
               option-label="label"
               rounded
             />
+
             <p class="text-caption dark-toggle" style="font-size: 0.65rem">version {{ version }}</p>
           </div>
 
@@ -291,6 +306,7 @@ import AddressSettings from './AddressSettings.vue';
 import HeaderLinks from 'src/layouts/HeaderLinks.vue';
 import NetworkDropdown from 'src/layouts/NetworkDropdown.vue';
 import { Language } from 'src/components/models';
+import { notifyUser } from 'src/utils/alerts';
 
 export default defineComponent({
   name: 'BaseLayout',
@@ -328,10 +344,21 @@ export default defineComponent({
       setLanguage(language);
       setWalletLanguage(language.value);
     };
+
+    const clearLocalStorage = () => {
+      localStorage.clear();
+      notifyUser('success', 'Local storage cleared. Reloading page...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    };
+
     return {
       advancedMode,
       argentModalDismissed,
       avatar,
+      changeLanguage,
+      clearLocalStorage,
       currentLanguage,
       drawerRight: ref(false),
       isAccountSetup,
@@ -340,7 +367,6 @@ export default defineComponent({
       isLoading,
       language,
       network,
-      changeLanguage,
       sendHistorySave,
       showArgentModal,
       supportedLanguages,
