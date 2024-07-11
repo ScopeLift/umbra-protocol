@@ -619,11 +619,14 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
 
     formattedAnnouncements.value.forEach((announcement) => {
       const isNewAnnouncement = newAnnouncements.some(
-        (newAnnouncement) => newAnnouncement.txHash === announcement.txHash
+        (newAnnouncement) =>
+          newAnnouncement.txHash === announcement.txHash && newAnnouncement.receiver === announcement.receiver
       );
 
       if (isNewAnnouncement) {
-        const balanceIndex = userAnnouncements.value.findIndex((a) => a.txHash === announcement.txHash);
+        const balanceIndex = userAnnouncements.value.findIndex(
+          (a) => a.txHash === announcement.txHash && a.receiver === announcement.receiver
+        );
         const stealthBalance = stealthBalances[balanceIndex];
         announcement.isWithdrawn = stealthBalance.lt(announcement.amount);
       }
