@@ -178,6 +178,7 @@ function useScan() {
     setScanPrivateKey,
     scanPrivateKey,
     resetScanSettings: resetScanSettingsInSettingsStore,
+    getRegisteredBlockNumber,
   } = useSettingsStore();
   const { signer, userAddress: userWalletAddress, isAccountSetup, provider } = useWalletStore();
 
@@ -484,6 +485,7 @@ function useScan() {
 
         // Default scan behavior
         for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
+          getRegisteredBlockNumber(),
           signer.value,
           userWalletAddress.value,
           overrides
