@@ -17,6 +17,7 @@ contract ApproveBatchSendTokensTest is Test {
   address constant WBTC_ADDRESS = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
   address[] tokensToApprove =
     [DAI_ADDRESS, LUSD_ADDRESS, RAI_ADDRESS, USDC_ADDRESS, USDT_ADDRESS, WBTC_ADDRESS];
+  address owner = 0xB7EE870E2c49B2DEEe70003519cF056247Aac3D4;
 
   function setUp() public {
     vm.createSelectFork(vm.rpcUrl("mainnet"), 18_428_858);
@@ -27,7 +28,10 @@ contract ApproveBatchSendTokensTest is Test {
     address[] memory tokenAddressesToApprove = new address[](1);
     tokenAddressesToApprove[0] = DAI_ADDRESS;
     approveTokensScript.run(
-      umbraContractAddressOnMainnet, batchSendContractAddressOnMainnet, tokenAddressesToApprove
+      owner,
+      umbraContractAddressOnMainnet,
+      batchSendContractAddressOnMainnet,
+      tokenAddressesToApprove
     );
 
     assertEq(
@@ -40,7 +44,7 @@ contract ApproveBatchSendTokensTest is Test {
 
   function test_ApproveMultipleTokens() public {
     approveTokensScript.run(
-      umbraContractAddressOnMainnet, batchSendContractAddressOnMainnet, tokensToApprove
+      owner, umbraContractAddressOnMainnet, batchSendContractAddressOnMainnet, tokensToApprove
     );
 
     for (uint256 _i; _i < tokensToApprove.length; _i++) {

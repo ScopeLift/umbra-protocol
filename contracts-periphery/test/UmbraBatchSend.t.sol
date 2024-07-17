@@ -20,6 +20,18 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
   error NotSorted();
   error TooMuchEthSent();
 
+  function _sortSendDataByToken(UmbraBatchSend.SendData[] storage arr) internal {
+    for (uint256 i = 0; i < arr.length - 1; i++) {
+      for (uint256 j = 0; j < arr.length - i - 1; j++) {
+        if (arr[j].tokenAddr > arr[j + 1].tokenAddr) {
+          UmbraBatchSend.SendData memory temp = arr[j];
+          arr[j] = arr[j + 1];
+          arr[j + 1] = temp;
+        }
+      }
+    }
+  }
+
   function setUp() public virtual override {
     super.setUp();
     router = new UmbraBatchSend(IUmbra(address(umbra)));
@@ -93,6 +105,8 @@ abstract contract UmbraBatchSendTest is DeployUmbraTest {
     sendData.push(UmbraBatchSend.SendData(bob, address(token2), amount4, pkx, ciphertext));
     sendData.push(UmbraBatchSend.SendData(alice, address(token), amount, pkx, ciphertext));
     sendData.push(UmbraBatchSend.SendData(bob, address(token), amount2, pkx, ciphertext));
+
+    _sortSendDataByToken(sendData);
 
     uint256 totalToll = toll * sendData.length;
     token.approve(address(router), totalAmount);

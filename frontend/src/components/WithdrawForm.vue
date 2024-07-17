@@ -14,17 +14,14 @@
         <base-input
           v-model="content"
           @update:modelValue="emitUpdateDestinationAddress"
-          @click="
-            emit('initializeWithdraw');
-            setIsInWithdrawFlow(true);
-          "
-          :appendButtonLabel="$t('WithdrawForm.withdraw')"
-          :appendButtonDisable="isInWithdrawFlow || isFeeLoading"
+          @click="handleSubmit"
+          :appendButtonLabel="needSignature ? $t('WithdrawForm.need-signature') : $t('WithdrawForm.withdraw')"
+          :appendButtonDisable="isInWithdrawFlow || isFeeLoading || isSigningInProgress"
           :appendButtonLoading="isInWithdrawFlow"
           :disable="isInWithdrawFlow"
           :label="$t('WithdrawForm.address')"
           lazy-rules
-          :rules="(val) => (val && val.length > 4) || $t('WithdrawForm.enter-valid-address')"
+          :rules="(val: string | null) => (val && val.length > 4) || $t('WithdrawForm.enter-valid-address')"
         />
         <!-- Fee estimate -->
         <div class="q-mb-lg">
@@ -119,26 +116,61 @@ export default defineComponent({
     advancedMode: {
       type: Boolean,
       required: true,
+      default: true,
     },
   },
   setup(data, { emit }) {
-    const { NATIVE_TOKEN } = useWalletStore();
+    const { NATIVE_TOKEN, getPrivateKeys } = useWalletStore();
     const { setIsInWithdrawFlow, isInWithdrawFlow } = useStatusesStore();
+    const { needSignature } = useWalletStore();
     const content = ref<string>(data.destinationAddress || '');
     const nativeTokenSymbol = NATIVE_TOKEN.value.symbol;
+    const isSigningInProgress = ref(false);
 
     function emitUpdateDestinationAddress(val: string) {
       emit('updateDestinationAddress', val);
     }
 
+    function initializeWithdraw() {
+      // Simple validation
+      if (!content.value || content.value.length <= 4) return;
+
+      emit('initializeWithdraw');
+      setIsInWithdrawFlow(true);
+    }
+
+    async function handleSubmit() {
+      if (needSignature.value) {
+        try {
+          isSigningInProgress.value = true;
+          const success = await getPrivateKeys();
+          if (success === 'denied') {
+            console.log('User denied signature request');
+            isSigningInProgress.value = false;
+            return;
+          }
+          initializeWithdraw();
+        } catch (error) {
+          console.error('Error getting private keys:', error);
+        } finally {
+          isSigningInProgress.value = false;
+        }
+      } else {
+        initializeWithdraw();
+      }
+    }
+
     return {
-      formatUnits,
-      humanizeTokenAmount,
+      content,
       emit,
       emitUpdateDestinationAddress,
-      content,
-      nativeTokenSymbol,
+      formatUnits,
+      handleSubmit,
+      humanizeTokenAmount,
       isInWithdrawFlow,
+      isSigningInProgress,
+      nativeTokenSymbol,
+      needSignature,
       setIsInWithdrawFlow,
     };
   },

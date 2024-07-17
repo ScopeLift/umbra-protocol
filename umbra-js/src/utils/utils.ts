@@ -247,8 +247,18 @@ export async function lookupRecipient(
 
   // If we're not using advanced mode, use the StealthKeyRegistry events
   if (!advanced) {
-    // Fetch the stealth key registry event from the subgraph and fall back to the registry contract if the subgraph returns an error
+    // Fetch the stealth key registry event from the the registry contract and fall back to subgraph if the registry contract fetch returns an error
     try {
+      const registry = new StealthKeyRegistry(provider);
+      const { spendingPublicKey, viewingPublicKey } = await registry.getStealthKeys(address);
+      return { spendingPublicKey, viewingPublicKey };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log('StrealthKey Registry fetch error: ', error.message);
+      } else {
+        console.log('An unknown error occurred: ', error);
+      }
+      console.log('Error using Registry contract to lookup receipient stealth keys, will query subgraph');
       const chainConfig = parseChainConfig(chainId);
       const stealthKeyChangedEvent = await getMostRecentSubgraphStealthKeyChangedEventFromAddress(address, chainConfig);
       const spendingPublicKey = KeyPair.getUncompressedFromX(
@@ -264,16 +274,6 @@ export async function lookupRecipient(
         viewingPublicKey: viewingPublicKey,
         block: stealthKeyChangedEvent.block,
       };
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log('Public key subgraph fetch error: ', error.message);
-      } else {
-        console.log('An unknown error occurred: ', error);
-      }
-      console.log('Error using subgraph to lookup receipient stealth keys, will query registry contract');
-      const registry = new StealthKeyRegistry(provider);
-      const { spendingPublicKey, viewingPublicKey } = await registry.getStealthKeys(address);
-      return { spendingPublicKey, viewingPublicKey };
     }
   }
 
@@ -329,19 +329,23 @@ export async function getMostRecentSubgraphStealthKeyChangedEventFromAddress(
     chainConfig
   );
   let theEvent: SubgraphStealthKeyChangedEvent | undefined;
-  for await (const event of stealthKeyChangedEvents) {
-    for (let i = 0; i < event.length; i++) {
-      if (theEvent) {
-        console.log(
-          `We found a previous StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
-        );
-      } else {
-        theEvent = event[i];
-        console.log(
-          `We found a StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
-        );
+  try {
+    for await (const event of stealthKeyChangedEvents) {
+      for (let i = 0; i < event.length; i++) {
+        if (theEvent) {
+          console.log(
+            `We found a previous StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
+          );
+        } else {
+          theEvent = event[i];
+          console.log(
+            `We found a StealthKeyChangedEvent for address ${address} in the subgraph at block ${event[i].block} with transaction hash ${event[i].txHash}`
+          );
+        }
       }
     }
+  } catch (error) {
+    throw new Error(`Address ${address} has not registered stealth keys. Please ask them to setup their Umbra account`); // prettier-ignore
   }
 
   if (!theEvent) {
@@ -396,6 +400,12 @@ async function* fetchAllStealthKeyChangedEventsForRecipientAddressFromSubgraph(
   )) {
     yield stealthKeyChangedEvents;
   }
+
+  if (!theEvent) {
+    console.log(`Searched the subgraph, but found no StealthKeyChangedEvents for address ${address}`);
+    throw new Error('No stealthKeyChangedEvents found matching address in subgraph');
+  }
+  return theEvent;
 }
 
 /**

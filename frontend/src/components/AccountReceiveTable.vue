@@ -60,7 +60,10 @@
         >.
       </div>
 
-      <div v-if="scanStatus === 'fetching' || scanStatus === 'complete'">
+      <div v-if="mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp" class="text-caption q-mb-md">
+        <!-- Container for block data and fetching status -->
+        <div class="block-data-container row items-center justify-between q-col-gutter-md">
+          <!-- Block data -->
         <span class="q-mr-xs">{{ $t('AccountReceiveTable.funds-question') }}</span>
         <base-tooltip icon="fas fa-question-circle">
           <span class="text-bold q-mb-sm">
@@ -90,9 +93,40 @@
             {{ $t('AccountReceiveTable.learn-more') }}
           </router-link>
         </base-tooltip>
-      </div>
-      <div v-if="scanStatus === 'complete'" class="text-caption q-mb-sm">
-        <!-- Show the most recent timestamp and block that were scanned -->
+        <!-- Status messages -->
+          <div
+            v-if="
+              ['fetching', 'fetching latest', 'scanning', 'scanning latest from last fetched block'].includes(
+                scanStatus
+              )
+            "
+            class="status-message text-italic"
+          >
+            <div v-if="scanStatus === 'fetching' || scanStatus === 'fetching latest'">
+              {{
+                scanStatus === 'fetching'
+                  ? $t('Receive.fetching')
+                  : $t('Receive.fetching-latest-from-last-fetched-block')
+              }}
+              <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+            </div>
+            <div v-else>
+              {{
+                scanStatus === 'scanning latest from last fetched block'
+                  ? $t('Receive.scanning-latest-from-last-fetched-block')
+                  : $t('Receive.scanning')
+              }}
+              <q-spinner-dots color="primary" size="1em" class="q-ml-xs" />
+            </div>
+          </div>
+        </div>
+
+        <div v-if="advancedMode" class="text-caption q-mb-sm">
+          {{ $t('AccountReceiveTable.most-recent-mined') }}
+          {{ mostRecentBlockNumber }} /
+          {{ formatDate(mostRecentBlockTimestamp * 1000) }}
+          {{ formatTime(mostRecentBlockTimestamp * 1000) }}
+        </div>
         <div v-if="advancedMode" class="text-caption q-mb-sm">
           <!-- This scanDescriptionString describes scan settings that were used -->
           {{ scanDescriptionString }}.
@@ -406,7 +440,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref } from 'vue';
+import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref, ComputedRef, onMounted } from 'vue';
 import { copyToClipboard } from 'quasar';
 import { BigNumber, Contract, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
@@ -482,7 +516,7 @@ interface ReceiveTableAnnouncement extends UserAnnouncement {
   formattedFrom: string;
 }
 
-function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spendingKeyPair: KeyPair) {
+function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spendingKeyPair: ComputedRef<KeyPair>) {
   const { NATIVE_TOKEN, network, provider, signer, umbra, userAddress, relayer, tokens } = useWalletStore();
   const { setIsInWithdrawFlow } = useStatusesStore();
   const paginationConfig = { rowsPerPage: 25 };
@@ -563,13 +597,17 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
   const formattedAnnouncements = ref([] as ReceiveTableAnnouncement[]);
 
+  const sortByTimestamp = (announcements: ReceiveTableAnnouncement[]) =>
+    announcements.sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   watchEffect(async () => {
-    if (userAnnouncements.value.length === 0) formattedAnnouncements.value = [];
-    isLoading.value = true;
+    const hasAnnouncements = userAnnouncements.value.length > 0;
+    if (!hasAnnouncements) formattedAnnouncements.value = [];
+    isLoading.value = !hasAnnouncements;
     const announcements = userAnnouncements.value as ReceiveTableAnnouncement[];
     const newAnnouncements = announcements.filter((x) => !formattedAnnouncements.value.includes(x));
-    formattedAnnouncements.value = [...formattedAnnouncements.value, ...newAnnouncements];
+    formattedAnnouncements.value = sortByTimestamp([...formattedAnnouncements.value, ...newAnnouncements]);
     // Format addresses to use ENS, CNS, or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
     let formattedAddresses: string[] = [];
@@ -605,9 +643,19 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     const stealthBalanceResponses: Response[] = await multicall.callStatic.aggregate3(stealthBalanceCalls);
     const stealthBalances = stealthBalanceResponses.map((r) => BigNumber.from(r.returnData));
 
-    formattedAnnouncements.value.forEach((announcement, index) => {
-      if (newAnnouncements.some((newAnnouncement) => newAnnouncement.txHash === announcement.txHash))
-        announcement.isWithdrawn = stealthBalances[index].lt(announcement.amount);
+    formattedAnnouncements.value.forEach((announcement) => {
+      const isNewAnnouncement = newAnnouncements.some(
+        (newAnnouncement) =>
+          newAnnouncement.txHash === announcement.txHash && newAnnouncement.receiver === announcement.receiver
+      );
+
+      if (isNewAnnouncement) {
+        const balanceIndex = userAnnouncements.value.findIndex(
+          (a) => a.txHash === announcement.txHash && a.receiver === announcement.receiver
+        );
+        const stealthBalance = stealthBalances[balanceIndex];
+        announcement.isWithdrawn = stealthBalance.lt(announcement.amount);
+      }
     });
     isLoading.value = false;
   });
@@ -697,7 +745,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     // Get token info, stealth private key, and destination (acceptor) address
     const announcement = activeAnnouncement.value;
     const token = getTokenInfo(announcement.token);
-    const stealthKeyPair = spendingKeyPair.mulPrivateKey(announcement.randomNumber);
+    const stealthKeyPair = spendingKeyPair.value.mulPrivateKey(announcement.randomNumber);
     const spendingPrivateKey = stealthKeyPair.privateKeyHex as string;
     const acceptor = await toAddress(destinationAddress.value, provider.value);
     await utils.assertSupportedAddress(acceptor);
@@ -858,6 +906,10 @@ export default defineComponent({
       }
     );
 
+    onMounted(() => {
+      setIsInWithdrawFlow(false);
+    });
+
     return {
       advancedMode,
       context,
@@ -869,7 +921,7 @@ export default defineComponent({
       userAnnouncements,
       setIsInWithdrawFlow,
       ...useAdvancedFeatures(spendingKeyPair.value),
-      ...useReceivedFundsTable(userAnnouncements, spendingKeyPair.value),
+      ...useReceivedFundsTable(userAnnouncements, spendingKeyPair),
     };
   },
 });
@@ -890,4 +942,20 @@ export default defineComponent({
 
 .external-link-icon
   color: transparent
+
+.block-data-container
+  @media (max-width: 599px)
+    flex-direction: column
+    align-items: flex-start
+
+  @media (min-width: 600px)
+    flex-direction: row
+
+.block-data, .fetching-status
+  @media (max-width: 599px)
+    width: 100%
+
+.fetching-status
+  @media (max-width: 599px)
+    margin-top: 0.5rem
 </style>
