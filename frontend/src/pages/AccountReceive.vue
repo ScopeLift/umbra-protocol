@@ -164,8 +164,8 @@ function useScan() {
       : null
   );
   const userAnnouncements = ref<UserAnnouncement[]>([]);
-  const mostRecentAnnouncementTimestamp = ref<number>();
-  const mostRecentAnnouncementBlockNumber = ref<number>();
+  const mostRecentAnnouncementTimestamp = ref<number>(0);
+  const mostRecentAnnouncementBlockNumber = ref<number>(0);
   const mostRecentBlockTimestamp = ref<number>(0);
   const mostRecentBlockNumber = ref<number>(0);
 
@@ -391,7 +391,7 @@ function useScan() {
     return provider.getBlock('latest');
   }
 
-  function(announcementsBatch: AnnouncementDetail[]) {
+  function updateMostRecentAnnouncementInfo(announcementsBatch: AnnouncementDetail[]) {
     announcementsBatch.forEach((announcement) => {
       const thisTimestamp = parseInt(announcement.timestamp);
       if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {

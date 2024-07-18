@@ -400,12 +400,6 @@ async function* fetchAllStealthKeyChangedEventsForRecipientAddressFromSubgraph(
   )) {
     yield stealthKeyChangedEvents;
   }
-
-  if (!theEvent) {
-    console.log(`Searched the subgraph, but found no StealthKeyChangedEvents for address ${address}`);
-    throw new Error('No stealthKeyChangedEvents found matching address in subgraph');
-  }
-  return theEvent;
 }
 
 /**
