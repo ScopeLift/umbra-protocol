@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div v-if="false" class="alert-banner text-bold text-center q-py-md">
+    <div v-if="true" class="alert-banner text-bold text-center q-py-md">
       <i18n-t scope="global" keypath="Home.banner-donate" tag="span">
         <template v-slot:DevelopmentGrant>
-          <a class="alert-banner-hyperlink" href="https://explorer.gitcoin.co/#/round/42161/26/67" target="_blank">{{
+          <a class="alert-banner-hyperlink" href="https://explorer.gitcoin.co/#/round/42161/389/82" target="_blank">{{
             $t('Home.development-grant')
           }}</a>
         </template>
         <template v-slot:LearnMore>
-          <a class="alert-banner-hyperlink" href="https://explorer.gitcoin.co/#/round/42161/26/67" target="_blank">{{
+          <a class="alert-banner-hyperlink" href="https://explorer.gitcoin.co/#/round/42161/389/82" target="_blank">{{
             $t('Home.learn-more')
           }}</a>
         </template>
