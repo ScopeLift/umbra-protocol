@@ -139,7 +139,11 @@ export async function recoverPublicKeyFromTransaction(txHash: string, provider: 
   // Even though the type definitions say v,r,s are optional, they will always be defined: https://github.com/ethers-io/ethers.js/issues/1181
   const signature = new Signature(BigInt(tx.r!), BigInt(tx.s!));
   signature.assertValidity();
-  const recoveryParam = splitSignature({ r: tx.r as string, s: tx.s, v: tx.v }).recoveryParam;
+  const recoveryParam = splitSignature({
+    r: tx.r as string,
+    s: tx.s,
+    v: tx.v,
+  }).recoveryParam;
   const publicKey = Point.fromSignature(msgHash.slice(2), signature, recoveryParam);
   publicKey.assertValidity();
 
@@ -223,7 +227,11 @@ export async function lookupRecipient(
     advanced,
     supportPubKey,
     supportTxHash,
-  }: { advanced?: boolean; supportPubKey?: boolean; supportTxHash?: boolean } = {}
+  }: {
+    advanced?: boolean;
+    supportPubKey?: boolean;
+    supportTxHash?: boolean;
+  } = {}
 ) {
   const chainId = (await provider.getNetwork()).chainId;
   // Check if identifier is a public key. If so we just return that directly
@@ -345,12 +353,12 @@ export async function getMostRecentSubgraphStealthKeyChangedEventFromAddress(
       }
     }
   } catch (error) {
-    throw new Error(`Address ${address} has not registered stealth keys. Please ask them to setup their Umbra account`); // prettier-ignore
+    throw new Error(`Address ${address} has not registered stealth keys. Please ask them to setup their Umbra account`);
   }
 
   if (!theEvent) {
     console.log(`Searched the subgraph, but found no StealthKeyChangedEvents for address ${address}`);
-    throw new Error('No stealthKeyChangedEvents found matching address in subgraph');
+    throw new Error(`Address ${address} has not registered stealth keys. Please ask them to setup their Umbra account`);
   }
   return theEvent;
 }
@@ -632,7 +640,12 @@ export async function getEthSweepGasInfo(
     ? BigNumber.from(await overrides.gasLimit)
     : isEoa && gasLimitOf21k.includes(chainId)
     ? BigNumber.from('21000')
-    : await provider.estimateGas({ gasPrice: 0, to, from, value: fromBalance });
+    : await provider.estimateGas({
+        gasPrice: 0,
+        to,
+        from,
+        value: fromBalance,
+      });
 
   // Estimate the gas price, defaulting to the given one unless on a network where we want to use provider gas price
   let gasPrice = ignoreGasPriceOverride.includes(chainId)
@@ -672,7 +685,14 @@ export async function getEthSweepGasInfo(
     const gasOracleAbi = ['function getL1Fee(bytes memory _data) public view returns (uint256)'];
     const gasPriceOracle = new Contract('0x420000000000000000000000000000000000000F', gasOracleAbi, provider);
     let l1FeeInWei = await gasPriceOracle.getL1Fee(
-      serializeTransaction({ to, value: fromBalance, data: '0x', gasLimit, gasPrice, nonce })
+      serializeTransaction({
+        to,
+        value: fromBalance,
+        data: '0x',
+        gasLimit,
+        gasPrice,
+        nonce,
+      })
     );
 
     // We apply a 70% multiplier to the Optimism oracle quote, since it's frequently low
@@ -683,7 +703,14 @@ export async function getEthSweepGasInfo(
   }
 
   // Return the gas price, gas limit, and the transaction cost
-  return { gasPrice, gasLimit, txCost, fromBalance, ethToSend: fromBalance.sub(txCost), chainId };
+  return {
+    gasPrice,
+    gasLimit,
+    txCost,
+    fromBalance,
+    ethToSend: fromBalance.sub(txCost),
+    chainId,
+  };
 }
 
 /**
@@ -696,7 +723,9 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
   const params = { transactionHash: provider.formatter.hash(txHash, true) };
   const fullTx = await provider.perform('getTransaction', params);
   if (!fullTx) {
-    throw new Error('Transaction hash not found. Are the provider and transaction hash on the same network?'); // prettier-ignore
+    throw new Error(
+			"Transaction hash not found. Are the provider and transaction hash on the same network?",
+		); // prettier-ignore
   }
   // We use the formatter to parse values into the types ethers normally returns, but this strips non-standard fields.
   const partialTx = <TransactionResponseExtended>provider.formatter.transactionResponse(fullTx);
