@@ -104,7 +104,7 @@ For local development, use Cloudflare's [testing keys](https://developers.cloudf
 
 ### Usage
 
-The app is currently available in English and Simplified Chinese. It uses [Vue I18n](https://vue-i18n.intlify.dev/) v9, set up as described in [Quasar's internationalization guide](https://quasar.dev/options/app-internationalization). Translations live in `src/i18n/locales/<locale>.json`.
+The app is currently available in English, Simplified Chinese and Spanish. It uses [Vue I18n](https://vue-i18n.intlify.dev/) v9, set up as described in [Quasar's internationalization guide](https://quasar.dev/options/app-internationalization). Translations live in `src/i18n/locales/<locale>.json`.
 
 Basic usage is as follows:
 
