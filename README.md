@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
-	<b>Privacy Preserving Stealth Payments for EVM Blockchain Networks.</b>
+	<b>Privacy Preserving Stealth Payments for EVM Blockchain Networks. Test</b>
 </p>
 
 <p align="center">
