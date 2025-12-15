@@ -450,9 +450,8 @@ export async function* recursiveGraphFetch(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      // Gnosis chain is using Goldsky subgraph, which only supports 1000 blocks per query.
       query: query(`
-        first: ${url.includes('umbra-xdai') ? 1000 : 10000},
+        first: 1000,
         orderBy: id,
         orderDirection: desc,
         where: {
@@ -724,7 +723,7 @@ async function getTransactionByHash(txHash: string, provider: EthersProvider): P
   const fullTx = await provider.perform('getTransaction', params);
   if (!fullTx) {
     throw new Error(
-			"Transaction hash not found. Are the provider and transaction hash on the same network?",
+			'Transaction hash not found. Are the provider and transaction hash on the same network?',
 		); // prettier-ignore
   }
   // We use the formatter to parse values into the types ethers normally returns, but this strips non-standard fields.
