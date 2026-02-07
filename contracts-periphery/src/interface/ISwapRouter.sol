@@ -13,10 +13,7 @@ interface ISwapRouter is IUniswapV3SwapCallback {
     uint256 amountOutMinimum;
   }
 
-  function exactInput(ExactInputParams calldata params)
-    external
-    payable
-    returns (uint256 amountOut);
+  function exactInput(ExactInputParams calldata params) external payable returns (uint256 amountOut);
 
   function multicall(bytes[] calldata data) external payable returns (bytes[] memory results);
 
