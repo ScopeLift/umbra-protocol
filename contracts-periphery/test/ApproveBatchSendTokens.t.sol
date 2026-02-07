@@ -35,9 +35,8 @@ contract ApproveBatchSendTokensTest is Test {
     );
 
     assertEq(
-      IERC20(DAI_ADDRESS).allowance(
-        batchSendContractAddressOnMainnet, umbraContractAddressOnMainnet
-      ),
+      IERC20(DAI_ADDRESS)
+        .allowance(batchSendContractAddressOnMainnet, umbraContractAddressOnMainnet),
       type(uint256).max
     );
   }
@@ -49,9 +48,8 @@ contract ApproveBatchSendTokensTest is Test {
 
     for (uint256 _i; _i < tokensToApprove.length; _i++) {
       assertEq(
-        IERC20(tokensToApprove[_i]).allowance(
-          batchSendContractAddressOnMainnet, umbraContractAddressOnMainnet
-        ),
+        IERC20(tokensToApprove[_i])
+          .allowance(batchSendContractAddressOnMainnet, umbraContractAddressOnMainnet),
         type(uint256).max
       );
     }

@@ -178,8 +178,9 @@ contract UniswapWithdrawHookTest is DeployUmbraTest {
     bytes memory data,
     uint256 sponsorFee
   ) internal {
-    (uint8 v, bytes32 r, bytes32 s) =
-      createDigestAndSign(address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, 1);
+    (uint8 v, bytes32 r, bytes32 s) = createDigestAndSign(
+      address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, 1
+    );
 
     umbraContract.withdrawTokenAndCallOnBehalf(
       alice, address(withdrawHook), dai, sponsor, sponsorFee, receiver, data, v, r, s
