@@ -2,55 +2,41 @@ import { BigNumber, BigNumberish, EtherscanProvider } from '../ethers';
 
 let _isCommunityResource = false;
 
+/**
+ * Etherscan API V2 uses a single base URL and chainid parameter for all chains.
+ * @see https://docs.etherscan.io/v2-migration
+ * @see https://docs.etherscan.io/supported-chains
+ */
+const ETHERSCAN_V2_BASE_URL = 'https://api.etherscan.io/v2';
+
 export class TxHistoryProvider extends EtherscanProvider {
   constructor(chainId: BigNumberish, apiKey?: string) {
     const _chainId = BigNumber.from(chainId).toNumber();
     if (!apiKey) _isCommunityResource = true;
 
-    let defaultApiKey: string;
-    switch (_chainId) {
-      case 1: // mainnet
-        defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
-        break;
-      case 10: // optimism
-        defaultApiKey = <string>process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
-        break;
-      case 100: // gnosis
-        defaultApiKey = <string>process.env.GNOSISSCAN_API_KEY;
-        break;
-      case 137: // polygon
-        defaultApiKey = <string>process.env.POLYGONSCAN_API_KEY;
-        break;
-      case 42161: // arbitrum
-        defaultApiKey = <string>process.env.ARBISCAN_API_KEY;
-        break;
-      case 11155111: // sepolia
-        defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
-        break;
-      default:
-        throw new Error(`Unsupported chain ID ${_chainId}`);
+    // V2: single Etherscan API key for all supported chains
+    const defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
+    const supportedChainIds = [1, 10, 100, 137, 42161, 11155111];
+    if (!supportedChainIds.includes(_chainId)) {
+      throw new Error(`Unsupported chain ID ${_chainId} for TxHistoryProvider`);
     }
 
     super(_chainId, apiKey || defaultApiKey);
   }
 
   getBaseUrl(): string {
-    switch (BigNumber.from(this.network.chainId).toNumber()) {
-      case 1:
-        return 'https://api.etherscan.io';
-      case 10:
-        return 'https://api-optimistic.etherscan.io';
-      case 100:
-        return 'https://api.gnosisscan.io';
-      case 137:
-        return 'https://api.polygonscan.com';
-      case 42161:
-        return 'https://api.arbiscan.io';
-      case 11155111:
-        return 'https://api-sepolia.etherscan.io';
-    }
+    return ETHERSCAN_V2_BASE_URL;
+  }
 
-    throw new Error(`Unsupported network ${JSON.stringify(this.network.chainId)}`);
+  getUrl(module: string, params: Record<string, string>): string {
+    const chainId = BigNumber.from(this.network.chainId).toNumber();
+    return super.getUrl(module, { ...params, chainid: String(chainId) });
+  }
+
+  getPostData(module: string, params: Record<string, unknown>): Record<string, unknown> {
+    const data = super.getPostData(module, params) as Record<string, unknown>;
+    data.chainid = BigNumber.from(this.network.chainId).toNumber();
+    return data;
   }
 
   isCommunityResource(): boolean {
