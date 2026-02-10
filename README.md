@@ -147,4 +147,4 @@ Contributions to Umbra are welcome! Fork the project, create a new branch from m
 
 Umbra is available under the [MIT](LICENSE.txt) license.
 
-Copyright (c) 2023 ScopeLift
+Copyright (c) 2026 ScopeLift
