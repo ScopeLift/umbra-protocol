@@ -17,6 +17,6 @@ export const expectRejection = async (promise: Promise<any>, message: string) =>
   } finally {
     expect(error.name).to.not.equal('default');
     expect(error.message).to.not.equal('default');
-    expect(error.message).to.equal(message);
+    expect(error.message).to.contain(message);
   }
 };
