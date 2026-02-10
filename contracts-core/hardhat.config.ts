@@ -141,7 +141,7 @@ const config: HardhatUserConfig = {
         path: "m/44'/60'/0'/0",
       },
       chainId: chainIds['gnosis_chain'],
-      url: 'https://rpc.ankr.com/gnosis',
+      url: 'https://rpc.gnosischain.com',
     },
     base: {
       accounts: {

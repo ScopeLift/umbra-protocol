@@ -104,7 +104,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: 'https://docs.gnosischain.com/img/tokens/xdai.png',
     },
-    rpcUrls: ['https://rpc.ankr.com/gnosis', GNOSIS_CHAIN_RPC_URL],
+    rpcUrls: ['https://rpc.gnosischain.com', GNOSIS_CHAIN_RPC_URL],
     blockExplorerUrls: ['https://gnosisscan.io'],
     iconUrls: ['/networks/gnosis.svg'],
     logoURI: '/networks/gnosis.svg',
