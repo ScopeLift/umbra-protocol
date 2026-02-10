@@ -126,7 +126,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }} # Adds a coverage summary comment to the PR.
 
       - name: Verify minimum coverage
-        uses: zgosalvez/github-actions-report-lcov@v2
+        uses: zgosalvez/github-actions-report-lcov@v6.0.1
         with:
           coverage-files: ./lcov.info
           minimum-coverage: 70 # Set coverage threshold.

@@ -60,6 +60,7 @@ export class StealthKeyRegistry {
    * attached to `this.registry` is used
    * @returns Transaction
    */
+  /* istanbul ignore next */ // Avoid lcov branchcov/linecov mismatch on method signature
   async setStealthKeys(
     spendingPublicKey: string,
     viewingPublicKey: string,
