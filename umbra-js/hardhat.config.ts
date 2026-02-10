@@ -43,6 +43,8 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: rpcUrlString,
+        // Pin block for deterministic tests and to avoid post-merge totalDifficulty RPC issues in CI.
+        blockNumber: 5_500_000,
       },
       chainId: chainIds.hardhat,
       accounts: {
