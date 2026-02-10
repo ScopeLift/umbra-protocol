@@ -47,7 +47,6 @@ if (!process.env.ETHERSCAN_VERIFICATION_API_KEY) {
 
 const shouldReportGas = process.env.REPORT_GAS === 'true';
 const sepoliaRpcUrl = process.env.SEPOLIA_RPC_URL?.trim();
-const shouldForkSepolia = process.env.HARDHAT_FORKING === 'true' && Boolean(sepoliaRpcUrl);
 if (process.env.HARDHAT_FORKING === 'true' && !sepoliaRpcUrl) {
   console.warn('HARDHAT_FORKING was set but SEPOLIA_RPC_URL is missing; running without forking');
 }
@@ -56,13 +55,11 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
-      ...(shouldForkSepolia
-        ? {
-            forking: {
-              url: sepoliaRpcUrl,
-            },
-          }
-        : {}),
+      forking: {
+        url: String(process.env.SEPOLIA_RPC_URL),
+        // Pin block for deterministic tests and to avoid post-merge totalDifficulty RPC issues in CI.
+        blockNumber: 5_500_000,
+      },
       chainId: chainIds.hardhat,
       accounts: {
         count: 10,
