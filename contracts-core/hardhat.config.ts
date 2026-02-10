@@ -154,7 +154,7 @@ const config: HardhatUserConfig = {
         path: "m/44'/60'/0'/0",
       },
       chainId: chainIds['base'],
-      url: process.env.BASE_RPC_URL,
+      url: process.env.BASE_RPC_URL ?? 'https://mainnet.base.org',
     },
   },
   paths: {
