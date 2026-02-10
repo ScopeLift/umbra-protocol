@@ -210,7 +210,8 @@ describe('Utilities', () => {
       expect(txHash).to.have.lengthOf(66);
     });
 
-    it('looks up transaction history on optimism', async () => {
+    // Skipped: Optimism (chainid 10) is not available on the free Etherscan API V2 tier.
+    it.skip('looks up transaction history on optimism', async () => {
       const ethersProvider = new ethers.providers.StaticJsonRpcProvider(OPTIMISM_RPC_URL) as EthersProvider;
       const txHash = await utils.getSentTransaction(address, ethersProvider);
       expect(txHash).to.have.lengthOf(66);
