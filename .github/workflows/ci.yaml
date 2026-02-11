@@ -162,7 +162,7 @@ jobs:
         run: |
           cd contracts-periphery
           scopelint --version
-          scopelint check
+          FOUNDRY_DISABLE_NIGHTLY_WARNING=true scopelint check
 
   deploy-to-fleek:
     needs: [build]
