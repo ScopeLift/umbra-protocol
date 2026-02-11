@@ -36,6 +36,7 @@ function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig 
 const rpcUrlString = process.env.SEPOLIA_RPC_URL;
 const hardhatForkingEnv = process.env.HARDHAT_FORKING;
 const enableForking = hardhatForkingEnv !== '0' && hardhatForkingEnv !== 'false';
+const sepoliaForkBlockNumber = Number(process.env.SEPOLIA_FORK_BLOCK_NUMBER || '3590825');
 if (enableForking && !rpcUrlString) {
   throw new Error('HARDHAT_FORKING is enabled but SEPOLIA_RPC_URL is not set');
 }
@@ -43,7 +44,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
-      ...(enableForking ? { forking: { url: rpcUrlString } } : {}),
+      ...(enableForking ? { forking: { url: rpcUrlString, blockNumber: sepoliaForkBlockNumber } } : {}),
       chainId: chainIds.hardhat,
       accounts: {
         count: 100,
