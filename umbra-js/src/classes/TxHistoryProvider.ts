@@ -32,20 +32,21 @@ export class TxHistoryProvider extends EtherscanProvider {
   }
 
   getBaseUrl(): string {
-    switch (BigNumber.from(this.network.chainId).toNumber()) {
-      case 1:
-        return 'https://api.etherscan.io';
-      case 10:
-        return 'https://api-optimistic.etherscan.io';
-      case 137:
-        return 'https://api.polygonscan.com';
-      case 42161:
-        return 'https://api.arbiscan.io';
-      case 11155111:
-        return 'https://api-sepolia.etherscan.io';
-    }
+    // Etherscan API v2 uses a single base URL and selects network via the `chainid` query param.
+    return 'https://api.etherscan.io';
+  }
 
-    throw new Error(`Unsupported network ${JSON.stringify(this.network.chainId)}`);
+  getUrl(module: string, params: Record<string, string>): string {
+    const query = Object.keys(params).reduce((accum, key) => {
+      const value = params[key];
+      if (value != null) {
+        accum += `&${key}=${value}`;
+      }
+      return accum;
+    }, '');
+    const apiKey = this.apiKey ? `&apikey=${this.apiKey}` : '';
+    const chainId = BigNumber.from(this.network.chainId).toNumber();
+    return `${this.baseUrl}/v2/api?chainid=${chainId}&module=${module}${query}${apiKey}`;
   }
 
   isCommunityResource(): boolean {
