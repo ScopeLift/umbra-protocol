@@ -223,16 +223,20 @@ export async function toAddress(name: string, provider: EthersProvider) {
 export async function lookupRecipient(
   id: string,
   provider: EthersProvider,
-  {
-    advanced,
-    supportPubKey,
-    supportTxHash,
-  }: {
+  options?: {
     advanced?: boolean;
     supportPubKey?: boolean;
     supportTxHash?: boolean;
-  } = {}
+  }
 ) {
+  let advanced: boolean | undefined;
+  let supportPubKey: boolean | undefined;
+  let supportTxHash: boolean | undefined;
+  if (options) {
+    advanced = options.advanced;
+    supportPubKey = options.supportPubKey;
+    supportTxHash = options.supportTxHash;
+  }
   const chainId = (await provider.getNetwork()).chainId;
   // Check if identifier is a public key. If so we just return that directly
   const isPublicKey = id.length === 132 && isHexString(id);
