@@ -5,6 +5,9 @@ import * as cns from '../src/utils/cns';
 import * as utils from '../src/utils/utils';
 import { StaticJsonRpcProvider } from '../src/ethers';
 
+const isForkingEnabled = process.env.HARDHAT_FORKING !== '0' && process.env.HARDHAT_FORKING !== 'false';
+const itIfForking = isForkingEnabled ? it : it.skip;
+
 // const ethersProvider = ethers.provider;
 const resolution = new Resolution({
   sourceConfig: {
@@ -41,7 +44,7 @@ describe('СNS functions', () => {
     expect(hash).to.equal('0xe36da3a0bde173af5446ba3a17c97c0601d7d4c2356e3f3f84643aa3236814ee');
   });
 
-  it('gets the public keys associated with a CNS address', async () => {
+  itIfForking('gets the public keys associated with a CNS address', async () => {
     const address = await resolution.addr(name, 'ETH');
     const ethersProvider = new StaticJsonRpcProvider(`${String(process.env.POLYGON_RPC_URL)}`);
     const keys = await utils.lookupRecipient(address, ethersProvider);

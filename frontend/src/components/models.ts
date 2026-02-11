@@ -9,7 +9,6 @@ import {
   OPTIMISM_RPC_URL,
   SEPOLIA_RPC_URL,
   ARBITRUM_ONE_RPC_URL,
-  GNOSIS_CHAIN_RPC_URL,
   BASE_RPC_URL,
 } from 'src/utils/constants';
 
@@ -95,21 +94,6 @@ export const supportedChains: Array<Chain> = [
     logoURI: '/networks/optimism.svg',
   },
   {
-    chainId: '0x64', // 100 as hex
-    chainName: 'Gnosis Chain',
-    nativeCurrency: {
-      address: NATIVE_TOKEN_ADDRESS,
-      name: 'xDAI',
-      symbol: 'xDAI',
-      decimals: 18,
-      logoURI: 'https://docs.gnosischain.com/img/tokens/xdai.png',
-    },
-    rpcUrls: ['https://rpc.ankr.com/gnosis', GNOSIS_CHAIN_RPC_URL],
-    blockExplorerUrls: ['https://gnosisscan.io'],
-    iconUrls: ['/networks/gnosis.svg'],
-    logoURI: '/networks/gnosis.svg',
-  },
-  {
     chainId: '0x89', // 137 as hex
     chainName: 'Polygon',
     nativeCurrency: {
@@ -157,7 +141,7 @@ export const supportedChains: Array<Chain> = [
 ];
 
 // Set comprised of intersection of Chain IDs present for all contracts in src/contracts, supported by umbra-js, and by relayer
-export type SupportedChainId = '1' | '10' | '100' | '137' | '8453' | '42161' | '11155111'; // strings for indexing into JSON files
+export type SupportedChainId = '1' | '10' | '137' | '8453' | '42161' | '11155111'; // strings for indexing into JSON files
 export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
 // CNS names owned by wallet are queried from The Graph, so these types help parse the response

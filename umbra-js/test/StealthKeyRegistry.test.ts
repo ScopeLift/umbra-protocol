@@ -7,8 +7,10 @@ import { Umbra } from '../src/classes/Umbra';
 import { StealthKeyRegistry } from '../src/classes/StealthKeyRegistry';
 
 const stealthKeyRegistryAddress = '0x31fe56609C65Cd0C510E7125f051D440424D38f3';
+const isForkingEnabled = process.env.HARDHAT_FORKING !== '0' && process.env.HARDHAT_FORKING !== 'false';
+const describeIfForking = isForkingEnabled ? describe : describe.skip;
 
-describe('StealthKeyRegistry class', () => {
+describeIfForking('StealthKeyRegistry class', () => {
   let stealthKeyRegistry: StealthKeyRegistry;
 
   beforeEach(() => {

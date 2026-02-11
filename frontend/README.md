@@ -16,7 +16,6 @@ The required parameters are:
 `MAINNET_RPC_URL` - Network RPC URLs <br />
 `POLYGON_RPC_URL` <br />
 `OPTIMISM_RPC_URL` <br />
-`GNOSIS_CHAIN_RPC_URL` <br />
 `ARBITRUM_ONE_RPC_URL` <br />
 `SEPOLIA_RPC_URL` <br />
 

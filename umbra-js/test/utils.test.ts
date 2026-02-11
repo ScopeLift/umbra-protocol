@@ -7,6 +7,8 @@ import { expectRejection } from './utils';
 import { Event } from '../src/ethers';
 
 const ethersProvider = ethers.provider;
+const isForkingEnabled = process.env.HARDHAT_FORKING !== '0' && process.env.HARDHAT_FORKING !== 'false';
+const describeIfForking = isForkingEnabled ? describe : describe.skip;
 
 const MAINNET_RPC_URL = <string>process.env.MAINNET_RPC_URL;
 if (!MAINNET_RPC_URL) throw new Error('Please set your MAINNET_RPC_URL in a .env file');
@@ -43,7 +45,7 @@ const toAddressErrMsg = (name: string) => {
   return `Please verify the provided name or address of '${name}' is correct. If providing an ENS name, ensure it is registered, and has a valid address record.`;
 };
 
-describe('Utilities', () => {
+describeIfForking('Utilities', () => {
   describe('Public key recovery', () => {
     it('recovers public keys from type 0 transaction', async () => {
       const hash = '0xc25e91d4435528e04478036e64c68a70979086eee63b47a2c277bdb00c071d21';

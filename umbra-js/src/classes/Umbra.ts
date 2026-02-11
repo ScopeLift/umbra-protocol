@@ -45,7 +45,6 @@ const batchSendAddress = '0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB'; // same o
 const subgraphs = {
   1: String(process.env.MAINNET_SUBGRAPH_URL),
   10: String(process.env.OPTIMISM_SUBGRAPH_URL),
-  100: String(process.env.GNOSIS_CHAIN_SUBGRAPH_URL),
   137: String(process.env.POLYGON_SUBGRAPH_URL),
   8453: String(process.env.BASE_SUBGRAPH_URL),
   42161: String(process.env.ARBITRUM_ONE_SUBGRAPH_URL),
@@ -55,7 +54,6 @@ const subgraphs = {
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
   10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  100: { chainId: 100, umbraAddress, batchSendAddress, startBlock: 28237950, subgraphUrl: subgraphs[100] }, // Gnosis Chain
   137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
   8453: { chainId: 8453, umbraAddress, batchSendAddress, startBlock: 10761374, subgraphUrl: subgraphs[8453] }, // Base
@@ -129,7 +127,6 @@ const rpcUrlFromChain = (chainId: BigNumberish) => {
   // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
   if (chainId === 1 || chainId === 1337) return String(process.env.MAINNET_RPC_URL);
   if (chainId === 10) return String(process.env.OPTIMISM_RPC_URL);
-  if (chainId === 100) return String(process.env.GNOSIS_CHAIN_RPC_URL);
   if (chainId === 137) return String(process.env.POLYGON_RPC_URL);
   if (chainId === 8453) return String(process.env.BASE_RPC_URL);
   if (chainId === 42161) return String(process.env.ARBITRUM_ONE_RPC_URL);
