@@ -30,7 +30,7 @@ describeIfForking('StealthKeyRegistry class', () => {
   it('setStealthKeys: throws if registry has no signer and a signer is not specified', async () => {
     // this error comes from ethers, but useful to test to ensure a default signer isn't somehow used
     const pubkey = ethers.Wallet.createRandom().publicKey;
-    const errorMsg = 'sending a transaction requires a signer (operation="sendTransaction", code=UNSUPPORTED_OPERATION, version=contracts/5.5.0)'; // prettier-ignore
+    const errorMsg = 'sending a transaction requires a signer (operation="sendTransaction", code=UNSUPPORTED_OPERATION, version=contracts/5.7.0)'; // prettier-ignore
     await expectRejection(stealthKeyRegistry.setStealthKeys(pubkey, pubkey), errorMsg);
   });
 
