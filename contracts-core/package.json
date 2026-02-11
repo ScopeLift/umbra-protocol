@@ -33,7 +33,7 @@
     "ethereum-waffle": "^3.2.0",
     "ethers": "5.7.2",
     "fs-extra": "^9.0.1",
-    "hardhat": "^2.17.1",
+    "hardhat": "^2.22.3",
     "hardhat-gas-reporter": "^1.0.4",
     "husky": "^4.3.0",
     "mocha": "^8.1.3",
