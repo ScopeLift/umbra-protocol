@@ -328,10 +328,11 @@ export async function getBlockNumberUserRegistered(
 export async function getMostRecentSubgraphStealthKeyChangedEventFromAddress(
   address: string,
   chainConfig: ChainConfig,
-  overrides: ScanOverrides = {}
+  overrides?: ScanOverrides
 ): Promise<SubgraphStealthKeyChangedEvent> {
-  const startBlock = overrides.startBlock || chainConfig.startBlock;
-  const endBlock = overrides.endBlock || 'latest';
+  const scanOverrides = overrides === undefined ? {} : overrides;
+  const startBlock = scanOverrides.startBlock || chainConfig.startBlock;
+  const endBlock = scanOverrides.endBlock || 'latest';
 
   // Fetch stealth key changed events from the subgraph
   const stealthKeyChangedEvents = fetchAllStealthKeyChangedEventsForRecipientAddressFromSubgraph(
@@ -430,13 +431,16 @@ export async function* recursiveGraphFetch(
   url: string,
   key: string,
   query: (filter: string) => string,
-  before: any[] = [],
+  before?: any[],
   overrides?: GraphFilterOverride
 ): AsyncGenerator<any[]> {
+  const previousResults = before === undefined ? [] : before;
+
   // retrieve the last ID we collected to use as the starting point for this query
-  const fromId = before.length ? (before[before.length - 1].id as string | number) : false;
+  const fromId = previousResults.length ? (previousResults[previousResults.length - 1].id as string | number) : false;
   let startBlockFilter = '';
   let endBlockFilter = '';
+  let idFilter = '';
   const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : '';
   const endBlock = overrides?.endBlock ? overrides?.endBlock.toString() : '';
   const registrantFilter = overrides?.registrant ? 'registrant: "' + overrides.registrant.toLowerCase() + '"' : '';
@@ -449,6 +453,10 @@ export async function* recursiveGraphFetch(
     endBlockFilter = `block_lte: "${endBlock}",`;
   }
 
+  if (fromId) {
+    idFilter = `id_lt: "${fromId}",`;
+  }
+
   // Fetch this 'page' of results - please note that the query MUST return an ID
   const res = await fetch(url, {
     method: 'POST',
@@ -459,7 +467,7 @@ export async function* recursiveGraphFetch(
         orderBy: id,
         orderDirection: desc,
         where: {
-          ${fromId ? `id_lt: "${fromId}",` : ''}
+          ${idFilter}
           ${startBlockFilter}
           ${endBlockFilter}
           ${registrantFilter}
@@ -474,7 +482,7 @@ export async function* recursiveGraphFetch(
   // If there were results on this page yield the results then query the next page, otherwise do nothing.
   if (json.data[key].length) {
     yield json.data[key]; // yield the data for this page
-    yield* recursiveGraphFetch(url, key, query, [...before, ...json.data[key]], overrides); // yield the data for the next pages
+    yield* recursiveGraphFetch(url, key, query, [...previousResults, ...json.data[key]], overrides); // yield the data for the next pages
   }
 }
 // Sorts stealth key logs in ascending order by block number
@@ -610,7 +618,7 @@ export async function getEthSweepGasInfo(
   from: string,
   to: string,
   provider: EthersProvider,
-  overrides: Overrides = {}
+  overrides?: Overrides
 ): Promise<{
   gasPrice: BigNumber;
   gasLimit: BigNumber;
@@ -619,6 +627,7 @@ export async function getEthSweepGasInfo(
   ethToSend: BigNumber;
   chainId: number;
 }> {
+  const gasOverrides = overrides === undefined ? {} : overrides;
   const gasLimitOf21k = [1, 4, 5, 10, 137, 1337, 11155111]; // networks where ETH sends cost 21000 gas
   const ignoreGasPriceOverride = [10, 42161]; // to maximize ETH sweeps, ignore uer-specified gasPrice overrides
 
@@ -639,21 +648,25 @@ export async function getEthSweepGasInfo(
 
   // If a gas limit was provided, use it. Otherwise, if we are sending to an EOA and this is a network where ETH
   // transfers always to cost 21000 gas, use 21000. Otherwise, estimate the gas limit.
-  const gasLimit = overrides.gasLimit
-    ? BigNumber.from(await overrides.gasLimit)
-    : isEoa && gasLimitOf21k.includes(chainId)
-    ? BigNumber.from('21000')
-    : await provider.estimateGas({
-        gasPrice: 0,
-        to,
-        from,
-        value: fromBalance,
-      });
+  let gasLimit: BigNumber;
+  if (gasOverrides.gasLimit) {
+    gasLimit = BigNumber.from(await gasOverrides.gasLimit);
+  } else if (isEoa && gasLimitOf21k.includes(chainId)) {
+    gasLimit = BigNumber.from('21000');
+  } else {
+    gasLimit = await provider.estimateGas({
+      gasPrice: 0,
+      to,
+      from,
+      value: fromBalance,
+    });
+  }
 
   // Estimate the gas price, defaulting to the given one unless on a network where we want to use provider gas price
-  let gasPrice = ignoreGasPriceOverride.includes(chainId)
-    ? providerGasPrice
-    : BigNumber.from((await overrides.gasPrice) || providerGasPrice);
+  let gasPrice = providerGasPrice;
+  if (!ignoreGasPriceOverride.includes(chainId)) {
+    gasPrice = BigNumber.from((await gasOverrides.gasPrice) || providerGasPrice);
+  }
 
   // On networks with EIP-1559 gas pricing, the provider will throw an error and refuse to submit
   // the tx if the gas price is less than the block-specified base fee. The error is "max fee
