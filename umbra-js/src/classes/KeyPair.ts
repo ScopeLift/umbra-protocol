@@ -232,7 +232,7 @@ export class KeyPair {
    * @param pkx x-coordinate of compressed public key, as BigNumber or hex string
    * @param prefix Prefix bit, must be 2 or 3
    */
-  static getUncompressedFromX(pkx: BigNumberish, prefix: number | string | undefined = undefined) {
+  static getUncompressedFromX(pkx: BigNumberish, prefix?: number | string) {
     // Converting `pkx` to a BigNumber will throw if the value cannot be safely converted to a BigNumber, i.e. if the
     // value is of type Number and larger than Number.MAX_SAFE_INTEGER.
     pkx = BigNumber.from(pkx);

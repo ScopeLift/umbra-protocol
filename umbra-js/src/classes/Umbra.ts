@@ -45,7 +45,6 @@ const batchSendAddress = '0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB'; // same o
 const subgraphs = {
   1: String(process.env.MAINNET_SUBGRAPH_URL),
   10: String(process.env.OPTIMISM_SUBGRAPH_URL),
-  100: String(process.env.GNOSIS_CHAIN_SUBGRAPH_URL),
   137: String(process.env.POLYGON_SUBGRAPH_URL),
   8453: String(process.env.BASE_SUBGRAPH_URL),
   42161: String(process.env.ARBITRUM_ONE_SUBGRAPH_URL),
@@ -55,7 +54,6 @@ const subgraphs = {
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
   10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  100: { chainId: 100, umbraAddress, batchSendAddress, startBlock: 28237950, subgraphUrl: subgraphs[100] }, // Gnosis Chain
   137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
   1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
   8453: { chainId: 8453, umbraAddress, batchSendAddress, startBlock: 10761374, subgraphUrl: subgraphs[8453] }, // Base
@@ -101,9 +99,14 @@ export const parseChainConfig = (chainConfig: ChainConfig | number) => {
     throw new Error(`Invalid subgraphUrl provided in chainConfig. Got '${String(subgraphUrl)}'`);
   }
 
+  let checksummedBatchSendAddress: string | null = null;
+  if (batchSendAddress) {
+    checksummedBatchSendAddress = getAddress(batchSendAddress);
+  }
+
   return {
     umbraAddress: getAddress(umbraAddress),
-    batchSendAddress: batchSendAddress ? getAddress(batchSendAddress) : null,
+    batchSendAddress: checksummedBatchSendAddress,
     startBlock,
     chainId,
     subgraphUrl,
@@ -129,7 +132,6 @@ const rpcUrlFromChain = (chainId: BigNumberish) => {
   // For Hardhat, we just use the mainnet chain ID to avoid errors in tests, but this doesn't affect anything.
   if (chainId === 1 || chainId === 1337) return String(process.env.MAINNET_RPC_URL);
   if (chainId === 10) return String(process.env.OPTIMISM_RPC_URL);
-  if (chainId === 100) return String(process.env.GNOSIS_CHAIN_RPC_URL);
   if (chainId === 137) return String(process.env.POLYGON_RPC_URL);
   if (chainId === 8453) return String(process.env.BASE_RPC_URL);
   if (chainId === 42161) return String(process.env.ARBITRUM_ONE_RPC_URL);
@@ -190,7 +192,7 @@ export class Umbra {
     token: string,
     amount: BigNumberish,
     recipientId: string,
-    overrides: SendOverrides = {}
+    overrides?: SendOverrides
   ) {
     // Check that recipient is valid.
     await assertSupportedAddress(recipientId);
@@ -227,7 +229,7 @@ export class Umbra {
     return { tx, stealthKeyPair };
   }
 
-  async batchSend(signer: JsonRpcSigner | Wallet, sends: SendBatch[], overrides: SendOverrides = {}) {
+  async batchSend(signer: JsonRpcSigner | Wallet, sends: SendBatch[], overrides?: SendOverrides) {
     if (!this.batchSendContract) {
       throw new Error('Batch send is not supported on this network');
     }
@@ -296,7 +298,9 @@ export class Umbra {
    * @param destination Address where funds will be withdrawn to
    * @param overrides Override the gas limit, gas price, or nonce
    */
-  async withdraw(spendingPrivateKey: string, token: string, destination: string, overrides: Overrides = {}) {
+  async withdraw(spendingPrivateKey: string, token: string, destination: string, overrides?: Overrides) {
+    const txOverrides = overrides === undefined ? {} : overrides;
+
     // Address input validations
     // token === 'ETH' is valid so we don't verify that, and let ethers verify it during the function call
     destination = getAddress(destination);
@@ -310,17 +314,17 @@ export class Umbra {
     if (isEth(token)) {
       try {
         // First we attempt to execute the withdrawal using the signer from the user's wallet.
-        return await tryEthWithdraw(txSigner, await txSigner.getAddress(), destination, overrides);
+        return await tryEthWithdraw(txSigner, await txSigner.getAddress(), destination, txOverrides);
       } catch (e) {
         // If that fails, we try again using the fallback provider.
         console.error("Withdrawal with wallet's provider failed, see error below. Retrying with a fallback provider.");
         console.error(e);
         const fallbackSigner = stealthWallet.connect(this.fallbackProvider);
-        return await tryEthWithdraw(fallbackSigner, await txSigner.getAddress(), destination, overrides);
+        return await tryEthWithdraw(fallbackSigner, await txSigner.getAddress(), destination, txOverrides);
       }
     } else {
       // Withdrawing a token
-      return await this.umbraContract.connect(txSigner).withdrawToken(destination, token, overrides);
+      return await this.umbraContract.connect(txSigner).withdrawToken(destination, token, txOverrides);
     }
   }
 
@@ -349,8 +353,13 @@ export class Umbra {
     v: number,
     r: string,
     s: string,
-    overrides: Overrides = {}
+    overrides?: Overrides
   ): Promise<TransactionResponse> {
+    let txOverrides: Overrides = {};
+    if (overrides !== undefined) {
+      txOverrides = overrides;
+    }
+
     // Address input validations
     stealthAddr = getAddress(stealthAddr);
     destination = getAddress(destination);
@@ -362,7 +371,7 @@ export class Umbra {
     const txSigner = this.getConnectedSigner(signer);
     return await this.umbraContract
       .connect(txSigner)
-      .withdrawTokenOnBehalf(stealthAddr, destination, token, sponsor, sponsorFee, v, r, s, overrides);
+      .withdrawTokenOnBehalf(stealthAddr, destination, token, sponsor, sponsorFee, v, r, s, txOverrides);
   }
 
   /**
@@ -378,10 +387,12 @@ export class Umbra {
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
    * timestamp, and txhash
    */
-  async *fetchAllAnnouncements(overrides: ScanOverrides = {}): AsyncGenerator<AnnouncementDetail[]> {
+  async *fetchAllAnnouncements(overrides?: ScanOverrides): AsyncGenerator<AnnouncementDetail[]> {
+    const scanOverrides = overrides === undefined ? {} : overrides;
+
     // Get start and end blocks to scan events for
-    const startBlock = overrides.startBlock || this.chainConfig.startBlock;
-    const endBlock = overrides.endBlock || 'latest';
+    const startBlock = scanOverrides.startBlock || this.chainConfig.startBlock;
+    const endBlock = scanOverrides.endBlock || 'latest';
 
     const filterSupportedAddresses = async (announcements: AnnouncementDetail[]) => {
       // Check if all senders and receiver addresses are supported.
@@ -392,7 +403,10 @@ export class Umbra {
       const filtered = announcements.map((announcement) => {
         const isReceiverSupported = supportedAddrs.has(announcement.receiver);
         const isFromSupported = supportedAddrs.has(announcement.from);
-        return isReceiverSupported && isFromSupported ? announcement : null;
+        if (isReceiverSupported && isFromSupported) {
+          return announcement;
+        }
+        return null;
       });
 
       return filtered.filter((i) => i !== null) as AnnouncementDetail[];
@@ -431,13 +445,14 @@ export class Umbra {
     possibleRegisteredBlockNumber: number | undefined,
     Signer: JsonRpcSigner,
     address: string,
-    overrides: ScanOverrides = {}
+    overrides?: ScanOverrides
   ): AsyncGenerator<AnnouncementDetail[]> {
+    const scanOverrides = overrides === undefined ? {} : overrides;
     const registeredBlockNumber =
       possibleRegisteredBlockNumber || (await getBlockNumberUserRegistered(address, Signer.provider, this.chainConfig));
     // Get start and end blocks to scan events for
-    const startBlock = overrides.startBlock || registeredBlockNumber || this.chainConfig.startBlock;
-    const endBlock = overrides.endBlock || 'latest';
+    const startBlock = scanOverrides.startBlock || registeredBlockNumber || this.chainConfig.startBlock;
+    const endBlock = scanOverrides.endBlock || 'latest';
     for await (const announcementBatch of this.fetchAllAnnouncements({ startBlock, endBlock })) {
       yield announcementBatch;
     }
@@ -542,9 +557,10 @@ export class Umbra {
    * @param viewingPrivateKey Receiver's viewing public key
    * @param overrides Override the start and end block used for scanning
    */
-  async scan(spendingPublicKey: string, viewingPrivateKey: string, overrides: ScanOverrides = {}) {
+  async scan(spendingPublicKey: string, viewingPrivateKey: string, overrides?: ScanOverrides) {
+    const scanOverrides = overrides === undefined ? {} : overrides;
     const userAnnouncements: UserAnnouncement[] = [];
-    for await (const announcementsBatch of this.fetchAllAnnouncements(overrides)) {
+    for await (const announcementsBatch of this.fetchAllAnnouncements(scanOverrides)) {
       for (const announcement of announcementsBatch) {
         const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = announcement;
         const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(
@@ -644,9 +660,15 @@ export class Umbra {
     return { spendingKeyPair, viewingKeyPair };
   }
 
-  async prepareSend(recipientId: string, lookupOverrides: SendOverrides = {}) {
+  async prepareSend(recipientId: string, lookupOverrides?: SendOverrides) {
+    const sendLookupOverrides = lookupOverrides === undefined ? {} : lookupOverrides;
+
     // Lookup recipient's public key
-    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(recipientId, this.provider, lookupOverrides);
+    const { spendingPublicKey, viewingPublicKey } = await lookupRecipient(
+      recipientId,
+      this.provider,
+      sendLookupOverrides
+    );
     if (!spendingPublicKey || !viewingPublicKey) {
       throw new Error(`Could not retrieve public keys for recipient ID ${recipientId}`);
     }
@@ -705,15 +727,18 @@ export class Umbra {
     token: string,
     sponsor: string,
     sponsorFee: BigNumberish,
-    hook: string = AddressZero,
-    data = '0x'
+    hook?: string,
+    data?: string
   ) {
+    const hookAddress = hook === undefined ? AddressZero : hook;
+    const callData = data === undefined ? '0x' : data;
+
     // Address input validations
     contract = getAddress(contract);
     acceptor = getAddress(acceptor);
     sponsor = getAddress(sponsor);
     token = getAddress(token);
-    hook = getAddress(hook);
+    const hookContract = getAddress(hookAddress);
 
     // Validate chainId
     if (typeof chainId !== 'number' || !Number.isInteger(chainId)) {
@@ -721,7 +746,7 @@ export class Umbra {
     }
 
     // Validate the data string
-    if (typeof data !== 'string' || !isHexString(data)) {
+    if (typeof callData !== 'string' || !isHexString(callData)) {
       throw new Error('Data string must be null or in hex format with 0x prefix');
     }
 
@@ -729,7 +754,7 @@ export class Umbra {
     const digest = keccak256(
       defaultAbiCoder.encode(
         ['uint256', 'address', 'address', 'address', 'address', 'uint256', 'address', 'bytes'],
-        [chainId, contract, acceptor, token, sponsor, sponsorFee, hook, data]
+        [chainId, contract, acceptor, token, sponsor, sponsorFee, hookContract, callData]
       )
     );
     const rawSig = await stealthWallet.signMessage(arrayify(digest));
@@ -748,12 +773,15 @@ async function tryEthWithdraw(
   signer: JsonRpcSigner | Wallet,
   from: string, // signer.getAddress() is async, so pass this to reduce number of calls
   to: string,
-  overrides: Overrides = {},
-  retryCount = 0
+  overrides?: Overrides,
+  retryCount?: number
 ): Promise<TransactionResponse> {
+  const effectiveOverrides = overrides === undefined ? {} : overrides;
+  const retries = retryCount === undefined ? 0 : retryCount;
+
   try {
-    if (retryCount === 20) throw new Error("Failed to estimate Optimism's L1 Fee, please try again later");
-    const sweepInfo = await getEthSweepGasInfo(from, to, signer.provider as EthersProvider, overrides);
+    if (retries === 20) throw new Error("Failed to estimate Optimism's L1 Fee, please try again later");
+    const sweepInfo = await getEthSweepGasInfo(from, to, signer.provider as EthersProvider, effectiveOverrides);
     const { gasPrice, gasLimit, txCost, fromBalance, ethToSend, chainId } = sweepInfo;
     if (txCost.gt(fromBalance)) {
       throw new Error('Stealth address ETH balance is not enough to pay for withdrawal gas cost');
@@ -763,7 +791,7 @@ async function tryEthWithdraw(
     // proportional to the retryCount, i.e. the more retries, the more margin is added, capped at 20% added cost
     let adjustedValue = ethToSend;
     if (chainId === 10 || chainId === 8453) {
-      const costWithMargin = txCost.mul(100 + Math.min(retryCount, 20)).div(100);
+      const costWithMargin = txCost.mul(100 + Math.min(retries, 20)).div(100);
       adjustedValue = adjustedValue.sub(costWithMargin);
     }
 
@@ -773,8 +801,8 @@ async function tryEthWithdraw(
     // Retry if the error was insufficient funds, otherwise throw the error
     if (!e.stack.includes('insufficient funds')) throw e;
     console.log('e', e);
-    console.warn(`failed with "insufficient funds for gas * price + value", retry attempt ${retryCount}...`);
-    return await tryEthWithdraw(signer, from, to, overrides, retryCount + 1);
+    console.warn(`failed with "insufficient funds for gas * price + value", retry attempt ${retries}...`);
+    return await tryEthWithdraw(signer, from, to, effectiveOverrides, retries + 1);
   }
 }
 
@@ -805,11 +833,12 @@ export function assertValidStealthAddress(stealthAddress: string) {
  * When `advanced` is false it looks for public keys in StealthKeyRegistry, and when true it recovers
  * them from on-chain transaction when true
  */
-export function parseOverrides(overrides: SendOverrides = {}): {
+export function parseOverrides(overrides?: SendOverrides): {
   localOverrides: SendOverrides;
   lookupOverrides: Pick<SendOverrides, 'advanced' | 'supportPubKey' | 'supportTxHash'>;
 } {
-  const localOverrides = { ...overrides }; // avoid mutating the object passed in
+  const effectiveOverrides = overrides === undefined ? {} : overrides;
+  const localOverrides = { ...effectiveOverrides }; // avoid mutating the object passed in
   const advanced = localOverrides?.advanced || false;
   const supportPubKey = localOverrides?.supportPubKey || false;
   const supportTxHash = localOverrides?.supportTxHash || false;
