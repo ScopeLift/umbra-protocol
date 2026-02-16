@@ -21,7 +21,10 @@ import { invalidStealthAddresses } from '../src/utils/utils';
 
 const { parseEther } = ethers.utils;
 const ethersProvider = ethers.provider;
-const jsonRpcProvider = new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url);
+const isForkingEnabled = Boolean(hardhatConfig.networks?.hardhat?.forking);
+const jsonRpcProvider = isForkingEnabled
+  ? new StaticJsonRpcProvider(hardhatConfig.networks?.hardhat?.forking?.url)
+  : ethersProvider;
 
 const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const quantity = parseEther('5');
@@ -37,6 +40,7 @@ describe('Umbra class', () => {
   // Receievers are used for batch send tests
   let receivers: Wallet[] = [];
   let deployer: SignerWithAddress;
+  let originalStaticSend: typeof StaticJsonRpcProvider.prototype.send | undefined;
 
   let dai: ERC20;
   let usdc: ERC20;
@@ -51,6 +55,27 @@ describe('Umbra class', () => {
   };
 
   before(async () => {
+    if (!isForkingEnabled) {
+      // checkSupportedAddresses() uses MAINNET_RPC_URL to query Chainalysis' sanction contract.
+      // Stub the StaticJsonRpcProvider JSON-RPC calls so unit tests can run without external RPC access.
+      originalStaticSend = StaticJsonRpcProvider.prototype.send;
+      StaticJsonRpcProvider.prototype.send = async function (method: string, params: Array<any>) {
+        switch (method) {
+          case 'eth_chainId':
+            return '0x1';
+          case 'net_version':
+            return '1';
+          case 'eth_blockNumber':
+            return '0x1';
+          case 'eth_call':
+            // Always return "not sanctioned".
+            return `0x${'0'.repeat(64)}`;
+          default:
+            return originalStaticSend!.call(this, method, params);
+        }
+      };
+    }
+
     // Load signers' mnemonic and derivation path from hardhat config
     const accounts = hardhatConfig.networks?.hardhat?.accounts as HardhatNetworkHDAccountsUserConfig;
     const { mnemonic, path } = accounts;
@@ -68,6 +93,12 @@ describe('Umbra class', () => {
 
     // Load other signers
     deployer = (await ethers.getSigners())[0]; // used for deploying contracts
+  });
+
+  after(async () => {
+    if (originalStaticSend) {
+      StaticJsonRpcProvider.prototype.send = originalStaticSend;
+    }
   });
 
   beforeEach(async () => {
@@ -169,12 +200,6 @@ describe('Umbra class', () => {
       expect(umbra5.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
       expect(umbra5.chainConfig.startBlock).to.equal(4069556);
 
-      // --- Gnosis Chain ---
-      const umbra6 = new Umbra(jsonRpcProvider, 100);
-      expect(umbra6.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
-      expect(umbra6.chainConfig.batchSendAddress).to.equal('0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB');
-      expect(umbra6.chainConfig.startBlock).to.equal(28237950);
-
       // --- Polygon ---
       const umbra7 = new Umbra(jsonRpcProvider, 137);
       expect(umbra7.chainConfig.umbraAddress).to.equal('0xFb2dc580Eed955B528407b4d36FfaFe3da685401');
@@ -196,8 +221,12 @@ describe('Umbra class', () => {
 
     it('does not allow invalid default chain IDs to be provided', async () => {
       const msg = 'Unsupported chain ID provided';
+      const constructor0 = () => new Umbra(jsonRpcProvider, 100);
+      const constructor0b = () => new Umbra(ethersProvider, 100);
       const constructor1 = () => new Umbra(jsonRpcProvider, 999);
       const constructor2 = () => new Umbra(ethersProvider, 999);
+      expect(constructor0).to.throw(msg);
+      expect(constructor0b).to.throw(msg);
       expect(constructor1).to.throw(msg);
       expect(constructor2).to.throw(msg);
     });

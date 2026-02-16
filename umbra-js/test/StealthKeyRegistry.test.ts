@@ -7,8 +7,10 @@ import { Umbra } from '../src/classes/Umbra';
 import { StealthKeyRegistry } from '../src/classes/StealthKeyRegistry';
 
 const stealthKeyRegistryAddress = '0x31fe56609C65Cd0C510E7125f051D440424D38f3';
+const isForkingEnabled = process.env.HARDHAT_FORKING !== '0' && process.env.HARDHAT_FORKING !== 'false';
+const describeIfForking = isForkingEnabled ? describe : describe.skip;
 
-describe('StealthKeyRegistry class', () => {
+describeIfForking('StealthKeyRegistry class', () => {
   let stealthKeyRegistry: StealthKeyRegistry;
 
   beforeEach(() => {
@@ -28,7 +30,7 @@ describe('StealthKeyRegistry class', () => {
   it('setStealthKeys: throws if registry has no signer and a signer is not specified', async () => {
     // this error comes from ethers, but useful to test to ensure a default signer isn't somehow used
     const pubkey = ethers.Wallet.createRandom().publicKey;
-    const errorMsg = 'sending a transaction requires a signer (operation="sendTransaction", code=UNSUPPORTED_OPERATION, version=contracts/5.5.0)'; // prettier-ignore
+    const errorMsg = 'sending a transaction requires a signer (operation="sendTransaction", code=UNSUPPORTED_OPERATION, version=contracts/5.7.0)'; // prettier-ignore
     await expectRejection(stealthKeyRegistry.setStealthKeys(pubkey, pubkey), errorMsg);
   });
 

@@ -63,10 +63,13 @@ export class StealthKeyRegistry {
   async setStealthKeys(
     spendingPublicKey: string,
     viewingPublicKey: string,
-    signer: JsonRpcSigner | null = null
+    signer?: JsonRpcSigner
   ): Promise<TransactionResponse> {
     // Get instance of StealthKeyRegistry contract
-    const registry = signer ? this._registry.connect(signer) : this._registry;
+    let registry: StealthKeyRegistryContract = this._registry;
+    if (signer) {
+      registry = this._registry.connect(signer) as unknown as StealthKeyRegistryContract;
+    }
 
     // Break public keys into the required components to store compressed public keys
     const { prefix: spendingPrefix, pubKeyXCoordinate: spendingPubKeyX } = KeyPair.compressPublicKey(spendingPublicKey);

@@ -7,25 +7,23 @@ export class TxHistoryProvider extends EtherscanProvider {
     const _chainId = BigNumber.from(chainId).toNumber();
     if (!apiKey) _isCommunityResource = true;
 
+    const sharedApiKey = <string>process.env.ETHERSCAN_API_KEY;
     let defaultApiKey: string;
     switch (_chainId) {
       case 1: // mainnet
-        defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
+        defaultApiKey = sharedApiKey;
         break;
       case 10: // optimism
-        defaultApiKey = <string>process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
-        break;
-      case 100: // gnosis
-        defaultApiKey = <string>process.env.GNOSISSCAN_API_KEY;
+        defaultApiKey = <string>process.env.OPTIMISTIC_ETHERSCAN_API_KEY || sharedApiKey;
         break;
       case 137: // polygon
-        defaultApiKey = <string>process.env.POLYGONSCAN_API_KEY;
+        defaultApiKey = <string>process.env.POLYGONSCAN_API_KEY || sharedApiKey;
         break;
       case 42161: // arbitrum
-        defaultApiKey = <string>process.env.ARBISCAN_API_KEY;
+        defaultApiKey = <string>process.env.ARBISCAN_API_KEY || sharedApiKey;
         break;
       case 11155111: // sepolia
-        defaultApiKey = <string>process.env.ETHERSCAN_API_KEY;
+        defaultApiKey = sharedApiKey;
         break;
       default:
         throw new Error(`Unsupported chain ID ${_chainId}`);
@@ -35,22 +33,21 @@ export class TxHistoryProvider extends EtherscanProvider {
   }
 
   getBaseUrl(): string {
-    switch (BigNumber.from(this.network.chainId).toNumber()) {
-      case 1:
-        return 'https://api.etherscan.io';
-      case 10:
-        return 'https://api-optimistic.etherscan.io';
-      case 100:
-        return 'https://api.gnosisscan.io';
-      case 137:
-        return 'https://api.polygonscan.com';
-      case 42161:
-        return 'https://api.arbiscan.io';
-      case 11155111:
-        return 'https://api-sepolia.etherscan.io';
-    }
+    // Etherscan API v2 is served from a single host, with network selection done via `chainid`.
+    return 'https://api.etherscan.io';
+  }
 
-    throw new Error(`Unsupported network ${JSON.stringify(this.network.chainId)}`);
+  getUrl(module: string, params: Record<string, string>): string {
+    const query = Object.keys(params).reduce((accum, key) => {
+      const value = params[key];
+      if (value != null) {
+        accum += `&${key}=${value}`;
+      }
+      return accum;
+    }, '');
+    const apiKey = this.apiKey ? `&apikey=${this.apiKey}` : '';
+    const chainId = BigNumber.from(this.network.chainId).toNumber();
+    return `${this.baseUrl}/v2/api?chainid=${chainId}&module=${module}${query}${apiKey}`;
   }
 
   isCommunityResource(): boolean {
