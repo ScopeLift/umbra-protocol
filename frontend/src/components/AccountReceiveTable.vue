@@ -64,14 +64,36 @@
         <!-- Container for block data and fetching status -->
         <div class="block-data-container row items-center justify-between q-col-gutter-md">
           <!-- Block data -->
-          <div class="block-data">
+        <span class="q-mr-xs">{{ $t('AccountReceiveTable.funds-question') }}</span>
+        <base-tooltip icon="fas fa-question-circle">
+          <span class="text-bold q-mb-sm">
             {{ $t('AccountReceiveTable.most-recent-announcement') }}
-            {{ mostRecentAnnouncementBlockNumber }} /
+            <br />
+            {{ $t('AccountReceiveTable.most-recent-block') }} {{ mostRecentAnnouncementBlockNumber }}
+            <br />
+            {{ $t('AccountReceiveTable.most-recent-time') }}
             {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
             {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
-          </div>
-
-          <!-- Status messages -->
+            <br />
+            <div v-if="advancedMode">
+              {{ $t('AccountReceiveTable.most-recent-mined') }}
+              <br />
+              {{ $t('AccountReceiveTable.most-recent-block') }} {{ mostRecentBlockNumber }}
+              <br />
+              {{ $t('AccountReceiveTable.most-recent-time') }}
+              {{ formatDate(mostRecentBlockTimestamp * 1000) }}
+              {{ formatTime(mostRecentBlockTimestamp * 1000) }}
+            </div>
+          </span>
+          <router-link
+            active-class="text-bold"
+            class="hyperlink dark-toggle"
+            :to="{ path: 'faq', hash: '#receiving-funds' }"
+          >
+            {{ $t('AccountReceiveTable.learn-more') }}
+          </router-link>
+        </base-tooltip>
+        <!-- Status messages -->
           <div
             v-if="
               ['fetching', 'fetching latest', 'scanning', 'scanning latest from last fetched block'].includes(

@@ -164,8 +164,8 @@ function useScan() {
       : null
   );
   const userAnnouncements = ref<UserAnnouncement[]>([]);
-  const mostRecentAnnouncementTimestamp = ref<number>();
-  const mostRecentAnnouncementBlockNumber = ref<number>();
+  const mostRecentAnnouncementTimestamp = ref<number>(0);
+  const mostRecentAnnouncementBlockNumber = ref<number>(0);
   const mostRecentBlockTimestamp = ref<number>(0);
   const mostRecentBlockNumber = ref<number>(0);
 
@@ -391,6 +391,19 @@ function useScan() {
     return provider.getBlock('latest');
   }
 
+  function updateMostRecentAnnouncementInfo(announcementsBatch: AnnouncementDetail[]) {
+    announcementsBatch.forEach((announcement) => {
+      const thisTimestamp = parseInt(announcement.timestamp);
+      if (thisTimestamp > mostRecentAnnouncementTimestamp.value) {
+        mostRecentAnnouncementTimestamp.value = thisTimestamp;
+      }
+      const thisBlock = parseInt(announcement.block);
+      if (thisBlock > mostRecentAnnouncementBlockNumber.value) {
+        mostRecentAnnouncementBlockNumber.value = thisBlock;
+      }
+    });
+  }
+
   async function scan() {
     // Reset paused state
     paused.value = false;
@@ -458,6 +471,7 @@ function useScan() {
       if (advancedMode.value && scanPrivateKey.value) {
         for await (const announcementsBatch of umbra.value.fetchAllAnnouncements(overrides)) {
           announcementsCount += announcementsBatch.length; // Increment count
+          updateMostRecentAnnouncementInfo(announcementsBatch);
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
             scanStatus.value = 'scanning latest';
@@ -495,25 +509,7 @@ function useScan() {
           }
 
           announcementsCount += announcementsBatch.length; // Increment count
-          announcementsBatch.forEach((announcement) => {
-            const thisTimestamp = parseInt(announcement.timestamp);
-            if (thisTimestamp > (mostRecentAnnouncementTimestamp.value || 0)) {
-              mostRecentAnnouncementTimestamp.value = thisTimestamp;
-              // Save the most recent announcement timestamp to localStorage
-              if (mostRecentAnnouncementTimestampKey.value) {
-                LocalStorage.set(mostRecentAnnouncementTimestampKey.value, thisTimestamp);
-              }
-            }
-            const thisBlock = parseInt(announcement.block);
-            if (thisBlock > (mostRecentAnnouncementBlockNumber.value || 0)) {
-              mostRecentAnnouncementBlockNumber.value = thisBlock;
-              // Save the most recent announcement block number to localStorage
-              if (mostRecentAnnouncementBlockNumberKey.value) {
-                LocalStorage.set(mostRecentAnnouncementBlockNumberKey.value, thisBlock);
-              }
-            }
-          });
-
+          updateMostRecentAnnouncementInfo(announcementsBatch);
           announcementsQueue = [...announcementsQueue, ...announcementsBatch];
           if (announcementsCount == 10000) {
             scanStatus.value = isInitialScan ? 'scanning latest' : 'scanning latest from last fetched block';
