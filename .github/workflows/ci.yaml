@@ -148,7 +148,7 @@ jobs:
           name: scopelint
           repo: ScopeLift/scopelint
           fromGitHubReleases: true
-          version: latest
+          version: v0.0.21
           pathInArchive: scopelint-x86_64-linux/scopelint
           urlTemplate: https://github.com/ScopeLift/scopelint/releases/download/{{version}}/scopelint-x86_64-linux.tar.xz
           token: ${{ secrets.GITHUB_TOKEN }}
