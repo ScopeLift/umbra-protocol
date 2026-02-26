@@ -688,6 +688,18 @@ function useSendForm() {
     return allString;
   });
 
+  async function refreshToll() {
+    await umbra.value?.umbraContract
+      .toll()
+      .then((tollValue) => {
+        toll.value = tollValue;
+      })
+      .catch((e) => {
+        // Avoid bubbling wallet RPC read failures into a full-page error state.
+        console.warn(`Error fetching toll: ${JSON.stringify(e)}`);
+      });
+  }
+
   watch(
     // We watch `shouldUseNormalPubKey` to ensure the "Address 0x123 has not registered stealth keys" validation
     // message is hidden if the user checks the block after entering an address. We do this by checking if the
@@ -706,16 +718,6 @@ function useSendForm() {
       ]
     ) => {
       _prevTokenValue; // Silence unused var warning.
-
-      // Fetch toll.
-      umbra.value?.umbraContract
-        .toll()
-        .then((tollValue) => {
-          toll.value = tollValue;
-        })
-        .catch((e) => {
-          throw new Error(`Error fetching toll: ${JSON.stringify(e)}`);
-        });
 
       // Reset acknowledgement if user changes the public key type.
       if (!useNormalPubKey) {
@@ -744,6 +746,7 @@ function useSendForm() {
           batchSends.value[0].token = NATIVE_TOKEN.value;
           batchSends.value[1].token = NATIVE_TOKEN.value;
         }
+        await refreshToll();
       }
 
       const validAmount = Boolean(humanAmountValue) && isValidTokenAmount(humanAmountValue as string) === true;
@@ -774,6 +777,7 @@ function useSendForm() {
 
   onMounted(async () => {
     await setPaymentLinkData();
+    await refreshToll();
     batchSends.value.push(
       { id: 1, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false },
       { id: 2, receiver: '', token: NATIVE_TOKEN.value, amount: '', warning: '', validationError: false }
@@ -951,6 +955,7 @@ function useSendForm() {
       if (!signer.value) throw new Error(tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
       showAdvancedSendWarning.value = false;
+      await refreshToll();
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
       // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
@@ -1089,6 +1094,7 @@ function useSendForm() {
       }
       if (!signer.value) throw new Error(tc('Send.wallet-not-connected'));
       if (!umbra.value) throw new Error('Umbra instance not configured');
+      await refreshToll();
 
       // Verify the recipient ID is valid. (This throws if public keys could not be found. This check is also
       // done in the Umbra class `send` method, but we do it here to throw before the user pays for a token approval.
