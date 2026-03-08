@@ -2,17 +2,12 @@
  * @dev Class for managing secp256k1 keys and performing operations with them
  */
 
-import {
-  getSharedSecret as nobleGetSharedSecret,
-  utils as nobleUtils,
-  getPublicKey,
-  Point,
-  CURVE,
-} from '@noble/secp256k1';
-import { BigNumberish, computeAddress, hexZeroPad, isHexString, sha256, BigNumber } from '../ethers';
+import { utils as nobleUtils, getPublicKey, Point, CURVE } from '@noble/secp256k1';
+import { BigNumberish, computeAddress, hexZeroPad, isHexString, BigNumber } from '../ethers';
 import { RandomNumber } from './RandomNumber';
 import { assertValidPoint, assertValidPrivateKey, lengths, recoverPublicKeyFromTransaction } from '../utils/utils';
 import { CompressedPublicKey, EncryptedPayload, EthersProvider } from '../types';
+import { getSharedSecretHash } from '../utils/sharedSecret';
 
 // List of private or public keys that we disallow initializing a KeyPair instance with, since they will lead to
 // unrecoverable funds.
@@ -21,29 +16,24 @@ const blockedKeys = [
   '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', // public key of all zeroes
 ];
 
-/**
- * @notice Private helper method to return the shared secret for a given private key and public key
- * @param privateKey Private key as hex string with 0x prefix
- * @param publicKey Uncompressed public key as hex string with 0x04 prefix
- * @returns 32-byte shared secret as 66 character hex string
- */
-function getSharedSecret(privateKey: string, publicKey: string) {
-  if (privateKey.length !== lengths.privateKey || !isHexString(privateKey)) throw new Error('Invalid private key');
-  if (publicKey.length !== lengths.publicKey || !isHexString(publicKey)) throw new Error('Invalid public key');
-  assertValidPoint(publicKey);
-  assertValidPrivateKey(privateKey);
+function parseScalar(value: RandomNumber | string) {
+  if (!(value instanceof RandomNumber) && typeof value !== 'string') {
+    throw new Error('Input must be instance of RandomNumber or string');
+  }
+  if (typeof value === 'string' && !isHexString(value)) {
+    throw new Error('Strings must be in hex form with 0x prefix');
+  }
 
-  // We use sharedSecret.slice(2) to ensure the shared secret is not dependent on the prefix, which enables
-  // us to uncompress ephemeralPublicKey from Umbra.sol logs as explained in comments of getUncompressedFromX.
-  // Note that a shared secret is really just a point on the curve, so it's an uncompressed public key
-  const sharedSecret = nobleGetSharedSecret(privateKey.slice(2), publicKey.slice(2), true);
-  const sharedSecretHex = nobleUtils.bytesToHex(sharedSecret); // Has 04 prefix but not 0x.
-  return sha256(`0x${sharedSecretHex.slice(2)}`); // TODO Update to use noble-hashes?
+  return isHexString(value)
+    ? BigInt(value as string) // provided a valid hex string
+    : BigInt((value as RandomNumber).asHex); // provided RandomNumber
 }
 
 export class KeyPair {
   readonly publicKeyHex: string; // Public key as hex string with 0x04 prefix
   readonly privateKeyHex: string | null = null; // Private key as hex string with 0x prefix, or null if not provided
+  private publicPointCache: Point | null = null;
+  private precomputedPublicPointCache: Point | null = null;
 
   /**
    * @notice Creates new instance from a public key or private key
@@ -95,6 +85,22 @@ export class KeyPair {
     return computeAddress(this.publicKeyHex);
   }
 
+  private getPublicPoint() {
+    if (!this.publicPointCache) {
+      this.publicPointCache = Point.fromHex(this.publicKeyHexSlim);
+    }
+
+    return this.publicPointCache;
+  }
+
+  private getPrecomputedPublicPoint() {
+    if (!this.precomputedPublicPointCache) {
+      this.precomputedPublicPointCache = nobleUtils.precompute(8, Point.fromHex(this.publicKeyHexSlim));
+    }
+
+    return this.precomputedPublicPointCache;
+  }
+
   // ============================================= ENCRYPTION / DECRYPTION =============================================
 
   /**
@@ -112,7 +118,7 @@ export class KeyPair {
     const ephemeralPublicKey = Point.fromPrivateKey(ephemeralPrivateKey);
     const ephemeralPrivateKeyHex = `0x${nobleUtils.bytesToHex(ephemeralPrivateKey)}`;
     const ephemeralPublicKeyHex = `0x${ephemeralPublicKey.toHex()}`;
-    const sharedSecret = getSharedSecret(ephemeralPrivateKeyHex, this.publicKeyHex);
+    const sharedSecret = getSharedSecretHash(ephemeralPrivateKeyHex, this.publicKeyHex);
 
     // XOR random number with shared secret to get encrypted value
     const ciphertextBN = number.value.xor(sharedSecret);
@@ -133,10 +139,9 @@ export class KeyPair {
     if (!this.privateKeyHex) {
       throw new Error('KeyPair has no associated private key to decrypt with');
     }
-    assertValidPoint(ephemeralPublicKey); // throw if point is not on curve
 
     // Get shared secret to use as decryption key, then decrypt with XOR
-    const sharedSecret = getSharedSecret(this.privateKeyHex, ephemeralPublicKey);
+    const sharedSecret = getSharedSecretHash(this.privateKeyHex, ephemeralPublicKey);
     const plaintext = BigNumber.from(ciphertext).xor(sharedSecret);
     return hexZeroPad(plaintext.toHexString(), 32);
   }
@@ -147,21 +152,21 @@ export class KeyPair {
    * @param value number to multiply by, as RandomNumber or hex string with 0x prefix
    */
   mulPublicKey(value: RandomNumber | string) {
-    if (!(value instanceof RandomNumber) && typeof value !== 'string') {
-      throw new Error('Input must be instance of RandomNumber or string');
-    }
-    if (typeof value === 'string' && !value.startsWith('0x')) {
-      throw new Error('Strings must be in hex form with 0x prefix');
-    }
-
-    // Parse number based on input type
-    const number = isHexString(value)
-      ? BigInt(value as string) // provided a valid hex string
-      : BigInt((value as RandomNumber).asHex); // provided RandomNumber
+    const number = parseScalar(value);
 
     // Perform the multiplication and return new KeyPair instance
-    const publicKey = Point.fromHex(this.publicKeyHexSlim).multiply(number);
+    const publicKey = this.getPublicPoint().multiply(number);
     return new KeyPair(`0x${publicKey.toHex()}`);
+  }
+
+  /**
+   * @notice Returns address after multiplying this public key by some value without allocating a new KeyPair
+   * @param value number to multiply by, as RandomNumber or hex string with 0x prefix
+   */
+  mulPublicKeyToAddress(value: RandomNumber | string) {
+    const number = parseScalar(value);
+    const publicKey = this.getPrecomputedPublicPoint().multiply(number);
+    return computeAddress(`0x${publicKey.toHex()}`);
   }
 
   /**
@@ -169,20 +174,11 @@ export class KeyPair {
    * @param value number to multiply by, as class RandomNumber or hex string with 0x prefix
    */
   mulPrivateKey(value: RandomNumber | string) {
-    if (!(value instanceof RandomNumber) && typeof value !== 'string') {
-      throw new Error('Input must be instance of RandomNumber or string');
-    }
-    if (typeof value === 'string' && !isHexString(value)) {
-      throw new Error('Strings must be in hex form with 0x prefix');
-    }
     if (!this.privateKeyHex) {
       throw new Error('KeyPair has no associated private key');
     }
 
-    // Parse number based on input type
-    const number = isHexString(value)
-      ? BigInt(value as string) // provided a valid hex string
-      : BigInt((value as RandomNumber).asHex); // provided RandomNumber
+    const number = parseScalar(value);
 
     // Get new private key. Multiplication gives us an arbitrarily large number that is not necessarily in the domain
     // of the secp256k1 curve, so then we use modulus operation to get in the correct range.

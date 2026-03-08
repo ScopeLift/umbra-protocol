@@ -1,8 +1,8 @@
 // This is a worker script that can be controlled by `worker.ts`
 // Be aware that this is not a module script, it is a *worker* script.
 
-import { Announcement, Umbra } from '@umbracash/umbra-js';
-import { getAddress } from 'src/utils/ethers';
+import { AnnouncementDetail, KeyPair } from '@umbracash/umbra-js';
+import { filterAnnouncements } from './filter-core';
 
 // https://github.com/webpack-contrib/worker-loader#integrating-with-typescript
 const ctx: Worker = self as any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -12,31 +12,31 @@ self.addEventListener(
   'message',
   function (e) {
     const worker_id = e.data.worker_id;
-    const announcements = <Announcement[]>e.data.announcements;
+    const announcements = <AnnouncementDetail[]>e.data.announcements;
     const spendingPublicKey = <string>e.data.spendingPublicKey;
     const viewingPrivateKey = <string>e.data.viewingPrivateKey;
-    const results = [];
-    for (let index = 0; index < announcements.length; index++) {
-      const ann = announcements[index];
-      const { token: tokenAddr } = ann;
-      const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingPublicKey, viewingPrivateKey, ann);
-      const token = getAddress(tokenAddr); // ensure checksummed address
-      if (isForUser) {
-        results.push({ index: index, randomNumber: randomNumber, token: token });
+    const progressStep = <number>e.data.progressStep;
+    const spendingKeyPair = new KeyPair(spendingPublicKey);
+    const viewingKeyPair = new KeyPair(viewingPrivateKey);
+    const results = filterAnnouncements(
+      spendingKeyPair,
+      viewingKeyPair,
+      announcements,
+      progressStep,
+      (processedCount) => {
+        ctx.postMessage({
+          worker_id,
+          done: false,
+          processedCount,
+        });
       }
-      // Here we report the progress to the controller for interface updating.
-      ctx.postMessage({
-        worker_id: worker_id,
-        done: false,
-        index: index,
-      });
-    }
+    );
 
     // Here we post the computed results to the controller for aggregation/
     ctx.postMessage({
-      worker_id: worker_id,
+      worker_id,
       done: true,
-      index: announcements.length,
+      processedCount: announcements.length,
       data: results,
     });
 

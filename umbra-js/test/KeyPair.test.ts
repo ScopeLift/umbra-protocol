@@ -221,6 +221,43 @@ describe('KeyPair class', () => {
       }
     });
 
+    it('computes the same receiving address without allocating a new KeyPair', () => {
+      for (let i = 0; i < numberOfRuns; i += 1) {
+        const randomNumber = new RandomNumber();
+        const randomWallet = Wallet.createRandom();
+        const keyPair = new KeyPair(randomWallet.publicKey);
+        const stealthKeyPair = keyPair.mulPublicKey(randomNumber);
+        const stealthAddress = keyPair.mulPublicKeyToAddress(randomNumber);
+        expect(stealthAddress).to.equal(stealthKeyPair.address);
+      }
+    });
+
+    it('matches announcements the same way with raw keys or precomputed KeyPairs', () => {
+      const receiverWallet = Wallet.createRandom();
+      const spendingKeyPair = new KeyPair(receiverWallet.publicKey);
+      const viewingKeyPair = new KeyPair(receiverWallet.privateKey);
+      const randomNumber = new RandomNumber();
+      const encrypted = viewingKeyPair.encrypt(randomNumber);
+      const { pubKeyXCoordinate } = KeyPair.compressPublicKey(encrypted.ephemeralPublicKey);
+      const receiver = spendingKeyPair.mulPublicKeyToAddress(randomNumber);
+      const announcement = {
+        amount: ethers.constants.One,
+        ciphertext: encrypted.ciphertext,
+        pkx: pubKeyXCoordinate,
+        receiver,
+        token: receiverWallet.address,
+      };
+
+      const fromRawKeys = Umbra.isAnnouncementForUser(
+        receiverWallet.publicKey,
+        receiverWallet.privateKey,
+        announcement
+      );
+      const fromKeyPairs = Umbra.isAnnouncementForUser(spendingKeyPair, viewingKeyPair, announcement);
+      expect(fromRawKeys).to.deep.equal(fromKeyPairs);
+      expect(fromRawKeys).to.deep.equal({ isForUser: true, randomNumber: randomNumber.asHex });
+    });
+
     it('works for any randomly generated number and wallet', () => {
       let numFailures = 0;
       for (let i = 0; i < numberOfRuns; i += 1) {
@@ -332,7 +369,22 @@ describe('KeyPair class', () => {
       const dummyEncryptedData = { ephemeralPublicKey: badPublicKey, ciphertext: dummyWallet.privateKey };
       const dummyEncryptedData2 = { ephemeralPublicKey: badPublicKey.slice(2), ciphertext: dummyWallet.privateKey };
       expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData)).to.throw('Point is not on elliptic curve');
-      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData2)).to.throw('Point is not on elliptic curve');
+      expect(() => keyPairFromPrivate.decrypt(dummyEncryptedData2)).to.throw('Invalid public key');
+    });
+
+    it('skips malformed announcements without throwing', () => {
+      const keyPairFromPrivate = new KeyPair(wallet.privateKey);
+      const keyPairFromPublic = new KeyPair(wallet.publicKey);
+      const malformedAnnouncement = {
+        amount: ethers.constants.One,
+        ciphertext: wallet.privateKey,
+        pkx: 'not-a-number',
+        receiver: wallet.address,
+        token: wallet.address,
+      } as any;
+
+      const result = Umbra.isAnnouncementForUser(keyPairFromPublic, keyPairFromPrivate, malformedAnnouncement);
+      expect(result).to.deep.equal({ isForUser: false, randomNumber: '' });
     });
 
     it('throws when mulPublicKey is provided a bad input', async () => {

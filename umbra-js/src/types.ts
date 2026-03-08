@@ -47,7 +47,7 @@ export interface ChainConfig {
 
 // Used for passing around encrypted random number
 export interface EncryptedPayload {
-  ephemeralPublicKey: string; // hex string with 0x04 prefix
+  ephemeralPublicKey: string; // compressed or uncompressed hex string with 0x prefix
   ciphertext: string; // hex string with 0x prefix
 }
 

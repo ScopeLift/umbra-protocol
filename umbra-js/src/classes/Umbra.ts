@@ -38,6 +38,7 @@ import {
 import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
 import { ETH_ADDRESS, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
 import type { Announcement, ChainConfig, EthersProvider, ScanOverrides, SendOverrides, SubgraphAnnouncement, UserAnnouncement, AnnouncementDetail, SendBatch, SendData} from '../types'; // prettier-ignore
+import { compressedPublicKeyFromX } from '../utils/sharedSecret';
 
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
@@ -65,6 +66,11 @@ const chainConfigs: Record<number, ChainConfig> = {
     startBlock: 3590825,
     subgraphUrl: subgraphs[11155111],
   }, // Sepolia
+};
+
+type AnnouncementMatchResult = {
+  isForUser: boolean;
+  randomNumber: string;
 };
 
 /**
@@ -416,8 +422,14 @@ export class Umbra {
     if (this.chainConfig.subgraphUrl) {
       try {
         for await (const subgraphAnnouncements of this.fetchAllAnnouncementsFromSubgraph(startBlock, endBlock)) {
-          // Map the subgraph amount field from string to BigNumber
-          const announcements = subgraphAnnouncements.map((x) => ({ ...x, amount: BigNumber.from(x.amount) }));
+          // Map the subgraph amount field from string to BigNumber and normalize addresses once up front.
+          const announcements = subgraphAnnouncements.map((x) => ({
+            ...x,
+            amount: BigNumber.from(x.amount),
+            from: getAddress(x.from),
+            receiver: getAddress(x.receiver),
+            token: getAddress(x.token),
+          }));
           yield await filterSupportedAddresses(announcements);
         }
       } catch (err) {
@@ -534,8 +546,8 @@ export class Umbra {
           amount,
           block: block.number.toString(),
           ciphertext,
-          from: tx.from,
-          receiver,
+          from: getAddress(tx.from),
+          receiver: getAddress(receiver),
           pkx,
           timestamp: String(block.timestamp),
           token: getAddress(token),
@@ -559,19 +571,25 @@ export class Umbra {
    */
   async scan(spendingPublicKey: string, viewingPrivateKey: string, overrides?: ScanOverrides) {
     const scanOverrides = overrides === undefined ? {} : overrides;
+    const spendingKeyPair = new KeyPair(spendingPublicKey);
+    const viewingKeyPair = new KeyPair(viewingPrivateKey);
     const userAnnouncements: UserAnnouncement[] = [];
     for await (const announcementsBatch of this.fetchAllAnnouncements(scanOverrides)) {
       for (const announcement of announcementsBatch) {
-        const { amount, from, receiver, timestamp, token: tokenAddr, txHash } = announcement;
-        const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(
-          spendingPublicKey,
-          viewingPrivateKey,
-          announcement
-        );
-        const token = getAddress(tokenAddr); // ensure checksummed address
+        const { amount, from, receiver, timestamp, token, txHash } = announcement;
+        const { isForUser, randomNumber } = Umbra.isAnnouncementForUser(spendingKeyPair, viewingKeyPair, announcement);
         const isWithdrawn = false; // we always assume not withdrawn and leave it to the caller to check
         if (isForUser)
-          userAnnouncements.push({ randomNumber, receiver, amount, token, from, txHash, timestamp, isWithdrawn });
+          userAnnouncements.push({
+            randomNumber,
+            receiver,
+            amount,
+            token,
+            from,
+            txHash,
+            timestamp,
+            isWithdrawn,
+          });
       }
     }
 
@@ -581,30 +599,58 @@ export class Umbra {
   /**
    * @notice If the provided announcement is for the user with the specified keys, return true and the decoded
    * random number
-   * @param spendingPublicKey Receiver's spending private key
-   * @param viewingPrivateKey Receiver's viewing public key
+   * @param spendingPublicKey Receiver's spending public key, or a precomputed spending KeyPair
+   * @param viewingPrivateKey Receiver's viewing private key, or a precomputed viewing KeyPair
    * @param announcement Parameters emitted in the announcement event
    */
-  static isAnnouncementForUser(spendingPublicKey: string, viewingPrivateKey: string, announcement: Announcement) {
+  static isAnnouncementForUser(
+    spendingPublicKey: string,
+    viewingPrivateKey: string,
+    announcement: Announcement
+  ): AnnouncementMatchResult;
+  static isAnnouncementForUser(
+    spendingKeyPair: KeyPair,
+    viewingKeyPair: KeyPair,
+    announcement: Announcement
+  ): AnnouncementMatchResult;
+  static isAnnouncementForUser(
+    spendingKeyPairOrPublicKey: KeyPair | string,
+    viewingKeyPairOrPrivateKey: KeyPair | string,
+    announcement: Announcement
+  ) {
+    if (spendingKeyPairOrPublicKey instanceof KeyPair && viewingKeyPairOrPrivateKey instanceof KeyPair) {
+      return Umbra.matchAnnouncementForUser(spendingKeyPairOrPublicKey, viewingKeyPairOrPrivateKey, announcement);
+    }
+
     try {
-      // Get y-coordinate of public key from the x-coordinate by solving secp256k1 equation
-      const { receiver, pkx, ciphertext } = announcement;
-      const uncompressedPubKey = KeyPair.getUncompressedFromX(pkx);
-
-      // Decrypt to get random number
-      const payload = { ephemeralPublicKey: uncompressedPubKey, ciphertext };
-      const viewingKeyPair = new KeyPair(viewingPrivateKey);
-      const randomNumber = viewingKeyPair.decrypt(payload);
-
-      // Get what our receiving address would be with this random number
-      const spendingKeyPair = new KeyPair(spendingPublicKey);
-      const computedReceivingAddress = spendingKeyPair.mulPublicKey(randomNumber).address;
-
-      // If our receiving address matches the event's recipient, the transfer was for the user with the specified keys
-      return { isForUser: computedReceivingAddress === getAddress(receiver), randomNumber };
+      const spendingKeyPair =
+        spendingKeyPairOrPublicKey instanceof KeyPair
+          ? spendingKeyPairOrPublicKey
+          : new KeyPair(spendingKeyPairOrPublicKey);
+      const viewingKeyPair =
+        viewingKeyPairOrPrivateKey instanceof KeyPair
+          ? viewingKeyPairOrPrivateKey
+          : new KeyPair(viewingKeyPairOrPrivateKey);
+      return Umbra.matchAnnouncementForUser(spendingKeyPair, viewingKeyPair, announcement);
     } catch (err) {
-      // We may reach here if people use the sendToken method improperly, e.g. by passing an invalid pkx, so we'd
-      // fail when uncompressing. For now we just silently ignore these and return false
+      // Preserve backwards compatibility for callers that pass raw, invalid keys.
+      return { isForUser: false, randomNumber: '' };
+    }
+  }
+
+  private static matchAnnouncementForUser(
+    spendingKeyPair: KeyPair,
+    viewingKeyPair: KeyPair,
+    announcement: Announcement
+  ): AnnouncementMatchResult {
+    try {
+      const { receiver, pkx, ciphertext } = announcement;
+      const payload = { ephemeralPublicKey: compressedPublicKeyFromX(pkx), ciphertext };
+      const randomNumber = viewingKeyPair.decrypt(payload);
+      const computedReceivingAddress = spendingKeyPair.mulPublicKeyToAddress(randomNumber);
+      return { isForUser: computedReceivingAddress.toLowerCase() === receiver.toLowerCase(), randomNumber };
+    } catch (err) {
+      // Malformed announcement data should not crash scanning; we skip the non-decodable announcement.
       return { isForUser: false, randomNumber: '' };
     }
   }
