@@ -848,6 +848,28 @@ describe('Umbra class', () => {
       );
     });
 
+    it('throws immediately when scan is provided invalid scan keys', async () => {
+      await expectRejection(
+        umbra.scan('1234', receiver.privateKey),
+        'Key must be a string in hex format with 0x prefix'
+      );
+      await expectRejection(
+        umbra.scan(receiver.publicKey, '1234'),
+        'Key must be a string in hex format with 0x prefix'
+      );
+    });
+
+    it('keeps the raw-key matcher non-throwing for invalid keys', () => {
+      const result = Umbra.isAnnouncementForUser('1234', receiver.privateKey, {
+        amount: BigNumber.from(1),
+        ciphertext: receiver.privateKey,
+        pkx: '0x1',
+        receiver: receiver.address,
+        token: receiver.address,
+      });
+      expect(result).to.deep.equal({ isForUser: false, randomNumber: '' });
+    });
+
     it('throws when signWithdraw is passed a bad data string', async () => {
       // Actual values of input parameters don't matter for this test
       const privateKey = receiver.privateKey;
