@@ -565,8 +565,8 @@ export class Umbra {
    * the static helper `isAnnouncementForUser`. The latter is CPU intensive and this method will block while
    * all announcements are processed. To avoid performance issues, you may need to run fetching and filtering
    * steps separately, and use chunking, web workers, or other threading strategies.
-   * @param spendingPublicKey Receiver's spending private key
-   * @param viewingPrivateKey Receiver's viewing public key
+   * @param spendingPublicKey Receiver's spending public key
+   * @param viewingPrivateKey Receiver's viewing private key
    * @param overrides Override the start and end block used for scanning
    */
   async scan(spendingPublicKey: string, viewingPrivateKey: string, overrides?: ScanOverrides) {
@@ -599,6 +599,7 @@ export class Umbra {
   /**
    * @notice If the provided announcement is for the user with the specified keys, return true and the decoded
    * random number
+   * @dev Callers that scan many announcements can pass precomputed KeyPair instances to avoid repeated parsing
    * @param spendingPublicKey Receiver's spending public key, or a precomputed spending KeyPair
    * @param viewingPrivateKey Receiver's viewing private key, or a precomputed viewing KeyPair
    * @param announcement Parameters emitted in the announcement event
@@ -638,6 +639,12 @@ export class Umbra {
     }
   }
 
+  /**
+   * @notice Matches an announcement using already-initialized key pairs for the hot scanning path
+   * @param spendingKeyPair Receiver's spending key pair
+   * @param viewingKeyPair Receiver's viewing key pair
+   * @param announcement Parameters emitted in the announcement event
+   */
   private static matchAnnouncementForUser(
     spendingKeyPair: KeyPair,
     viewingKeyPair: KeyPair,

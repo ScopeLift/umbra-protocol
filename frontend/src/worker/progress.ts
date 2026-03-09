@@ -3,6 +3,9 @@
  * It only emits when the integer percentage changes to avoid redundant updates.
  */
 
+/**
+ * Creates a progress recorder that merges per-worker counts into one completion signal.
+ */
 export const createProgressAccumulator = (
   workerCount: number,
   totalAnnouncements: number,

@@ -5,12 +5,18 @@
 
 import { AnnouncementDetail, KeyPair, Umbra } from '@umbracash/umbra-js';
 
+/**
+ * Minimal match payload returned from a worker so the controller can rehydrate full announcement details.
+ */
 export type WorkerAnnouncementMatch = {
   index: number;
   randomNumber: string;
   token: string;
 };
 
+/**
+ * Filters one announcement batch for a recipient and emits throttled progress updates while scanning.
+ */
 export const filterAnnouncements = (
   spendingKeyPair: KeyPair,
   viewingKeyPair: KeyPair,

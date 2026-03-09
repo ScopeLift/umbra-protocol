@@ -16,6 +16,10 @@ const blockedKeys = [
   '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', // public key of all zeroes
 ];
 
+/**
+ * @notice Normalizes scalar inputs used by elliptic-curve helpers into a bigint
+ * @param value Scalar as RandomNumber instance or 0x-prefixed hex string
+ */
 function parseScalar(value: RandomNumber | string) {
   if (!(value instanceof RandomNumber) && typeof value !== 'string') {
     throw new Error('Input must be instance of RandomNumber or string');
@@ -85,6 +89,9 @@ export class KeyPair {
     return computeAddress(this.publicKeyHex);
   }
 
+  /**
+   * @notice Returns the cached noble Point for this public key
+   */
   private getPublicPoint() {
     if (!this.publicPointCache) {
       this.publicPointCache = Point.fromHex(this.publicKeyHexSlim);
@@ -93,6 +100,9 @@ export class KeyPair {
     return this.publicPointCache;
   }
 
+  /**
+   * @notice Returns a cached precomputed Point optimized for repeated public-key multiplications
+   */
   private getPrecomputedPublicPoint() {
     if (!this.precomputedPublicPointCache) {
       this.precomputedPublicPointCache = nobleUtils.precompute(8, Point.fromHex(this.publicKeyHexSlim));
