@@ -98,8 +98,8 @@ export const supportedChains: Array<Chain> = [
     chainName: 'Polygon',
     nativeCurrency: {
       address: NATIVE_TOKEN_ADDRESS,
-      name: 'Matic',
-      symbol: 'MATIC',
+      name: 'POL',
+      symbol: 'POL',
       decimals: 18,
       logoURI: '/tokens/polygon.png',
     },
