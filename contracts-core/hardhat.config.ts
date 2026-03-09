@@ -113,7 +113,7 @@ const config: HardhatUserConfig = {
         path: "m/44'/60'/0'/0",
       },
       chainId: chainIds['polygon'],
-      url: 'https://polygon-rpc.com/',
+      url: 'https://polygon.drpc.org',
       gasPrice: 33000000000, // 33 gwei
     },
     arbitrum: {

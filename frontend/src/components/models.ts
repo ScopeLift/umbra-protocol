@@ -103,7 +103,7 @@ export const supportedChains: Array<Chain> = [
       decimals: 18,
       logoURI: '/tokens/polygon.png',
     },
-    rpcUrls: ['https://polygon-rpc.com/', POLYGON_RPC_URL],
+    rpcUrls: ['https://polygon.drpc.org', POLYGON_RPC_URL],
     blockExplorerUrls: ['https://polygonscan.com'],
     iconUrls: ['/networks/polygon.svg'],
     logoURI: '/networks/polygon.svg',
