@@ -33,7 +33,7 @@ import {
   getBlockNumberUserRegistered,
   assertSupportedAddress,
   checkSupportedAddresses,
-  recursiveGraphFetch,
+  recursiveCompatibleGraphFetch,
 } from '../utils/utils';
 import { Umbra as UmbraContract, Umbra__factory, ERC20__factory } from '../typechain';
 import { ETH_ADDRESS, UMBRA_BATCH_SEND_ABI } from '../utils/constants';
@@ -43,14 +43,32 @@ import { compressedPublicKeyFromX } from '../utils/sharedSecret';
 // Mapping from chainId to contract information
 const umbraAddress = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401'; // same on all supported networks
 const batchSendAddress = '0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB'; // same on all supported networks
-const subgraphs = {
-  1: String(process.env.MAINNET_SUBGRAPH_URL),
-  10: String(process.env.OPTIMISM_SUBGRAPH_URL),
-  137: String(process.env.POLYGON_SUBGRAPH_URL),
-  8453: String(process.env.BASE_SUBGRAPH_URL),
-  42161: String(process.env.ARBITRUM_ONE_SUBGRAPH_URL),
-  11155111: String(process.env.SEPOLIA_SUBGRAPH_URL),
+const getOptionalEnv = (name: string): string | false => {
+  const value = process.env[name];
+  return value && value.length > 0 ? value : false;
 };
+
+const subgraphs: Record<number, string | false> = {
+  1: getOptionalEnv('MAINNET_SUBGRAPH_URL'),
+  10: getOptionalEnv('OPTIMISM_SUBGRAPH_URL'),
+  137: getOptionalEnv('POLYGON_SUBGRAPH_URL'),
+  8453: getOptionalEnv('BASE_SUBGRAPH_URL'),
+  42161: getOptionalEnv('ARBITRUM_ONE_SUBGRAPH_URL'),
+  11155111: getOptionalEnv('SEPOLIA_SUBGRAPH_URL'),
+};
+
+const normalizePonderAnnouncement = (item: Record<string, unknown>): SubgraphAnnouncement => ({
+  amount: String(item.amount),
+  block: String(item.blockNumber),
+  ciphertext: String(item.ciphertext),
+  from: String(item.from),
+  id: String(item.id),
+  pkx: String(item.pkx),
+  receiver: String(item.receiver),
+  timestamp: String(item.timestamp),
+  token: String(item.token),
+  txHash: String(item.txHash),
+});
 
 const chainConfigs: Record<number, ChainConfig> = {
   1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
@@ -433,10 +451,25 @@ export class Umbra {
           yield await filterSupportedAddresses(announcements);
         }
       } catch (err) {
+        console.error('Umbra subgraph announcement fetch failed; falling back to RPC logs.', {
+          chainId: this.chainConfig.chainId,
+          subgraphUrl: this.chainConfig.subgraphUrl,
+          startBlock,
+          endBlock,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        if (err instanceof Error && err.stack) {
+          console.error(err.stack);
+        }
         const announcements = await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
         yield await filterSupportedAddresses(announcements);
       }
     } else {
+      console.warn('Umbra subgraph URL is not configured; falling back to RPC logs.', {
+        chainId: this.chainConfig.chainId,
+        startBlock,
+        endBlock,
+      });
       const announcements = await this.fetchAllAnnouncementFromLogs(startBlock, endBlock);
       yield await filterSupportedAddresses(announcements);
     }
@@ -481,29 +514,50 @@ export class Umbra {
     startBlock: string | number,
     endBlock: string | number
   ): AsyncGenerator<SubgraphAnnouncement[]> {
-    if (!this.chainConfig.subgraphUrl) {
+    const subgraphUrl = this.chainConfig.subgraphUrl;
+    if (!subgraphUrl) {
       throw new Error('Subgraph URL must be defined to fetch via subgraph');
     }
 
-    // Query subgraph
-    for await (const subgraphAnnouncements of recursiveGraphFetch(
-      this.chainConfig.subgraphUrl,
-      'announcementEntities',
-      (filter: string) => `{
-      announcementEntities(${filter}) {
-        amount
-        block
-        ciphertext
-        from
-        id
-        pkx
-        receiver
-        timestamp
-        token
-        txHash
-      }
-    }`,
-      [],
+    for await (const subgraphAnnouncements of recursiveCompatibleGraphFetch(
+      subgraphUrl,
+      {
+        chainId: this.chainConfig.chainId,
+        legacy: {
+          key: 'announcementEntities',
+          query: (filter: string) => `{
+            announcementEntities(${filter}) {
+              amount
+              block
+              ciphertext
+              from
+              id
+              pkx
+              receiver
+              timestamp
+              token
+              txHash
+            }
+          }`,
+        },
+        ponder: {
+          key: 'announcements',
+          orderBy: 'blockNumber',
+          selection: `
+            amount
+            blockNumber
+            ciphertext
+            from
+            id
+            pkx
+            receiver
+            timestamp
+            token
+            txHash
+          `,
+          normalize: normalizePonderAnnouncement,
+        },
+      },
       {
         startBlock,
         endBlock,

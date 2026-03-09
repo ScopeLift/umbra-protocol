@@ -52,6 +52,49 @@ export const invalidStealthAddresses = [
   '0x59274E3aE531285c24e3cf57C11771ecBf72d9bf', // generated from hashing the zero public key, e.g. keccak256('0x000...000')
 ].map(getAddress);
 
+type SubgraphSchemaKind = 'legacy' | 'ponder';
+type PonderNetworkName = 'mainnet' | 'optimism' | 'polygon' | 'base' | 'arbitrumOne' | 'sepolia';
+
+type GraphQlPayload<T> = {
+  data?: T;
+  errors?: Array<{ message: string }>;
+};
+
+type PonderPage<T> = {
+  items: T[];
+  pageInfo: {
+    hasNextPage: boolean;
+    endCursor: string | null;
+  };
+};
+
+type PonderQueryConfig<T> = {
+  key: string;
+  orderBy: string;
+  selection: string;
+  normalize: (item: Record<string, unknown>) => T;
+};
+
+type CompatibleSubgraphFetchConfig<T> = {
+  chainId: number;
+  legacy: {
+    key: string;
+    query: (filter: string) => string;
+  };
+  ponder: PonderQueryConfig<T>;
+};
+
+const ponderNetworksByChainId: Record<number, PonderNetworkName> = {
+  1: 'mainnet',
+  10: 'optimism',
+  137: 'polygon',
+  8453: 'base',
+  42161: 'arbitrumOne',
+  11155111: 'sepolia',
+};
+
+const subgraphSchemaKinds = new Map<string, SubgraphSchemaKind>();
+
 /**
  * @notice Given a transaction hash, return the public key of the transaction's sender
  * @dev See https://github.com/ethers-io/ethers.js/issues/700 for an example of
@@ -368,6 +411,140 @@ export async function getMostRecentSubgraphStealthKeyChangedEventFromAddress(
   return theEvent;
 }
 
+export function getPonderNetworkName(chainId: number): PonderNetworkName | null {
+  return ponderNetworksByChainId[chainId] || null;
+}
+
+async function graphQlRequest<T>(url: string, query: string): Promise<T> {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`GraphQL request failed with status ${response.status}`);
+  }
+
+  const payload = (await response.json()) as GraphQlPayload<T>;
+  if (payload.errors?.length) {
+    throw new Error(payload.errors.map((error) => error.message).join('; '));
+  }
+  if (!payload.data) {
+    throw new Error('GraphQL request returned no data');
+  }
+
+  return payload.data;
+}
+
+function isUnsupportedPonderQueryError(error: unknown, field: string) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes(`Cannot query field "${field}"`);
+}
+
+async function* recursivePonderGraphFetch<T>(
+  url: string,
+  network: PonderNetworkName,
+  config: PonderQueryConfig<T>,
+  overrides?: GraphFilterOverride
+): AsyncGenerator<T[]> {
+  const startBlock = overrides?.startBlock ? overrides.startBlock.toString() : '';
+  const endBlock = overrides?.endBlock ? overrides.endBlock.toString() : '';
+  const registrant = overrides?.registrant ? overrides.registrant.toLowerCase() : '';
+  let after = '';
+
+  while (true) {
+    const afterFilter = after ? `after: "${after}"` : '';
+    const startBlockFilter = startBlock ? `blockNumber_gte: "${startBlock}"` : '';
+    const endBlockFilter = endBlock && endBlock !== 'latest' ? `blockNumber_lte: "${endBlock}"` : '';
+    const registrantFilter = registrant ? `registrant: "${registrant}"` : '';
+    const data = await graphQlRequest<Record<string, PonderPage<Record<string, unknown>>>>(
+      url,
+      `{
+        ${config.key}(
+          where: {
+            network: "${network}"
+            ${startBlockFilter}
+            ${endBlockFilter}
+            ${registrantFilter}
+          }
+          orderBy: "${config.orderBy}"
+          orderDirection: "desc"
+          limit: 1000
+          ${afterFilter}
+        ) {
+          items {
+            ${config.selection}
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }`
+    );
+
+    const page = data[config.key];
+    if (!page) {
+      throw new Error(`Missing Ponder field in response: ${config.key}`);
+    }
+
+    yield page.items.map(config.normalize);
+
+    if (!page.pageInfo.hasNextPage) {
+      return;
+    }
+
+    if (!page.pageInfo.endCursor) {
+      throw new Error(`Missing Ponder end cursor for field ${config.key}`);
+    }
+
+    after = page.pageInfo.endCursor;
+  }
+}
+
+export async function* recursiveCompatibleGraphFetch<T>(
+  url: string,
+  config: CompatibleSubgraphFetchConfig<T>,
+  overrides?: GraphFilterOverride
+): AsyncGenerator<T[]> {
+  const ponderNetwork = getPonderNetworkName(config.chainId);
+  const cachedSchemaKind = subgraphSchemaKinds.get(url);
+
+  if (!ponderNetwork || cachedSchemaKind === 'legacy') {
+    yield* recursiveGraphFetch(url, config.legacy.key, config.legacy.query, [], overrides);
+    return;
+  }
+
+  if (cachedSchemaKind === 'ponder') {
+    yield* recursivePonderGraphFetch(url, ponderNetwork, config.ponder, overrides);
+    return;
+  }
+
+  try {
+    let usedPonder = false;
+    for await (const page of recursivePonderGraphFetch(url, ponderNetwork, config.ponder, overrides)) {
+      if (!usedPonder) {
+        subgraphSchemaKinds.set(url, 'ponder');
+        usedPonder = true;
+      }
+      yield page;
+    }
+
+    if (!usedPonder) {
+      subgraphSchemaKinds.set(url, 'ponder');
+    }
+    return;
+  } catch (error) {
+    if (!isUnsupportedPonderQueryError(error, config.ponder.key)) {
+      throw error;
+    }
+
+    subgraphSchemaKinds.set(url, 'legacy');
+    yield* recursiveGraphFetch(url, config.legacy.key, config.legacy.query, [], overrides);
+  }
+}
+
 /**
  * @notice Fetches all Umbra event logs using a subgraph
  * @param startBlock Scanning start block
@@ -386,25 +563,56 @@ async function* fetchAllStealthKeyChangedEventsForRecipientAddressFromSubgraph(
     throw new Error('Subgraph URL must be defined to fetch via subgraph');
   }
 
-  // Query subgraph
-  for await (const stealthKeyChangedEvents of recursiveGraphFetch(
+  for await (const stealthKeyChangedEvents of recursiveCompatibleGraphFetch(
     chainConfig.subgraphUrl,
-    'stealthKeyChangedEntities',
-    (filter: string) => `{
-      stealthKeyChangedEntities(${filter}) {
-        block
-        from
-        id
-        registrant
-        spendingPubKey
-        spendingPubKeyPrefix
-        timestamp
-        txHash
-        viewingPubKey
-        viewingPubKeyPrefix
-      }
-    }`,
-    [],
+    {
+      chainId: chainConfig.chainId,
+      legacy: {
+        key: 'stealthKeyChangedEntities',
+        query: (filter: string) => `{
+          stealthKeyChangedEntities(${filter}) {
+            block
+            from
+            id
+            registrant
+            spendingPubKey
+            spendingPubKeyPrefix
+            timestamp
+            txHash
+            viewingPubKey
+            viewingPubKeyPrefix
+          }
+        }`,
+      },
+      ponder: {
+        key: 'stealthKeyChanges',
+        orderBy: 'blockNumber',
+        selection: `
+          blockNumber
+          from
+          id
+          registrant
+          spendingPubKey
+          spendingPubKeyPrefix
+          timestamp
+          txHash
+          viewingPubKey
+          viewingPubKeyPrefix
+        `,
+        normalize: (item: Record<string, unknown>) => ({
+          block: String(item.blockNumber),
+          from: String(item.from),
+          id: String(item.id),
+          registrant: String(item.registrant),
+          spendingPubKey: BigNumber.from(String(item.spendingPubKey)),
+          spendingPubKeyPrefix: BigNumber.from(String(item.spendingPubKeyPrefix)),
+          timestamp: String(item.timestamp),
+          txHash: String(item.txHash),
+          viewingPubKey: BigNumber.from(String(item.viewingPubKey)),
+          viewingPubKeyPrefix: BigNumber.from(String(item.viewingPubKeyPrefix)),
+        }),
+      },
+    },
     {
       startBlock,
       endBlock,
