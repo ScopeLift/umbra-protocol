@@ -97,11 +97,11 @@ export async function parsePaymentLink(nativeToken: TokenInfoExtended) {
   const chainId = BigNumber.from(nativeToken.chainId || 1).toNumber();
 
   if (tokenSymbol === 'eth' && chainId === 137) {
-    // If the token is ETH, and we're on Polygon, use WETH, since the native token is MATIC.
+    // If the token is ETH, and we're on Polygon, use WETH, since the native token is POL.
     tokenSymbol = 'weth';
     paymentData['token'] = tokens.filter((token) => token.symbol.toLowerCase() === tokenSymbol)[0];
-  } else if (tokenSymbol === 'matic' && chainId !== 137) {
-    // If the token is MATIC, and we're not on polygon, clear token and amount.
+  } else if (tokenSymbol === 'pol' && chainId !== 137) {
+    // If the token is POL, and we're not on Polygon, clear token and amount.
     paymentData['token'] = null;
     paymentData['amount'] = null;
   } else {
