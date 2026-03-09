@@ -6,6 +6,9 @@
 import { AnnouncementDetail, UserAnnouncement } from '@umbracash/umbra-js';
 import { WorkerAnnouncementMatch } from './filter-core';
 
+/**
+ * Chooses how many workers to launch for a scan without creating more workers than work items.
+ */
 export const getWorkerCount = (hardwareConcurrency: number | undefined, announcementCount: number) => {
   if (announcementCount === 0) {
     return 0;
@@ -14,6 +17,9 @@ export const getWorkerCount = (hardwareConcurrency: number | undefined, announce
   return Math.min(hardwareConcurrency || 2, announcementCount);
 };
 
+/**
+ * Distributes announcements round-robin so each worker receives a similarly sized slice.
+ */
 export const splitAnnouncements = (announcements: AnnouncementDetail[], workerCount: number) => {
   const subAnnouncements: AnnouncementDetail[][] = Array.from({ length: workerCount }, () => []);
   announcements.forEach((announcement, index) => {
@@ -22,6 +28,9 @@ export const splitAnnouncements = (announcements: AnnouncementDetail[], workerCo
   return subAnnouncements;
 };
 
+/**
+ * Expands worker-local matches back into full user announcement records on the controller side.
+ */
 export const appendWorkerMatches = (
   userAnnouncements: UserAnnouncement[],
   announcements: AnnouncementDetail[],
