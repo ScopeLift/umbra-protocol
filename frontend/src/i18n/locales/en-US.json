@@ -284,8 +284,11 @@
     "loss-warning": "It looks like you're trying to withdraw your funds to a token contract. It is very likely this is not what you intend, and proceeding will likely result in a loss of funds. Do not proceed unless you know exactly what you are doing.",
     "i-know-what": "I know what I am doing",
     "danger": "Danger",
-    "most-recent-announcement": "Most recent announcement block / timestamp:",
-    "most-recent-mined": "Most recent mined block / timestamp:"
+    "most-recent-announcement": "Most recent announcement",
+    "most-recent-block": "Block Num:",
+    "most-recent-time": "TimeStamp:",
+    "most-recent-mined": "Most recent mined:",
+    "funds-question": "Where are my funds"
   },
   "AccountReceiveTableWarning": {
     "withdrawal-warning": "You are withdrawing to {0}, which has the following warnings:",
