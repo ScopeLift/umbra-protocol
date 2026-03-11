@@ -391,6 +391,95 @@ function useScan() {
     return provider.getBlock('latest');
   }
 
+  function getPonderNetworkName(chainId: number): string | null {
+    switch (chainId) {
+      case 1:
+        return 'mainnet';
+      case 10:
+        return 'optimism';
+      case 137:
+        return 'polygon';
+      case 8453:
+        return 'base';
+      case 42161:
+        return 'arbitrumOne';
+      case 11155111:
+        return 'sepolia';
+      default:
+        return null;
+    }
+  }
+
+  async function getSubgraphHeadBlockNumber(chainId: number, subgraphUrl: string): Promise<number> {
+    const headers = { 'Content-Type': 'application/json' };
+    const ponderNetwork = getPonderNetworkName(chainId);
+
+    if (ponderNetwork) {
+      const ponderResponse = await fetch(subgraphUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          query: `{
+            _meta {
+              status
+            }
+          }`,
+        }),
+      });
+
+      if (!ponderResponse.ok) throw new Error(`Subgraph head request failed with status ${ponderResponse.status}`);
+
+      const ponderPayload = (await ponderResponse.json()) as {
+        data?: { _meta?: { status?: Record<string, { block?: { number?: number } }> } };
+        errors?: Array<{ message: string }>;
+      };
+
+      const statusError = ponderPayload.errors?.find((error) => error.message.includes('Cannot query field "status"'));
+      if (!statusError && ponderPayload.errors?.length) {
+        throw new Error(ponderPayload.errors.map((error) => error.message).join('; '));
+      }
+
+      const ponderHead = ponderPayload.data?._meta?.status?.[ponderNetwork]?.block?.number;
+      if (typeof ponderHead === 'number' && Number.isFinite(ponderHead)) {
+        return ponderHead;
+      }
+    }
+
+    const legacyResponse = await fetch(subgraphUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        query: `{
+          _meta {
+            block {
+              number
+            }
+          }
+        }`,
+      }),
+    });
+
+    if (!legacyResponse.ok) throw new Error(`Legacy subgraph head request failed with status ${legacyResponse.status}`);
+
+    const legacyPayload = (await legacyResponse.json()) as {
+      data?: { _meta?: { block?: { number?: number | string } } };
+      errors?: Array<{ message: string }>;
+    };
+    if (legacyPayload.errors?.length) {
+      throw new Error(legacyPayload.errors.map((error) => error.message).join('; '));
+    }
+
+    const legacyHead = legacyPayload.data?._meta?.block?.number;
+    if (typeof legacyHead === 'number' && Number.isFinite(legacyHead)) {
+      return legacyHead;
+    }
+    if (typeof legacyHead === 'string' && legacyHead.length > 0) {
+      return Number(legacyHead);
+    }
+
+    throw new Error(`Missing subgraph head block for chain ${chainId}`);
+  }
+
   async function scan() {
     // Reset paused state
     paused.value = false;
@@ -482,6 +571,20 @@ function useScan() {
         const latestBlock: Block = await getLastBlock(provider.value!);
         mostRecentBlockNumber.value = latestBlock.number;
         mostRecentBlockTimestamp.value = latestBlock.timestamp;
+        let nextStartBlock = latestBlock.number;
+        if (umbra.value.chainConfig.subgraphUrl) {
+          try {
+            nextStartBlock = await getSubgraphHeadBlockNumber(
+              umbra.value.chainConfig.chainId,
+              umbra.value.chainConfig.subgraphUrl
+            );
+          } catch (error) {
+            const fallbackBlock =
+              startBlockLocal.value ?? mostRecentAnnouncementBlockNumber.value ?? getRegisteredBlockNumber();
+            if (fallbackBlock) nextStartBlock = Number(fallbackBlock);
+            window.logger.warn('Failed to fetch subgraph head block, preserving previous checkpoint', error);
+          }
+        }
 
         // Default scan behavior
         for await (const announcementsBatch of umbra.value.fetchSomeAnnouncements(
@@ -533,11 +636,11 @@ function useScan() {
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
 
-        // Save the latest block to localStorage for future scans as the start block
-        setLastFetchedBlock(latestBlock.number);
+        // Save the indexed subgraph head (or a conservative fallback) for future scans as the start block.
+        setLastFetchedBlock(nextStartBlock);
 
-        // Update startBlockLocal with the latest block number
-        startBlockLocal.value = latestBlock.number;
+        // Update startBlockLocal with the next scan start block.
+        startBlockLocal.value = nextStartBlock;
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
