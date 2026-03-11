@@ -26,6 +26,7 @@ import { notifyUser } from 'src/utils/alerts';
 import useSettingsStore from 'src/store/settings';
 import enLocal from 'src/i18n/locales/en-US.json';
 import chLocal from 'src/i18n/locales/zh-CN.json';
+import esLocal from 'src/i18n/locales/es-ES.json';
 
 // Wallet configurations.
 const injected = injectedModule();
@@ -114,6 +115,12 @@ export default function useWalletStore() {
             modals: chLocal['modals'],
             accountCenter: chLocal['accountCenter'],
             notify: chLocal['notify'],
+          },
+          'es-ES': {
+            connect: esLocal['connect'],
+            modals: esLocal['modals'],
+            accountCenter: esLocal['accountCenter'],
+            notify: esLocal['notify'],
           },
         },
         appMetadata: {
