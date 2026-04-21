@@ -1,6 +1,15 @@
 import { RouteRecordRaw } from 'vue-router';
 
-const routes: RouteRecordRaw[] = [
+const isGlobalMaintenance = Number(process.env.MAINTENANCE_MODE_GLOBAL) === 1;
+
+const maintenanceRoutes: RouteRecordRaw[] = [
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/Maintenance.vue'),
+  },
+];
+
+const appRoutes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/BaseLayout.vue'),
@@ -24,5 +33,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/Error404.vue'),
   },
 ];
+
+const routes: RouteRecordRaw[] = isGlobalMaintenance ? maintenanceRoutes : appRoutes;
 
 export default routes;
