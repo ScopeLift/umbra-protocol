@@ -7,7 +7,9 @@ import {
   FeeEstimateResponse,
   Provider,
   TokenInfoExtended,
-  RelayResponse,
+  RelayIncludedResponse,
+  RelayStatusResponse,
+  RelaySubmitResponse,
   TokenListResponse,
   WithdrawalInputs,
   UmbraApiVersion,
@@ -17,10 +19,24 @@ import { jsonFetch } from 'src/utils/utils';
 import useSettingsStore from 'src/store/settings';
 
 const { getUmbraApiVersion, setUmbraApiVersion, clearUmbraApiVersion } = useSettingsStore();
+const turnkeyFailedStatuses = new Set(['FAILED', 'REVERTED', 'CANCELLED', 'DROPPED']);
+
+function isRelayIncluded(data: RelaySubmitResponse | RelayStatusResponse): data is RelayIncludedResponse {
+  return (
+    'relayTransactionHash' in data &&
+    typeof data.relayTransactionHash === 'string' &&
+    data.relayTransactionHash.length > 0
+  );
+}
+
+const delay = (durationMs: number) => new Promise((resolve) => setTimeout(resolve, durationMs));
 
 export class UmbraApi {
   // use 'http://localhost:3000' for baseUrl value for testing with a local Umbra API
   static baseUrl = 'https://mainnet.api.umbra.cash'; // works for all networks
+  static relayStatusPollingIntervalMs = 2_000;
+  static relayStatusPollingTimeoutMs = 120_000;
+
   constructor(
     readonly tokens: TokenInfoExtended[],
     readonly chainId: number,
@@ -78,12 +94,47 @@ export class UmbraApi {
     return data;
   }
 
-  async relayWithdraw(tokenAddress: string, withdrawalInputs: WithdrawalInputs) {
+  async relayWithdraw(tokenAddress: string, withdrawalInputs: WithdrawalInputs): Promise<RelayIncludedResponse> {
     const body = JSON.stringify(withdrawalInputs);
     const headers = { 'Content-Type': 'application/json' };
     const url = `${UmbraApi.baseUrl}/tokens/${tokenAddress}/relay?chainId=${this.chainId}`;
     const response = await fetch(url, { method: 'POST', body, headers });
-    const data = (await response.json()) as RelayResponse;
+    const data = (await response.json()) as RelaySubmitResponse;
+    if ('error' in data) throw new Error(`Could not relay withdraw: ${data.error}`);
+    UmbraApi.checkUmbraApiVersion(data.umbraApiVersion);
+
+    if (isRelayIncluded(data)) return data;
+    if ('sendTransactionStatusId' in data) {
+      return this.pollRelayWithdraw(tokenAddress, data.sendTransactionStatusId);
+    }
+    throw new Error('Could not relay withdraw: API response did not include a transaction hash or Turnkey status ID');
+  }
+
+  private async pollRelayWithdraw(
+    tokenAddress: string,
+    sendTransactionStatusId: string
+  ): Promise<RelayIncludedResponse> {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < UmbraApi.relayStatusPollingTimeoutMs) {
+      const data = await this.getRelayWithdrawStatus(tokenAddress, sendTransactionStatusId);
+      if (isRelayIncluded(data)) {
+        return { umbraApiVersion: data.umbraApiVersion, relayTransactionHash: data.relayTransactionHash };
+      }
+
+      const status = data.status.toUpperCase();
+      if (turnkeyFailedStatuses.has(status)) {
+        const suffix = data.errorMessage ? `: ${data.errorMessage}` : '';
+        throw new Error(`Could not relay withdraw: Turnkey status ${data.status}${suffix}`);
+      }
+      await delay(UmbraApi.relayStatusPollingIntervalMs);
+    }
+    throw new Error('Could not relay withdraw: timed out waiting for Turnkey transaction inclusion');
+  }
+
+  private async getRelayWithdrawStatus(tokenAddress: string, sendTransactionStatusId: string) {
+    const url = `${UmbraApi.baseUrl}/tokens/${tokenAddress}/relay/${sendTransactionStatusId}?chainId=${this.chainId}`;
+    const response = await fetch(url);
+    const data = (await response.json()) as RelayStatusResponse;
     if ('error' in data) throw new Error(`Could not relay withdraw: ${data.error}`);
     UmbraApi.checkUmbraApiVersion(data.umbraApiVersion);
     return data;
