@@ -420,7 +420,15 @@
 <script lang="ts">
 import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref, ComputedRef, onMounted } from 'vue';
 import { copyToClipboard } from 'quasar';
-import { BigNumber, Contract, joinSignature, formatUnits, TransactionResponse, Web3Provider } from 'src/utils/ethers';
+import {
+  BigNumber,
+  Contract,
+  getAddress,
+  joinSignature,
+  formatUnits,
+  TransactionResponse,
+  Web3Provider,
+} from 'src/utils/ethers';
 import { Umbra, UserAnnouncement, KeyPair, utils } from '@umbracash/umbra-js';
 import { tc } from 'src/boot/i18n';
 import useSettingsStore from 'src/store/settings';
@@ -745,8 +753,10 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
         const chainId = network.value?.chainId;
         if (!chainId) throw new Error(`${tc('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
 
-        // Get users signature
-        const sponsor = '0xb4435399AB53D6136C9AEEBb77a0120620b117F9'; // TODO update this
+        // Get user signature
+        if (!activeFee.value.sponsorAddress) throw new Error('Fee estimate did not include a sponsor address');
+        if (!relayer.value) throw new Error('Relayer is not available');
+        const sponsor = getAddress(activeFee.value.sponsorAddress);
         const fee = activeFee.value.fee;
         const umbraAddress = umbra.value.umbraContract.address;
         const signature = joinSignature(
@@ -755,13 +765,8 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
 
         // Relay transaction
         const withdrawalInputs = { stealthAddr: stealthKeyPair.address, acceptor, signature, sponsorFee: fee };
-        const { relayTransactionHash } = (await relayer.value?.relayWithdraw(token.address, withdrawalInputs)) as {
-          relayTransactionHash: string;
-        };
+        const { relayTransactionHash } = await relayer.value.relayWithdraw(token.address, withdrawalInputs);
 
-        // This is a regular transaction hash, though it's possible OZ Defender will replace it to ensure it gets
-        // included quickly, in which case the frontend would not automatically reflect when the relay was successful.
-        // Because we relay with the "fast" setting, this is unlikely to be the case.
         window.logger.info(`Relayed with transaction hash ${relayTransactionHash}`);
         const receipt = await provider.value.waitForTransaction(relayTransactionHash);
         window.logger.info('Withdraw successful. Receipt:', receipt);

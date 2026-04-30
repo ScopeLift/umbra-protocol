@@ -170,7 +170,12 @@ export interface TokenListSuccessResponse extends Omit<TokenList, 'tokens'> {
   tokens: TokenInfoExtended[];
 }
 export type TokenListResponse = TokenListSuccessResponse | ApiError;
-export type FeeEstimate = { umbraApiVersion: UmbraApiVersion; fee: string; token: TokenInfo };
+export type FeeEstimate = {
+  umbraApiVersion: UmbraApiVersion;
+  fee: string;
+  token: TokenInfo;
+  sponsorAddress?: string;
+};
 export type FeeEstimateResponse = FeeEstimate | ApiError;
 export type WithdrawalInputs = {
   stealthAddr: string;
@@ -178,7 +183,16 @@ export type WithdrawalInputs = {
   signature: string;
   sponsorFee: string;
 };
-export type RelayResponse = { umbraApiVersion: UmbraApiVersion; relayTransactionHash: string } | ApiError;
+export type RelayIncludedResponse = { umbraApiVersion: UmbraApiVersion; relayTransactionHash: string };
+export type TurnkeyRelaySubmittedResponse = { umbraApiVersion: UmbraApiVersion; sendTransactionStatusId: string };
+export type TurnkeyRelayStatusResponse = {
+  umbraApiVersion: UmbraApiVersion;
+  relayTransactionHash?: string;
+  status: string;
+  errorMessage?: string;
+};
+export type RelaySubmitResponse = RelayIncludedResponse | TurnkeyRelaySubmittedResponse | ApiError;
+export type RelayStatusResponse = RelayIncludedResponse | TurnkeyRelayStatusResponse | ApiError;
 
 export type SendTableMetadataRow = {
   dateSent: string;
