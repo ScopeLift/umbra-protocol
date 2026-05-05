@@ -18,7 +18,13 @@ import {
   TokenInfoExtended,
 } from 'components/models';
 import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
-import { ERC20_ABI, MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+import {
+  ERC20_ABI,
+  MAINNET_PROVIDER,
+  MULTICALL_ABI,
+  MULTICALL_ADDRESS,
+  getUmbraChainConfig,
+} from 'src/utils/constants';
 import { BigNumber, Contract, ExternalProvider, Web3Provider, parseUnits } from 'src/utils/ethers';
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
@@ -307,7 +313,7 @@ export default function useWalletStore() {
       //     - https://github.com/vuejs/vue-next/issues/3024
       //     - https://stackoverflow.com/questions/65693108/threejs-component-working-in-vuejs-2-but-not-3
       //     - https://vuejs.org/api/reactivity-advanced.html#markraw
-      umbra.value = markRaw(new Umbra(provider.value, newChainId));
+      umbra.value = markRaw(new Umbra(provider.value, getUmbraChainConfig(newChainId)));
       stealthKeyRegistry.value = markRaw(new StealthKeyRegistry(signer.value));
 
       // Setup to check if user is connected with Argent, since we need to handle a few things differently in that case.
