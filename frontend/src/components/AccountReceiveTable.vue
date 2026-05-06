@@ -572,8 +572,11 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
       return;
     }
     isFeeLoading.value = true;
-    activeFee.value = await relayer.value?.getFeeEstimate(tokenAddress);
-    isFeeLoading.value = false;
+    try {
+      activeFee.value = await relayer.value?.getFeeEstimate(tokenAddress);
+    } finally {
+      isFeeLoading.value = false;
+    }
   };
 
   // Table formatters and helpers
@@ -678,6 +681,8 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     activeAnnouncement.value = announcement;
 
     try {
+      await getFeeEstimate(announcement.token);
+
       // Check if withdrawal destination is safe
       const { safe, reasons } = await isAddressSafe(
         destinationAddress.value,
@@ -749,13 +754,13 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
       } else {
         // Withdrawing token
         if (!signer.value || !provider.value) throw new Error(tc('AccountReceiveTable.signer-or-provider-not-found'));
+        if (!relayer.value) throw new Error('Relayer is not available');
         if (!activeFee.value || !('fee' in activeFee.value)) throw new Error(tc('AccountReceiveTable.fee-not-set'));
         const chainId = network.value?.chainId;
         if (!chainId) throw new Error(`${tc('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
 
         // Get user signature
         if (!activeFee.value.sponsorAddress) throw new Error('Fee estimate did not include a sponsor address');
-        if (!relayer.value) throw new Error('Relayer is not available');
         const sponsor = getAddress(activeFee.value.sponsorAddress);
         const fee = activeFee.value.fee;
         const umbraAddress = umbra.value.umbraContract.address;
