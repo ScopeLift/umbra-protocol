@@ -20,11 +20,12 @@
     <!-- Modal to show confirmation of withdraw -->
     <q-dialog v-model="showConfirmationModal" @show="setIsInWithdrawFlow(true)" @hide="setIsInWithdrawFlow(false)">
       <account-receive-table-withdraw-confirmation
+        v-if="activeAnnouncement && activeWithdrawalFee"
         class="q-pa-lg"
         @cancel="showConfirmationModal = false"
         @confirmed="executeWithdraw"
         :activeAnnouncement="activeAnnouncement"
-        :activeFee="activeFee"
+        :activeFee="activeWithdrawalFee"
         :chainId="chainId"
         :destinationAddress="destinationAddress"
         :isWithdrawInProgress="isWithdrawInProgress"
@@ -440,9 +441,9 @@ import AccountReceiveTableLossWarning from 'components/AccountReceiveTableLossWa
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
-import { FeeEstimateResponse } from 'components/models';
 import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
+import { useWithdrawalFees } from 'src/utils/withdrawal-fees';
 import {
   getEtherscanUrl,
   isToken,
@@ -513,10 +514,8 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
   const privacyModalAddressWarnings = ref<string[]>([]);
   const destinationAddress = ref('');
   const activeAnnouncement = ref<UserAnnouncement>();
-  const activeFee = ref<FeeEstimateResponse>(); // null if native token
   // UI status variables
   const isLoading = ref(false);
-  const isFeeLoading = ref(false);
   const isWithdrawInProgress = ref(false);
   const txHashIfEth = ref(''); // if withdrawing native token, show the transaction hash (if token, we have a relayer tx ID)
 
@@ -564,23 +563,16 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     },
   ];
 
-  // Relayer helper method
-  const getFeeEstimate = async (tokenAddress: string) => {
-    if (isNativeToken(tokenAddress)) {
-      // no fee for native token
-      activeFee.value = { umbraApiVersion: { major: 0, minor: 0, patch: 0 }, fee: '0', token: NATIVE_TOKEN.value };
-      return;
-    }
-    isFeeLoading.value = true;
-    try {
-      activeFee.value = await relayer.value?.getFeeEstimate(tokenAddress);
-    } finally {
-      isFeeLoading.value = false;
-    }
-  };
-
   // Table formatters and helpers
   const isNativeToken = (tokenAddress: string) => tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+  const {
+    activeFee,
+    activeWithdrawalFee,
+    clearActiveWithdrawalFee,
+    getFeeEstimate,
+    getWithdrawalFeeEstimate,
+    isFeeLoading,
+  } = useWithdrawalFees({ nativeToken: NATIVE_TOKEN, relayer, isNativeToken });
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
 
   // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
@@ -679,9 +671,11 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     if (!userAddress.value) throw new Error(tc('AccountReceiveTable.wallet-not-connected'));
 
     activeAnnouncement.value = announcement;
+    clearActiveWithdrawalFee();
 
     try {
-      await getFeeEstimate(announcement.token);
+      const withdrawalFee = await getWithdrawalFeeEstimate(announcement.token);
+      if (!withdrawalFee) throw new Error(tc('AccountReceiveTable.fee-not-set'));
 
       // Check if withdrawal destination is safe
       const { safe, reasons } = await isAddressSafe(
@@ -755,14 +749,15 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
         // Withdrawing token
         if (!signer.value || !provider.value) throw new Error(tc('AccountReceiveTable.signer-or-provider-not-found'));
         if (!relayer.value) throw new Error('Relayer is not available');
-        if (!activeFee.value || !('fee' in activeFee.value)) throw new Error(tc('AccountReceiveTable.fee-not-set'));
+        const withdrawalFee = activeWithdrawalFee.value;
+        if (!withdrawalFee) throw new Error(tc('AccountReceiveTable.fee-not-set'));
         const chainId = network.value?.chainId;
         if (!chainId) throw new Error(`${tc('AccountReceiveTable.invalid-chain-id')} ${String(chainId)}`);
 
         // Get user signature
-        if (!activeFee.value.sponsorAddress) throw new Error('Fee estimate did not include a sponsor address');
-        const sponsor = getAddress(activeFee.value.sponsorAddress);
-        const fee = activeFee.value.fee;
+        if (!withdrawalFee.sponsorAddress) throw new Error('Fee estimate did not include a sponsor address');
+        const sponsor = getAddress(withdrawalFee.sponsorAddress);
+        const fee = withdrawalFee.fee;
         const umbraAddress = umbra.value.umbraContract.address;
         const signature = joinSignature(
           await Umbra.signWithdraw(spendingPrivateKey, chainId, umbraAddress, acceptor, token.address, sponsor, fee)
@@ -790,6 +785,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
       isWithdrawInProgress.value = false;
       showConfirmationModal.value = false;
       activeAnnouncement.value = undefined;
+      clearActiveWithdrawalFee();
       setIsInWithdrawFlow(false);
     }
   }
@@ -797,6 +793,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
   return {
     activeAnnouncement,
     activeFee,
+    activeWithdrawalFee,
     chainId: network.value?.chainId,
     confirmWithdraw,
     copyAddress,
