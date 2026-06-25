@@ -15,8 +15,6 @@ const settings = {
   registeredBlockNumber: 'registered-block-number',
 };
 
-
-
 // Shared state between instances
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
@@ -25,6 +23,7 @@ const language = ref<Language>({ label: '', value: '' }); //language code
 const supportedLanguages = [
   { label: 'English', value: 'en-US' },
   { label: '中文', value: 'zh-CN' },
+  { label: 'Español', value: 'es-ES' },
 ];
 const startBlock = ref<number | undefined>(undefined); // block number to start scanning from
 const endBlock = ref<number | undefined>(undefined); // block number to scan through
@@ -81,12 +80,22 @@ export default function useSettingsStore() {
 
   function setLanguage(newLanguage: Language) {
     // xx-yy was changed to xx-YY with the quasar v1 -> v2 upgrade, so we need to handle that.
-    if (newLanguage.value === 'en-us') newLanguage.value = 'en-US';
-    else if (newLanguage.value === 'zh-cn') newLanguage.value = 'zh-CN';
+    //Add more if needed.
+    switch (newLanguage.value) {
+      case 'en-us':
+        newLanguage.value = 'en-US';
+        break;
+      case 'zh-cn':
+        newLanguage.value = 'zh-CN';
+        break;
+      case 'es-es':
+        newLanguage.value = 'es-ES';
+        break;
+    }
 
     // Now we set the language.
     language.value = newLanguage;
-    i18n.global.locale = <'en-US' | 'zh-CN'>language.value.value;
+    i18n.global.locale = <'en-US' | 'zh-CN' | 'es-ES'>language.value.value;
     LocalStorage.set(settings.language, language.value);
   }
 
