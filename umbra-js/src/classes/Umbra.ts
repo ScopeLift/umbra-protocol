@@ -48,14 +48,7 @@ const getOptionalEnv = (name: string): string | false => {
   return value && value.length > 0 ? value : false;
 };
 
-const subgraphs: Record<number, string | false> = {
-  1: getOptionalEnv('MAINNET_SUBGRAPH_URL'),
-  10: getOptionalEnv('OPTIMISM_SUBGRAPH_URL'),
-  137: getOptionalEnv('POLYGON_SUBGRAPH_URL'),
-  8453: getOptionalEnv('BASE_SUBGRAPH_URL'),
-  42161: getOptionalEnv('ARBITRUM_ONE_SUBGRAPH_URL'),
-  11155111: getOptionalEnv('SEPOLIA_SUBGRAPH_URL'),
-};
+const ponderSubgraphUrl = getOptionalEnv('PONDER_SUBGRAPH_URL');
 
 const normalizePonderAnnouncement = (item: Record<string, unknown>): SubgraphAnnouncement => ({
   amount: String(item.amount),
@@ -71,18 +64,18 @@ const normalizePonderAnnouncement = (item: Record<string, unknown>): SubgraphAnn
 });
 
 const chainConfigs: Record<number, ChainConfig> = {
-  1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: subgraphs[1] }, // Mainnet
-  10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: subgraphs[10] }, // Optimism
-  137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: subgraphs[137] }, // Polygon
+  1: { chainId: 1, umbraAddress, batchSendAddress, startBlock: 12343914, subgraphUrl: ponderSubgraphUrl }, // Mainnet
+  10: { chainId: 10, umbraAddress, batchSendAddress, startBlock: 4069556, subgraphUrl: ponderSubgraphUrl }, // Optimism
+  137: { chainId: 137, umbraAddress, batchSendAddress, startBlock: 20717318, subgraphUrl: ponderSubgraphUrl }, // Polygon
   1337: { chainId: 1337, umbraAddress, batchSendAddress, startBlock: 8505089, subgraphUrl: false }, // Local
-  8453: { chainId: 8453, umbraAddress, batchSendAddress, startBlock: 10761374, subgraphUrl: subgraphs[8453] }, // Base
-  42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: subgraphs[42161] }, // Arbitrum
+  8453: { chainId: 8453, umbraAddress, batchSendAddress, startBlock: 10761374, subgraphUrl: ponderSubgraphUrl }, // Base
+  42161: { chainId: 42161, umbraAddress, batchSendAddress, startBlock: 7285883, subgraphUrl: ponderSubgraphUrl }, // Arbitrum
   11155111: {
     chainId: 11155111,
     umbraAddress,
     batchSendAddress,
     startBlock: 3590825,
-    subgraphUrl: subgraphs[11155111],
+    subgraphUrl: ponderSubgraphUrl,
   }, // Sepolia
 };
 
