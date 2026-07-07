@@ -11,8 +11,22 @@ const { configure } = require('quasar/wrappers');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const path = require('path');
 
+process.env.TS_NODE_PROJECT = path.join(__dirname, 'scripts/tsconfig.json');
+require('ts-node/register/transpile-only');
+const { assertSubgraphEnv, getEnv } = require('./scripts/check-subgraph-env.ts');
+
 module.exports = configure(function (ctx) {
+  if (ctx.prod) {
+    assertSubgraphEnv();
+  }
+
   return {
+    // Stamped into index.html (see src/index.template.html) so deploy smoke tests can verify
+    // the build was produced with a Ponder subgraph URL. See scripts/ponder-smoke-test.ts.
+    htmlVariables: {
+      ponderSubgraphUrl: getEnv('PONDER_SUBGRAPH_URL'),
+    },
+
     // https://quasar.dev/quasar-cli/supporting-ts
     supportTS: {
       tsCheckerConfig: {

@@ -18,6 +18,9 @@ The required parameters are:
 `OPTIMISM_RPC_URL` <br />
 `ARBITRUM_ONE_RPC_URL` <br />
 `SEPOLIA_RPC_URL` <br />
+`BASE_RPC_URL` <br />
+`PONDER_SUBGRAPH_URL` - Preferred Ponder GraphQL endpoint used for receive scans <br />
+`*_SUBGRAPH_URL` - Legacy per-chain subgraph URLs used when `PONDER_SUBGRAPH_URL` is not configured <br />
 
 Optional parameters are:
 
@@ -38,6 +41,14 @@ yarn lint # lint the codebase
 yarn prettier # apply formatting rules to the codebase
 yarn build # build a static version of the site for deployment
 yarn clean # clear previous build artifacts
+```
+
+Receive scans prefer `PONDER_SUBGRAPH_URL` and fall back to the legacy per-chain `*_SUBGRAPH_URL` values while Ponder is being configured everywhere. `yarn build` fails unless `PONDER_SUBGRAPH_URL` is set or `OPTIMISM_SUBGRAPH_URL`, `POLYGON_SUBGRAPH_URL`, and `BASE_SUBGRAPH_URL` are all set, since receive scans on those chains cannot fall back to RPC logs.
+
+To verify a deployed preview or production build has a working Ponder configuration, run the smoke test against its URL. The build stamps `PONDER_SUBGRAPH_URL` into an `umbra:ponder-subgraph-url` meta tag in `index.html`; the smoke test reads it (and checks it matches `PONDER_SUBGRAPH_URL` if set in your shell), verifies the URL is inlined in the deployed JS bundles, and runs a basic Ponder announcements scan against it:
+
+```bash
+yarn smoke-test:ponder https://deploy-preview-123--umbra.netlify.app
 ```
 
 1. Create a file called `.env` and populate it with the contents of `.env.template`
