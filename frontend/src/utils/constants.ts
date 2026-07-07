@@ -10,13 +10,35 @@ export const ARBITRUM_ONE_RPC_URL = String(process.env.ARBITRUM_ONE_RPC_URL);
 export const SEPOLIA_RPC_URL = String(process.env.SEPOLIA_RPC_URL);
 export const BASE_RPC_URL = String(process.env.BASE_RPC_URL);
 export const PONDER_SUBGRAPH_URL = String(process.env.PONDER_SUBGRAPH_URL || '');
+export const MAINNET_SUBGRAPH_URL = String(process.env.MAINNET_SUBGRAPH_URL || '');
+export const OPTIMISM_SUBGRAPH_URL = String(process.env.OPTIMISM_SUBGRAPH_URL || '');
+export const POLYGON_SUBGRAPH_URL = String(process.env.POLYGON_SUBGRAPH_URL || '');
+export const BASE_SUBGRAPH_URL = String(process.env.BASE_SUBGRAPH_URL || '');
+export const ARBITRUM_ONE_SUBGRAPH_URL = String(process.env.ARBITRUM_ONE_SUBGRAPH_URL || '');
+export const SEPOLIA_SUBGRAPH_URL = String(process.env.SEPOLIA_SUBGRAPH_URL || '');
 
 console.log(`MAINNET_RPC_URL ${MAINNET_RPC_URL}`);
 
 const UMBRA_ADDRESS = '0xFb2dc580Eed955B528407b4d36FfaFe3da685401';
 const BATCH_SEND_ADDRESS = '0xDbD0f5EBAdA6632Dde7d47713ea200a7C2ff91EB';
 
-const ponderSubgraphUrl = PONDER_SUBGRAPH_URL.length > 0 ? PONDER_SUBGRAPH_URL : false;
+const toOptionalSubgraphUrl = (value: string): string | false => {
+  return value.length > 0 ? value : false;
+};
+
+const ponderSubgraphUrl = toOptionalSubgraphUrl(PONDER_SUBGRAPH_URL);
+const legacySubgraphUrls: Record<number, string | false> = {
+  1: toOptionalSubgraphUrl(MAINNET_SUBGRAPH_URL),
+  10: toOptionalSubgraphUrl(OPTIMISM_SUBGRAPH_URL),
+  137: toOptionalSubgraphUrl(POLYGON_SUBGRAPH_URL),
+  8453: toOptionalSubgraphUrl(BASE_SUBGRAPH_URL),
+  42161: toOptionalSubgraphUrl(ARBITRUM_ONE_SUBGRAPH_URL),
+  11155111: toOptionalSubgraphUrl(SEPOLIA_SUBGRAPH_URL),
+};
+
+const getSubgraphUrl = (chainId: number): string | false => {
+  return ponderSubgraphUrl || legacySubgraphUrls[chainId] || false;
+};
 
 const umbraChainConfigs: Record<number, ChainConfig> = {
   1: {
@@ -24,42 +46,42 @@ const umbraChainConfigs: Record<number, ChainConfig> = {
     umbraAddress: UMBRA_ADDRESS,
     batchSendAddress: BATCH_SEND_ADDRESS,
     startBlock: 12343914,
-    subgraphUrl: ponderSubgraphUrl,
+    subgraphUrl: getSubgraphUrl(1),
   },
   10: {
     chainId: 10,
     umbraAddress: UMBRA_ADDRESS,
     batchSendAddress: BATCH_SEND_ADDRESS,
     startBlock: 4069556,
-    subgraphUrl: ponderSubgraphUrl,
+    subgraphUrl: getSubgraphUrl(10),
   },
   137: {
     chainId: 137,
     umbraAddress: UMBRA_ADDRESS,
     batchSendAddress: BATCH_SEND_ADDRESS,
     startBlock: 20717318,
-    subgraphUrl: ponderSubgraphUrl,
+    subgraphUrl: getSubgraphUrl(137),
   },
   8453: {
     chainId: 8453,
     umbraAddress: UMBRA_ADDRESS,
     batchSendAddress: BATCH_SEND_ADDRESS,
     startBlock: 10761374,
-    subgraphUrl: ponderSubgraphUrl,
+    subgraphUrl: getSubgraphUrl(8453),
   },
   42161: {
     chainId: 42161,
     umbraAddress: UMBRA_ADDRESS,
     batchSendAddress: BATCH_SEND_ADDRESS,
     startBlock: 7285883,
-    subgraphUrl: ponderSubgraphUrl,
+    subgraphUrl: getSubgraphUrl(42161),
   },
   11155111: {
     chainId: 11155111,
     umbraAddress: UMBRA_ADDRESS,
     batchSendAddress: BATCH_SEND_ADDRESS,
     startBlock: 3590825,
-    subgraphUrl: ponderSubgraphUrl,
+    subgraphUrl: getSubgraphUrl(11155111),
   },
 };
 
