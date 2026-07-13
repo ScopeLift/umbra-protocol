@@ -5,11 +5,12 @@
  *    stamps into the `umbra:ponder-subgraph-url` meta tag (see quasar.conf.js). If
  *    PONDER_SUBGRAPH_URL is set in the environment, the stamped URL must match it exactly.
  * 2. Verifies the URL is also inlined into one of the JS bundles the page loads.
- * 3. Runs a basic Ponder announcements scan against that URL and verifies it succeeds.
+ * 3. Resolves the stamped path against the deployment URL, then runs a basic Ponder
+ *    announcements scan and verifies it succeeds.
  *
  * Usage:
  *   yarn smoke-test:ponder <deployment-url>
- *   PONDER_SUBGRAPH_URL=https://... yarn smoke-test:ponder https://deploy-preview.example.com
+ *   PONDER_SUBGRAPH_URL=/api/ponder yarn smoke-test:ponder https://deploy-preview.example.com
  *
  * Exits non-zero on any failure so it can gate CI on preview/prod deploys.
  */
@@ -96,6 +97,8 @@ async function main(): Promise<void> {
   }
   console.log(`Deployed build is stamped with Ponder URL ${ponderUrl}`);
 
+  const ponderEndpoint = new URL(ponderUrl, deploymentUrl).href;
+
   const scriptSrcs = [...html.matchAll(/<script[^>]*>/g)]
     .map(([tag]) => attrValue(tag, 'src'))
     .filter((src): src is string => src !== undefined);
@@ -113,12 +116,12 @@ async function main(): Promise<void> {
     throw new Error(`Ponder URL ${ponderUrl} is not inlined in any of the ${scriptSrcs.length} JS bundle(s).`);
   }
 
-  const response = await fetch(ponderUrl, {
+  const response = await fetch(ponderEndpoint, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ query: SCAN_QUERY }),
   });
-  if (!response.ok) throw new Error(`Ponder scan POST ${ponderUrl} returned ${response.status}`);
+  if (!response.ok) throw new Error(`Ponder scan POST ${ponderEndpoint} returned ${response.status}`);
   const payload = (await response.json()) as PonderScanPayload;
   if (payload.errors && payload.errors.length) {
     throw new Error(`Ponder scan returned errors: ${payload.errors.map((e) => e.message).join('; ')}`);
