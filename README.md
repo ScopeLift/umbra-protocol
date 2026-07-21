@@ -104,6 +104,7 @@ To get started, clone this repo, then follow these instructions:
 
 ```sh
 # run these commands from workspace root!
+cp .env.example .env # only needed for local Netlify Function runtime variables
 cp contracts-core/.env.example contracts-core/.env # please edit the .env with your own environment variable values
 cp frontend/.env.example frontend/.env # please edit the .env with your own environment variable values
 cp umbra-js/.env.example umbra-js/.env # please edit the .env with your own environment variable values
