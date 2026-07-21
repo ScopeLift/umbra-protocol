@@ -85,7 +85,7 @@ Check out the [full FAQ](https://app.umbra.cash/faq) to get more details about U
 
 ## Development
 
-This repository uses [yarn](https://yarnpkg.com/) for package management and [volta](https://volta.sh/) for dev tool version management. Both are prerequisites for setting up your development environment. The repository also requires [foundry](https://github.com/gakonst/foundry) for development of periphery smart contracts.
+This repository uses [yarn](https://yarnpkg.com/) for package management and [volta](https://volta.sh/) for dev tool version management. Both are prerequisites for setting up your development environment. The repository also requires [foundry](https://github.com/gakonst/foundry) for development of periphery smart contracts. Frontend development with local receive scanning also requires the [Netlify CLI](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/) so the local app can run through the same `/api/ponder` Function proxy used in deployed environments.
 
 ### Components
 
@@ -118,7 +118,26 @@ yarn clean # removes build artifacts for each of the 3 packages
 yarn lint # lints each of the 3 packages
 yarn prettier # runs formatting on each of the 3 packages
 yarn test # runs tests for each of the 3 packages
+yarn dev:netlify # runs the frontend through Netlify Dev with local Functions
 ```
+
+For frontend development that needs receive scanning to work locally, install the Netlify CLI and use Netlify Dev from the workspace root:
+
+```sh
+npm install -g netlify-cli # one-time install if netlify is not already on your PATH
+yarn dev:netlify
+```
+
+Open `http://localhost:8888`, not Quasar's direct `http://localhost:8080` URL. Netlify Dev serves the frontend and the `/api/ponder` Function from the same local origin, which matches deployed scan behavior. If you want Netlify Dev to pull environment variables from a hosted Netlify site, run `netlify login` and link this checkout to the Umbra app/frontend site; otherwise, the local workspace root `.env` values below are enough.
+
+Set `PONDER_SUBGRAPH_URL=/api/ponder` in `frontend/.env`. Set the private Function runtime variables in the workspace root `.env` or in the linked Netlify site environment:
+
+```text
+PONDER_UPSTREAM_URL=https://your-ponder-service.onrender.com/graphql
+PONDER_API_TOKEN=your-secret-token
+```
+
+Do not put `PONDER_UPSTREAM_URL` or `PONDER_API_TOKEN` in `frontend/.env`; frontend values are bundled into browser assets.
 
 Note: If you want to be more precise with your command (e.g. just building, cleaning, or testing 1 package), simply run any above command from the package directory. For example, if you were just working on the contract code, you might:
 

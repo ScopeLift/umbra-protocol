@@ -159,3 +159,7 @@ dist
 # deploy history localhost files
 contracts-core/deploy-history/*localhost-*
 lcov.info
+
+# Local Netlify folder
+.netlify
+/deno.lock
