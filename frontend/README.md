@@ -27,14 +27,41 @@ Optional parameters are:
 `FORTMATIC_API_KEY` - API key needed if using Fortmatic <br />
 `PORTIS_API_KEY` - API key needed if using Portis
 
-Install dependencies and run the app in development mode using `yarn`.
+Install dependencies from the workspace root:
 
 ```bash
-yarn
-yarn dev
+yarn install
 ```
 
-Other commands are also available via `yarn`:
+For local frontend development with receive scanning enabled, install the Netlify CLI and run the app through Netlify Dev from the workspace root:
+
+```bash
+npm install -g netlify-cli # one-time install if netlify is not already on your PATH
+yarn dev:netlify
+```
+
+Open `http://localhost:8888`. Quasar also runs on `http://localhost:8080`, but that direct URL bypasses the Netlify Function proxy and should not be used to test receive scans. Run `netlify login` and link the checkout to the Umbra app/frontend site if you want Netlify Dev to pull hosted site environment variables; local workspace root `.env` values also work.
+
+The local scan-capable setup uses two env files:
+
+```text
+# frontend/.env
+PONDER_SUBGRAPH_URL=/api/ponder
+```
+
+```text
+# ../.env
+PONDER_UPSTREAM_URL=https://your-ponder-service.onrender.com/graphql
+PONDER_API_TOKEN=your-secret-token
+```
+
+`PONDER_SUBGRAPH_URL` is public and bundled into the frontend. `PONDER_UPSTREAM_URL` and `PONDER_API_TOKEN` are private Function runtime values, so keep them out of `frontend/.env`.
+
+Netlify CLI may create a root `deno.lock` while bootstrapping its Edge Functions environment. This app does not define Edge Functions, so that generated file is ignored.
+
+For frontend-only development that does not require the Netlify Function proxy, `yarn dev` still runs Quasar directly.
+
+Other commands are also available via `yarn` from this package:
 
 ```bash
 yarn lint # lint the codebase
@@ -59,11 +86,6 @@ To verify a deployed preview or production build has a working Ponder configurat
 ```bash
 PONDER_SUBGRAPH_URL=/api/ponder yarn smoke-test:ponder https://deploy-preview-123--umbra.netlify.app
 ```
-
-1. Create a file called `.env` and populate it with the contents of `.env.template`
-2. Fill in the `.env` file with your Infura ID. You only need the Portis and Fortmatic API keys if you plan on using those wallets
-3. Install dependencies with `yarn`
-4. Build for development with `yarn run dev`
 
 ## Internationalization
 
