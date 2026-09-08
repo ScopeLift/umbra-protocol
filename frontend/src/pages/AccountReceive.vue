@@ -501,7 +501,8 @@ function useScan() {
     window.logger.debug(
       `Scanning for announcements from ${startBlockLocal.value ?? 'undefined'} to ${endBlockLocal.value ?? 'undefined'}`
     );
-    const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value };
+    // Cleared number inputs can be empty strings; treat an empty end block as an unrestricted scan.
+    const overrides = { startBlock: startBlockLocal.value, endBlock: endBlockLocal.value || undefined };
 
     // Scan for funds
     const spendingPubKey = chooseKey(spendingKeyPair.value?.publicKeyHex);
