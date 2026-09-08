@@ -635,9 +635,9 @@ function useScan() {
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
 
-        // Update the checkpoint only when the head block is known, capped at the requested end block.
+        // Cap the checkpoint at the RPC head too, since announcement fetching may fall back to RPC logs.
         if (nextStartBlock !== undefined) {
-          const checkpoint = Math.min(nextStartBlock, overrides.endBlock ?? nextStartBlock);
+          const checkpoint = Math.min(nextStartBlock, latestBlock.number, overrides.endBlock ?? nextStartBlock);
           setLastFetchedBlock(checkpoint);
           startBlockLocal.value = checkpoint;
         }
