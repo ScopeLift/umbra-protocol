@@ -415,33 +415,36 @@ function useScan() {
     const ponderNetwork = getPonderNetworkName(chainId);
 
     if (ponderNetwork) {
-      const ponderResponse = await fetch(subgraphUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          query: `{
-            _meta {
-              status
-            }
-          }`,
-        }),
-      });
+      try {
+        const ponderResponse = await fetch(subgraphUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            query: `{
+              _meta {
+                status
+              }
+            }`,
+          }),
+        });
 
-      if (!ponderResponse.ok) throw new Error(`Subgraph head request failed with status ${ponderResponse.status}`);
+        if (!ponderResponse.ok) throw new Error(`Subgraph head request failed with status ${ponderResponse.status}`);
 
-      const ponderPayload = (await ponderResponse.json()) as {
-        data?: { _meta?: { status?: Record<string, { block?: { number?: number } }> } };
-        errors?: Array<{ message: string }>;
-      };
+        const ponderPayload = (await ponderResponse.json()) as {
+          data?: { _meta?: { status?: Record<string, { block?: { number?: number } }> } };
+          errors?: Array<{ message: string }>;
+        };
 
-      const statusError = ponderPayload.errors?.find((error) => error.message.includes('Cannot query field "status"'));
-      if (!statusError && ponderPayload.errors?.length) {
-        throw new Error(ponderPayload.errors.map((error) => error.message).join('; '));
-      }
+        if (ponderPayload.errors?.length) {
+          throw new Error(ponderPayload.errors.map((error) => error.message).join('; '));
+        }
 
-      const ponderHead = ponderPayload.data?._meta?.status?.[ponderNetwork]?.block?.number;
-      if (typeof ponderHead === 'number' && Number.isFinite(ponderHead)) {
-        return ponderHead;
+        const ponderHead = ponderPayload.data?._meta?.status?.[ponderNetwork]?.block?.number;
+        if (typeof ponderHead === 'number' && Number.isFinite(ponderHead)) {
+          return ponderHead;
+        }
+      } catch {
+        // Legacy endpoints can reject the Ponder query with different HTTP statuses or GraphQL errors.
       }
     }
 
