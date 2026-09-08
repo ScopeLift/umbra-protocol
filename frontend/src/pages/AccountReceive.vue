@@ -571,7 +571,7 @@ function useScan() {
         const latestBlock: Block = await getLastBlock(provider.value!);
         mostRecentBlockNumber.value = latestBlock.number;
         mostRecentBlockTimestamp.value = latestBlock.timestamp;
-        let nextStartBlock = latestBlock.number;
+        let nextStartBlock: number | undefined;
         if (umbra.value.chainConfig.subgraphUrl) {
           try {
             nextStartBlock = await getSubgraphHeadBlockNumber(
@@ -579,11 +579,10 @@ function useScan() {
               umbra.value.chainConfig.subgraphUrl
             );
           } catch (error) {
-            const fallbackBlock =
-              startBlockLocal.value ?? mostRecentAnnouncementBlockNumber.value ?? getRegisteredBlockNumber();
-            if (fallbackBlock) nextStartBlock = Number(fallbackBlock);
             window.logger.warn('Failed to fetch subgraph head block, preserving previous checkpoint', error);
           }
+        } else {
+          nextStartBlock = latestBlock.number;
         }
 
         // Default scan behavior
@@ -636,11 +635,11 @@ function useScan() {
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
 
-        // Save the indexed subgraph head (or a conservative fallback) for future scans as the start block.
-        setLastFetchedBlock(nextStartBlock);
-
-        // Update startBlockLocal with the next scan start block.
-        startBlockLocal.value = nextStartBlock;
+        // Update the checkpoint only when the head block is known.
+        if (nextStartBlock !== undefined) {
+          setLastFetchedBlock(nextStartBlock);
+          startBlockLocal.value = nextStartBlock;
+        }
       }
     } catch (e) {
       scanStatus.value = 'waiting'; // reset to the default state because we were unable to fetch announcements
