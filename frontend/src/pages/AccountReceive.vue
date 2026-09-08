@@ -635,10 +635,11 @@ function useScan() {
         await filterUserAnnouncementsAsync(spendingPubKey, viewingPrivKey, announcementsQueue);
         scanStatus.value = 'complete';
 
-        // Update the checkpoint only when the head block is known.
+        // Update the checkpoint only when the head block is known, capped at the requested end block.
         if (nextStartBlock !== undefined) {
-          setLastFetchedBlock(nextStartBlock);
-          startBlockLocal.value = nextStartBlock;
+          const checkpoint = Math.min(nextStartBlock, overrides.endBlock ?? nextStartBlock);
+          setLastFetchedBlock(checkpoint);
+          startBlockLocal.value = checkpoint;
         }
       }
     } catch (e) {
