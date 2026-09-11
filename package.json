@@ -39,7 +39,7 @@
     "coverage": "lerna run coverage",
     "test": "lerna run test",
     "dev": "cd umbra-js && yarn build && cd ../frontend && yarn dev",
-    "dev:netlify": "netlify dev --command \"volta run --node 20.20.0 --yarn 1.22.18 yarn dev\" --target-port 8080 --port 8888"
+    "dev:netlify": "netlify dev --command \"volta run --node 20.20.0 --yarn 1.22.22 yarn dev\" --target-port 8080 --port 8888"
   },
   "husky": {
     "hooks": {
@@ -48,6 +48,6 @@
   },
   "volta": {
     "node": "20.20.0",
-    "yarn": "1.22.18"
+    "yarn": "1.22.22"
   }
 }
