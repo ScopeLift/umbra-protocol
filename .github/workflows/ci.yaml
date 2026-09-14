@@ -56,7 +56,7 @@ jobs:
         with:
           version: nightly
 
-      - run: yarn install --network-concurrency 1
+      - run: yarn install --frozen-lockfile --network-concurrency 1
 
       - name: Run tests
         run: yarn test
@@ -75,7 +75,7 @@ jobs:
         with:
           version: nightly
 
-      - run: yarn install
+      - run: yarn install --frozen-lockfile
 
       - name: Run coverage
         run: yarn coverage
@@ -142,7 +142,7 @@ jobs:
           urlTemplate: https://github.com/ScopeLift/scopelint/releases/download/{{version}}/scopelint-x86_64-linux.tar.xz
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: yarn install
+      - run: yarn install --frozen-lockfile
 
       - name: Run yarn lint
         run: yarn lint
