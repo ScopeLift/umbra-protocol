@@ -122,14 +122,13 @@ yarn test # runs tests for each of the 3 packages
 yarn dev:netlify # runs the frontend through Netlify Dev with local Functions
 ```
 
-For frontend development that needs receive scanning to work locally, install the Netlify CLI and use Netlify Dev from the workspace root:
+For frontend development that needs receive scanning to work locally, use the project-local Netlify CLI installed by `yarn install`. Run Netlify Dev from the workspace root; the script automatically selects the frontend workspace:
 
 ```sh
-npm install -g netlify-cli # one-time install if netlify is not already on your PATH
 yarn dev:netlify
 ```
 
-Open `http://localhost:8888`, not Quasar's direct `http://localhost:8080` URL. Netlify Dev serves the frontend and the `/api/ponder` Function from the same local origin, which matches deployed scan behavior. If you want Netlify Dev to pull environment variables from a hosted Netlify site, run `netlify login` and link this checkout to the Umbra app/frontend site; otherwise, the local workspace root `.env` values below are enough.
+Open `http://localhost:8888`, not Quasar's direct `http://localhost:8080` URL. Netlify Dev serves the frontend and the `/api/ponder` Function from the same local origin, which matches deployed scan behavior. If you want Netlify Dev to pull environment variables from a hosted Netlify site, run `yarn netlify login` and `yarn netlify link --filter @umbra/frontend` to link this checkout to the Umbra app/frontend site; otherwise, the local workspace root `.env` values below are enough.
 
 Set `PONDER_SUBGRAPH_URL=/api/ponder` in `frontend/.env`. Set the private Function runtime variables in the workspace root `.env` or in the linked Netlify site environment:
 

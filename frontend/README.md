@@ -33,14 +33,13 @@ Install dependencies from the workspace root:
 yarn install
 ```
 
-For local frontend development with receive scanning enabled, install the Netlify CLI and run the app through Netlify Dev from the workspace root:
+For local frontend development with receive scanning enabled, use the project-local Netlify CLI installed by `yarn install`. Run Netlify Dev from the workspace root; the script automatically selects the frontend workspace:
 
 ```bash
-npm install -g netlify-cli # one-time install if netlify is not already on your PATH
 yarn dev:netlify
 ```
 
-Open `http://localhost:8888`. Quasar also runs on `http://localhost:8080`, but that direct URL bypasses the Netlify Function proxy and should not be used to test receive scans. Run `netlify login` and link the checkout to the Umbra app/frontend site if you want Netlify Dev to pull hosted site environment variables; local workspace root `.env` values also work.
+Open `http://localhost:8888`. Quasar also runs on `http://localhost:8080`, but that direct URL bypasses the Netlify Function proxy and should not be used to test receive scans. Run `yarn netlify login` and `yarn netlify link --filter @umbra/frontend` to link the checkout to the Umbra app/frontend site if you want Netlify Dev to pull hosted site environment variables; local workspace root `.env` values also work.
 
 The local scan-capable setup uses two env files:
 

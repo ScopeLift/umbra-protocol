@@ -4,3 +4,10 @@
     command = "yarn build-frontend"
 [build.processing]
     skip_processing = true
+
+[functions]
+    directory = "netlify/functions"
+
+[dev]
+    # Keep Quasar's in-memory assets ahead of the SPA fallback rewrite.
+    framework = "#custom"
