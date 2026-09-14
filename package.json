@@ -22,6 +22,7 @@
     "husky": "^4.3.0",
     "lerna": "^3.22.1",
     "lint-staged": "^10.5.1",
+    "netlify-cli": "27.6.0",
     "prettier": "^2.1.2",
     "rimraf": "^3.0.2",
     "typescript": "^4.0.3"
@@ -39,7 +40,7 @@
     "coverage": "lerna run coverage",
     "test": "lerna run test",
     "dev": "cd umbra-js && yarn build && cd ../frontend && yarn dev",
-    "dev:netlify": "netlify dev --command \"volta run --node 24.21.0 --yarn 1.22.22 yarn dev\" --target-port 8080 --port 8888"
+    "dev:netlify": "netlify dev --filter @umbra/frontend --command \"volta run --node 24.21.0 --yarn 1.22.22 yarn dev\" --target-port 8080 --port 8888"
   },
   "husky": {
     "hooks": {
