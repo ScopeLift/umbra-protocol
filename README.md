@@ -85,7 +85,7 @@ Check out the [full FAQ](https://app.umbra.cash/faq) to get more details about U
 
 ## Development
 
-This repository uses [yarn](https://yarnpkg.com/) for package management and [volta](https://volta.sh/) for dev tool version management. Both are prerequisites for setting up your development environment. The repository also requires [foundry](https://github.com/gakonst/foundry) for development of periphery smart contracts. Frontend development with local receive scanning also requires the [Netlify CLI](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/) so the local app can run through the same `/api/ponder` Function proxy used in deployed environments.
+This repository uses [yarn](https://yarnpkg.com/) for package management and [mise](https://mise.jdx.dev/) to install and select the Node.js and Yarn versions pinned in [mise.toml](mise.toml). The repository also requires [foundry](https://github.com/gakonst/foundry) for development of periphery smart contracts. Frontend development with local receive scanning uses the project-local [Netlify CLI](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/) installed by `yarn install` so the local app can run through the same `/api/ponder` Function proxy used in deployed environments.
 
 ### Components
 
@@ -100,7 +100,30 @@ The monorepo structure simplifies the development workflow.
 
 ### Instructions
 
-To get started, clone this repo, then follow these instructions:
+Install mise once. On macOS with Homebrew:
+
+```sh
+brew install mise
+```
+
+See the [mise installation guide](https://mise.jdx.dev/installing-mise.html) for other platforms. For automatic tool selection in zsh, add this line to `~/.zshrc` and restart your terminal:
+
+```sh
+eval "$(mise activate zsh)"
+```
+
+If you keep Volta installed for other projects, put mise's activation after Volta's `PATH` setup. From the workspace root, trust the configuration and install the pinned tools:
+
+```sh
+mise trust
+mise install
+node --version # v24.21.0
+yarn --version # 1.22.22
+```
+
+The root configuration also applies inside each workspace. Without shell activation, prefix commands with `mise exec --`, for example `mise exec -- yarn install --frozen-lockfile` or `mise exec -- yarn dev:netlify`. CI installs the same tools using `jdx/mise-action`; Netlify builds use the matching version pins in `netlify.toml`.
+
+Then configure the environment and install dependencies:
 
 ```sh
 # run these commands from workspace root!

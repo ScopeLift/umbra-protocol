@@ -40,15 +40,11 @@
     "coverage": "lerna run coverage",
     "test": "lerna run test",
     "dev": "cd umbra-js && yarn build && cd ../frontend && yarn dev",
-    "dev:netlify": "netlify dev --filter @umbra/frontend --command \"volta run --node 24.21.0 --yarn 1.22.22 yarn dev\" --target-port 8080 --port 8888"
+    "dev:netlify": "netlify dev --filter @umbra/frontend --command \"mise exec -- yarn dev\" --target-port 8080 --port 8888"
   },
   "husky": {
     "hooks": {
       "pre-commit": "lerna run precommit"
     }
-  },
-  "volta": {
-    "node": "24.21.0",
-    "yarn": "1.22.22"
   }
 }
