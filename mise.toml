@@ -1,0 +1,4 @@
+# Keep these versions in sync with the build environment in netlify.toml.
+[tools]
+node = "24.21.0"
+yarn = "1.22.22"

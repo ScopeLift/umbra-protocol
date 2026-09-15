@@ -74,9 +74,6 @@
     "last 10 iOS versions",
     "last 5 Opera versions"
   ],
-  "volta": {
-    "extends": "../package.json"
-  },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
