@@ -31,7 +31,9 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: volta-cli/action@v4
+      - uses: jdx/mise-action@v4
+        with:
+          version: 2026.9.9
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
@@ -49,7 +51,9 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: volta-cli/action@v4
+      - uses: jdx/mise-action@v4
+        with:
+          version: 2026.9.9
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
@@ -68,7 +72,9 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: volta-cli/action@v4
+      - uses: jdx/mise-action@v4
+        with:
+          version: 2026.9.9
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
@@ -124,7 +130,9 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: volta-cli/action@v4
+      - uses: jdx/mise-action@v4
+        with:
+          version: 2026.9.9
 
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1

@@ -27,7 +27,7 @@ Optional parameters are:
 `FORTMATIC_API_KEY` - API key needed if using Fortmatic <br />
 `PORTIS_API_KEY` - API key needed if using Portis
 
-Install dependencies from the workspace root:
+Set up mise using the [root development instructions](../README.md#instructions), then install dependencies from the workspace root. The root `mise.toml` selects Node.js and Yarn for all workspaces:
 
 ```bash
 yarn install
