@@ -11,14 +11,16 @@
   "scripts": {
     "test": "yarn build && yarn hardhat test",
     "coverage": "yarn clean && yarn build && nyc yarn hardhat test && sed -i'.bak' 's/SF:/SF:umbra-js\\//gI' ./coverage/lcov.info",
-    "lint": "eslint --ext .js,.ts ./",
+    "lint": "yarn lint:eslint && yarn prettier:check",
+    "lint:eslint": "eslint --ext .js,.ts ./",
+    "lint:fix": "yarn lint:eslint --fix && yarn prettier && yarn lint",
     "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
     "watch": "tsc --watch",
     "build": "cp -r ../contracts-core/typechain ./src && tsc --build",
     "clean": "rimraf build coverage .nyc_output cache",
     "prepare": "yarn build",
     "prepublishOnly": "yarn lint && yarn test",
-    "precommit": "lint-staged",
     "docs": "typedoc src/"
   },
   "author": "ScopeLift <support@umbra.cash>",

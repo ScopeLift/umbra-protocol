@@ -139,7 +139,8 @@ yarn test # runs the test suite for each package
 # Additional commands also available from the workspace root:
 yarn build # builds each of the 3 packages
 yarn clean # removes build artifacts for each of the 3 packages
-yarn lint # lints each of the 3 packages
+yarn lint # runs the configured lint checks across all four packages
+yarn lint:fix # applies lint fixes and formatting, then runs the lint checks
 yarn prettier # runs formatting on each of the 3 packages
 yarn test # runs tests for each of the 3 packages
 yarn dev:netlify # runs the frontend through Netlify Dev with local Functions
@@ -171,6 +172,45 @@ yarn clean # remove only the contract build artifacts
 yarn test # run only the contract tests
 ```
 
+### Linting and formatting
+
+Always run `yarn lint` or `yarn lint:fix` when making changes, and fix any errors before opening or updating a pull request. Run these commands from the workspace root after installing dependencies. There are no project-managed Git hooks; commits do not automatically lint or format files. CI runs `yarn lint` on every pull request and fails on lint errors or formatting differences.
+
+```sh
+yarn lint # check lint and formatting in all four packages without applying fixes
+yarn lint:fix # apply lint fixes and formatting, then check all four packages
+yarn prettier # apply Prettier formatting in contracts-core, umbra-js, and frontend
+```
+
+Use `yarn lint:fix` for the combined workflow. In each workspace it applies available ESLint/Solhint fixes, formats with Prettier (or `forge fmt` for periphery), and runs that workspace's lint checks. Review the edits it makes. Errors that cannot be fixed automatically cause the command to fail and must be fixed manually before rerunning it.
+
+To check one package while developing, run `yarn lint` inside its directory or use a workspace command from the root:
+
+```sh
+yarn workspace @umbra/contracts-core lint # Solhint, ESLint, and Prettier checks
+yarn workspace @umbracash/umbra-js lint # ESLint and Prettier checks
+yarn workspace @umbra/frontend lint # ESLint, a translation-key report, and Prettier checks
+yarn workspace @umbra/contracts-periphery lint # forge fmt --check
+```
+
+The combined workflow also works inside any package directory with `yarn lint:fix`, or from the root with a workspace command:
+
+```sh
+yarn workspace @umbra/contracts-core lint:fix
+yarn workspace @umbracash/umbra-js lint:fix
+yarn workspace @umbra/frontend lint:fix
+yarn workspace @umbra/contracts-periphery lint:fix
+```
+
+To check only formatting in the frontend or SDK, run `yarn prettier:check` from its directory; use `yarn prettier` to apply formatting. These checks exclude generated Netlify, Quasar, and TypeChain files through the workspace `.prettierignore` files. Use `forge fmt` inside `contracts-periphery` to format its Solidity files.
+
+CI also runs a separate Scopelint check for the periphery contracts. When changing that package, install [Scopelint v0.0.21](https://github.com/ScopeLift/scopelint/releases/tag/v0.0.21), matching CI, and run:
+
+```sh
+cd contracts-periphery
+FOUNDRY_DISABLE_NIGHTLY_WARNING=true scopelint check
+```
+
 ### Contract Deployments
 
 Umbra contracts are deployed at the same address on each network where Umbra resides. Below is a list of addresses for the contracts currently in use.
@@ -183,7 +223,7 @@ Umbra contracts are deployed at the same address on each network where Umbra res
 
 ### Contributions
 
-Contributions to Umbra are welcome! Fork the project, create a new branch from master, and open a PR. Ensure the project can be fast-forward merged by rebasing if necessary.
+Contributions to Umbra are welcome! Fork the project, create a new branch from master, and open a PR. Always run the [lint checks](#linting-and-formatting) after making changes and before opening or updating a PR. Ensure the project can be fast-forward merged by rebasing if necessary.
 
 ## License
 
