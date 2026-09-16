@@ -6,16 +6,17 @@
   "author": "Matt Solomon <matt@mattsolomon.dev>",
   "private": true,
   "scripts": {
-    "lint": "yarn lint:eslint && yarn lint:i18n",
+    "lint": "yarn lint:eslint && yarn lint:i18n && yarn prettier:check",
+    "lint:fix": "yarn lint:eslint --fix && yarn prettier && yarn lint",
     "lint:eslint": "eslint --ext .js,.ts,.vue ./",
     "lint:i18n": "vue-i18n-extract report --vueFiles './src/**/*.?(js|vue|ts)' --languageFiles './src/i18n/locales/*.?(json|yml|yaml|js)'",
     "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
     "test": "jest",
     "dev": "quasar dev",
     "build": "quasar build && cp _redirects dist/spa/",
     "smoke-test:ponder": "ts-node --project scripts/tsconfig.json scripts/ponder-smoke-test.ts",
-    "clean": "rimraf dist",
-    "precommit": "lint-staged"
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "1.9.2",

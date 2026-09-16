@@ -15,8 +15,6 @@ const settings = {
   registeredBlockNumber: 'registered-block-number',
 };
 
-
-
 // Shared state between instances
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
