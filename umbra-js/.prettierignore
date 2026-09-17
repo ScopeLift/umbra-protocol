@@ -4,3 +4,4 @@
 /cache
 /docs
 /.nyc_output
+/src/typechain

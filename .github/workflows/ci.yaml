@@ -152,7 +152,7 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
-      - name: Run yarn lint
+      - name: Check lint and formatting
         run: yarn lint
 
       - name: Run scopelint
