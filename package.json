@@ -10,10 +10,6 @@
       "contracts-periphery",
       "frontend",
       "umbra-js"
-    ],
-    "nohoist": [
-      "**/mocha",
-      "**/jest"
     ]
   },
   "devDependencies": {
