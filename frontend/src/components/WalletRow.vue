@@ -28,7 +28,7 @@
           </span>
         </div>
         <div class="row text-caption items-center cursor-pointer">
-          <div @click="copyAddress(userAddress)" class="text-xxs copy-icon-parent cursor-pointer">
+          <div @click="copyAddress(userAddress, provider)" class="text-xxs copy-icon-parent cursor-pointer">
             <q-icon class="copy-icon q-pr-xs" name="far fa-copy" />
             <span class="text-xxs">{{ $t('WalletRow.copy-address') }}</span>
           </div>
@@ -59,11 +59,14 @@ import BaseButton from 'src/components/BaseButton.vue';
 import useWalletStore from 'src/store/wallet';
 import jazzicon from '@metamask/jazzicon';
 import useSettingsStore from 'src/store/settings';
+import { copyAddress } from 'src/utils/utils';
 
 function useWalletRow(userAddress: string) {
-  const { currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
+  const { provider, currentChain, connectedWalletLabel, disconnectWallet } = useWalletStore();
 
   return {
+    copyAddress,
+    provider,
     blockExplorerUrl: computed(() => `${currentChain.value?.blockExplorerUrls![0] || ''}/address/${userAddress}`),
     connectedWalletLabel: connectedWalletLabel.value,
     disconnectWallet,
