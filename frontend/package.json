@@ -41,6 +41,7 @@
     "yaml-loader": "0.6.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.12.3",
     "@babel/eslint-parser": "^7.19.1",
     "@intlify/vue-i18n-loader": "^4.2.0",
     "@quasar/app-webpack": "3.6.2",
@@ -49,6 +50,9 @@
     "@types/node": "^14.11.8",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
+    "@vue/test-utils": "2.4.6",
+    "@vue/vue3-jest": "27.0.0",
+    "babel-jest": "^27.5.1",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-node": "^11.0.0",
@@ -78,6 +82,18 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "json",
+      "node",
+      "vue"
+    ],
+    "transform": {
+      "^.+\\.vue$": "@vue/vue3-jest"
+    },
     "moduleNameMapper": {
       "src/(.*)": "<rootDir>/src/$1"
     }
