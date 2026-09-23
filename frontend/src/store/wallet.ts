@@ -69,8 +69,6 @@ const spendingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, f
 const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, for scanning for received funds
 const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
 const relayer = ref<UmbraApi>(); // used for managing relay transactions
-const hasEnsKeys = ref(false); // true if user has set stealth keys on their ENS name // LEGACY
-const hasCnsKeys = ref(false); // true if user has set stealth keys on their CNS name // LEGACY
 const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
 const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
 const isArgent = ref<boolean>(false); // true if user connected an argent wallet
@@ -350,14 +348,6 @@ export default function useWalletStore() {
           .catch((e) => window.logger.warn(e));
       }
 
-      // Check if user has legacy keys setup with their ENS or CNS names (if so, we hide Account Setup)
-      const [_hasEnsKeys, _hasCnsKeys] = _isAccountSetup
-        ? [false, false]
-        : await Promise.all([
-            Boolean(_userEns) && (await hasSetPublicKeysLegacy(_userEns as string, MAINNET_PROVIDER as Web3Provider)),
-            Boolean(_userCns) && (await hasSetPublicKeysLegacy(_userCns as string, MAINNET_PROVIDER as Web3Provider)),
-          ]);
-
       // Now we save the user's info to the store. We don't do this earlier because the UI is reactive based on these
       // parameters, and we want to ensure this method completed successfully before updating the UI
       relayer.value = _relayer;
@@ -366,8 +356,6 @@ export default function useWalletStore() {
       userEns.value = _userEns;
       userCns.value = _userCns;
       network.value = _network;
-      hasEnsKeys.value = _hasEnsKeys; // LEGACY
-      hasCnsKeys.value = _hasCnsKeys; // LEGACY
       isAccountSetup.value = _isAccountSetup;
       isArgent.value = _isArgent;
       stealthKeys.value = _isAccountSetup ? _stealthKeys : null;
@@ -478,8 +466,6 @@ export default function useWalletStore() {
     balances.value = {};
     relayer.value = undefined;
     relayerExport = undefined;
-    hasEnsKeys.value = false;
-    hasCnsKeys.value = false;
     isAccountSetup.value = false;
     isArgent.value = false;
     stealthKeys.value = undefined;
@@ -590,8 +576,6 @@ export default function useWalletStore() {
     setLanguage,
     setProvider,
     setNetwork,
-    setHasEnsKeys: (status: boolean) => (hasEnsKeys.value = status), // LEGACY
-    setHasCnsKeys: (status: boolean) => (hasCnsKeys.value = status), // LEGACY
     syncStealthKeys,
     // "Direct" properties, i.e. return them directly without modification
     balances: computed(() => balances.value),
@@ -599,7 +583,6 @@ export default function useWalletStore() {
     hasKeys: computed(() => !!spendingKeyPair.value?.privateKeyHex && !!viewingKeyPair.value?.privateKeyHex),
     network: computed(() => network.value),
     isAccountSetup: computed(() => isAccountSetup.value),
-    isAccountSetupLegacy: computed(() => hasEnsKeys.value || hasCnsKeys.value), // LEGACY
     isLoading: computed(() => isLoading.value),
     isArgent: computed(() => isArgent.value),
     provider: computed(() => provider.value),
@@ -622,17 +605,6 @@ export default function useWalletStore() {
     needSignature: computed(() => !spendingKeyPair.value?.privateKeyHex || !viewingKeyPair.value?.privateKeyHex),
   };
 }
-
-// Helper method to check if user has ENS or CNS keys // LEGACY
-const hasSetPublicKeysLegacy = async (name: string, provider: Provider) => {
-  try {
-    await utils.getPublicKeysLegacy(name, provider);
-    return true;
-  } catch (err) {
-    window.logger.warn(err);
-    return false;
-  }
-};
 
 // Helper method to check if user has registered public keys in the StealthKeyRegistry
 async function getRegisteredStealthKeys(account: string, provider: Provider) {
