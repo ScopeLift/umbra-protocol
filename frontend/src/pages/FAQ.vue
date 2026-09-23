@@ -81,20 +81,6 @@
         </f-a-q-item>
       </div>
 
-      <div @click="copyUrl" id="why-do-i-need-to-setup-my-account-again">
-        <f-a-q-item
-          :expanded="selectedId === 'why-do-i-need-to-setup-my-account-again'"
-          :question="$t('FAQ.why-setup-again')"
-        >
-          <div v-html="$t('FAQ.why-setup-again-answer')"></div>
-          <i18n-t scope="global" keypath="FAQ.why-setup-again-answer-issue" tag="p">
-            <a href="https://github.com/ScopeLift/umbra-protocol/issues/214" class="hyperlink" target="_blank">{{
-              $t('FAQ.why-setup-again-answer-this-issue')
-            }}</a>
-          </i18n-t>
-        </f-a-q-item>
-      </div>
-
       <!-- Sending Funds -->
       <div class="separator q-mt-lg q-mb-xl"></div>
       <div
