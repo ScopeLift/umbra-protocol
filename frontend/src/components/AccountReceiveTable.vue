@@ -575,7 +575,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
   } = useWithdrawalFees({ nativeToken: NATIVE_TOKEN, relayer, isNativeToken });
   const getTokenInfo = (tokenAddress: string) => tokens.value.filter((token) => token.address === tokenAddress)[0];
 
-  // Format announcements so from addresses support ENS/CNS, and so we can easily detect withdrawals
+  // Format announcements so from addresses support ENS, and so we can easily detect withdrawals
   const formattedAnnouncements = ref([] as ReceiveTableAnnouncement[]);
 
   const sortByTimestamp = (announcements: ReceiveTableAnnouncement[]) =>
@@ -589,7 +589,7 @@ function useReceivedFundsTable(userAnnouncements: Ref<UserAnnouncement[]>, spend
     const announcements = userAnnouncements.value as ReceiveTableAnnouncement[];
     const newAnnouncements = announcements.filter((x) => !formattedAnnouncements.value.includes(x));
     formattedAnnouncements.value = sortByTimestamp([...formattedAnnouncements.value, ...newAnnouncements]);
-    // Format addresses to use ENS, CNS, or formatted address
+    // Format addresses to use ENS or formatted address
     const fromAddresses = announcements.map((announcement) => announcement.from);
     let formattedAddresses: string[] = [];
     try {

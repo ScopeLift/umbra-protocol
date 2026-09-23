@@ -20,7 +20,6 @@ import {
   UnsignedTransaction,
 } from '../ethers';
 import { Point, Signature, utils as nobleUtils } from '@noble/secp256k1';
-import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
 import { KeyPair } from '../classes/KeyPair';
@@ -230,18 +229,13 @@ export async function getSentTransaction(address: string, ethersProvider: Ethers
   return txHash;
 }
 
-// Takes an ENS, CNS, or address, and returns the checksummed address
+// Takes an ENS name or address, and returns the checksummed address
 export async function toAddress(name: string, provider: EthersProvider) {
   // If the name is already an address, just return it.
   if (name.length === lengths.address && isHexString(name)) return getAddress(name);
 
-  // First try ENS
-  let address: string | null = null;
-  address = await resolveEns(name, provider); // Will never throw, but returns null on failure
-  if (address) return address;
-
-  // Then try CNS
-  address = await resolveCns(name); // Will never throw, but returns null on failure
+  // Otherwise try ENS
+  const address = await resolveEns(name, provider); // Will never throw, but returns null on failure
   if (address) return address;
 
   // At this point, we were unable to resolve the name to an address.
@@ -255,7 +249,7 @@ export async function toAddress(name: string, provider: EthersProvider) {
  * @dev When providing a public key, transaction hash, or address with advanced mode, the spending and viewing
  * public keys will be the same. Only keys retrieved from the StealthKeyRegistry (or the subgraph) will have different spending
  * and viewing keys. Additionally, the block number when the user registered will be returned.
- * @param id Recipient identifier, must be an ENS name, CNS name, address, transaction hash, or public key
+ * @param id Recipient identifier, must be an ENS name, address, transaction hash, or public key
  * @param provider ethers provider to use
  * @param options Object containing lookup options:
  *   advanced: looks for public keys in StealthKeyRegistry when false, recovers them from on-chain transaction when true
@@ -296,7 +290,7 @@ export async function lookupRecipient(
   }
 
   // The remaining checks are dependent on the advanced mode option. The provided identifier is now either an
-  // ENS name, CNS name, or address, so we resolve it to an address
+  // ENS name or address, so we resolve it to an address
   const address = await toAddress(id, provider); // throws if an invalid address is provided
 
   // If we're not using advanced mode, use the StealthKeyRegistry events
@@ -737,29 +731,6 @@ export function isDomain(name: string) {
 // --- Private helper methods ---
 
 /**
- * @notice Returns an instance of the UD Resolution library
- */
-
-function getResolutionInstance() {
-  return new Resolution({
-    sourceConfig: {
-      uns: {
-        locations: {
-          Layer1: {
-            url: String(process.env.MAINNET_RPC_URL),
-            network: 'mainnet',
-          },
-          Layer2: {
-            url: String(process.env.POLYGON_RPC_URL),
-            network: 'polygon-mainnet',
-          },
-        },
-      },
-    },
-  });
-}
-
-/**
  * @notice Attempt to resolve an ENS name, and return null on failure
  * @param name Name to resolve
  * @param provider Provider connected to mainnet. If the provider is connected to a different
@@ -775,21 +746,6 @@ async function resolveEns(name: string, provider: EthersProvider) {
     if (chainId !== 1) provider = new StaticJsonRpcProvider(String(process.env.MAINNET_RPC_URL));
     const address = await provider.resolveName(name);
     return address || null;
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * @notice Attempt to resolve a CNS name, and return null on failure
- * @param name
- * @returns
- */
-async function resolveCns(name: string) {
-  try {
-    const resolution = getResolutionInstance();
-    const address = await resolution.addr(name, 'ETH');
-    return getAddress(address) || null;
   } catch (e) {
     return null;
   }
@@ -985,7 +941,7 @@ export async function checkSupportedAddresses(recipientIds: string[]) {
   });
 
   // If needed, resolve recipient ID to an address (e.g. if it's an ENS name).
-  // If there are a lot of ENS or CNS names here this will send too many RPC requests and trigger
+  // If there are a lot of ENS names here this will send too many RPC requests and trigger
   // errors. The current use case of this method takes addresses, so this should not be a problem.
   // If it becomes a problem, add a batched version of toAddress.
   const provider = new StaticJsonRpcProvider(String(process.env.MAINNET_RPC_URL));

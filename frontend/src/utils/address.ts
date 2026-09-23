@@ -15,16 +15,7 @@ import {
 } from 'src/utils/ethers';
 import { getChainById, jsonFetch } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
-import Resolution from '@unstoppabledomains/resolution';
-import {
-  MAINNET_PROVIDER,
-  POLYGON_PROVIDER,
-  MULTICALL_ABI,
-  MULTICALL_ADDRESS,
-  MAINNET_RPC_URL,
-  POLYGON_RPC_URL,
-} from 'src/utils/constants';
-import { AddressZero, defaultAbiCoder } from 'src/utils/ethers';
+import { MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
 import { UmbraApi } from 'src/utils/umbra-api';
 
 // ================================================== Address Helpers ==================================================
@@ -34,10 +25,10 @@ export const formatNameOrAddress = (nameOrAddress: string) => {
   return isHexString(nameOrAddress) ? `${nameOrAddress.slice(0, 6)}...${nameOrAddress.slice(38)}` : nameOrAddress;
 };
 
-// Returns an ENS or CNS name if found, otherwise returns the address
+// Returns an ENS name if found, otherwise returns the address
 export const lookupAddress = async (address: string, provider: Provider | StaticJsonRpcProvider) => {
-  const domainName = await lookupEnsOrCns(address, provider);
-  return domainName ? domainName : address;
+  const ensName = await lookupEnsName(address, provider);
+  return ensName ? ensName : address;
 };
 
 // Returns ENS name that address resolves to, or null if not found
@@ -52,49 +43,7 @@ export const lookupEnsName = async (address: string, provider: Provider | Static
   }
 };
 
-// Fetches all mainnet CNS names owned by an address and returns the first one
-export const lookupCnsName = async (address: string) => {
-  try {
-    // Send request to get names
-
-    const resolution = new Resolution({
-      sourceConfig: {
-        uns: {
-          locations: {
-            Layer1: {
-              url: MAINNET_RPC_URL,
-              network: 'mainnet',
-            },
-            Layer2: {
-              url: POLYGON_RPC_URL,
-              network: 'polygon-mainnet',
-            },
-          },
-        },
-      },
-    });
-    const domain = await resolution.reverse(address);
-    return domain;
-  } catch (err) {
-    // Scenario that prompted this try/catch was that The Graph API threw with a CORS error on localhost, blocking login
-    console.warn('Error in lookupCnsName');
-    console.warn(err);
-    return null;
-  }
-};
-
-// Returns an ENS or CNS name if found, otherwise returns null
-const lookupEnsOrCns = async (address: string, provider: Provider | StaticJsonRpcProvider) => {
-  const ensName = await lookupEnsName(address, provider);
-  if (ensName) return ensName;
-
-  const cnsName = await lookupCnsName(address);
-  if (cnsName) return cnsName;
-
-  return null;
-};
-
-// Takes an ENS, CNS, or address, and returns the checksummed address
+// Takes an ENS name or address, and returns the checksummed address
 export const toAddress = utils.toAddress;
 
 // =============================================== Bulk Address Helpers ================================================
@@ -179,62 +128,13 @@ export const lookupEnsNameBatch = async (addresses: string[], provider: Provider
   return { names, forwardAddrs };
 };
 
-const lookupCNSNameBatch = async (
-  addresses: string[],
-  registryAddr: string,
-  provider: Provider | StaticJsonRpcProvider
-) => {
-  const multicall = new Contract(MULTICALL_ADDRESS, MULTICALL_ABI, provider);
-  const ensRegistryInterface = new Interface(['function reverseNameOf(address) view returns (string)']);
-  const reverseResolverCalls = addresses.map((addr) => ({
-    target: registryAddr,
-    allowFailure: true,
-    callData: ensRegistryInterface.encodeFunctionData('reverseNameOf', [addr]),
-  }));
-
-  type Response = { success: boolean; returnData: string };
-  const reverseResolverResults: Response[] = await multicall.callStatic.aggregate3(reverseResolverCalls);
-  const results = reverseResolverResults.map((resp) => {
-    if (resp?.returnData !== AddressZero) {
-      const addr = defaultAbiCoder.decode(['string'], resp.returnData) as string[];
-      return addr[0];
-    }
-    return '';
-  });
-  return results;
-};
-
-const lookupCNSNameBatchMainnet = async (addresses: string[]) => {
-  return await lookupCNSNameBatch(addresses, '0xCd451149ffa9d059030528917842bcE14327DfD6', MAINNET_PROVIDER);
-};
-
-const lookupCNSNameBatchPolygon = async (addresses: string[]) => {
-  return await lookupCNSNameBatch(addresses, '0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f', POLYGON_PROVIDER);
-};
-
-const lookupCnsNameBatch = async (addresses: string[]) => {
-  try {
-    const [resultL1, resultL2] = await Promise.all([
-      lookupCNSNameBatchMainnet(addresses),
-      lookupCNSNameBatchPolygon(addresses),
-    ]);
-
-    return resultL1.map((val, idx) => val || resultL2[idx]);
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-};
-
 export const lookupOrReturnAddresses = async (addresses: string[], provider: Provider | StaticJsonRpcProvider) => {
   const { names, forwardAddrs } = await lookupEnsNameBatch(addresses, provider);
-  const cnsNames = await lookupCnsNameBatch(addresses);
 
   // VERIFY THAT THEY MATCH.
   return names.map((name, i) => {
     if (!isHexString(forwardAddrs[i])) return addresses[i]; // Safety check.
     if (getAddress(addresses[i]) === getAddress(forwardAddrs[i])) return name;
-    if (cnsNames[i]) return cnsNames[i];
     return addresses[i];
   });
 };
@@ -255,25 +155,20 @@ export const isAddressSafe = async (
   stealthAddress = getAddress(stealthAddress);
   const promises = [];
 
-  // Check if we're withdrawing to an ENS or CNS name
+  // Check if we're withdrawing to an ENS name
   const isDomain = utils.isDomain(name);
   if (isDomain) reasons.push(tc('Utils.Address.name-publicly-viewable'));
 
   // Get the address the provided name/address resolves to
   const destinationAddress = isDomain ? await utils.toAddress(name, provider) : getAddress(name);
 
-  // If input was an address, check if address resolves to an ENS or CNS name
+  // If input was an address, check if address resolves to an ENS name
   if (!isDomain) {
     const ensCheck = async () => {
       const ensName = await lookupEnsName(destinationAddress, MAINNET_PROVIDER as Web3Provider);
       if (ensName) reasons.push(`${tc('Utils.Address.name-resolves-to-ens')} ${ensName}`);
     };
-    const cnsCheck = async () => {
-      const cnsName = await lookupCnsName(destinationAddress);
-      if (cnsName) reasons.push(`${tc('Utils.Address.name-resolves-to-cns')} ${cnsName}`);
-    };
     promises.push(ensCheck());
-    promises.push(cnsCheck());
   }
 
   // Check if address is the wallet user is logged in with

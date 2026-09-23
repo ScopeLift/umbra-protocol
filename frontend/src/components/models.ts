@@ -144,14 +144,6 @@ export const supportedChains: Array<Chain> = [
 export type SupportedChainId = '1' | '10' | '137' | '8453' | '42161' | '11155111'; // strings for indexing into JSON files
 export const supportedChainIds = supportedChains.map((chain) => Number(chain.chainId)); // numbers for verifying the chainId user is connected to
 
-// CNS names owned by wallet are queried from The Graph, so these types help parse the response
-type CnsName = { name: string };
-export interface CnsQueryResponse {
-  data: {
-    domains: CnsName[];
-  };
-}
-
 // Relayer types
 export type ApiError = { error: string };
 export interface UmbraApiVersion {
