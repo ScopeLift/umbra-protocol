@@ -20,7 +20,6 @@ import {
   UnsignedTransaction,
 } from '../ethers';
 import { Point, Signature, utils as nobleUtils } from '@noble/secp256k1';
-import { ens, cns } from '..';
 import { default as Resolution } from '@unstoppabledomains/resolution';
 import { StealthKeyRegistry } from '../classes/StealthKeyRegistry';
 import { TxHistoryProvider } from '../classes/TxHistoryProvider';
@@ -724,22 +723,6 @@ export function assertValidPrivateKey(key: string) {
 
   if (key.length === 66) key = key.slice(2);
   if (!nobleUtils.isValidPrivateKey(key)) throw new Error('Invalid private key');
-}
-
-/**
- * @notice Returns the public keys associated with the provided name, using the legacy lookup approach.
- * @param name Name or domain to test
- * @param provider ethers provider instance
- */
-export async function getPublicKeysLegacy(name: string, provider: EthersProvider) {
-  if (!isDomain(name)) throw new Error(`Name ${name} is not a valid domain`);
-  try {
-    // First try ENS (throws on failure)
-    return ens.getPublicKeys(name, provider);
-  } catch (e) {
-    // Fallback to CNS
-    return cns.getPublicKeys(name, provider, getResolutionInstance());
-  }
 }
 
 /**

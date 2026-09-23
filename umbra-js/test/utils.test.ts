@@ -1,6 +1,7 @@
 import { ethers } from 'hardhat';
 import { StaticJsonRpcProvider } from '@ethersproject/providers';
 import { expect } from 'chai';
+import { default as Resolution } from '@unstoppabledomains/resolution';
 import * as utils from '../src/utils/utils';
 import type { EthersProvider } from '../src/types';
 import { expectRejection } from './utils';
@@ -180,6 +181,25 @@ describeIfForking('Utilities', () => {
       const keys2 = await utils.lookupRecipient('stratus4.eth', ethersProvider, { advanced: false });
       expect(keys2.spendingPublicKey).to.equal(pubKeysUmbra.spendingPublicKey);
       expect(keys2.viewingPublicKey).to.equal(pubKeysUmbra.viewingPublicKey);
+    });
+
+    it('looks up recipients by an address resolved from CNS, advanced mode off', async () => {
+      const resolution = new Resolution({
+        sourceConfig: {
+          uns: {
+            locations: {
+              Layer1: { url: MAINNET_RPC_URL, network: 'mainnet' },
+              Layer2: { url: POLYGON_RPC_URL, network: 'polygon-mainnet' },
+            },
+          },
+        },
+      });
+      const cnsAddress = await resolution.addr('blockdudes.nft', 'ETH');
+      const ethersProvider = new StaticJsonRpcProvider(POLYGON_RPC_URL);
+      const keys = await utils.lookupRecipient(cnsAddress, ethersProvider);
+      // These values are set on the Polygon StealthKeyRegistry
+      expect(keys.spendingPublicKey).to.equal('0x04044eb8172250ac55e7c32d42cbed2bc15798093c5a55fe2c5af1e019109de649a1df9d84219c3a74c21e7583ebc81e822827e9c8dce4e23dfe48fa7d1c87e2f1'); // prettier-ignore
+      expect(keys.viewingPublicKey).to.equal('0x04b1be486379952764a1cdd6af5e97aed6c266c5aa4ccf8e5c0d78d77234e2fe8983914a981cc46750dbc2b2238eb26684e091022c287107e21b5376ede8e8e768'); // prettier-ignore
     });
 
     // Skipped since CNS support isn't really well supported currently anyway.
