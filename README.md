@@ -54,7 +54,7 @@ Consider another example: Liza runs a website that asks for donations. If everyo
 
 1. When setting up your Umbra account, users sign a message. The hash of this message is used to generate two private keys—a "spending key" and a "viewing key".
 2. The corresponding public keys are both published on-chain as records associated with your address.
-3. A payer uses your address, ENS, or CNS name to look up your two public keys. Separately, the payer generates a random number.
+3. A payer uses your address or ENS name to look up your two public keys. Separately, the payer generates a random number.
 4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The viewing public key is used to encrypt the random number.
 5. Using the Umbra contract, the payer sends funds to the stealth address and the stealth address and encrypted random number are emitted as an Announcement event.
 6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Announcement, this payment was for the receiver

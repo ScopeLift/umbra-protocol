@@ -17,7 +17,7 @@ import {
   supportedChainIds,
   TokenInfoExtended,
 } from 'components/models';
-import { formatNameOrAddress, lookupEnsName, lookupCnsName } from 'src/utils/address';
+import { formatNameOrAddress, lookupEnsName } from 'src/utils/address';
 import {
   ERC20_ABI,
   MAINNET_PROVIDER,
@@ -61,7 +61,6 @@ const provider = ref<Provider>(); // ethers provider
 const signer = ref<Signer>(); // ethers signer
 const userAddress = ref<string>(); // user's wallet address
 const userEns = ref<string | null>(); // user's ENS name
-const userCns = ref<string | null>(); // user's CNS name
 const network = ref<Network>(); // connected network, derived from provider
 const umbra = ref<Umbra>(); // instance of Umbra class
 const stealthKeyRegistry = ref<StealthKeyRegistry>(); // instance of the StealthKeyRegistry class
@@ -242,7 +241,7 @@ export default function useWalletStore() {
       // Add wallet name to localStorage
       if (connectedWallet.label) setLastWallet(connectedWallet.label);
 
-      // Get ENS name, CNS names, etc.
+      // Get ENS name, etc.
       await configureProvider();
     } catch (e) {
       resetState();
@@ -331,10 +330,9 @@ export default function useWalletStore() {
       };
       const detector = new Contract(argentDetector.address, argentDetector.abi, provider.value);
 
-      // Get ENS name, CNS name, and check if user has registered their stealth keys
-      const [_userEns, _userCns, _stealthKeys, _isArgent] = await Promise.all([
+      // Get ENS name and check if user has registered their stealth keys
+      const [_userEns, _stealthKeys, _isArgent] = await Promise.all([
         lookupEnsName(_userAddress, MAINNET_PROVIDER as Web3Provider),
-        lookupCnsName(_userAddress),
         getRegisteredStealthKeys(_userAddress, provider.value),
         [1, 3].includes(newChainId) ? detector.isArgentWallet(_userAddress) : false, // Argent is only on Mainnet and Ropsten
       ]);
@@ -354,7 +352,6 @@ export default function useWalletStore() {
       relayerExport = relayer.value;
       userAddress.value = _userAddress;
       userEns.value = _userEns;
-      userCns.value = _userCns;
       network.value = _network;
       isAccountSetup.value = _isAccountSetup;
       isArgent.value = _isArgent;
@@ -457,7 +454,6 @@ export default function useWalletStore() {
     signer.value = undefined;
     userAddress.value = undefined;
     userEns.value = undefined;
-    userCns.value = undefined;
     network.value = undefined;
     umbra.value = undefined;
     stealthKeyRegistry.value = undefined;
@@ -535,7 +531,6 @@ export default function useWalletStore() {
   });
 
   const userDisplayName = computed(() => {
-    if (userCns.value) return userCns.value;
     if (userEns.value) return userEns.value;
 
     return userAddress.value ? formatNameOrAddress(userAddress.value) : undefined;

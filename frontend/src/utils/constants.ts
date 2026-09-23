@@ -4,7 +4,6 @@ import { StaticJsonRpcProvider } from 'src/utils/ethers';
 export const MAINNET_RPC_URL = String(process.env.MAINNET_RPC_URL);
 export const MAINNET_PROVIDER = new StaticJsonRpcProvider(MAINNET_RPC_URL);
 export const POLYGON_RPC_URL = String(process.env.POLYGON_RPC_URL);
-export const POLYGON_PROVIDER = new StaticJsonRpcProvider(POLYGON_RPC_URL);
 export const OPTIMISM_RPC_URL = String(process.env.OPTIMISM_RPC_URL);
 export const ARBITRUM_ONE_RPC_URL = String(process.env.ARBITRUM_ONE_RPC_URL);
 export const SEPOLIA_RPC_URL = String(process.env.SEPOLIA_RPC_URL);
