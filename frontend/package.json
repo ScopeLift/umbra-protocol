@@ -52,6 +52,7 @@
     "@vue/test-utils": "2.4.6",
     "@vue/vue3-jest": "27.0.0",
     "babel-jest": "^27.5.1",
+    "eslint": "^7.14.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-node": "^11.0.0",
@@ -61,8 +62,9 @@
     "eslint-webpack-plugin": "^3.2.0",
     "jest": "^27.5.1",
     "node-polyfill-webpack-plugin": "^2.0.1",
-    "postinstall-postinstall": "^2.1.0",
+    "prettier": "^2.1.2",
     "quasar-app-extension-system-environment-variables": "^2.0.4",
+    "rimraf": "^3.0.2",
     "ts-jest": "^27.1.3",
     "ts-node": "^9.0.0",
     "vue-i18n-extract": "^2.0.7"

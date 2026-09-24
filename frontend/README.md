@@ -27,13 +27,14 @@ Optional parameters are:
 `FORTMATIC_API_KEY` - API key needed if using Fortmatic <br />
 `PORTIS_API_KEY` - API key needed if using Portis
 
-Set up mise using the [root development instructions](../README.md#instructions), then install dependencies from the workspace root. The root `mise.toml` selects Node.js and Yarn for all workspaces:
+Set up mise using the [root development instructions](../README.md#instructions), then install dependencies and build umbra-js from the workspace root. The root `mise.toml` selects Node.js and Yarn for all workspaces. The frontend and its lint checks rely on the umbra-js build output, so rerun `yarn build-umbra-js` after changing umbra-js:
 
 ```bash
 yarn install
+yarn build-umbra-js # generates contract types and builds umbra-js
 ```
 
-For local frontend development with receive scanning enabled, use the project-local Netlify CLI installed by `yarn install`. Run Netlify Dev from the workspace root; the script automatically selects the frontend workspace:
+For local frontend development with receive scanning enabled, use the project-local Netlify CLI installed by `yarn install`. Run Netlify Dev from the workspace root; the script builds umbra-js first and automatically selects the frontend workspace:
 
 ```bash
 yarn dev:netlify

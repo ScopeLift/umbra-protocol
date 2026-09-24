@@ -133,7 +133,8 @@ cp frontend/.env.example frontend/.env # please edit the .env with your own envi
 cp umbra-js/.env.example umbra-js/.env # please edit the .env with your own environment variable values
 curl -L https://foundry.paradigm.xyz | bash # install foundryup binary
 foundryup # install Foundry
-yarn install # installs dependencies for each of the 3 packages. Also builds umbra-js.
+yarn install # installs dependencies for each of the 3 packages
+yarn build-umbra-js # generates contract types and builds umbra-js, which the frontend and lint checks rely on
 yarn test # runs the test suite for each package
 
 # Additional commands also available from the workspace root:
@@ -174,7 +175,7 @@ yarn test # run only the contract tests
 
 ### Linting and formatting
 
-Always run `yarn lint` or `yarn lint:fix` when making changes, and fix any errors before opening or updating a pull request. Run these commands from the workspace root after installing dependencies. There are no project-managed Git hooks; commits do not automatically lint or format files. CI runs `yarn lint` on every pull request and fails on lint errors or formatting differences.
+Always run `yarn lint` or `yarn lint:fix` when making changes, and fix any errors before opening or updating a pull request. Run these commands from the workspace root after installing dependencies and running `yarn build-umbra-js`, since the type-aware ESLint rules rely on the generated contract types and the umbra-js build output. There are no project-managed Git hooks; commits do not automatically lint or format files. CI runs `yarn lint` on every pull request and fails on lint errors or formatting differences.
 
 ```sh
 yarn lint # check lint and formatting in all four packages without applying fixes
