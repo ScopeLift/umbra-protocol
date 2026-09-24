@@ -22,8 +22,7 @@
     "typescript": "^4.0.3"
   },
   "resolutions": {
-    "eth-sig-util@1.4.2/ethereumjs-abi": "0.6.8",
-    "y18n": "^4.0.1"
+    "eth-sig-util@1.4.2/ethereumjs-abi": "0.6.8"
   },
   "scripts": {
     "build": "yarn workspaces foreach -Apiv --topological-dev run build",
