@@ -2,6 +2,7 @@
   "name": "@umbra/contracts-core",
   "version": "0.0.2",
   "description": "Contracts for the Umbra Protocol",
+  "private": true,
   "dependencies": {
     "@openzeppelin/contracts": "3.4.1"
   },
