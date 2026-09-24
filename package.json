@@ -27,14 +27,14 @@
   "scripts": {
     "build": "lerna run build",
     "build-frontend": "yarn lerna run --ignore \"@umbra/contracts-*\" build",
+    "build-umbra-js": "yarn workspace @umbracash/umbra-js build",
     "clean": "lerna run clean",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
     "prettier": "lerna run prettier",
-    "prepare": "lerna run prepare",
     "coverage": "lerna run coverage",
     "test": "lerna run test",
     "dev": "cd umbra-js && yarn build && cd ../frontend && yarn dev",
-    "dev:netlify": "netlify dev --filter @umbra/frontend --command \"mise exec -- yarn dev\" --target-port 8080 --port 8888"
+    "dev:netlify": "yarn build-umbra-js && netlify dev --filter @umbra/frontend --command \"mise exec -- yarn dev\" --target-port 8080 --port 8888"
   }
 }
