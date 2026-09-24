@@ -40,8 +40,7 @@ jobs:
         with:
           version: nightly
 
-      - run: yarn list
-      - run: yarn install --frozen-lockfile --verbose --network-concurrency 1
+      - run: yarn install --immutable
 
       - run: yarn build
   tests:
@@ -60,7 +59,7 @@ jobs:
         with:
           version: nightly
 
-      - run: yarn install --frozen-lockfile --network-concurrency 1
+      - run: yarn install --immutable
 
       - name: Run tests
         run: yarn test
@@ -81,7 +80,7 @@ jobs:
         with:
           version: nightly
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn install --immutable
 
       - name: Run coverage
         run: yarn coverage
@@ -150,7 +149,7 @@ jobs:
           urlTemplate: https://github.com/ScopeLift/scopelint/releases/download/{{version}}/scopelint-x86_64-linux.tar.xz
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn install --immutable
 
       # The type-aware lint rules need the generated contract types and the umbra-js build output.
       - run: yarn build-umbra-js

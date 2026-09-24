@@ -118,10 +118,10 @@ If you keep Volta installed for other projects, put mise's activation after Volt
 mise trust
 mise install
 node --version # v24.21.0
-yarn --version # 1.22.22
+yarn --version # 4.18.0
 ```
 
-The root configuration also applies inside each workspace. Without shell activation, prefix commands with `mise exec --`, for example `mise exec -- yarn install --frozen-lockfile` or `mise exec -- yarn dev:netlify`. CI installs the same tools using `jdx/mise-action`; Netlify builds use the matching version pins in `netlify.toml`.
+The root configuration also applies inside each workspace. Without shell activation, prefix commands with `mise exec --`, for example `mise exec -- yarn install --immutable` or `mise exec -- yarn dev:netlify`. CI installs the same tools using `jdx/mise-action`; Netlify builds use the Node.js version pinned in `netlify.toml` and the Yarn version in the `packageManager` field of `package.json`.
 
 Then configure the environment and install dependencies:
 

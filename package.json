@@ -4,6 +4,7 @@
   "description": "Send and receive stealth payments with the Umbra protocol",
   "author": "mds <17163988+mds1@users.noreply.github.com>",
   "private": true,
+  "packageManager": "yarn@4.18.0",
   "workspaces": {
     "packages": [
       "contracts-core",
@@ -15,25 +16,25 @@
   "devDependencies": {
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.14.0",
-    "lerna": "^3.22.1",
     "netlify-cli": "27.6.0",
     "prettier": "^2.1.2",
     "rimraf": "^3.0.2",
     "typescript": "^4.0.3"
   },
   "resolutions": {
+    "eth-sig-util@1.4.2/ethereumjs-abi": "0.6.8",
     "y18n": "^4.0.1"
   },
   "scripts": {
-    "build": "lerna run build",
-    "build-frontend": "yarn lerna run --ignore \"@umbra/contracts-*\" build",
+    "build": "yarn workspaces foreach -Apiv --topological-dev run build",
+    "build-frontend": "yarn workspaces foreach -Apiv --topological-dev --exclude umbra --exclude \"@umbra/contracts-*\" run build",
     "build-umbra-js": "yarn workspace @umbracash/umbra-js build",
-    "clean": "lerna run clean",
-    "lint": "lerna run lint",
-    "lint:fix": "lerna run lint:fix",
-    "prettier": "lerna run prettier",
-    "coverage": "lerna run coverage",
-    "test": "lerna run test",
+    "clean": "yarn workspaces foreach -Apiv --topological-dev run clean",
+    "lint": "yarn workspaces foreach -Apiv --topological-dev run lint",
+    "lint:fix": "yarn workspaces foreach -Apiv --topological-dev run lint:fix",
+    "prettier": "yarn workspaces foreach -Apiv --topological-dev run prettier",
+    "coverage": "yarn workspaces foreach -Apiv --topological-dev run coverage",
+    "test": "yarn workspaces foreach -Apiv --topological-dev run test",
     "dev": "cd umbra-js && yarn build && cd ../frontend && yarn dev",
     "dev:netlify": "yarn build-umbra-js && netlify dev --filter @umbra/frontend --command \"mise exec -- yarn dev\" --target-port 8080 --port 8888"
   }
