@@ -10053,7 +10053,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@umbra/contracts-core@npm:^0.0.2, @umbra/contracts-core@workspace:contracts-core":
+"@umbra/contracts-core@workspace:^, @umbra/contracts-core@workspace:contracts-core":
   version: 0.0.0-use.local
   resolution: "@umbra/contracts-core@workspace:contracts-core"
   dependencies:
@@ -10120,7 +10120,7 @@ __metadata:
     "@types/node": "npm:^14.11.8"
     "@typescript-eslint/eslint-plugin": "npm:^5.46.1"
     "@typescript-eslint/parser": "npm:^5.46.1"
-    "@umbracash/umbra-js": "npm:0.3.0"
+    "@umbracash/umbra-js": "workspace:^"
     "@uniswap/token-lists": "npm:^1.0.0-beta.19"
     "@vue/test-utils": "npm:2.4.6"
     "@vue/vue3-jest": "npm:27.0.0"
@@ -10158,7 +10158,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@umbracash/umbra-js@npm:0.3.0, @umbracash/umbra-js@workspace:umbra-js":
+"@umbracash/umbra-js@workspace:^, @umbracash/umbra-js@workspace:umbra-js":
   version: 0.0.0-use.local
   resolution: "@umbracash/umbra-js@workspace:umbra-js"
   dependencies:
@@ -10168,7 +10168,7 @@ __metadata:
     "@types/bn.js": "npm:^5.1.0"
     "@types/chai": "npm:^4.2.16"
     "@types/mocha": "npm:^8.2.2"
-    "@umbra/contracts-core": "npm:^0.0.2"
+    "@umbra/contracts-core": "workspace:^"
     chai: "npm:^4.3.4"
     dotenv: "npm:^8.2.0"
     eslint: "npm:^7.14.0"
