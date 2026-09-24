@@ -152,6 +152,9 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
+      # The type-aware lint rules need the generated contract types and the umbra-js build output.
+      - run: yarn build-umbra-js
+
       - name: Check lint and formatting
         run: yarn lint
 
