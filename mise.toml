@@ -1,4 +1,5 @@
-# Keep these versions in sync with the build environment in netlify.toml.
+# Keep node in sync with NODE_VERSION in netlify.toml, and yarn in sync with the packageManager
+# field in package.json, which Netlify uses to select the Yarn version.
 [tools]
 node = "24.21.0"
-yarn = "1.22.22"
+yarn = "4.18.0"
