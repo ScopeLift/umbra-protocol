@@ -27,7 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "@noble/secp256k1": "^1.7.1",
-    "ethers": "5.7.2"
+    "ethers": "5.8.0"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
