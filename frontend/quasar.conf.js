@@ -82,23 +82,6 @@ module.exports = configure(function (ctx) {
       // Options below are automatically set depending on the env, set them if you want to override
       // extractCSS: false,
 
-      chainWebpack: (chain) => {
-        chain.module
-          .rule('i18n-resource')
-          .test(/\.(json5?|ya?ml)$/)
-          .include.add(path.resolve(__dirname, './src/i18n'))
-          .end()
-          .type('javascript/auto')
-          .use('i18n-resource')
-          .loader('@intlify/vue-i18n-loader');
-        chain.module
-          .rule('i18n')
-          .resourceQuery(/blockType=i18n/)
-          .type('javascript/auto')
-          .use('i18n')
-          .loader('@intlify/vue-i18n-loader');
-      },
-
       chainWebpack(chain) {
         const nodePolyfillWebpackPlugin = require('node-polyfill-webpack-plugin');
         chain.plugin('node-polyfill').use(nodePolyfillWebpackPlugin);
