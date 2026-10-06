@@ -33,15 +33,15 @@
     "core-js": "^3.6.5",
     "ethers": "5.8.0",
     "localforage": "^1.10.0",
-    "quasar": "2.10.2",
+    "quasar": "2.33.1",
     "vue": "3.2.45",
     "vue-i18n": "^9.2.2",
     "vue-router": "4.1.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.3",
+    "@babel/core": "^7.29.0",
     "@babel/eslint-parser": "^7.19.1",
-    "@quasar/app-webpack": "3.6.2",
+    "@quasar/app-webpack": "3.15.1",
     "@quasar/quasar-app-extension-dotenv": "^1.0.5",
     "@types/jest": "^27.4.1",
     "@types/node": "^14.11.8",
@@ -50,6 +50,7 @@
     "@vue/test-utils": "2.4.6",
     "@vue/vue3-jest": "27.0.0",
     "babel-jest": "^27.5.1",
+    "babel-loader": "^10.1.1",
     "eslint": "^7.14.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.19.1",
@@ -94,6 +95,8 @@
       "^.+\\.vue$": "@vue/vue3-jest"
     },
     "moduleNameMapper": {
+      "^quasar$": "quasar/dist/quasar.server.prod.cjs",
+      "^quasar/wrappers$": "quasar/wrappers/index.cjs",
       "src/(.*)": "<rootDir>/src/$1"
     }
   }
