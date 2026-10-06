@@ -69,15 +69,15 @@
     "vue-i18n-extract": "^2.0.7"
   },
   "browserslist": [
-    "last 10 Chrome versions",
-    "last 10 Firefox versions",
-    "last 4 Edge versions",
-    "last 7 Safari versions",
-    "last 8 Android versions",
-    "last 8 ChromeAndroid versions",
-    "last 8 FirefoxAndroid versions",
-    "last 10 iOS versions",
-    "last 5 Opera versions"
+    "Chrome >= 121",
+    "Firefox >= 123",
+    "Edge >= 121",
+    "Safari >= 17.2",
+    "Android >= 121",
+    "ChromeAndroid >= 121",
+    "FirefoxAndroid >= 123",
+    "iOS >= 17.2",
+    "Opera >= 107"
   ],
   "jest": {
     "preset": "ts-jest",
