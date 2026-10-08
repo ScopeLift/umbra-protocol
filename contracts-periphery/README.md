@@ -7,6 +7,7 @@ Smart contracts that integrate with [Umbra](../README.md), but are not part of t
 Below is a list of contracts contained in this package:
 
 - `UmbraBatchSend`: Aggregate multiple `Umbra` sends into a single transaction.
+- `UniswapWithdrawHook`: A withdrawal hook that swaps withdrawn tokens through Uniswap's SwapRouter02 and sends any remaining tokens to the recipient.
 
 ## Development
 
@@ -14,36 +15,40 @@ This repo uses [Foundry](https://github.com/gakonst/foundry).
 
 ### How to use the DeployBatchSend Script
 
-1. Inside `contracts-periphery` folder, run `cp .env.example .env` and fill out all fields.
-2. In your terminal use command
+The script deploys `UmbraBatchSend` to each network in the `networks` array of `script/DeployBatchSend.s.sol`, using the RPC endpoints configured in `foundry.toml`.
 
-- `cast nonce <Deployer's address> --rpc-url <URL>` to find your nonce.
+1. Inside the `contracts-periphery` folder, run `cp .env.example .env` and fill out all fields.
+2. Find the deployer's nonce:
 
-4. Change `EXPECTED_NONCE` of `DeployBatchSend` script to match your nonce.
-5. To make sure the script test passes, run
+   `cast nonce <DeployerAddress> --rpc-url <URL>`
 
-- `forge test --mc DeployBatchSendTest --sender <Deployer's address>`
+3. Change `EXPECTED_NONCE` in the `DeployBatchSend` script to match that nonce.
+4. Make sure the script test passes:
 
-6. Pass in the `private key` to dry run deploying the contract across the networks you've specified. You should see gas estimates for each network, otherwise there could be a mismatch between deployer's nonce and the specified expected nonce, or there's already code at the expected contract address.
+   `forge test --mc DeployBatchSendTest --sender <DeployerAddress>`
 
-- `forge script DeployBatchSend --private-key <Private Key> `
+5. Dry run the deployment across the networks. You should see gas estimates for each network. If you don't, the deployer's nonce may not match `EXPECTED_NONCE`, or there may already be code at the expected contract address.
 
-7. Execute the deploy by broadcasting the deploy transactions.
+   `forge script DeployBatchSend --private-key <PrivateKey>`
 
-- `forge script DeployBatchSend --private-key <Private Key> --broadcast`
+6. Execute the deployment by broadcasting the transactions:
 
-### How to use the ApproveTokens Script
+   `forge script DeployBatchSend --private-key <PrivateKey> --broadcast`
 
-1. Inside `contracts-periphery` folder, run `cp .env.example .env` and fill out all fields.
-2. In your terminal use command `source .env` to load the environment variables.
-3. To make sure the script test passes, run
+### How to use the ApproveBatchSendTokens Script
 
-- `forge test --mc ApproveBatchSendTokensTest --sender <Owner's address>`
+The script approves the Umbra contract to spend each listed token held by `UmbraBatchSend`. It must be run by the `UmbraBatchSend` owner.
 
-4. To dry run the script pass in the `--private-key` flag and the desired network in the `--rpc-url` flag. Contract and token addresses should be specific to the network specified in the `--rpc-url` flag.
+1. Inside the `contracts-periphery` folder, run `cp .env.example .env` and fill out all fields.
+2. Run `source .env` to load the environment variables.
+3. Make sure the script test passes:
 
-- `forge script ApproveBatchSendTokens --sig "run(address,address,address[])" <UmbraContractAddress> <UmbraBatchSendContractAddress> "[<TokenAddressToApprove>,<TokenAddressToApprove>]" --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY`
+   `forge test --mc ApproveBatchSendTokensTest --sender <OwnerAddress>`
 
-4. Execute the script by adding the broadcasting flag.
+4. Dry run the script. Pass the owner's key in the `--private-key` flag and the desired network in the `--rpc-url` flag. The contract and token addresses must be the ones on that network.
 
-- `forge script ApproveBatchSendTokens --sig "run(address,address,address[])" <UmbraContractAddress> <UmbraBatchSendContractAddress> "[<TokenAddressToApprove>,<SecondTokenAddressToApprove>]" --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --broadcast`
+   `forge script ApproveBatchSendTokens --sig "run(address,address,address,address[])" <OwnerAddress> <UmbraContractAddress> <UmbraBatchSendContractAddress> "[<TokenAddress>,<TokenAddress>]" --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY`
+
+5. Execute the script by adding the `--broadcast` flag:
+
+   `forge script ApproveBatchSendTokens --sig "run(address,address,address,address[])" <OwnerAddress> <UmbraContractAddress> <UmbraBatchSendContractAddress> "[<TokenAddress>,<TokenAddress>]" --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --broadcast`

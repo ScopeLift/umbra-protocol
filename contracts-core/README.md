@@ -11,7 +11,6 @@ This dev toolchain based on @paulkberg's [solidity-template](https://github.com/
 - [Ethers](https://github.com/ethers-io/ethers.js/): renowned Ethereum library and wallet implementation
 - [Waffle](https://github.com/EthWorks/Waffle): tooling for writing comprehensive smart contract tests
 - [Solhint](https://github.com/protofire/solhint): linter
-- [Solcover](https://github.com/sc-forks/solidity-coverage) code coverage
 - [Prettier Plugin Solidity](https://github.com/prettier-solidity/prettier-plugin-solidity): code formatter
 
 ## Usage
@@ -24,36 +23,36 @@ Before running any command, make sure to install dependencies
 $ yarn install
 ```
 
-### Compile
+### Build
 
-Compile the smart contracts with Hardhat:
-
-```sh
-$ yarn compile
-```
-
-### TypeChain
-
-Compile the smart contracts and generate TypeChain artifacts:
+Compile the smart contracts with Hardhat and generate the TypeChain bindings in `typechain/`:
 
 ```sh
 $ yarn build
 ```
 
-### Lint Solidity
+### Lint
 
-Lint the Solidity code:
+Run Solhint, ESLint, and the Prettier check:
 
 ```sh
-$ yarn lint:sol
+$ yarn lint
 ```
 
-### Lint TypeScript
-
-Lint the TypeScript code:
+Apply available fixes and formatting, then rerun the checks:
 
 ```sh
-$ yarn lint:ts
+$ yarn lint:fix
+```
+
+To run a single linter, use `yarn lint:sol` for Solhint or `yarn lint:ts` for ESLint.
+
+### Format
+
+Format the code with Prettier:
+
+```sh
+$ yarn prettier
 ```
 
 ### Test
@@ -64,17 +63,29 @@ Run the Mocha tests:
 $ yarn test
 ```
 
-### Coverage
-
-Generate the code coverage report:
+Run the tests with a gas report:
 
 ```sh
-$ yarn coverage
+$ yarn test:gas
+```
+
+### Deploy
+
+Deploy the Umbra and StealthKeyRegistry contracts to a network defined in `hardhat.config.ts`, using the account derived from `MNEMONIC` in `.env`. Deployment records are saved to `deploy-history/`:
+
+```sh
+$ yarn deploy --network <network>
+```
+
+To deploy only the StealthKeyRegistry:
+
+```sh
+$ yarn deploy:registry --network <network>
 ```
 
 ### Clean
 
-Delete the smart contract artifacts, the coverage reports and the Hardhat cache:
+Delete the smart contract artifacts, the TypeChain bindings, the coverage reports and the Hardhat cache:
 
 ```sh
 $ yarn clean
