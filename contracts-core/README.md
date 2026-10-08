@@ -85,7 +85,7 @@ $ yarn deploy:registry --network <network>
 
 ### Clean
 
-Delete the smart contract artifacts, the TypeChain bindings, the coverage reports and the Hardhat cache:
+Delete the smart contract artifacts, the TypeChain bindings and the Hardhat cache:
 
 ```sh
 $ yarn clean

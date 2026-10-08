@@ -12,7 +12,6 @@ import '@nomiclabs/hardhat-truffle5';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
 import '@typechain/hardhat';
-import 'solidity-coverage';
 import 'hardhat-gas-reporter';
 
 const chainIds = {
