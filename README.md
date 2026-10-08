@@ -52,13 +52,13 @@ Consider another example: Liza runs a website that asks for donations. If everyo
 
 #### How does it work?
 
-1. When setting up your Umbra account, users sign a message. The hash of this message is used to generate two private keys—a "spending key" and a "viewing key".
+1. When setting up your Umbra account, you sign a message. The two halves of the resulting signature are hashed separately to generate two private keys—a "spending key" and a "viewing key".
 2. The corresponding public keys are both published on-chain as records associated with your address.
 3. A payer uses your address or ENS name to look up your two public keys. Separately, the payer generates a random number.
 4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The viewing public key is used to encrypt the random number.
 5. Using the Umbra contract, the payer sends funds to the stealth address and the stealth address and encrypted random number are emitted as an Announcement event.
 6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Announcement, this payment was for the receiver
-7. The receiver can now use the spending private key to either directly send the transaction required to withdraw funds to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
+7. The receiver can now use the stealth private key to either directly send the transaction required to withdraw funds to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
 
 See the [Technical Details: How does it work?](https://app.umbra.cash/faq#how-does-it-work-technical) for more details.
 
@@ -133,17 +133,16 @@ cp frontend/.env.example frontend/.env # please edit the .env with your own envi
 cp umbra-js/.env.example umbra-js/.env # please edit the .env with your own environment variable values
 curl -L https://foundry.paradigm.xyz | bash # install foundryup binary
 foundryup # install Foundry
-yarn install # installs dependencies for each of the 3 packages
+yarn install # installs dependencies for all four packages
 yarn build-umbra-js # generates contract types and builds umbra-js, which the frontend and lint checks rely on
 yarn test # runs the test suite for each package
 
 # Additional commands also available from the workspace root:
-yarn build # builds each of the 3 packages
-yarn clean # removes build artifacts for each of the 3 packages
+yarn build # builds all four packages
+yarn clean # removes build artifacts in contracts-core, umbra-js, and frontend
 yarn lint # runs the configured lint checks across all four packages
 yarn lint:fix # applies lint fixes and formatting, then runs the lint checks
-yarn prettier # runs formatting on each of the 3 packages
-yarn test # runs tests for each of the 3 packages
+yarn prettier # runs formatting in contracts-core, umbra-js, and frontend
 yarn dev:netlify # runs the frontend through Netlify Dev with local Functions
 ```
 
