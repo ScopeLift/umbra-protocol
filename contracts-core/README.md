@@ -1,23 +1,23 @@
 # Umbra contracts
 
-On chain components of the [Umbra protocol](../README.md).
+On-chain components of the [Umbra protocol](../README.md).
 
 ## Development
 
-This dev toolchain based on @paulkberg's [solidity-template](https://github.com/paulrberg/solidity-template) repo includes:
+This dev toolchain is based on @PaulRBerg's [hardhat-template](https://github.com/PaulRBerg/hardhat-template) repo and includes:
 
-- [Hardhat](https://github.com/nomiclabs/hardhat): compile and run the smart contracts on a local development network
-- [TypeChain](https://github.com/ethereum-ts/TypeChain): generate TypeScript types for smart contracts
+- [Hardhat](https://github.com/NomicFoundation/hardhat): compile and run the smart contracts on a local development network
+- [TypeChain](https://github.com/dethcrypto/TypeChain): generate TypeScript types for smart contracts
 - [Ethers](https://github.com/ethers-io/ethers.js/): renowned Ethereum library and wallet implementation
-- [Waffle](https://github.com/EthWorks/Waffle): tooling for writing comprehensive smart contract tests
+- [Waffle](https://github.com/TrueFiEng/Waffle): tooling for writing comprehensive smart contract tests
 - [Solhint](https://github.com/protofire/solhint): linter
 - [Prettier Plugin Solidity](https://github.com/prettier-solidity/prettier-plugin-solidity): code formatter
 
 ## Usage
 
-### Pre Requisites
+### Prerequisites
 
-Before running any command, make sure to install dependencies
+Before running any command, make sure to install dependencies:
 
 ```sh
 $ yarn install

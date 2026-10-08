@@ -11,7 +11,7 @@ Below is a list of contracts contained in this package:
 
 ## Development
 
-This repo uses [Foundry](https://github.com/gakonst/foundry).
+This package uses [Foundry](https://github.com/foundry-rs/foundry).
 
 ### How to use the DeployBatchSend Script
 

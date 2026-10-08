@@ -1,15 +1,15 @@
 # umbra-js
 
-JavaScript library for interacting with the Umbra Protocol.
+TypeScript library for interacting with the Umbra Protocol.
 
 ## Getting Started
 
 Requirements for use:
 
-- [ethers.js](https://docs.ethers.io/v5/single-page/) types are used throughout
+- [ethers.js](https://docs.ethers.org/v5/single-page/) types are used throughout
 - [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) support. See browser compatibility [here](https://caniuse.com/bigint)
 
-Once verifying compatibility, install with `yarn add @umbracash/umbra-js`
+Once you've verified compatibility, install with `yarn add @umbracash/umbra-js`
 
 ## Overview
 
@@ -20,7 +20,7 @@ Below is an overview of the files within this library. If you like reading code 
 1. `src/classes/Umbra.ts`: The Umbra class is a high-level class intended for developers to directly interact with. It abstracts away the complexity of the protocol into a few main methods:
    1. `send()` is used to send funds to another user, and automatically handles the underlying cryptography required. Check out the code in this method to understand the required steps for sending funds via Umbra.
    1. `batchSend()` sends funds to multiple recipients in a single transaction using the `UmbraBatchSend` contract.
-   1. `generatePrivateKeys()` prompts the user for a signature and generates their spending and viewing keys. _Note: make sure the wallet being used supports deterministic ECDSA signatures with [RFC 6979](https://tools.ietf.org/html/rfc6979)_
+   1. `generatePrivateKeys()` prompts the user for a signature and generates their spending and viewing keys. _Note: make sure the wallet being used supports deterministic ECDSA signatures with [RFC 6979](https://www.rfc-editor.org/rfc/rfc6979)_
    1. `scan()` lets you find funds sent to the specified user, by providing just the user’s spending public key and viewing private key
    1. `withdraw()` lets a stealth address directly withdraw both tokens and ETH
    1. `withdrawOnBehalf()` uses meta-transactions to relay a withdraw transaction on behalf of another user, and the `signWithdraw()` method is used to get the required signature
@@ -38,13 +38,13 @@ This section gives an overview of how different parts of Umbra work. When applic
 For an introduction and background on elliptic curve cryptography, see the references below:
 
 - [A (Relatively Easy To Understand) Primer on Elliptic Curve Cryptography](https://blog.cloudflare.com/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/)
-- [Elliptic Curve Cryptography: a gentle introduction - Andrea Corbellini](https://andrea.corbellini.name/2015/05/17/elliptic-curve-cryptography-a-gentle-introduction/) (This is part one of four part series. All four parts are recommended)
+- [Elliptic Curve Cryptography: a gentle introduction - Andrea Corbellini](https://andrea.corbellini.name/2015/05/17/elliptic-curve-cryptography-a-gentle-introduction/) (This is part one of a four-part series. All four parts are recommended.)
 
 ### Sending and Receiving ETH vs. Tokens
 
-When ETH is sent, it's transferred directly to the recipient's stealth address, but when tokens are sent they are held by the contract until the recipient withdraws them. ETH is always needed to send the transaction required to move funds, so sending ETH directly to a stealth address provides no issues and funds can easily be transferred out of the stealth address to another address.
+When ETH is sent, it's transferred directly to the recipient's stealth address, but when tokens are sent they are held by the contract until the recipient withdraws them. ETH is always needed to send the transaction required to move funds, so sending ETH directly to a stealth address poses no issues and funds can easily be transferred out of the stealth address to another address.
 
-But sending tokens directly to a stealth address would pose some difficulties. The stealth address would have no ETH to pay for the transaction to transfer the tokens, and getting ETH into the address without compromising privacy is its own challenge. The easiest and cheapest solution to this issue is to have tokens instead held by the contract, and support withdrawal of the tokens using meta-transactions that only require a signature from the stealth address. This lets the recipient pay the gas fee for the withdrawal transaction in tokens, and the relayer will pay the ETH fee
+But sending tokens directly to a stealth address would pose some difficulties. The stealth address would have no ETH to pay for the transaction to transfer the tokens, and getting ETH into the address without compromising privacy is its own challenge. The easiest and cheapest solution to this issue is to have tokens instead held by the contract, and support withdrawal of the tokens using meta-transactions that only require a signature from the stealth address. This lets the recipient pay the gas fee for the withdrawal transaction in tokens, and the relayer will pay the ETH fee.
 
 ### Private Key Generation
 
@@ -177,7 +177,7 @@ if (tokenAddress === ETH_ADDRESS) {
   const sponsor = "0xAddressOfYourRelayer";
   const sponsorFee = "123";
 
-  // Get a users signature to relay the withdrawal
+  // Get the user's signature to relay the withdrawal
   const { v, r, s } = await Umbra.signWithdraw(
     stealthPrivateKey,
     chainId,
