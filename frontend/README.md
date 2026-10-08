@@ -1,6 +1,6 @@
 # Umbra Frontend
 
-A first party frontend for interacting with the Umbra protocol. The frontend is built with [Quasar](https://quasar.dev/), [Typescript](https://www.typescriptlang.org/), [ethers](https://docs.ethers.io/v5/), and a number of other technologies. It relies on [umbra-js](../umbra-js) for interacting with Umbra itself.
+A first-party frontend for interacting with the Umbra protocol. The frontend is built with [Quasar](https://quasar.dev/), [TypeScript](https://www.typescriptlang.org/), [ethers](https://docs.ethers.org/v5/), and a number of other technologies. It relies on [umbra-js](../umbra-js) for interacting with Umbra itself.
 
 ## Development
 

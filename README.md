@@ -10,14 +10,13 @@
 
 <p align="center">
 	🚀 <a href="https://app.umbra.cash">app.umbra.cash</a>
-	🐦 <a href="https://twitter.com/umbracash">@UmbraCash</a>
+	🐦 <a href="https://x.com/umbracash">@UmbraCash</a>
 	💬 <a href="https://discord.com/invite/uw4y5J2p7C">Discord</a>
-	🤑 <a href="https://explorer.gitcoin.co/#/round/1/0x12bb5bbbfe596dbc489d209299b8302c3300fa40/0x12bb5bbbfe596dbc489d209299b8302c3300fa40-22">Gitcoin</a>
-	🏗️ <a href="https://twitter.com/scopelift">@ScopeLift</a>
+	🏗️ <a href="https://x.com/scopelift">@ScopeLift</a>
 </p>
 
 <div align="center">
-	<img width="150" src="readme/ethereum-badge-light.png" alt="Umbra Logo">
+	<img width="150" src="readme/ethereum-badge-light.png" alt="Built on Ethereum">
 	<br />
 </div>
 
@@ -42,11 +41,11 @@ One way to think of Umbra is this: before anyone sent you funds, you sent them a
 
 Alice owns a business and hires Bob to subcontract for her. She agrees to pay Bob 1,000 Dai/week for his work. Bob owns the ENS address bob.eth. If Alice sent the funds each week to bob.eth, anyone looking at the chain could trivially know that Alice is paying Bob 1,000 Dai each week.
 
-Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets up his account, enabling anyone to privately pay him via Umbra using the name bob.eth, or his normal Ethereum address. Alice then uses Umbra to send 1,000 Dai to Bob each week— she only needs to know his ENS name.
+Instead, Bob and Alice will use Umbra for private payments. The first time Bob visits the Umbra app, he sets up his account, enabling anyone to privately pay him via Umbra using the name bob.eth, or his normal Ethereum address. Alice then uses Umbra to send 1,000 Dai to Bob each week—she only needs to know his ENS name.
 
 On chain, we see Alice pays 1,000 Dai to a new empty address each week. Behind the scenes, Bob controls the keys to each of these addresses via Umbra, but nobody except Alice and Bob knows this.
 
-Bob uses Umbra to withdraw his 1,000 Dai each week. He only needs to provide an address to send it to. It’s best for him to use an address that’s not tied to his identity. He usually chooses to send it straight to an exchange, where he sells it for fiat as needed. Importantly, this means **Bob's exchange now knows this payment went to him**. To the casual chain observer— one without access to proprietary centralized exchange data— the fact that Alice's payment went to Bob is obscured.
+Bob uses Umbra to withdraw his 1,000 Dai each week. He only needs to provide an address to send it to. It’s best for him to use an address that’s not tied to his identity. He usually chooses to send it straight to an exchange, where he sells it for fiat as needed. Importantly, this means **Bob's exchange now knows this payment went to him**. To the casual chain observer—one without access to proprietary centralized exchange data—the fact that Alice's payment went to Bob is obscured.
 
 Consider another example: Liza runs a website that asks for donations. If everyone donated by directly sending her funds, everyone would know how much Liza received in donations. If donations were sent with Umbra instead, each donation would be sent to a different address, and only Liza would know the total amount of donations she received.
 
@@ -57,7 +56,7 @@ Consider another example: Liza runs a website that asks for donations. If everyo
 3. A payer uses your address or ENS name to look up your two public keys. Separately, the payer generates a random number.
 4. The random number is used with the spending public key to generate a "stealth address" to send funds to. The viewing public key is used to encrypt the random number.
 5. Using the Umbra contract, the payer sends funds to the stealth address and the stealth address and encrypted random number are emitted as an Announcement event.
-6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Announcement, this payment was for the receiver
+6. The receiver scans all Announcement events from the Umbra contract. For each, they use their viewing private key to decrypt the random number, then multiply that number by their spending private key to generate the stealth private key. If the stealth private key controls the stealth address emitted in the Announcement, this payment was for the receiver.
 7. The receiver can now use the stealth private key to either directly send the transaction required to withdraw funds to another address, or sign a meta-transaction to have the withdrawal request processed by a relayer.
 
 See the [Technical Details: How does it work?](https://app.umbra.cash/faq#how-does-it-work-technical) for more details.
@@ -66,13 +65,13 @@ See the [Technical Details: How does it work?](https://app.umbra.cash/faq#how-do
 
 Umbra offers a limited set of privacy guarantees and it’s important to understand them before using the protocol. Umbra does not offer "full" privacy like Aztec or Zcash. It simply makes it impossible for any outside observers (i.e. anyone who is not the sender or the receiver) to know who the sender paid by looking at the receiving address.
 
-It’s important to understand that poor hygiene by the receiver— for example, sending the funds directly to a publicly known address— reduces the privacy benefits for both the sender and receiver.
+It’s important to understand that poor hygiene by the receiver—for example, sending the funds directly to a publicly known address—reduces the privacy benefits for both the sender and receiver.
 
 The privacy properties of Umbra can also be diminished if an observer can narrow down the set of potential recipients for a given transaction. Any valid public key can be used as a recipient, and anyone who has sent a transaction on Ethereum has a publicly available public key. Therefore, by default, the "anonymity set"—the set of potential recipients of a transaction—is anyone who has ever sent an Ethereum transaction!
 
 In practice this isn’t necessarily the case, and an observer may be able to narrow down the list of recipients in a few ways:
 
-1. Most users will use ENS names to send funds, so the recipient most likely has published keys under an ENS name
+1. Most users will use ENS names to send funds, so the recipient most likely has published keys under an ENS name.
 2. Poor hygiene when withdrawing funds from your stealth addresses can reduce or entirely remove the privacy properties provided by Umbra. See [Which addresses are safe for withdrawing funds?](https://app.umbra.cash/faq#what-addresses-are-safe-for-withdrawing-funds-to) for more details. Always use caution when withdrawing!
 
 #### Is Umbra a mixer?
@@ -85,7 +84,7 @@ Check out the [full FAQ](https://app.umbra.cash/faq) to get more details about U
 
 ## Development
 
-This repository uses [yarn](https://yarnpkg.com/) for package management and [mise](https://mise.jdx.dev/) to install and select the Node.js and Yarn versions pinned in [mise.toml](mise.toml). The repository also requires [foundry](https://github.com/gakonst/foundry) for development of periphery smart contracts. Frontend development with local receive scanning uses the project-local [Netlify CLI](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/) installed by `yarn install` so the local app can run through the same `/api/ponder` Function proxy used in deployed environments.
+This repository uses [yarn](https://yarnpkg.com/) for package management and [mise](https://mise.jdx.dev/) to install and select the Node.js and Yarn versions pinned in [mise.toml](mise.toml). The repository also requires [Foundry](https://github.com/foundry-rs/foundry) for development of periphery smart contracts. Frontend development with local receive scanning uses the project-local [Netlify CLI](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/) installed by `yarn install` so the local app can run through the same `/api/ponder` Function proxy used in deployed environments.
 
 ### Components
 
@@ -229,4 +228,4 @@ Contributions to Umbra are welcome! Fork the project, create a new branch from m
 
 Umbra is available under the [MIT](LICENSE.txt) license.
 
-Copyright (c) 2023 ScopeLift
+Copyright (c) 2026 ScopeLift
