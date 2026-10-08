@@ -12,20 +12,22 @@ cp .env.example .env
 
 The required parameters are:
 
-`BLOCKNATIVE_API_KEY` - A Blocknative API key <br />
 `MAINNET_RPC_URL` - Network RPC URLs <br />
 `POLYGON_RPC_URL` <br />
 `OPTIMISM_RPC_URL` <br />
 `ARBITRUM_ONE_RPC_URL` <br />
 `SEPOLIA_RPC_URL` <br />
 `BASE_RPC_URL` <br />
-`PONDER_SUBGRAPH_URL` - Preferred Ponder GraphQL endpoint used for receive scans. On Netlify, use the same-origin proxy path `/api/ponder`; this value is public and bundled into the frontend. <br />
-`*_SUBGRAPH_URL` - Legacy per-chain subgraph URLs used when `PONDER_SUBGRAPH_URL` is not configured <br />
+`PONDER_SUBGRAPH_URL` - Preferred Ponder GraphQL endpoint used for receive scans. On Netlify, use the same-origin proxy path `/api/ponder`; this value is public and bundled into the frontend.
 
 Optional parameters are:
 
-`FORTMATIC_API_KEY` - API key needed if using Fortmatic <br />
-`PORTIS_API_KEY` - API key needed if using Portis
+`WALLET_CONNECT_PROJECT_ID` - WalletConnect project ID, needed to connect wallets through WalletConnect <br />
+`*_SUBGRAPH_URL` - Legacy per-chain subgraph URLs used when `PONDER_SUBGRAPH_URL` is not configured <br />
+`ETHERSCAN_API_KEY`, `OPTIMISTIC_ETHERSCAN_API_KEY`, `POLYGONSCAN_API_KEY`, `ARBISCAN_API_KEY` - API keys umbra-js uses to look up transaction history <br />
+`LOG_LEVEL` - Log level for the app's logger, defaults to `DEBUG` <br />
+`MAINTENANCE_MODE_SEND` - Set to `1` to put the Send page in maintenance mode <br />
+`MAINTENANCE_MODE_GLOBAL` - Set to `1` to put the whole app in maintenance mode
 
 Set up mise using the [root development instructions](../README.md#instructions), then install dependencies and build umbra-js from the workspace root. The root `mise.toml` selects Node.js and Yarn for all workspaces. The frontend and its lint checks rely on the umbra-js build output, so rerun `yarn build-umbra-js` after changing umbra-js:
 
@@ -66,6 +68,7 @@ Other commands are also available via `yarn` from this package:
 ```bash
 yarn lint # lint the codebase
 yarn prettier # apply formatting rules to the codebase
+yarn test # run the unit tests
 yarn build # build a static version of the site for deployment
 yarn clean # clear previous build artifacts
 ```
@@ -91,84 +94,81 @@ PONDER_SUBGRAPH_URL=/api/ponder yarn smoke-test:ponder https://deploy-preview-12
 
 ### Usage
 
-The app is currently available in English and Simplified Chinese.
-For more details on the internationalization approach and usage see [Quasar I18n doc v.1.18.10](https://v1.quasar.dev/options/app-internationalization#introduction) and [Vue I18n v8.x doc for Vue2](https://kazupon.github.io/vue-i18n/introduction.html).
+The app is currently available in English and Simplified Chinese. It uses [Vue I18n](https://vue-i18n.intlify.dev/) v9, set up as described in [Quasar's internationalization guide](https://quasar.dev/options/app-internationalization). Translations live in `src/i18n/locales/<locale>.json`.
 
-[Basic usage](https://v1.quasar.dev/options/app-internationalization#how-to-use) is as follows:
+Basic usage is as follows:
 
-1. In the corresponding `/i18n/locales/<locale>.json` file add a new key and corresponding text or translation like so:
-   `"key-name" : "Sample text"`
-2. Use the following templates to embed the message on the frontend:
+1. In each `src/i18n/locales/<locale>.json` file, add a new key and the corresponding text or translation, like so:
+   `"key-name": "Sample text"`
+2. Use the following templates to embed the message in the frontend:
+   - Inside templates: `{{ $t('key-name') }}`
+   - Inside attributes: `:label="$t('key-name')"`
+   - Inside `<script>` blocks and `.ts` files: `import { tc } from 'src/boot/i18n';` and use `tc('key-name')`
 
-- Inside templates: `{{ $t('key-name') }}`
-- Inside attributes: `:label="$t('key-name')"`
-- Inside scripts, import `getCurrentInstance()` from `'vue'` and create an instance inside a function using `const vm = getCurrentInstance()!;` then use `vm.$i18n.tc('AccountReceiveTable.date-received')`
-- Inside `.ts` files, `import { tc } from "../boot/i18n";` and use `tc('key-name')`.
+`yarn lint:i18n`, which runs as part of `yarn lint`, reports missing and unused translation keys.
 
-While embedding longer texts with styles and links inside template section of Vue components, there are a few options:
+While embedding longer texts with styles and links inside the template section of Vue components, there are a few options:
 
-1. **For texts with html tags and styles:**
-   Use `Vue-i18n`'s [HTML formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#html-formatting) style. E.g.,
+1. **For texts with HTML tags and styles:**
+   Use an [HTML message](https://vue-i18n.intlify.dev/guide/essentials/syntax#html-message). E.g.,
 
-- Store json file key value pairs like so, adding `\` in front of `"` to escape quotes:
-  `"key-with-html-tags": "<p>New paragraph with<span class=\"text-bold\">bold</span> text</p>"`
-- Inside templates use `v-html="$t('key-name')` to maintain style and html tags
-- You can also use `<i18n>` tags as shown in step 3.
+   - Store the key value pair like so, adding `\` in front of `"` to escape quotes:
+     `"key-with-html-tags": "<p>New paragraph with <span class=\"text-bold\">bold</span> text</p>"`
+   - Inside templates use `v-html="$t('key-with-html-tags')"` to keep the styles and HTML tags
+   - You can also use the `<i18n-t>` component as shown in option 3.
 
 2. **For texts that contain variables:**
-   Use [named formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#named-formatting) style. E.g.,
+   Use [named interpolation](https://vue-i18n.intlify.dev/guide/essentials/syntax#named-interpolation). E.g.,
 
-- Key pairs stored as : `"key-with-variables": "This is a %{varName}"`
-- Inside templates use, `{{ $t('key-with-variables'), { varName: JSVariableName }) }}`
+   - Store the key value pair like so: `"key-with-variables": "This is a {varName}"`
+   - Inside templates use `{{ $t('key-with-variables', { varName: jsVariableName }) }}`
 
-3. **For links or texts with html tags use `<i18n>` tags:**
-   Use [component interpolation](https://kazupon.github.io/vue-i18n/guide/interpolation.html#basic-usage) following `Vue-i18n`'s [list formatting](https://kazupon.github.io/vue-i18n/guide/formatting.html#list-formatting) style. E.g.,
+3. **For links or texts with HTML tags, use the `<i18n-t>` component:**
+   Use [component interpolation](https://vue-i18n.intlify.dev/guide/advanced/component) with [list interpolation](https://vue-i18n.intlify.dev/guide/essentials/syntax#list-interpolation) placeholders. E.g.,
 
-- Store key pairs like:
-  `"return-to-home": "You may now return {0} to send or receive funds"`,
-  `"return-home": "home"`
-- Links:
+   - Store key value pairs like:
+     `"return-to-home": "You may now return {0} to send or receive funds"`,
+     `"return-home": "home"`
+   - Links:
 
-```
-<i18n path="return-to-home" tag="p" class="q-mt-md">
-  <router-link class="hyperlink" :to="{ name: 'home' }">{{$t('return-home')}}</router-link>
-</i18n>
-```
+     ```
+     <i18n-t keypath="return-to-home" tag="p" class="q-mt-md">
+       <router-link class="hyperlink" :to="{ name: 'home' }">{{ $t('return-home') }}</router-link>
+     </i18n-t>
+     ```
 
-- Texts with html tags:
+   - Texts with HTML tags:
 
-```
-<i18n path="return-to-home" tag="p">
-  <span class="code">Text or {{ Variable }}</span>
-</i18n>
-```
+     ```
+     <i18n-t keypath="return-to-home" tag="p">
+       <span class="code">Text or {{ variable }}</span>
+     </i18n-t>
+     ```
 
-4. **Texts with multiple links or html tags:**
-   Use [slot syntax](https://kazupon.github.io/vue-i18n/guide/interpolation.html#slots-syntax-usage). E.g.,
+4. **For texts with multiple links or HTML tags:**
+   Use the [slots syntax](https://vue-i18n.intlify.dev/guide/advanced/component#slots-syntax-usage). E.g.,
 
-- Stored key pairs like:
-  `"key-with-multiple-var": "This has multiple {{links}} or {{vars}}."`
-- Inside the template:
+   - Store the key value pair like: `"key-with-multiple-var": "This has multiple {links} or {vars}."`
+   - Inside the template:
 
-```
-<i18n path="key-with-multiple-var" tag="p">
-
-  <template v-slot:links>
-    <a class="hyperlink" href="https://app.umbra.cash" target="_blank" >1</a >
-  </template>
-
-  <template v-slot:vars>
-    <span class="code">Text or {{ Variable }}</span>
-  </template>
-
-</i18n>
-```
+     ```
+     <i18n-t keypath="key-with-multiple-var" tag="p">
+       <template v-slot:links>
+         <a class="hyperlink" href="https://app.umbra.cash" target="_blank">1</a>
+       </template>
+       <template v-slot:vars>
+         <span class="code">Text or {{ variable }}</span>
+       </template>
+     </i18n-t>
+     ```
 
 ### Adding a new language
 
-If you want to add a new langauge e.g. French, you need to:
+If you want to add a new language, e.g. French, you need to:
 
-1. Create a new json file in `/i18n/locales/` and name it according to the language code listed [here](https://www.roseindia.net/tutorials/I18N/locales-list.shtml) i.e., `fr.json`. You can also change your browser language in settings and `console.log(locale)` in the `src/boot/i18n.ts` file to see the language code.
-2. Copy the contents of `en-US.json` to your newly created `<language-code>.json` file and translate key values to the corresponding language of your choice.
-3. Import the `json` file into the `src/i18n/index.ts` file and export it to be used.
-4. Add the language name and language code to `supportedLanguages` in `src/store/settings.ts`.
+1. Create a new JSON file in `src/i18n/locales/` and name it with the language's [BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Glossary/BCP_47_language_tag), e.g. `fr-FR.json`, to match the existing `en-US.json` and `zh-CN.json`.
+2. Copy the contents of `en-US.json` to the new file and translate the values into the new language.
+3. Import the JSON file in `src/i18n/index.ts` and add it to the exported messages under its language tag.
+4. Add the language name and language tag to `supportedLanguages` in `src/store/settings.ts`.
+
+To preview a language, open the app with the `locale` URL parameter, e.g. `http://localhost:8888/?locale=zh-CN`.
