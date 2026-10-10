@@ -281,7 +281,11 @@
     "i-know-what": "I know what I am doing",
     "danger": "Danger",
     "most-recent-announcement": "Most recent announcement block / timestamp:",
-    "most-recent-mined": "Most recent mined block / timestamp:"
+    "most-recent-mined": "Most recent mined block / timestamp:",
+    "most-recent-announcement-explanation": "To find your funds, the app checks every payment sent on this network. A payment sent after the most recent one checked won't appear until a later scan.",
+    "most-recent-payment-checked": "Most recent payment checked",
+    "most-recent-mined-block": "Most recent mined block",
+    "block-number": "Block {blockNumber}"
   },
   "AccountReceiveTableWarning": {
     "withdrawal-warning": "You are withdrawing to {0}, which has the following warnings:",

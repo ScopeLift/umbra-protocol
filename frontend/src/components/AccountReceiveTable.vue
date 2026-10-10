@@ -70,6 +70,26 @@
             {{ mostRecentAnnouncementBlockNumber }} /
             {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
             {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+            <base-tooltip class="q-ml-xs" icon="fas fa-question-circle">
+              <div class="q-mb-sm">{{ $t('AccountReceiveTable.most-recent-announcement-explanation') }}</div>
+              <div class="text-bold">{{ $t('AccountReceiveTable.most-recent-payment-checked') }}</div>
+              <div class="q-mb-sm">
+                {{ $t('AccountReceiveTable.block-number', { blockNumber: mostRecentAnnouncementBlockNumber }) }}<br />
+                {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
+                {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+              </div>
+              <template v-if="advancedMode && mostRecentBlockNumber">
+                <div class="text-bold">{{ $t('AccountReceiveTable.most-recent-mined-block') }}</div>
+                <div class="q-mb-sm">
+                  {{ $t('AccountReceiveTable.block-number', { blockNumber: mostRecentBlockNumber }) }}<br />
+                  {{ formatDate(mostRecentBlockTimestamp * 1000) }}
+                  {{ formatTime(mostRecentBlockTimestamp * 1000) }}
+                </div>
+              </template>
+              <router-link class="hyperlink dark-toggle" :to="{ name: 'FAQ', hash: '#receiving-funds' }">
+                {{ $t('AccountReceiveTable.learn-more') }}
+              </router-link>
+            </base-tooltip>
           </div>
 
           <!-- Status messages -->
