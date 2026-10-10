@@ -404,13 +404,6 @@ export class Umbra {
   }
 
   /**
-   * @notice Withdraw tokens by relaying a user's meta-transaction
-   */
-  async relayWithdrawOnBehalf() {
-    // TODO
-  }
-
-  /**
    * @notice Fetches all Umbra event logs using a subgraph, if available, falling back to RPC if not
    * @param overrides Override the start and end block used for scanning;
    * @returns A list of Announcement events supplemented with additional metadata, such as the sender, block,
