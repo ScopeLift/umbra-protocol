@@ -280,8 +280,13 @@
     "loss-warning": "It looks like you're trying to withdraw your funds to a token contract. It is very likely this is not what you intend, and proceeding will likely result in a loss of funds. Do not proceed unless you know exactly what you are doing.",
     "i-know-what": "I know what I am doing",
     "danger": "Danger",
-    "most-recent-announcement": "Most recent announcement block / timestamp:",
-    "most-recent-mined": "Most recent mined block / timestamp:"
+    "most-recent-mined": "Most recent mined block / timestamp:",
+    "block-number-and-age": "{blockNumber} ({age})",
+    "latest-block-scanned-title": "Latest block scanned",
+    "latest-block-scanned-explanation": "To find your funds, the app checks every payment sent on this network up to the latest block scanned. Payments sent after that block will show up in a later scan.",
+    "most-recent-payment-checked": "Most recent payment checked",
+    "most-recent-mined-block": "Most recent mined block",
+    "block-number": "Block {blockNumber}"
   },
   "AccountReceiveTableWarning": {
     "withdrawal-warning": "You are withdrawing to {0}, which has the following warnings:",
@@ -389,6 +394,9 @@
       "address-it-resolves-to": "The address it resolves to",
       "has-poap-tokens": "has POAP tokens",
       "gitcoin-contributor": "is a gitcoin contributor"
+    },
+    "Dates": {
+      "a-few-seconds-ago": "a few seconds ago"
     },
     "Dialog": {
       "warning": "Warning"
