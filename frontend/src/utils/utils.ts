@@ -179,6 +179,31 @@ export const getTokenLogoUri = (tokenAddress: string, tokens: TokenInfoExtended[
 
 export const formatTime = (timestamp: number) => date.formatDate(timestamp, 'h:mm A');
 
+// Largest unit first, so the elapsed time is described in the largest unit it spans
+const RELATIVE_TIME_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ['year', 365 * 24 * 60 * 60 * 1000],
+  ['month', 30 * 24 * 60 * 60 * 1000],
+  ['day', 24 * 60 * 60 * 1000],
+  ['hour', 60 * 60 * 1000],
+  ['minute', 60 * 1000],
+];
+
+/**
+ * @notice Describes how long ago a timestamp was, e.g. "2 minutes ago"
+ * @param timestamp Past timestamp, in milliseconds
+ * @param now Current time, in milliseconds
+ * @param locale Locale to format with, defaults to the browser's locale
+ * @dev Elapsed time is rounded down, and anything under a minute (including timestamps slightly in the future due
+ * to clock skew) is described as "a few seconds ago"
+ */
+export const formatRelativeTime = (timestamp: number, now: number, locale?: string) => {
+  const elapsed = now - timestamp;
+  const match = RELATIVE_TIME_UNITS.find(([, unitMs]) => elapsed >= unitMs);
+  if (!match) return tc('Utils.Dates.a-few-seconds-ago');
+  const [unit, unitMs] = match;
+  return new Intl.RelativeTimeFormat(locale, { numeric: 'always' }).format(-Math.floor(elapsed / unitMs), unit);
+};
+
 export const getTokenSymbol = (tokenAddress: string, tokens: TokenInfoExtended[]) => {
   const matchedToken = getTokenInfo(tokenAddress, tokens);
   const tokenSymbol = matchedToken ? matchedToken.symbol : '';

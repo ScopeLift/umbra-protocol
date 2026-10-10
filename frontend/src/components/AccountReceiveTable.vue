@@ -61,15 +61,54 @@
         >.
       </div>
 
-      <div v-if="mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp" class="text-caption q-mb-md">
+      <div
+        v-if="lastScannedBlockNumber || (mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp)"
+        class="block-data-wrapper text-caption"
+      >
         <!-- Container for block data and fetching status -->
         <div class="block-data-container row items-center justify-between q-col-gutter-md">
           <!-- Block data -->
-          <div class="block-data">
-            {{ $t('AccountReceiveTable.most-recent-announcement') }}
-            {{ mostRecentAnnouncementBlockNumber }} /
-            {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
-            {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+          <div v-if="lastScannedBlockNumber" class="block-data">
+            <block-icon :title="$t('AccountReceiveTable.latest-block-scanned-title')" />
+            {{
+              lastScannedBlockAge
+                ? $t('AccountReceiveTable.block-number-and-age', {
+                    blockNumber: lastScannedBlockNumber,
+                    age: lastScannedBlockAge,
+                  })
+                : lastScannedBlockNumber
+            }}
+            <base-tooltip class="q-ml-xs" icon="fas fa-question-circle">
+              <div class="q-mb-sm">{{ $t('AccountReceiveTable.latest-block-scanned-explanation') }}</div>
+              <div class="text-bold">{{ $t('AccountReceiveTable.latest-block-scanned-title') }}</div>
+              <div class="q-mb-sm">
+                {{ $t('AccountReceiveTable.block-number', { blockNumber: lastScannedBlockNumber }) }}
+                <template v-if="lastScannedBlockTimestamp">
+                  <br />
+                  {{ formatDate(lastScannedBlockTimestamp * 1000) }}
+                  {{ formatTime(lastScannedBlockTimestamp * 1000) }}
+                </template>
+              </div>
+              <template v-if="mostRecentAnnouncementBlockNumber && mostRecentAnnouncementTimestamp">
+                <div class="text-bold">{{ $t('AccountReceiveTable.most-recent-payment-checked') }}</div>
+                <div class="q-mb-sm">
+                  {{ $t('AccountReceiveTable.block-number', { blockNumber: mostRecentAnnouncementBlockNumber }) }}<br />
+                  {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
+                  {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+                </div>
+              </template>
+              <template v-if="advancedMode && mostRecentBlockNumber">
+                <div class="text-bold">{{ $t('AccountReceiveTable.most-recent-mined-block') }}</div>
+                <div class="q-mb-sm">
+                  {{ $t('AccountReceiveTable.block-number', { blockNumber: mostRecentBlockNumber }) }}<br />
+                  {{ formatDate(mostRecentBlockTimestamp * 1000) }}
+                  {{ formatTime(mostRecentBlockTimestamp * 1000) }}
+                </div>
+              </template>
+              <router-link class="hyperlink dark-toggle" :to="{ name: 'FAQ', hash: '#receiving-funds' }">
+                {{ $t('AccountReceiveTable.learn-more') }}
+              </router-link>
+            </base-tooltip>
           </div>
 
           <!-- Status messages -->
@@ -419,7 +458,18 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref, ComputedRef, onMounted } from 'vue';
+import {
+  computed,
+  defineComponent,
+  watch,
+  PropType,
+  ref,
+  watchEffect,
+  Ref,
+  ComputedRef,
+  onMounted,
+  onUnmounted,
+} from 'vue';
 import { copyToClipboard } from 'quasar';
 import {
   BigNumber,
@@ -440,6 +490,7 @@ import AccountReceiveTableWarning from 'components/AccountReceiveTableWarning.vu
 import AccountReceiveTableLossWarning from 'components/AccountReceiveTableLossWarning.vue';
 import AccountReceiveTableWithdrawConfirmation from 'components/AccountReceiveTableWithdrawConfirmation.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
+import BlockIcon from 'src/components/BlockIcon.vue';
 import WithdrawForm from 'components/WithdrawForm.vue';
 import { formatNameOrAddress, lookupOrReturnAddresses, toAddress, isAddressSafe } from 'src/utils/address';
 import { MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
@@ -450,6 +501,7 @@ import {
   formatDate,
   formatAmount,
   formatTime,
+  formatRelativeTime,
   getTokenSymbol,
   getTokenLogoUri,
   copyAddress,
@@ -838,6 +890,7 @@ export default defineComponent({
     AccountReceiveTableLossWarning,
     AccountReceiveTableWithdrawConfirmation,
     BaseTooltip,
+    BlockIcon,
     WithdrawForm,
   },
   props: {
@@ -869,10 +922,18 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+    lastScannedBlockNumber: {
+      type: Number,
+      required: false,
+    },
+    lastScannedBlockTimestamp: {
+      type: Number,
+      required: false,
+    },
   },
 
   setup(props, context) {
-    const { advancedMode, isDark, scanPrivateKey } = useSettingsStore();
+    const { advancedMode, isDark, language, scanPrivateKey } = useSettingsStore();
     const { setIsInWithdrawFlow } = useStatusesStore();
     const userAnnouncements = ref<UserAnnouncement[]>(props.announcements);
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
@@ -882,6 +943,15 @@ export default defineComponent({
       return spendingKeyPairFromSig.value as KeyPair;
     });
     const receiverTooltipText = tc('AccountReceiveTable.receiver-tool-tip');
+
+    // Refreshed periodically so the age of the latest block scanned keeps counting up while the page is open
+    const now = ref(Date.now());
+    let nowInterval: ReturnType<typeof setInterval> | undefined;
+    const lastScannedBlockAge = computed(() =>
+      props.lastScannedBlockTimestamp
+        ? formatRelativeTime(props.lastScannedBlockTimestamp * 1000, now.value, language.value.value || undefined)
+        : undefined
+    );
 
     watch(
       () => props.announcements,
@@ -893,11 +963,15 @@ export default defineComponent({
 
     onMounted(() => {
       setIsInWithdrawFlow(false);
+      nowInterval = setInterval(() => (now.value = Date.now()), 30_000);
     });
+
+    onUnmounted(() => clearInterval(nowInterval));
 
     return {
       advancedMode,
       context,
+      lastScannedBlockAge,
       receiverTooltipText,
       isAccountSetup,
       isDark,
@@ -927,6 +1001,21 @@ export default defineComponent({
 
 .external-link-icon
   color: transparent
+
+// Keeps the block data close to the table below it. Padding rather than margin on top, so it doesn't collapse into
+// the margin of the page title above
+.block-data-wrapper
+  padding-top: 8px
+  margin-bottom: 8px
+
+  // The grid layout used at this width has no table border, and its title has extra space above it
+  @media (max-width: 599px)
+    padding-top: 16px
+    margin-bottom: 0
+
+// In the grid layout, the cards have no inset, so drop the title's inset to line it up with them and the block data
+.q-table--grid :deep(.q-table__top)
+  padding-left: 0
 
 .block-data-container
   @media (max-width: 599px)

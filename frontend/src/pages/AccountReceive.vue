@@ -85,6 +85,8 @@
           :mostRecentAnnouncementTimestamp="mostRecentAnnouncementTimestamp"
           :mostRecentBlockNumber="mostRecentBlockNumber"
           :mostRecentBlockTimestamp="mostRecentBlockTimestamp"
+          :lastScannedBlockNumber="lastScannedBlockNumber"
+          :lastScannedBlockTimestamp="lastScannedBlockTimestamp"
           @reset="setFormStatus('waiting')"
         />
       </div>
@@ -152,6 +154,9 @@ function useScan() {
   const lastFetchedBlockKey = computed(() =>
     userAddress.value && chainId.value ? `lastFetchedBlock-${userAddress.value}-${chainId.value}` : null
   );
+  const lastFetchedBlockTimestampKey = computed(() =>
+    userAddress.value && chainId.value ? `lastFetchedBlockTimestamp-${userAddress.value}-${chainId.value}` : null
+  );
   const userAnnouncementsLocalStorageKey = computed(() =>
     userAddress.value && chainId.value ? `userAnnouncements-${userAddress.value}-${chainId.value}` : null
   );
@@ -168,6 +173,9 @@ function useScan() {
   const mostRecentAnnouncementBlockNumber = ref<number>();
   const mostRecentBlockTimestamp = ref<number>(0);
   const mostRecentBlockNumber = ref<number>(0);
+  // The scan checkpoint: every announcement up to and including this block has been scanned
+  const lastScannedBlockNumber = ref<number>();
+  const lastScannedBlockTimestamp = ref<number>();
 
   // Start and end blocks for advanced mode settings
   const {
@@ -185,11 +193,18 @@ function useScan() {
   const startBlockLocal = ref<number | undefined>(startBlock.value);
 
   function loadLastFetchedBlock() {
+    lastScannedBlockNumber.value = undefined;
+    lastScannedBlockTimestamp.value = undefined;
     if (lastFetchedBlockKey.value) {
       LocalStorage.getItem(lastFetchedBlockKey.value);
       const lastFetchedBlock = LocalStorage.getItem(lastFetchedBlockKey.value);
       window.logger.debug('Last fetched block loaded:', lastFetchedBlock);
       if (lastFetchedBlock) {
+        const lastFetchedBlockTimestamp = lastFetchedBlockTimestampKey.value
+          ? LocalStorage.getItem(lastFetchedBlockTimestampKey.value)
+          : null;
+        lastScannedBlockNumber.value = Number(lastFetchedBlock);
+        lastScannedBlockTimestamp.value = lastFetchedBlockTimestamp ? Number(lastFetchedBlockTimestamp) : undefined;
         startBlockLocal.value = Number(lastFetchedBlock);
         setScanBlocks(Number(lastFetchedBlock), endBlockLocal.value);
         return Number(lastFetchedBlock);
@@ -199,12 +214,21 @@ function useScan() {
     return undefined;
   }
 
-  function setLastFetchedBlock(block: number) {
+  function setLastFetchedBlock(block: number, timestamp: number | undefined) {
+    lastScannedBlockNumber.value = block;
+    lastScannedBlockTimestamp.value = timestamp;
     if (lastFetchedBlockKey.value) LocalStorage.set(lastFetchedBlockKey.value, block);
+    if (lastFetchedBlockTimestampKey.value) {
+      if (timestamp === undefined) LocalStorage.remove(lastFetchedBlockTimestampKey.value);
+      else LocalStorage.set(lastFetchedBlockTimestampKey.value, timestamp);
+    }
   }
 
   function resetLastFetchedBlock() {
+    lastScannedBlockNumber.value = undefined;
+    lastScannedBlockTimestamp.value = undefined;
     if (lastFetchedBlockKey.value) LocalStorage.remove(lastFetchedBlockKey.value);
+    if (lastFetchedBlockTimestampKey.value) LocalStorage.remove(lastFetchedBlockTimestampKey.value);
   }
 
   function loadUserAnnouncementBlockData() {
@@ -410,7 +434,15 @@ function useScan() {
     }
   }
 
-  async function getSubgraphHeadBlockNumber(chainId: number, subgraphUrl: string): Promise<number> {
+  type HeadBlock = { number: number; timestamp?: number };
+
+  // GraphQL endpoints may return block fields as numbers or numeric strings
+  function parseBlockField(value: unknown): number | undefined {
+    const parsed = typeof value === 'string' && value.length > 0 ? Number(value) : value;
+    return typeof parsed === 'number' && Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  async function getSubgraphHeadBlock(chainId: number, subgraphUrl: string): Promise<HeadBlock> {
     const headers = { 'Content-Type': 'application/json' };
     const ponderNetwork = getPonderNetworkName(chainId);
 
@@ -431,7 +463,7 @@ function useScan() {
         if (!ponderResponse.ok) throw new Error(`Subgraph head request failed with status ${ponderResponse.status}`);
 
         const ponderPayload = (await ponderResponse.json()) as {
-          data?: { _meta?: { status?: Record<string, { block?: { number?: number } }> } };
+          data?: { _meta?: { status?: Record<string, { block?: { number?: number; timestamp?: number } }> } };
           errors?: Array<{ message: string }>;
         };
 
@@ -439,9 +471,10 @@ function useScan() {
           throw new Error(ponderPayload.errors.map((error) => error.message).join('; '));
         }
 
-        const ponderHead = ponderPayload.data?._meta?.status?.[ponderNetwork]?.block?.number;
-        if (typeof ponderHead === 'number' && Number.isFinite(ponderHead)) {
-          return ponderHead;
+        const ponderHead = ponderPayload.data?._meta?.status?.[ponderNetwork]?.block;
+        const ponderHeadNumber = parseBlockField(ponderHead?.number);
+        if (ponderHeadNumber !== undefined) {
+          return { number: ponderHeadNumber, timestamp: parseBlockField(ponderHead?.timestamp) };
         }
       } catch {
         // Legacy endpoints can reject the Ponder query with different HTTP statuses or GraphQL errors.
@@ -456,6 +489,7 @@ function useScan() {
           _meta {
             block {
               number
+              timestamp
             }
           }
         }`,
@@ -465,22 +499,35 @@ function useScan() {
     if (!legacyResponse.ok) throw new Error(`Legacy subgraph head request failed with status ${legacyResponse.status}`);
 
     const legacyPayload = (await legacyResponse.json()) as {
-      data?: { _meta?: { block?: { number?: number | string } } };
+      data?: { _meta?: { block?: { number?: number | string; timestamp?: number | string } } };
       errors?: Array<{ message: string }>;
     };
     if (legacyPayload.errors?.length) {
       throw new Error(legacyPayload.errors.map((error) => error.message).join('; '));
     }
 
-    const legacyHead = legacyPayload.data?._meta?.block?.number;
-    if (typeof legacyHead === 'number' && Number.isFinite(legacyHead)) {
-      return legacyHead;
-    }
-    if (typeof legacyHead === 'string' && legacyHead.length > 0) {
-      return Number(legacyHead);
+    const legacyHead = legacyPayload.data?._meta?.block;
+    const legacyHeadNumber = parseBlockField(legacyHead?.number);
+    if (legacyHeadNumber !== undefined) {
+      return { number: legacyHeadNumber, timestamp: parseBlockField(legacyHead?.timestamp) };
     }
 
     throw new Error(`Missing subgraph head block for chain ${chainId}`);
+  }
+
+  // Returns the timestamp of the given block, reusing block data already fetched during the scan when possible
+  async function getBlockTimestamp(blockNumber: number, knownBlocks: HeadBlock[]): Promise<number | undefined> {
+    const knownTimestamp = knownBlocks.find(
+      (block) => block.number === blockNumber && block.timestamp !== undefined
+    )?.timestamp;
+    if (knownTimestamp !== undefined) return knownTimestamp;
+
+    try {
+      return (await provider.value!.getBlock(blockNumber)).timestamp;
+    } catch (error) {
+      window.logger.warn(`Failed to fetch timestamp for block ${blockNumber}`, error);
+      return undefined;
+    }
   }
 
   async function scan() {
@@ -575,10 +622,10 @@ function useScan() {
         const latestBlock: Block = await getLastBlock(provider.value!);
         mostRecentBlockNumber.value = latestBlock.number;
         mostRecentBlockTimestamp.value = latestBlock.timestamp;
-        let nextStartBlock: number | undefined;
+        let nextStartBlock: HeadBlock | undefined;
         if (umbra.value.chainConfig.subgraphUrl) {
           try {
-            nextStartBlock = await getSubgraphHeadBlockNumber(
+            nextStartBlock = await getSubgraphHeadBlock(
               umbra.value.chainConfig.chainId,
               umbra.value.chainConfig.subgraphUrl
             );
@@ -586,7 +633,7 @@ function useScan() {
             window.logger.warn('Failed to fetch subgraph head block, preserving previous checkpoint', error);
           }
         } else {
-          nextStartBlock = latestBlock.number;
+          nextStartBlock = latestBlock;
         }
 
         // Default scan behavior
@@ -641,8 +688,13 @@ function useScan() {
 
         // Cap the checkpoint at the RPC head too, since announcement fetching may fall back to RPC logs.
         if (nextStartBlock !== undefined) {
-          const checkpoint = Math.min(nextStartBlock, latestBlock.number, overrides.endBlock ?? nextStartBlock);
-          setLastFetchedBlock(checkpoint);
+          const checkpoint = Math.min(
+            nextStartBlock.number,
+            latestBlock.number,
+            overrides.endBlock ?? nextStartBlock.number
+          );
+          const checkpointTimestamp = await getBlockTimestamp(checkpoint, [nextStartBlock, latestBlock]);
+          setLastFetchedBlock(checkpoint, checkpointTimestamp);
           startBlockLocal.value = checkpoint;
         }
       }
@@ -718,6 +770,8 @@ function useScan() {
     isValidEndBlock,
     isValidPrivateKey,
     isValidStartBlock,
+    lastScannedBlockNumber,
+    lastScannedBlockTimestamp,
     mostRecentAnnouncementBlockNumber,
     mostRecentAnnouncementTimestamp,
     mostRecentBlockNumber,
