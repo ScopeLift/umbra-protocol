@@ -1,7 +1,12 @@
 /**
  * @jest-environment jsdom
  */
-import { humanizeTokenAmount, humanizeArithmeticResult, humanizeMinSendAmount } from '../src/utils/utils';
+import {
+  humanizeTokenAmount,
+  humanizeArithmeticResult,
+  humanizeMinSendAmount,
+  formatRelativeTime,
+} from '../src/utils/utils';
 import { parseUnits, parseEther } from '@ethersproject/units';
 
 const usdc = {
@@ -272,6 +277,37 @@ describe('Utilities', () => {
       it(`humanizes ${test.input} as ${test.output}`, () => {
         expect(humanizeMinSendAmount(test.input)).toEqual(test.output);
       });
+    });
+  });
+
+  describe('formatRelativeTime', () => {
+    const now = Date.UTC(2026, 9, 10, 12, 0, 0);
+    const second = 1000;
+    const minute = 60 * second;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+    const tests = [
+      { elapsed: 0, output: 'a few seconds ago' },
+      { elapsed: 59 * second, output: 'a few seconds ago' },
+      { elapsed: -10 * second, output: 'a few seconds ago' },
+      { elapsed: minute, output: '1 minute ago' },
+      { elapsed: 2 * minute - 1, output: '1 minute ago' },
+      { elapsed: 2 * minute, output: '2 minutes ago' },
+      { elapsed: 6 * hour, output: '6 hours ago' },
+      { elapsed: day - 1, output: '23 hours ago' },
+      { elapsed: 2 * day, output: '2 days ago' },
+      { elapsed: 45 * day, output: '1 month ago' },
+      { elapsed: 400 * day, output: '1 year ago' },
+    ];
+
+    tests.forEach((test) => {
+      it(`describes ${test.elapsed}ms elapsed as "${test.output}"`, () => {
+        expect(formatRelativeTime(now - test.elapsed, now, 'en-US')).toEqual(test.output);
+      });
+    });
+
+    it('formats in the given locale', () => {
+      expect(formatRelativeTime(now - 2 * minute, now, 'zh-CN')).toEqual('2分钟前');
     });
   });
 });

@@ -66,10 +66,12 @@
         <div class="block-data-container row items-center justify-between q-col-gutter-md">
           <!-- Block data -->
           <div class="block-data">
-            {{ $t('AccountReceiveTable.most-recent-announcement') }}
-            {{ mostRecentAnnouncementBlockNumber }} /
-            {{ formatDate(mostRecentAnnouncementTimestamp * 1000) }}
-            {{ formatTime(mostRecentAnnouncementTimestamp * 1000) }}
+            {{
+              $t('AccountReceiveTable.most-recent-announcement', {
+                blockNumber: mostRecentAnnouncementBlockNumber,
+                age: mostRecentAnnouncementAge,
+              })
+            }}
             <base-tooltip class="q-ml-xs" icon="fas fa-question-circle">
               <div class="q-mb-sm">{{ $t('AccountReceiveTable.most-recent-announcement-explanation') }}</div>
               <div class="text-bold">{{ $t('AccountReceiveTable.most-recent-payment-checked') }}</div>
@@ -439,7 +441,18 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, watch, PropType, ref, watchEffect, Ref, ComputedRef, onMounted } from 'vue';
+import {
+  computed,
+  defineComponent,
+  watch,
+  PropType,
+  ref,
+  watchEffect,
+  Ref,
+  ComputedRef,
+  onMounted,
+  onUnmounted,
+} from 'vue';
 import { copyToClipboard } from 'quasar';
 import {
   BigNumber,
@@ -470,6 +483,7 @@ import {
   formatDate,
   formatAmount,
   formatTime,
+  formatRelativeTime,
   getTokenSymbol,
   getTokenLogoUri,
   copyAddress,
@@ -892,7 +906,7 @@ export default defineComponent({
   },
 
   setup(props, context) {
-    const { advancedMode, isDark, scanPrivateKey } = useSettingsStore();
+    const { advancedMode, isDark, language, scanPrivateKey } = useSettingsStore();
     const { setIsInWithdrawFlow } = useStatusesStore();
     const userAnnouncements = ref<UserAnnouncement[]>(props.announcements);
     // Check for manually entered private key in advancedMode, otherwise use the key from user's signature
@@ -902,6 +916,13 @@ export default defineComponent({
       return spendingKeyPairFromSig.value as KeyPair;
     });
     const receiverTooltipText = tc('AccountReceiveTable.receiver-tool-tip');
+
+    // Refreshed periodically so the age of the most recent announcement keeps counting up while the page is open
+    const now = ref(Date.now());
+    let nowInterval: ReturnType<typeof setInterval> | undefined;
+    const mostRecentAnnouncementAge = computed(() =>
+      formatRelativeTime(props.mostRecentAnnouncementTimestamp * 1000, now.value, language.value.value || undefined)
+    );
 
     watch(
       () => props.announcements,
@@ -913,11 +934,15 @@ export default defineComponent({
 
     onMounted(() => {
       setIsInWithdrawFlow(false);
+      nowInterval = setInterval(() => (now.value = Date.now()), 30_000);
     });
+
+    onUnmounted(() => clearInterval(nowInterval));
 
     return {
       advancedMode,
       context,
+      mostRecentAnnouncementAge,
       receiverTooltipText,
       isAccountSetup,
       isDark,
