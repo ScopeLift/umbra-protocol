@@ -108,14 +108,12 @@
         <!-- Send form -->
         <q-form v-else @submit="onFormSubmit" class="form" ref="sendFormRef">
           <!-- Identifier -->
-          <div>{{ $t('Send.recipient') }}</div>
           <base-input
             v-model="recipientId"
             :debounce="500"
             :disable="isSending"
-            placeholder="vitalik.eth"
+            :label="$t('Send.recipient')"
             :lazy-rules="false"
-            :hideBottomSpace="true"
             :rules="(value: string) => isValidId(value, undefined)"
             ref="recipientIdBaseInputRef"
           />
@@ -145,7 +143,6 @@
           </div>
 
           <!-- Token -->
-          <div class="q-pt-sm">{{ $t('Send.select-token') }}</div>
           <base-select
             v-model="token"
             :disable="isSending"
@@ -158,13 +155,11 @@
           />
 
           <!-- Amount -->
-          <div>
-            {{ $t('Send.amount') }}
-          </div>
           <base-input
             v-model="humanAmount"
             :disable="isSending"
             placeholder="0"
+            :label="$t('Send.amount')"
             :appendButtonDisable="!recipientId || !isValidRecipientId"
             :appendButtonLabel="$t('Send.max')"
             @click="setHumanAmountMax"
@@ -308,12 +303,11 @@
                     />
                   </q-card-section>
                   <q-card-section>
-                    <div>{{ $t('Send.recipient') }}</div>
                     <base-input
                       v-model="Send.receiver"
                       :debounce="500"
                       :disable="isSending"
-                      placeholder="vitalik.eth"
+                      :label="$t('Send.recipient')"
                       :lazy-rules="false"
                       :rules="(value: string) => isValidId(value, index)"
                     />
@@ -328,12 +322,11 @@
                       <br /><br />
                     </div>
                     <!-- Token -->
-                    <div>{{ $t('Send.select-token') }}</div>
-
                     <base-select
                       v-model="Send.token"
                       :disable="isSending"
                       filled
+                      :label="$t('Send.token')"
                       :options="tokenList"
                       option-label="symbol"
                       ref="tokenBaseSelectRef"
@@ -341,13 +334,11 @@
                       lazy-rules
                     />
                     <!-- Amount -->
-                    <div>
-                      {{ $t('Send.amount') }}
-                    </div>
                     <base-input
                       v-model="Send.amount"
                       :disable="isSending"
                       placeholder="0"
+                      :label="$t('Send.amount')"
                       :appendButtonDisable="!Send.receiver || !isValidRecipientId"
                       lazy-rules
                       :rules="(value: string) => isValidBatchSendAmount(value, Send.token)"
@@ -370,7 +361,6 @@
                       v-model="Send.receiver"
                       :debounce="500"
                       :disable="isSending"
-                      placeholder="vitalik.eth"
                       :label="$t('Send.receiver-addr-ens')"
                       :lazy-rules="false"
                       :rules="(value: string) => isValidId(value, index)"
