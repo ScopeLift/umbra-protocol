@@ -457,9 +457,7 @@
                         </span>
                       </base-tooltip>
                     </td>
-                    <span>
-                      <td class="min text-right">{{ batchSendHumanToll }} {{ NATIVE_TOKEN.symbol }}</td>
-                    </span>
+                    <td class="min text-right">{{ batchSendHumanToll }} {{ NATIVE_TOKEN.symbol }}</td>
                   </tr>
                   <!-- Summary -->
                   <tr>
