@@ -65,7 +65,7 @@
             @click="toggleCustomFee"
             class="cursor-pointer"
             color="primary"
-            name="fas fa-edit"
+            name="fas fa-pen-to-square"
             right
           />
         </div>
@@ -83,7 +83,7 @@
       </div>
 
       <div v-if="!canWithdraw" class="border-warning q-mt-lg q-pa-md">
-        <q-icon name="fas fa-exclamation-triangle" color="warning" left />
+        <q-icon name="fas fa-triangle-exclamation" color="warning" left />
         {{ $t('AccountReceiveTableWithdrawConfirmation.cannot-withdraw') }}
       </div>
     </q-card-section>
@@ -109,7 +109,7 @@
         </div>
         <a v-if="txHash.length === 66" class="text-caption hyperlink" :href="etherscanUrl" target="_blank">
           {{ $t('AccountReceiveTableWithdrawConfirmation.view-transaction') }}
-          <q-icon name="fas fa-external-link-alt" right />
+          <q-icon name="fas fa-up-right-from-square" right />
         </a>
       </div>
     </q-card-section>

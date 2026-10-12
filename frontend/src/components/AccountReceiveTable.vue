@@ -78,7 +78,7 @@
                   })
                 : lastScannedBlockNumber
             }}
-            <base-tooltip class="q-ml-xs" icon="fas fa-question-circle">
+            <base-tooltip class="q-ml-xs" icon="fas fa-circle-question">
               <div class="q-mb-sm">{{ $t('AccountReceiveTable.latest-block-scanned-explanation') }}</div>
               <div class="text-bold">{{ $t('AccountReceiveTable.latest-block-scanned-title') }}</div>
               <div class="q-mb-sm">
@@ -199,7 +199,7 @@
                 <div class="row justify-between items-center">
                   <div>
                     <span class="q-mr-xs">{{ $t('AccountReceiveTable.stealth-receiver') }}</span>
-                    <base-tooltip icon="fas fa-question-circle">
+                    <base-tooltip icon="fas fa-circle-question">
                       <span>
                         {{ receiverTooltipText }}
                       </span>
@@ -285,7 +285,7 @@
               {{ col.label }}
 
               <!-- Question mark with tooltip for receiver column -->
-              <base-tooltip v-if="col.name === 'receiver'" icon="fas fa-question-circle">
+              <base-tooltip v-if="col.name === 'receiver'" icon="fas fa-circle-question">
                 <span>
                   {{ receiverTooltipText }}
                 </span>
@@ -316,7 +316,7 @@
                     <div>{{ formatDate(col.value * 1000) }}</div>
                     <div class="text-caption text-grey">{{ formatTime(col.value * 1000) }}</div>
                   </div>
-                  <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
+                  <q-icon class="external-link-icon" name="fas fa-up-right-from-square" right />
                 </div>
               </div>
 
@@ -391,7 +391,7 @@
                     {{ $t('AccountReceiveTable.withdrawn') }}</a
                   >
                   <q-icon name="fas fa-check" class="q-ml-sm" right />
-                  <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
+                  <q-icon class="external-link-icon" name="fas fa-up-right-from-square" right />
                 </div>
                 <div v-else>
                   {{ $t('AccountReceiveTable.withdrawn') }}

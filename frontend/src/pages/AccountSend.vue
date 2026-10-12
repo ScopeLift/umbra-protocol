@@ -33,7 +33,7 @@
           <q-card class="row justify-center q-my-none q-py-none border-top-thick">
             <q-card-section>
               <h5 class="text-bold text-center q-mt-none">
-                <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
+                <q-icon name="fas fa-triangle-exclamation" color="warning" left />{{ $t('Utils.Dialog.warning') }}
               </h5>
             </q-card-section>
             <q-card-section class="q-pb-lg">
@@ -59,7 +59,7 @@
           <q-card class="row justify-center q-my-none q-py-none border-top-thick">
             <q-card-section>
               <h5 class="text-bold text-center q-mt-none">
-                <q-icon name="fas fa-exclamation-triangle" color="warning" left />{{ $t('Utils.Dialog.warning') }}
+                <q-icon name="fas fa-triangle-exclamation" color="warning" left />{{ $t('Utils.Dialog.warning') }}
               </h5>
             </q-card-section>
             <q-card-section class="q-pb-sm">
@@ -128,7 +128,7 @@
             <q-checkbox v-model="useNormalPubKey" class="col-auto" dense>
               {{ $t('Send.recipient-pkey') }}
             </q-checkbox>
-            <base-tooltip class="col-auto q-ml-sm" icon="fas fa-question-circle">
+            <base-tooltip class="col-auto q-ml-sm" icon="fas fa-circle-question">
               <span>
                 {{ $t('Send.question-circle') }}
                 <span class="text-bold">
@@ -192,7 +192,7 @@
                 <tr>
                   <td class="min text-left" style="padding: 0 2rem 0 0">
                     {{ $t('Send.fee') }}
-                    <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
+                    <base-tooltip class="col-auto q-ml-xs" icon="fas fa-circle-question">
                       <span>
                         {{ $t('Send.fee-explain', { chainName: currentChain?.chainName }) }}
                         <router-link
@@ -304,7 +304,7 @@
                       :disable="isSending"
                       :flat="true"
                       label=""
-                      icon="fas fa-times"
+                      icon="fas fa-xmark"
                     />
                   </q-card-section>
                   <q-card-section>
@@ -411,7 +411,7 @@
                     :disable="isSending"
                     :flat="true"
                     label=""
-                    icon="fas fa-times"
+                    icon="fas fa-xmark"
                   />
                 </div>
                 <div class="batch-send" v-if="batchSends[index].validationError">
@@ -445,7 +445,7 @@
                   <tr>
                     <td class="min text-right" style="padding: 0 2rem 0 0">
                       {{ $t('Send.fee') }}
-                      <base-tooltip class="col-auto q-ml-xs" icon="fas fa-question-circle">
+                      <base-tooltip class="col-auto q-ml-xs" icon="fas fa-circle-question">
                         <span>
                           {{ $t('Send.fee-explain', { chainName: currentChain?.chainName }) }}
                           <router-link

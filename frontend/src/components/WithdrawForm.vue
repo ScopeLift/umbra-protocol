@@ -48,7 +48,7 @@
       <!-- Privacy warning -->
       <div class="border q-mb-lg" />
       <div class="text-caption">
-        <q-icon name="fas fa-exclamation-triangle" color="warning" left />
+        <q-icon name="fas fa-triangle-exclamation" color="warning" left />
         <span v-html="$t('WithdrawForm.warning')"></span>
         <router-link class="hyperlink" to="/faq#receiving-funds" target="_blank">
           {{ $t('WithdrawForm.learn-more') }} </router-link

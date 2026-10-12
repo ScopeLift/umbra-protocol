@@ -54,11 +54,9 @@
   },
   "Contact": {
     "contact": "Contact",
-    "paragraph": "Read the {0} and still have questions? Feel free to get in touch! You'll likely get the fastest response on Discord.",
+    "paragraph": "Read the {0} and still have questions? Feel free to get in touch!",
     "faq": "FAQ",
-    "discord": "{0} on Discord",
-    "join-us": "Join us",
-    "twitter": "{0} Umbra on Twitter",
+    "x": "{0} Umbra on X",
     "follow": "Follow",
     "email": "Email us at {0}"
   },

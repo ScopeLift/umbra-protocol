@@ -10,8 +10,7 @@
 
 <p align="center">
 	🚀 <a href="https://app.umbra.cash">app.umbra.cash</a>
-	🐦 <a href="https://x.com/umbracash">@UmbraCash</a>
-	💬 <a href="https://discord.com/invite/uw4y5J2p7C">Discord</a>
+	𝕏 <a href="https://x.com/umbracash">@UmbraCash</a>
 	🏗️ <a href="https://x.com/scopelift">@ScopeLift</a>
 </p>
 
