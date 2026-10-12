@@ -3,7 +3,7 @@
     <div class="row justify-between items-center gutter-margin q-py-sm">
       <div>{{ $t('WalletRow.account') }}</div>
       <div @click="setDisplayWalletRow(false)">
-        <q-icon class="copy-icon q-pr-xs cursor-pointer" name="fas fa-times" />
+        <q-icon class="copy-icon q-pr-xs cursor-pointer" name="fas fa-xmark" />
       </div>
     </div>
     <div class="gutter-margin column inner-container">
@@ -35,7 +35,7 @@
 
           <div class="row items-center q-ml-sm text-xxs external-link-parent cursor-pointer">
             <a class="hyperlink" :href="blockExplorerUrl" target="_blank" rel="noopener noreferrer">
-              <q-icon class="external-link q-pr-xs dark-toggle" name="fas fa-external-link-alt" />
+              <q-icon class="external-link q-pr-xs dark-toggle" name="fas fa-up-right-from-square" />
               <span>{{ $t('WalletRow.view-on-explorer') }}</span>
             </a>
           </div>

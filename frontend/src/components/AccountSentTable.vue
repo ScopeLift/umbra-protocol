@@ -13,7 +13,7 @@
         <base-button
           size="sm"
           @click="showClearHistoryWarning = true"
-          icon="fa fa-trash"
+          icon="fas fa-trash"
           :flat="true"
           :label="$t('AccountSent.clear-history')"
         />
@@ -23,7 +23,7 @@
       <q-card class="row justify-center q-my-none q-py-none border-top-thick">
         <q-card-section>
           <h5 class="text-bold text-center q-mt-none">
-            <q-icon name="fas fa-exclamation-triangle" color="warning" left /> {{ $t('Utils.Dialog.warning') }}
+            <q-icon name="fas fa-triangle-exclamation" color="warning" left /> {{ $t('Utils.Dialog.warning') }}
           </h5>
         </q-card-section>
         <q-card-section>
@@ -55,7 +55,7 @@
       <template v-slot:top-left="props">
         <div class="flex">
           <div class="q-table__title" :props="props">{{ $t('AccountSentTable.sent-funds') }}</div>
-          <base-tooltip class="q-ml-sm self-center" size="xs" icon="fas fa-question-circle">
+          <base-tooltip class="q-ml-sm self-center" size="xs" icon="fas fa-circle-question">
             {{ $t('AccountSentTable.storage-description') }}
           </base-tooltip>
         </div>
@@ -113,7 +113,7 @@
                   <div>{{ col.value }}</div>
                   <div class="text-caption text-grey">{{ props.row.dateSentTime }}</div>
                 </div>
-                <q-icon class="external-link-icon" name="fas fa-external-link-alt" right />
+                <q-icon class="external-link-icon" name="fas fa-up-right-from-square" right />
               </div>
             </div>
 

@@ -14,30 +14,15 @@
 
     <p class="horizontal-center" style="max-width: 400px">
       <q-list>
-        <!-- Discord -->
+        <!-- X -->
         <q-item class="q-pl-none">
           <q-item-section avatar>
-            <q-icon class="discord" name="fab fa-discord" />
+            <q-icon name="fab fa-x-twitter" />
           </q-item-section>
 
           <q-item-section class="text-left">
-            <i18n-t scope="global" keypath="Contact.discord" tag="span">
-              <a class="hyperlink" href="https://discord.com/invite/uw4y5J2p7C" target="_blank">{{
-                $t('Contact.join-us')
-              }}</a>
-            </i18n-t>
-          </q-item-section>
-        </q-item>
-
-        <!-- Twitter -->
-        <q-item class="q-pl-none">
-          <q-item-section avatar>
-            <q-icon class="twitter" name="fab fa-twitter" />
-          </q-item-section>
-
-          <q-item-section class="text-left">
-            <i18n-t scope="global" keypath="Contact.twitter" tag="span">
-              <a class="hyperlink" href="https://twitter.com/UmbraCash" target="_blank">{{ $t('Contact.follow') }}</a>
+            <i18n-t scope="global" keypath="Contact.x" tag="span">
+              <a class="hyperlink" href="https://x.com/UmbraCash" target="_blank">{{ $t('Contact.follow') }}</a>
             </i18n-t>
           </q-item-section>
         </q-item>
@@ -69,11 +54,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="sass" scoped>
-.discord
-  color: #5865F2
-
-.twitter
-  color: #1DA1F2
-</style>

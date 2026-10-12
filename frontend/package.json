@@ -21,7 +21,7 @@
   "dependencies": {
     "@adraffy/ens-normalize": "1.9.2",
     "@metamask/jazzicon": "^2.0.0",
-    "@quasar/extras": "^1.15.8",
+    "@quasar/extras": "^1.18.0",
     "@umbracash/umbra-js": "workspace:^",
     "@uniswap/token-lists": "^1.0.0-beta.19",
     "@web3-onboard/coinbase": "2.4.2",

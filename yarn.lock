@@ -6642,10 +6642,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@quasar/extras@npm:^1.15.8":
-  version: 1.15.8
-  resolution: "@quasar/extras@npm:1.15.8"
-  checksum: 10c0/ab526379f024625974ddbc1a98d3790352e46a9aa1c2674b3020b49de2c35192d06140df0d9af1bb73bd17c67442573d8bcf7ceef328dd7d7eacb3b4996350f4
+"@quasar/extras@npm:^1.18.0":
+  version: 1.18.0
+  resolution: "@quasar/extras@npm:1.18.0"
+  checksum: 10c0/deb795bbca27b2ea0fad47c224af2029459b1896b06fdc3d2d58ef9fe014968508f28005b4f96246461fdbcb1e75ccbfe6fb193095787d473627f9af1c9dabb6
   languageName: node
   linkType: hard
 
@@ -10254,7 +10254,7 @@ __metadata:
     "@babel/eslint-parser": "npm:^7.19.1"
     "@metamask/jazzicon": "npm:^2.0.0"
     "@quasar/app-webpack": "npm:3.15.1"
-    "@quasar/extras": "npm:^1.15.8"
+    "@quasar/extras": "npm:^1.18.0"
     "@quasar/quasar-app-extension-dotenv": "npm:^1.0.5"
     "@types/jest": "npm:^27.4.1"
     "@types/node": "npm:^14.11.8"

@@ -109,7 +109,7 @@
             v-if="$q.screen.xs"
             flat
             @click="drawerRight = !drawerRight"
-            icon="fas fa-times"
+            icon="fas fa-xmark"
             class="q-mt-md q-pr-md darkgrey"
             style="height: 50px"
           />
@@ -158,14 +158,14 @@
                 class="icon"
                 color="primary"
                 dense
-                icon="fas fa-cog"
+                icon="fas fa-gear"
               />
               <span class="dark-toggle text-caption q-ml-md"
                 >{{ $t('Base-Layout.advanced-mode') }}
                 {{ advancedMode ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
               >
               <span>
-                <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+                <base-tooltip class="q-ml-sm" icon="fas fa-circle-question">
                   {{ $t('Base-Layout.advanced-mode-description') }}
                   <span class="text-bold">{{ $t('Base-Layout.caution') }}</span>
                 </base-tooltip>
@@ -180,14 +180,14 @@
                 class="icon"
                 color="primary"
                 dense
-                icon="fas fa-cog"
+                icon="fas fa-gear"
               />
               <span class="dark-toggle text-caption q-ml-md"
                 >{{ $t('Base-Layout.send-history') }}
                 {{ sendHistorySave ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
               >
               <span>
-                <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+                <base-tooltip class="q-ml-sm" icon="fas fa-circle-question">
                   {{ $t('Base-Layout.send-history-description') }}
                 </base-tooltip>
               </span>
@@ -202,7 +202,7 @@
                 :outline="true"
                 :rounded="true"
               />
-              <base-tooltip class="q-ml-sm" icon="fas fa-question-circle">
+              <base-tooltip class="q-ml-sm" icon="fas fa-circle-question">
                 {{ $t('Base-Layout.clear-local-storage-description') }}
               </base-tooltip>
             </div>
@@ -244,15 +244,9 @@
           <div class="col-xs-12 col-sm-4 q-mt-lg">
             <p class="dark-toggle spaced-letters">{{ $t('Base-Layout.links') }}</p>
             <p>
-              <a href="https://twitter.com/UmbraCash" target="_blank" class="no-text-decoration">
-                <q-icon class="dark-toggle q-mr-md" name="fab fa-twitter" size="xs" />
-                <span class="hyperlink text-caption">Twitter</span>
-              </a>
-            </p>
-            <p>
-              <a href="https://discord.com/invite/uw4y5J2p7C" target="_blank" class="no-text-decoration">
-                <q-icon class="dark-toggle q-mr-md" name="fab fa-discord" size="xs" />
-                <span class="hyperlink text-caption">Discord</span>
+              <a href="https://x.com/UmbraCash" target="_blank" class="no-text-decoration">
+                <q-icon class="dark-toggle q-mr-md" name="fab fa-x-twitter" size="xs" />
+                <span class="hyperlink text-caption">@UmbraCash</span>
               </a>
             </p>
             <p>

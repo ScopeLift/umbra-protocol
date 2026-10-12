@@ -11,7 +11,7 @@
     rounded
   >
     <template v-if="!isSupportedNetwork" v-slot:prepend>
-      <q-icon name="fas fa-exclamation-triangle" color="warning" size="1rem" />
+      <q-icon name="fas fa-triangle-exclamation" color="warning" size="1rem" />
     </template>
   </base-select>
 </template>
