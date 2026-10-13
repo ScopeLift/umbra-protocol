@@ -7,11 +7,17 @@
       When using our site, our cloud hosting providers may record the IP address that your request originated from. They
       also may retain server logs which include the IP address of every request to their servers.
     </p>
+    <p>
+      If you send us a message through the contact form, we collect your email address, your message and any optional
+      details you provide, and use them only to respond to you. Messages are delivered through our email provider,
+      Resend. The form uses Cloudflare Turnstile to check that it is being sent by a person, which shares your IP
+      address and information about your browser with Cloudflare.
+    </p>
 
     <p class="text-bold">What do we use your information for?</p>
     <p>
       We do not use your information for any purpose beyond the default logging functionality provided by our cloud
-      hosting providers.
+      hosting providers and responding to messages you send us through the contact form.
     </p>
 
     <p class="text-bold">How do we protect your information?</p>
@@ -32,8 +38,9 @@
 
     <p class="text-bold">Do we use cookies?</p>
     <p>
-      We do not use cookies. We do use local browser storage to store user preferences and settings between sessions.
-      This data is never used to track users, and not sent anywhere beyond the user’s local device.
+      We do not set cookies ourselves. Cloudflare Turnstile may set cookies on the contact form to detect bots. We do
+      use local browser storage to store user preferences and settings between sessions. This data is never used to
+      track users, and not sent anywhere beyond the user’s local device.
     </p>
 
     <p class="text-bold">Do we disclose any information to outside parties?</p>
@@ -77,7 +84,7 @@
     <p class="text-bold">Changes to our Privacy Policy</p>
     <p>If we decide to change our privacy policy, we will post those changes on this page.</p>
 
-    <p>This document is CC-BY-SA. It was last updated April 20, 2021.</p>
+    <p>This document is CC-BY-SA. It was last updated October 13, 2026.</p>
   </q-page>
 </template>
 

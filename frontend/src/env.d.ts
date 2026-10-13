@@ -8,6 +8,7 @@ declare namespace NodeJS {
     BASE_SUBGRAPH_URL: string | undefined;
     ARBITRUM_ONE_SUBGRAPH_URL: string | undefined;
     SEPOLIA_SUBGRAPH_URL: string | undefined;
+    TURNSTILE_SITE_KEY: string | undefined;
     VUE_ROUTER_MODE: 'hash' | 'history' | 'abstract' | undefined;
     VUE_ROUTER_BASE: string | undefined;
   }
