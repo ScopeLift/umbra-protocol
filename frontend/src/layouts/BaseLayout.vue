@@ -256,10 +256,10 @@
               </a>
             </p>
             <p>
-              <a href="mailto:support@umbra.cash" target="_blank" class="no-text-decoration">
+              <router-link :to="{ name: 'contact' }" class="no-text-decoration">
                 <q-icon class="dark-toggle q-mr-md" name="fas fa-envelope" size="xs" />
-                <span class="hyperlink text-caption">support@umbra.cash</span>
-              </a>
+                <span class="hyperlink text-caption">Support</span>
+              </router-link>
             </p>
           </div>
         </div>

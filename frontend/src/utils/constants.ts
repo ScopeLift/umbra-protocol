@@ -15,6 +15,7 @@ export const POLYGON_SUBGRAPH_URL = String(process.env.POLYGON_SUBGRAPH_URL || '
 export const BASE_SUBGRAPH_URL = String(process.env.BASE_SUBGRAPH_URL || '');
 export const ARBITRUM_ONE_SUBGRAPH_URL = String(process.env.ARBITRUM_ONE_SUBGRAPH_URL || '');
 export const SEPOLIA_SUBGRAPH_URL = String(process.env.SEPOLIA_SUBGRAPH_URL || '');
+export const TURNSTILE_SITE_KEY = String(process.env.TURNSTILE_SITE_KEY || '');
 
 console.log(`MAINNET_RPC_URL ${MAINNET_RPC_URL}`);
 

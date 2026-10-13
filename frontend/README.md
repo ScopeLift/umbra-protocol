@@ -23,6 +23,7 @@ The required parameters are:
 Optional parameters are:
 
 `WALLET_CONNECT_PROJECT_ID` - WalletConnect project ID, needed to connect wallets through WalletConnect <br />
+`TURNSTILE_SITE_KEY` - Cloudflare Turnstile site key, needed to send messages from the contact page; this value is public and bundled into the frontend <br />
 `*_SUBGRAPH_URL` - Legacy per-chain subgraph URLs used when `PONDER_SUBGRAPH_URL` is not configured <br />
 `ETHERSCAN_API_KEY`, `OPTIMISTIC_ETHERSCAN_API_KEY`, `POLYGONSCAN_API_KEY`, `ARBISCAN_API_KEY` - API keys umbra-js uses to look up transaction history <br />
 `LOG_LEVEL` - Log level for the app's logger, defaults to `DEBUG` <br />
@@ -89,6 +90,15 @@ To verify a deployed preview or production build has a working Ponder configurat
 ```bash
 PONDER_SUBGRAPH_URL=/api/ponder yarn smoke-test:ponder https://deploy-preview-123--umbra.netlify.app
 ```
+
+The contact page sends messages through the Netlify Function at `/api/contact`. The function checks the submitter's Cloudflare Turnstile token, then emails the message to `support@umbra.cash` through Resend, with the submitter's address as the reply-to address. Build the frontend with `TURNSTILE_SITE_KEY`, and configure these private Function runtime variables the same way as the Ponder ones:
+
+```text
+TURNSTILE_SECRET_KEY=your-turnstile-secret-key
+RESEND_API_KEY=your-resend-api-key
+```
+
+For local development, use Cloudflare's [testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/), which always pass: `TURNSTILE_SITE_KEY=1x00000000000000000000AA` in `frontend/.env` and `TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA` in `../.env`. The function accepts JSON `POST` requests up to 32 KiB, times out upstream calls after 10 seconds, and uses Netlify's built-in per-domain-and-IP limit of 5 requests per minute.
 
 ## Internationalization
 
