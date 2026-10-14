@@ -12,12 +12,8 @@
       "send-first": "Get the address or ENS name of the person you're sending funds to",
       "send-second": "Complete the form on the <span class=\"text-bold\">Send</span> page"
     },
-    "banner-donate": "Please consider supporting Umbra's {DevelopmentGrant} in the Gitcoin matching round. {LearnMore}",
-    "banner-passport": "If you gave to Umbra during the Gitcoin round, you must {configurePassport} to qualify for matching. {LearnMore}",
-    "supporting": "supporting",
-    "configure-passport": "configure passport",
-    "learn-more": "Learn More.",
-    "development-grant": "development grant"
+    "banner-donate": "Umbra is a grant funded public good. Please consider supporting us on Octant's privacy round, open through Oct. 21. {LearnMore}",
+    "learn-more": "Learn more."
   },
   "Home-action-card": {
     "send": "Send",
