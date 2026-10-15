@@ -11,3 +11,12 @@
 [dev]
     # Keep Quasar's in-memory assets ahead of the SPA fallback rewrite.
     framework = "#custom"
+
+# Token logos rarely change, so let browsers cache them for a day. The policy keeps an SVG
+# from running scripts or loading anything if it is opened directly instead of through <img>.
+[[headers]]
+    for = "/tokens/*"
+    [headers.values]
+        Cache-Control = "public, max-age=86400"
+        Content-Security-Policy = "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+        X-Content-Type-Options = "nosniff"
