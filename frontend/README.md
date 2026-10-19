@@ -18,11 +18,11 @@ The required parameters are:
 `ARBITRUM_ONE_RPC_URL` <br />
 `SEPOLIA_RPC_URL` <br />
 `BASE_RPC_URL` <br />
-`PONDER_SUBGRAPH_URL` - Preferred Ponder GraphQL endpoint used for receive scans. On Netlify, use the same-origin proxy path `/api/ponder`; this value is public and bundled into the frontend.
+`PONDER_SUBGRAPH_URL` - Preferred Ponder GraphQL endpoint used for receive scans. On Netlify, use the same-origin proxy path `/api/ponder`; this value is public and bundled into the frontend. <br />
+`WALLET_CONNECT_PROJECT_ID` - Reown project ID, needed to connect wallets through Reown AppKit, including over WalletConnect; this value is public and bundled into the frontend
 
 Optional parameters are:
 
-`WALLET_CONNECT_PROJECT_ID` - WalletConnect project ID, needed to connect wallets through WalletConnect <br />
 `TURNSTILE_SITE_KEY` - Cloudflare Turnstile site key, needed to send messages from the contact page; this value is public and bundled into the frontend <br />
 `*_SUBGRAPH_URL` - Legacy per-chain subgraph URLs used when `PONDER_SUBGRAPH_URL` is not configured <br />
 `ETHERSCAN_API_KEY`, `OPTIMISTIC_ETHERSCAN_API_KEY`, `POLYGONSCAN_API_KEY`, `ARBISCAN_API_KEY` - API keys umbra-js uses to look up transaction history <br />
