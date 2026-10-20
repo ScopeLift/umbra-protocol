@@ -304,3 +304,16 @@ p, div
 
 .text-break-word
   word-wrap: break-word
+
+// Link in a notification, such as to a transaction in a block explorer
+.notification-link
+  color: inherit
+  text-decoration: underline
+
+// Place a notification's dismiss button, its only action, in the top right corner, in the
+// notification's text color
+.app-notification .q-notification__actions
+  color: inherit
+  align-self: flex-start
+  padding: 4px 0 0 8px
+  margin-right: -12px

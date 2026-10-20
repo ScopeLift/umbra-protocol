@@ -27,7 +27,6 @@
     "@reown/appkit-adapter-ethers5": "1.8.24",
     "@umbracash/umbra-js": "workspace:^",
     "@uniswap/token-lists": "^1.0.0-beta.19",
-    "bnc-notify": "^1.5.1",
     "core-js": "^3.6.5",
     "ethers": "5.8.0",
     "localforage": "^1.10.0",

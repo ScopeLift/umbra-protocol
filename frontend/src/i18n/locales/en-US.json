@@ -390,7 +390,9 @@
     "Alerts": {
       "transaction-pending": "Your transaction is pending",
       "transaction-succeeded": "Your transaction has succeeded",
-      "transaction-failed": "Your transaction has failed"
+      "transaction-failed": "Your transaction has failed",
+      "view-transaction": "View transaction",
+      "dismiss": "Dismiss"
     },
     "Address": {
       "might-be-token": "It might be a token contract, such as an ERC-20 or ERC-721",
