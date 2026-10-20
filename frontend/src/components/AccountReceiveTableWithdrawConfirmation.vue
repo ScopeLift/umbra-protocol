@@ -122,7 +122,7 @@ import { utils as umbraUtils, UserAnnouncement } from '@umbracash/umbra-js';
 import { FeeEstimate } from 'components/models';
 import { formatNameOrAddress, toAddress } from 'src/utils/address';
 import { BigNumber, formatUnits } from 'src/utils/ethers';
-import { getEtherscanUrl, getGasPrice, humanizeTokenAmount, humanizeArithmeticResult } from 'src/utils/utils';
+import { getEtherscanUrl, humanizeTokenAmount, humanizeArithmeticResult } from 'src/utils/utils';
 import useWalletStore from 'src/store/wallet';
 
 export default defineComponent({
@@ -203,16 +203,6 @@ export default defineComponent({
       humanizeTokenAmount(customTxFeeInWei.value, propsRef.activeFee.value.token)
     );
 
-    // Wrapper around getGasPrice which falls back to returning the node's gas price if getGasPrice fails
-    async function tryGetGasPrice() {
-      try {
-        return await getGasPrice();
-      } catch (e) {
-        console.warn(`Could not get gas price: ${JSON.stringify(e)}`);
-        return await provider.value?.getGasPrice();
-      }
-    }
-
     onMounted(async () => {
       if (isNativeToken) {
         // Flooring this because the string we get back from formatUnits is a decimal.
@@ -233,7 +223,7 @@ export default defineComponent({
           formattedCustomTxCostGwei.value = formattedCost(sweepGasInfo.gasPrice);
         } else {
           gasLimit.value = (await provider.value?.estimateGas({ to, from, value: amount, gasPrice: 0 })) as BigNumber;
-          const gasPrice = network.value?.chainId === 1 ? await tryGetGasPrice() : await provider.value?.getGasPrice(); // use blocknative on mainnet, the node elsewhere
+          const gasPrice = await provider.value?.getGasPrice();
           fee.value = gasLimit.value.mul(gasPrice!);
           formattedCustomTxCostGwei.value = formattedCost(gasPrice!);
         }
