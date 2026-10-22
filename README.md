@@ -115,7 +115,7 @@ If you keep Volta installed for other projects, put mise's activation after Volt
 ```sh
 mise trust
 mise install
-node --version # v24.21.0
+node --version # v24.22.1
 yarn --version # 4.18.0
 ```
 
