@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="alert-banner text-bold text-center q-py-sm q-px-md">
+    <div v-if="false" class="alert-banner text-bold text-center q-py-sm q-px-md">
       <i18n-t scope="global" keypath="Home.banner-donate" tag="span">
         <template v-slot:LearnMore>
           <a
