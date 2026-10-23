@@ -145,15 +145,15 @@ jobs:
           version: nightly
 
       - name: Install scopelint
-        uses: engineerd/configurator@v0.0.8
-        with:
-          name: scopelint
-          repo: ScopeLift/scopelint
-          fromGitHubReleases: true
-          version: v0.0.21
-          pathInArchive: scopelint-x86_64-linux/scopelint
-          urlTemplate: https://github.com/ScopeLift/scopelint/releases/download/{{version}}/scopelint-x86_64-linux.tar.xz
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          SCOPELINT_VERSION: v0.0.21
+          SCOPELINT_SHA256: 9965d23c2e28fdbeb8ea8ddf08b93ec826db958e632b13d4b67dc811644c99e4
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o scopelint.tar.xz "https://github.com/ScopeLift/scopelint/releases/download/${SCOPELINT_VERSION}/scopelint-x86_64-linux.tar.xz"
+          echo "${SCOPELINT_SHA256}  scopelint.tar.xz" | sha256sum --check
+          tar -xJf scopelint.tar.xz
+          sudo install -m 755 scopelint-x86_64-linux/scopelint /usr/local/bin/scopelint
 
       - run: yarn install --immutable
 
