@@ -449,12 +449,13 @@ export class Umbra {
           yield await filterSupportedAddresses(announcements);
         }
       } catch (err) {
+        const error = err instanceof Error ? err.message : String(err);
         console.error('Umbra subgraph announcement fetch failed; falling back to RPC logs.', {
           chainId: this.chainConfig.chainId,
           subgraphUrl: this.chainConfig.subgraphUrl,
           startBlock,
           endBlock,
-          error: err instanceof Error ? err.message : String(err),
+          error,
         });
         if (err instanceof Error && err.stack) {
           console.error(err.stack);

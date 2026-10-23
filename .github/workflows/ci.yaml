@@ -85,22 +85,29 @@ jobs:
       - name: Run coverage
         run: yarn coverage
 
+      # Install lcov from its release rather than Ubuntu's package, since genhtml before 2.6 rejects
+      # functions that start on a line with no line coverage data, which umbra-js's report has.
+      - name: Install lcov
+        env:
+          LCOV_VERSION: "2.6"
+          LCOV_SHA256: 67a45db99b8ef0260c3fac9a2e3749fd8fa350a15e235dd3c29b356d97755c75
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcapture-tiny-perl libdatetime-perl libjson-perl libperlio-gzip-perl libtimedate-perl
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o lcov.tar.gz "https://github.com/linux-test-project/lcov/releases/download/v${LCOV_VERSION}/lcov-${LCOV_VERSION}.tar.gz"
+          echo "${LCOV_SHA256}  lcov.tar.gz" | sha256sum --check
+          tar -xzf lcov.tar.gz
+          sudo make -C "lcov-${LCOV_VERSION}" install PREFIX=/usr/local LCOV_NO_DOC=1 LCOV_NO_XS=1
+          lcov --version
+
       - name: Merge directories
         run: |
-          sudo apt update && sudo apt install -y lcov
           lcov \
             --add-tracefile ./contracts-periphery/lcov.info \
             --add-tracefile ./umbra-js/coverage/lcov.info  \
             --output-file lcov.info \
-            --rc lcov_branch_coverage=1
-
-      # To ignore coverage for certain directories modify the paths in this step as needed.
-      # Alternatively, to include coverage in all directories, comment out this step.
-      - name: Filter directories
-        run: |
-          lcov --remove ./lcov.info 'contracts-periphery/test/*' 'contracts-periphery/script/*' \
-            --output-file lcov.info \
-            --rc lcov_branch_coverage=1
+            --rc branch_coverage=1
 
       # This step posts a detailed coverage report as a comment and deletes previous comments on
       # each push. The below step is used to fail coverage if the specified coverage threshold is
@@ -119,7 +126,6 @@ jobs:
         uses: zgosalvez/github-actions-report-lcov@v7
         with:
           coverage-files: ./lcov.info
-          genhtml-ignore-errors: inconsistent
           minimum-coverage: 70 # Set coverage threshold.
 
   lint:
