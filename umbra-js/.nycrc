@@ -4,6 +4,7 @@
   "extension": [".ts"],
   "include": ["**/*.js", "**/*.ts"],
   "exclude": [
+    "build/**",
     "coverage/**",
     "node_modules/**",
     "**/*.d.ts",
