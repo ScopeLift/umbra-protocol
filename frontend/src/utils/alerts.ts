@@ -1,14 +1,13 @@
-import { Dark } from 'quasar';
-import BNotify, { InitOptions, NotificationType } from 'bnc-notify';
+import { Notify, QNotifyCreateOptions } from 'quasar';
 import { Provider } from 'components/models';
+import { isHexString } from './ethers';
 import { getEtherscanUrl } from './utils';
 import { tc } from '../boot/i18n';
 
-// Instantiate Blocknative's notify.js. We don't pass a dappId so we can use in UI only mode for any
-// notifications we need, i.e. not just Blocknative transaction notifications
-const bNotifyOptions = { darkMode: Dark.isActive, desktopPosition: 'topRight', networkId: 1 } as InitOptions;
-const bNotify = BNotify(bNotifyOptions);
-const defaultTimeout = 5000; // 4 seconds
+type AlertType = 'success' | 'error';
+
+const defaultTimeout = 5000; // 5 seconds
+const errorTimeout = 10000; // 10 seconds
 
 // Some error messages we don't want to show to the user, so return in these cases
 const messagesToIgnore = [
@@ -19,23 +18,42 @@ const messagesToIgnore = [
   'unknown account #0', // happens when we try to connect to a locked wallet
 ];
 
+// Notification type for a pending transaction, shown in Umbra's primary color with a spinner. The
+// color comes from the type, so updating the notification to another type replaces it.
+Notify.registerType('pending', { group: false, timeout: 0, spinner: true, color: 'primary', textColor: 'dark' });
+
+// Options shared by every notification, including a small button to dismiss it, which the
+// `app-notification` class places in the top right corner in the notification's text color
+function baseOptions(): QNotifyCreateOptions {
+  return {
+    position: 'top-right',
+    classes: 'app-notification',
+    actions: [
+      {
+        icon: 'fas fa-xmark',
+        round: true,
+        dense: true,
+        size: 'xs',
+        'aria-label': tc('Utils.Alerts.dismiss'),
+      },
+    ],
+  };
+}
+
 /**
  * @notice Present notification alert to the user
- * @param color Alert color, choose positive, negative, warning, info, or others
+ * @param alertType Type of alert, which sets its color and icon
  * @param message Message to display on notification
  */
-export function notifyUser(alertType: NotificationType, message: string) {
-  // Reset config in case user changed their dark mode setting
-  bNotify.config({ ...bNotifyOptions, darkMode: Dark.isActive });
-
+export function notifyUser(alertType: AlertType, message: string) {
   // If message matches any of the substrings in messagesToIgnore, we return and don't show the alert
   if (new RegExp(messagesToIgnore.join('|')).test(message)) return;
 
-  bNotify.notification({
-    autoDismiss: alertType === 'error' ? 10000 : defaultTimeout,
-    eventCode: 'userNotify',
+  Notify.create({
+    ...baseOptions(),
+    type: alertType === 'success' ? 'positive' : 'negative',
     message,
-    type: alertType,
+    timeout: alertType === 'error' ? errorTimeout : defaultTimeout,
   });
 }
 
@@ -52,29 +70,36 @@ export function handleError(err: Error, msg = 'An unknown error occurred') {
   else notifyUser('error', msg);
 }
 
+// Returns an HTML link to a transaction in a block explorer. The link is rendered as HTML, so it's
+// only returned for a valid transaction hash.
+function explorerLink(txHash: string, chainId: number) {
+  if (!isHexString(txHash, 32)) return undefined;
+  const url = getEtherscanUrl(txHash, chainId);
+  const label = tc('Utils.Alerts.view-transaction');
+  const icon = '<i class="fas fa-up-right-from-square q-ml-xs" aria-hidden="true"></i>';
+  return `<a class="notification-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}${icon}</a>`;
+}
+
 /**
  * @notice Transaction notification status
  * @param txHash Transaction hash to monitor
  */
 export async function txNotify(txHash: string, provider: Provider) {
-  // Instantiate pending transaction notification
+  // Show a pending transaction notification, with a link to the transaction in a block explorer
   const { chainId } = await provider.getNetwork();
-  const onclick = () => window.open(getEtherscanUrl(txHash, chainId), '_blank');
-  const { update } = bNotify.notification({
-    autoDismiss: 0,
-    eventCode: 'txPending',
-    message: tc('Utils.Alerts.transaction-pending'),
-    onclick,
+  const update = Notify.create({
+    ...baseOptions(),
     type: 'pending',
+    message: tc('Utils.Alerts.transaction-pending'),
+    caption: explorerLink(txHash, chainId),
+    html: true,
   });
 
   // Update notification based on transaction status
   const { status } = await provider.waitForTransaction(txHash);
   update({
-    autoDismiss: defaultTimeout,
-    eventCode: status ? 'txSuccess' : 'txFail',
+    type: status ? 'positive' : 'negative',
     message: status ? tc('Utils.Alerts.transaction-succeeded') : tc('Utils.Alerts.transaction-failed'),
-    onclick,
-    type: status ? 'success' : 'error',
+    timeout: defaultTimeout,
   });
 }

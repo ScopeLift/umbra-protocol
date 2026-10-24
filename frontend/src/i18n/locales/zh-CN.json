@@ -390,7 +390,9 @@
     "Alerts": {
       "transaction-pending": "正在处理您的交易(Your transaction is pending)",
       "transaction-succeeded": "您的交易已成功(Your transaction has succeeded)",
-      "transaction-failed": "您的交易已失败(Your transaction has failed)"
+      "transaction-failed": "您的交易已失败(Your transaction has failed)",
+      "view-transaction": "查看交易",
+      "dismiss": "关闭"
     },
     "Address": {
       "might-be-token": "它可能是一个代币合约，例如ERC-20或ERC-721",
