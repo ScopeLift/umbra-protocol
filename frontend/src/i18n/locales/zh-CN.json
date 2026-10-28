@@ -390,7 +390,10 @@
     "Alerts": {
       "transaction-pending": "正在处理您的交易(Your transaction is pending)",
       "transaction-succeeded": "您的交易已成功(Your transaction has succeeded)",
-      "transaction-failed": "您的交易已失败(Your transaction has failed)"
+      "transaction-failed": "您的交易已失败(Your transaction has failed)",
+      "transaction-canceled": "已在您的钱包中取消交易(Transaction canceled in your wallet)",
+      "signature-canceled": "已在您的钱包中取消签名请求(Signature request canceled in your wallet)",
+      "request-canceled": "已在您的钱包中取消请求(Request canceled in your wallet)"
     },
     "Address": {
       "might-be-token": "它可能是一个代币合约，例如ERC-20或ERC-721",
