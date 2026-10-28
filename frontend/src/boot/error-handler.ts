@@ -12,13 +12,15 @@ export default boot(({ app }) => {
     handleError(err);
   };
 
-  // General JS (non-Vue) error handler
-  window.onerror = function (msg, url, line, col, err) {
-    if (err) {
-      console.log('Error params:', msg, url, line, col);
-      handleError(err);
+  // General JS (non-Vue) error handler. A listener is used rather than `window.onerror` so that other scripts, such as
+  // wallet SDKs, can't replace it. Events without an Error object, such as cross-origin "Script error." events and
+  // ResizeObserver loop notices, have nothing useful to show the user, and the browser already logs them
+  window.addEventListener('error', function (event) {
+    if (event.error) {
+      console.log('Error params:', event.message, event.filename, event.lineno, event.colno);
+      handleError(event.error);
     }
-  };
+  });
 
   // Handle promise rejections
   window.addEventListener('unhandledrejection', function (event) {
