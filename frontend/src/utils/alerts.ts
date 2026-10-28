@@ -2,6 +2,7 @@ import { Dark } from 'quasar';
 import BNotify, { InitOptions, NotificationType } from 'bnc-notify';
 import { Provider } from 'components/models';
 import { getEtherscanUrl } from './utils';
+import { toError } from './errors';
 import { tc } from '../boot/i18n';
 
 // Instantiate Blocknative's notify.js. We don't pass a dappId so we can use in UI only mode for any
@@ -41,15 +42,12 @@ export function notifyUser(alertType: NotificationType, message: string) {
 
 /**
  * @notice Show error message to user
- * @param err Error object thrown
+ * @param err Error or other value that was thrown
  * @param msg Optional, fallback error message if one is not provided by the err object
  */
-export function handleError(err: Error, msg = 'An unknown error occurred') {
+export function handleError(err: unknown, msg = 'An unknown error occurred') {
   console.error(err);
-  if (!err) notifyUser('error', msg);
-  else if ('message' in err) notifyUser('error', err.message);
-  else if (typeof err === 'string') notifyUser('error', err);
-  else notifyUser('error', msg);
+  notifyUser('error', toError(err).message || msg);
 }
 
 /**
