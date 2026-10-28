@@ -1,6 +1,7 @@
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: string;
+    COMMIT_HASH: string;
     PONDER_SUBGRAPH_URL: string | undefined;
     MAINNET_SUBGRAPH_URL: string | undefined;
     OPTIMISM_SUBGRAPH_URL: string | undefined;
