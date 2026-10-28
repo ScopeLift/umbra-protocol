@@ -390,7 +390,10 @@
     "Alerts": {
       "transaction-pending": "Your transaction is pending",
       "transaction-succeeded": "Your transaction has succeeded",
-      "transaction-failed": "Your transaction has failed"
+      "transaction-failed": "Your transaction has failed",
+      "transaction-canceled": "Transaction canceled in your wallet",
+      "signature-canceled": "Signature request canceled in your wallet",
+      "request-canceled": "Request canceled in your wallet"
     },
     "Address": {
       "might-be-token": "It might be a token contract, such as an ERC-20 or ERC-721",

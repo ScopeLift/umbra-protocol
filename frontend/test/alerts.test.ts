@@ -1,4 +1,5 @@
 import { handleError } from '../src/utils/alerts';
+import { Logger } from '../src/utils/ethers';
 
 const mockNotification = jest.fn();
 
@@ -12,9 +13,10 @@ jest.mock('bnc-notify', () => ({
   }),
 }));
 jest.mock('../src/utils/utils', () => ({ getEtherscanUrl: jest.fn() }));
-jest.mock('../src/boot/i18n', () => ({ tc: jest.fn() }));
+jest.mock('../src/boot/i18n', () => ({ tc: (key: string) => key }));
 
-const shownMessage = () => (mockNotification.mock.calls[0][0] as { message: string }).message;
+const shownNotification = () => mockNotification.mock.calls[0][0] as { message: string; type: string };
+const shownMessage = () => shownNotification().message;
 
 describe('handleError', () => {
   beforeEach(() => {
@@ -55,8 +57,38 @@ describe('handleError', () => {
   });
 
   it('logs the original value', () => {
-    const reason = { code: 4001, message: 'User rejected the request.' };
+    const reason = { code: -32603, message: 'Internal JSON-RPC error.' };
     handleError(reason);
     expect(console.error).toHaveBeenCalledWith(reason);
+  });
+
+  describe('when the user rejects a request in their wallet', () => {
+    const logger = new Logger('providers/5.8.0');
+
+    it('shows a notice that the transaction was canceled', () => {
+      const transaction = { data: '0xb9fbafe1', value: { type: 'BigNumber', hex: '0x00' } };
+      handleError(
+        logger.makeError('user rejected transaction', Logger.errors.ACTION_REJECTED, {
+          action: 'sendTransaction',
+          transaction,
+        })
+      );
+      expect(shownNotification()).toMatchObject({ type: 'hint', message: 'Utils.Alerts.transaction-canceled' });
+    });
+
+    it('shows a notice that the signature request was canceled', () => {
+      handleError(logger.makeError('user rejected signing', Logger.errors.ACTION_REJECTED, { action: 'signMessage' }));
+      expect(shownNotification()).toMatchObject({ type: 'hint', message: 'Utils.Alerts.signature-canceled' });
+    });
+
+    it('shows a notice that the request was canceled when the action is unknown', () => {
+      handleError({ code: 4001, message: 'User rejected the request.' });
+      expect(shownNotification()).toMatchObject({ type: 'hint', message: 'Utils.Alerts.request-canceled' });
+    });
+
+    it('does not log the rejection as an error', () => {
+      handleError({ code: 4001, message: 'User rejected the request.' });
+      expect(console.error).not.toHaveBeenCalled();
+    });
   });
 });
