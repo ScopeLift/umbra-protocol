@@ -304,3 +304,12 @@ p, div
 
 .text-break-word
   word-wrap: break-word
+
+// Notification messages wrap even where they have no spaces, such as in long hex strings, and are cut off after a few
+// lines
+.bn-notify-custom.bn-notify-notification-info-message
+  overflow-wrap: anywhere
+  display: -webkit-box
+  -webkit-box-orient: vertical
+  -webkit-line-clamp: 4
+  overflow: hidden
