@@ -1,5 +1,6 @@
 import { boot } from 'quasar/wrappers';
 import { handleError } from 'src/utils/alerts';
+import { toError } from 'src/utils/errors';
 
 export default boot(({ app }) => {
   // Source: https://stackoverflow.com/questions/52071212/how-to-implement-global-error-handling-in-vue
@@ -27,10 +28,9 @@ export default boot(({ app }) => {
 
     // For some reason when using GSN, it works, but throws with the error below. So if that's the error we just ignore it
     //   MetaMask - RPC Error: already known {code: -32000, message: "already known"}
-    //   Error params: Uncaught Error: [object Object] webpack-internal:///./src/boot/error-handler.ts 28 15
     if (event.reason.code === -32000 && event.reason.message === 'already known') {
       return;
     }
-    throw new Error(<string>event.reason);
+    handleError(toError(event.reason));
   });
 });
