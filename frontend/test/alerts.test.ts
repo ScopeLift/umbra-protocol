@@ -43,6 +43,17 @@ describe('handleError', () => {
     expect(shownMessage()).toBe('Internal JSON-RPC error.');
   });
 
+  it('shows the short message of an ethers error', () => {
+    const logger = new Logger('providers/5.8.0');
+    handleError(
+      logger.makeError('insufficient funds for intrinsic transaction cost', Logger.errors.INSUFFICIENT_FUNDS, {
+        method: 'estimateGas',
+        transaction: { data: '0xb9fbafe1' },
+      })
+    );
+    expect(shownMessage()).toBe('insufficient funds for intrinsic transaction cost');
+  });
+
   it('shows the fallback message when there is no message', () => {
     for (const value of [undefined, null, {}, new Error()]) {
       mockNotification.mockClear();

@@ -19,6 +19,21 @@ export function toError(value: unknown): Error {
   return new Error();
 }
 
+// ethers v5 adds details to the end of its error messages, such as "(action=..., transaction={...}, code=...,
+// version=...)", preceded for some codes by a link to its docs, such as "[ See: https://links.ethers.org/... ]"
+const ethersMessageDetails = / (\[ See: |\().*code=[A-Z_]+, version=[^)]*\)$/s;
+
+/**
+ * @notice Returns a short message for a thrown value or promise rejection reason, suitable for showing to the user
+ * @dev ethers v5 errors keep their short message, or the revert reason when there is one, in `reason`, while `message`
+ * adds details that can include whole transactions. When `reason` is empty, the details are removed from `message`.
+ * @param value Value that was thrown, or the reason a promise was rejected
+ */
+export function getErrorMessage(value: unknown): string {
+  if (isRecord(value) && typeof value.reason === 'string' && value.reason) return value.reason;
+  return toError(value).message.replace(ethersMessageDetails, '');
+}
+
 /**
  * @notice Returns true if the value is the error from a user rejecting a request in their wallet, such as a
  * transaction or a signature request
