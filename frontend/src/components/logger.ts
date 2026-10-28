@@ -5,12 +5,12 @@ import { Logger } from 'src/utils/ethers';
 
 export class UmbraLogger extends Logger {
   debug(...args: any[]) {
-    super.debug(`v${this.version} DEBUG -`, ...args);
+    super.debug(`${this.version} DEBUG -`, ...args);
   }
   info(...args: any[]) {
-    super.info(`v${this.version} INFO -`, ...args);
+    super.info(`${this.version} INFO -`, ...args);
   }
   warn(...args: any[]) {
-    super.warn(`v${this.version} WARNING -`, ...args);
+    super.warn(`${this.version} WARNING -`, ...args);
   }
 }

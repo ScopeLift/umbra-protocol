@@ -9,11 +9,23 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { configure } = require('quasar/wrappers');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const { execSync } = require('child_process');
 const path = require('path');
 
 process.env.TS_NODE_PROJECT = path.join(__dirname, 'scripts/tsconfig.json');
 require('ts-node/register/transpile-only');
 const { assertSubgraphEnv, getEnv } = require('./scripts/check-subgraph-env.ts');
+
+// Returns the full SHA of the commit being built. Netlify provides it in COMMIT_REF during builds, and other builds
+// read it from git.
+function getCommitHash() {
+  if (process.env.COMMIT_REF) return process.env.COMMIT_REF;
+  try {
+    return execSync('git rev-parse HEAD', { cwd: __dirname, encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
 
 module.exports = configure(function (ctx) {
   if (ctx.prod) {
@@ -65,6 +77,11 @@ module.exports = configure(function (ctx) {
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
       vueRouterMode: 'history', // available values: 'hash', 'history'
+
+      // Values added to process.env in the app's code. The env app extensions add their values to this object.
+      env: {
+        COMMIT_HASH: getCommitHash(),
+      },
 
       // transpile: false,
 

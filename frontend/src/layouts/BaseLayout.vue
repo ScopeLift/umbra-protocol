@@ -221,8 +221,6 @@
               option-label="label"
               rounded
             />
-
-            <p class="text-caption dark-toggle" style="font-size: 0.65rem">version {{ version }}</p>
           </div>
 
           <!-- Column 2: Built by ScopeLift -->
@@ -259,6 +257,12 @@
                 <q-icon class="dark-toggle q-mr-md" name="fas fa-envelope" size="xs" />
                 <span class="hyperlink text-caption">Support</span>
               </router-link>
+            </p>
+            <p>
+              <a :href="commitUrl" target="_blank" class="no-text-decoration">
+                <q-icon class="dark-toggle q-mr-md" name="fas fa-code-branch" size="xs" />
+                <span class="hyperlink text-caption">{{ commitHash.slice(0, 7) }}</span>
+              </a>
             </p>
           </div>
         </div>
@@ -313,7 +317,8 @@ export default defineComponent({
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
     const showArgentModal = computed(() => isArgent.value && !argentModalDismissed.value);
-    const version = window.logger.version;
+    const commitHash = process.env.COMMIT_HASH;
+    const commitUrl = `https://github.com/ScopeLift/umbra-protocol/commit/${commitHash}`;
 
     const changeLanguage = (language: Language) => {
       setLanguage(language);
@@ -334,6 +339,8 @@ export default defineComponent({
       avatar,
       changeLanguage,
       clearLocalStorage,
+      commitHash,
+      commitUrl,
       currentLanguage,
       drawerRight: ref(false),
       isLoading,
@@ -347,7 +354,6 @@ export default defineComponent({
       toggleSendHistory,
       userAddress,
       userDisplayName,
-      version,
     };
   },
 });
