@@ -13,7 +13,7 @@ import {
   Contract,
   StaticJsonRpcProvider,
 } from 'src/utils/ethers';
-import { getChainById, jsonFetch } from 'src/utils/utils';
+import { getChainById } from 'src/utils/utils';
 import { tc } from '../boot/i18n';
 import { MAINNET_PROVIDER, MULTICALL_ABI, MULTICALL_ADDRESS } from 'src/utils/constants';
 import { UmbraApi } from 'src/utils/umbra-api';
@@ -192,12 +192,6 @@ export const isAddressSafe = async (
   };
   promises.push(hasRegisteredStealthKeys());
 
-  // Check if address owns any POAPs
-  const hasPOAPsCheck = async () => {
-    const has = await hasPOAPs(destinationAddress);
-    if (has) reasons.push(`${isDomain ? tc('Utils.Address.address-it-resolves-to') : tc('Utils.Address.it')} ${tc('Utils.Address.has-poap-tokens')}`); // prettier-ignore
-  };
-
   const isGitcoinContributor = async (address: string) => {
     let resp;
     try {
@@ -210,7 +204,6 @@ export const isAddressSafe = async (
       reasons.push(`${tc('Utils.Address.address-it-resolves-to')} ${tc('Utils.Address.gitcoin-contributor')}.`);
     }
   };
-  promises.push(hasPOAPsCheck());
   promises.push(isGitcoinContributor(destinationAddress));
 
   // Check if address has contributed to Gitcoin Grants
@@ -238,16 +231,4 @@ export const isAddressSafe = async (
   });
 
   return { safe: reasons.length === 0, reasons };
-};
-
-// Returns true if the address owns any POAP tokens
-const hasPOAPs = async (address: string) => {
-  try {
-    const poaps = await jsonFetch(`https://api.poap.xyz/actions/scan/${address}`);
-    return poaps.length > 0 ? true : false;
-  } catch (err) {
-    window.logger.warn('Error in hasPOAPs');
-    window.logger.warn(err);
-    return false;
-  }
 };
