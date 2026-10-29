@@ -22,6 +22,7 @@ const FIELD_LIMITS = {
   subject: 200,
   pageUrl: 2000,
   message: 5000,
+  commitHash: 40, // sent by the frontend rather than entered by the user, so Contact.vue has no limit for it
 };
 const MAX_TURNSTILE_TOKEN_LENGTH = 2048;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -104,6 +105,7 @@ const readSubmission = (payload) => {
     subject: readTextField(payload, 'subject', { required: true }),
     pageUrl: readTextField(payload, 'pageUrl'),
     message: readTextField(payload, 'message', { required: true, multiline: true }),
+    commitHash: readTextField(payload, 'commitHash'),
   };
   const fieldError = Object.values(fields).find((field) => field.error);
   if (fieldError) {
@@ -122,6 +124,7 @@ const readSubmission = (payload) => {
       subject: fields.subject.value,
       pageUrl: fields.pageUrl.value,
       message: fields.message.value,
+      commitHash: fields.commitHash.value,
     },
   };
 };
@@ -146,6 +149,7 @@ const formatEmailText = (submission) =>
     `Name: ${submission.name || NOT_PROVIDED}`,
     `Email: ${submission.email}`,
     `URL: ${submission.pageUrl || NOT_PROVIDED}`,
+    `Commit: ${submission.commitHash || NOT_PROVIDED}`,
     'Message:',
     '',
     submission.message,

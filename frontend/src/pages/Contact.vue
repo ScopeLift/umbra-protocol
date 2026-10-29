@@ -179,6 +179,7 @@ export default defineComponent({
             subject: subject.value,
             pageUrl: pageUrl.value,
             message: message.value,
+            commitHash: process.env.COMMIT_HASH, // the commit being built, set in quasar.conf.js
             turnstileToken: turnstileToken.value,
           }),
         });
