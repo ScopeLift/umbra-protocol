@@ -59,7 +59,7 @@ export const humanizeTokenAmount = (amount: BigNumberish, token: TokenInfo): str
     // avoid scientific notation
     return formatUnits(amount, token.decimals).replace(/0+$/, '');
   }
-  return formattedAmount.toPrecision(2).replace(/0+$/, '');
+  return formattedAmount.toPrecision(2).replace(/\.?0+$/, '');
 };
 
 /**

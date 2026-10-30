@@ -47,6 +47,14 @@ describe('Utilities', () => {
       const amount = parseUnits('42', usdc.decimals);
       expect(humanizeTokenAmount(amount, usdc)).toEqual('42');
     });
+    it('does not show a decimal point for exactly 1 USDC', () => {
+      const amount = parseUnits('1', usdc.decimals);
+      expect(humanizeTokenAmount(amount, usdc)).toEqual('1');
+    });
+    it('does not show a decimal point when USDC < 1 rounds up to 1', () => {
+      const amount = parseUnits('0.999', usdc.decimals);
+      expect(humanizeTokenAmount(amount, usdc)).toEqual('1');
+    });
     it('rounds WETH to 2 sig figs when < 1', () => {
       const amount = parseUnits('0.007581732', weth.decimals);
       expect(humanizeTokenAmount(amount, weth)).toEqual('0.0076');
@@ -70,6 +78,10 @@ describe('Utilities', () => {
     it('does not round ETH when a whole number', () => {
       const amount = parseUnits('12', 'ether');
       expect(humanizeTokenAmount(amount, eth)).toEqual('12');
+    });
+    it('does not show a decimal point for exactly 1 ETH', () => {
+      const amount = parseUnits('1', 'ether');
+      expect(humanizeTokenAmount(amount, eth)).toEqual('1');
     });
     it('eliminates unnecessary precision when zero for ETH', () => {
       const amount = parseUnits('0.0000', 'ether');
