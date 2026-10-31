@@ -304,15 +304,7 @@ export default defineComponent({
       toggleDarkMode,
       toggleSendHistory,
     } = useSettingsStore();
-    const {
-      avatar,
-      isArgent,
-      isLoading,
-      network,
-      userAddress,
-      userDisplayName,
-      setLanguage: setWalletLanguage,
-    } = useWalletStore();
+    const { avatar, isArgent, isLoading, network, userAddress, userDisplayName } = useWalletStore();
 
     const currentLanguage = ref({ label: language.value.label, value: language.value.value });
     const argentModalDismissed = ref(false);
@@ -322,7 +314,6 @@ export default defineComponent({
 
     const changeLanguage = (language: Language) => {
       setLanguage(language);
-      setWalletLanguage(language.value);
     };
 
     const clearLocalStorage = () => {

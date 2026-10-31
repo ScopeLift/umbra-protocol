@@ -1,10 +1,8 @@
 import { computed, onMounted, markRaw, ref, watch } from 'vue';
 
-import Onboard, { OnboardAPI } from '@web3-onboard/core';
-import injectedModule from '@web3-onboard/injected-wallets';
-import walletConnectModule from '@web3-onboard/walletconnect';
-import coinbaseWalletModule from '@web3-onboard/coinbase';
-import trezorModule from '@web3-onboard/trezor';
+import { AppKit, createAppKit } from '@reown/appkit/vue';
+import { AppKitNetwork, arbitrum, base, mainnet, optimism, polygon, sepolia } from '@reown/appkit/networks';
+import { Ethers5Adapter } from '@reown/appkit-adapter-ethers5';
 import { KeyPair, StealthKeyRegistry, utils, Umbra } from '@umbracash/umbra-js';
 import {
   Chain,
@@ -30,18 +28,28 @@ import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import { notifyUser } from 'src/utils/alerts';
 import useSettingsStore from 'src/store/settings';
-import enLocal from 'src/i18n/locales/en-US.json';
-import chLocal from 'src/i18n/locales/zh-CN.json';
-import esLocal from 'src/i18n/locales/es-ES.json';
 
-// Wallet configurations.
-const injected = injectedModule();
-const walletConnect = walletConnectModule({
-  projectId: process.env.WALLET_CONNECT_PROJECT_ID || '',
-  version: 2,
-});
-const coinbaseWalletSdk = coinbaseWalletModule();
-const trezor = trezorModule({ email: 'contact@umbra.cash', appUrl: 'https://app.umbra.cash/' });
+// AppKit's definition of each supported network, keyed by chain ID.
+const appKitNetworks: Record<number, AppKitNetwork> = {
+  [mainnet.id]: mainnet,
+  [sepolia.id]: sepolia,
+  [optimism.id]: optimism,
+  [polygon.id]: polygon,
+  [base.id]: base,
+  [arbitrum.id]: arbitrum,
+};
+
+function getAppKitNetwork(chainId: number) {
+  const appKitNetwork = appKitNetworks[chainId];
+  if (!appKitNetwork) throw new Error(`No AppKit network is configured for chain ID ${chainId}`);
+  return appKitNetwork;
+}
+
+// The subset of an EIP-1193 provider's event API used to watch for wallet changes.
+type ProviderEvents = {
+  on(event: string, listener: () => void): void;
+  removeListener(event: string, listener: () => void): void;
+};
 
 /**
  * State is handled in reusable components, where each component is its own self-contained
@@ -70,7 +78,9 @@ const viewingKeyPair = ref<KeyPair>(); // KeyPair instance, with private key, fo
 const balances = ref<Record<string, BigNumber>>({}); // mapping from token address to user's wallet balance
 const relayer = ref<UmbraApi>(); // used for managing relay transactions
 const isAccountSetup = ref(false); // true if user has registered their address on the StealthKeyRegistry
-const onboard = ref<OnboardAPI>(); // blocknative's onboard.js instance
+let appKit: AppKit | undefined; // Reown AppKit instance, which manages wallet connections
+let syncedCaipAddress: string | undefined; // last connected account AppKit reported, as a CAIP-10 address
+let removeWalletListeners: (() => void) | undefined; // removes the listeners that reload the page on wallet changes
 const isArgent = ref<boolean>(false); // true if user connected an argent wallet
 const stealthKeys = ref<{ spendingPublicKey: string; viewingPublicKey: string } | null>();
 const avatar = ref<string | null>('');
@@ -86,80 +96,69 @@ export let tokensExport: TokenInfoExtended[] = [];
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
-  const { lastWallet, setLastWallet } = useSettingsStore();
+  const { isDark, lastWallet, setLastWallet } = useSettingsStore();
 
   onMounted(() => {
-    // Initialize onboard.js if not yet done
-    if (!onboard.value) {
-      onboard.value = Onboard({
-        wallets: [injected, walletConnect, coinbaseWalletSdk, trezor],
-        chains: supportedChains.map((chain) => {
-          return {
-            id: chain.chainId,
-            token: chain.nativeCurrency.symbol,
-            label: chain.chainName,
-            rpcUrl: chain.rpcUrls[0],
-            icon: chain.logoURI,
-          };
-        }),
-        accountCenter: {
-          desktop: { enabled: false },
-          mobile: { enabled: false },
+    // Initialize AppKit if not yet done
+    if (!appKit) {
+      appKit = createAppKit({
+        adapters: [new Ethers5Adapter()],
+        projectId: process.env.WALLET_CONNECT_PROJECT_ID || '',
+        networks: supportedChainIds.map(getAppKitNetwork) as [AppKitNetwork, ...AppKitNetwork[]],
+        // Use the app's own RPC URLs rather than Reown's.
+        customRpcUrls: Object.fromEntries(
+          supportedChains.map((chain) => [
+            `eip155:${Number(chain.chainId)}`,
+            chain.rpcUrls.filter(Boolean).map((url) => ({ url })),
+          ])
+        ),
+        // The app shows its own prompt to switch away from an unsupported network.
+        allowUnsupportedChain: true,
+        // Umbra derives a user's keys from a 65-byte signature, which smart accounts don't produce,
+        // so only offer wallets that sign with a regular account.
+        defaultAccountTypes: { eip155: 'eoa' },
+        coinbasePreference: 'eoaOnly',
+        enableBaseAccount: false,
+        // Limit the modal to connecting wallets. When AppKit can load the project's settings from the
+        // Reown dashboard, those settings take precedence for email, socials, swaps, onramp, and
+        // history, so these features must also be turned off there.
+        features: {
+          analytics: false,
+          email: false,
+          socials: false,
+          swaps: false,
+          onramp: false,
+          history: false,
+          send: false,
         },
-        i18n: {
-          'en-US': {
-            connect: enLocal['connect'],
-            modals: enLocal['modals'],
-            accountCenter: enLocal['accountCenter'],
-            notify: enLocal['notify'],
-          },
-          'zh-CN': {
-            connect: chLocal['connect'],
-            modals: chLocal['modals'],
-            accountCenter: chLocal['accountCenter'],
-            notify: chLocal['notify'],
-          },
-          'es-ES': {
-            connect: esLocal['connect'],
-            modals: esLocal['modals'],
-            accountCenter: esLocal['accountCenter'],
-            notify: esLocal['notify'],
-          },
-        },
-        appMetadata: {
+        themeMode: isDark.value ? 'dark' : 'light',
+        metadata: {
           name: 'Umbra',
-          icon: '/icons/favicon-128x128.svg',
-          logo: '/icons/favicon-128x128.svg',
           description: 'Send stealth payments.',
-          explore: 'https://app.umbra.cash/faq',
+          url: window.location.origin,
+          icons: [`${window.location.origin}/icons/favicon-128x128.png`],
         },
       });
-      const addresses = onboard.value.state.select('wallets');
-      addresses.subscribe((update) => {
-        update.map((wallet) => {
-          wallet.provider.on('accountsChanged', () => {
-            window.location.reload();
-          });
-          wallet.provider.on('chainChanged', () => {
-            window.location.reload();
-          });
-        });
-      });
+
+      // Set up the app when AppKit restores a previous connection on page load, and reset it if the
+      // wallet disconnects on its side.
+      appKit.subscribeAccount(({ caipAddress }) => {
+        if (caipAddress === syncedCaipAddress) return;
+        syncedCaipAddress = caipAddress;
+        if (!caipAddress) {
+          if (provider.value) {
+            removeWalletListeners?.();
+            resetState();
+            setLastWallet(null);
+          }
+        } else if (!userAddress.value && !isLoading.value) {
+          void setupConnectedWallet();
+        }
+      }, 'eip155');
     }
   });
 
-  watch(lastWallet, async () => {
-    if (lastWallet.value && !userAddress.value) {
-      if (lastWallet.value === 'MetaMask') {
-        const unlocked = await window.ethereum._metamask.isUnlocked();
-        if (!unlocked) {
-          setLoading(false);
-          return;
-        }
-      }
-      await connectWallet();
-    }
-  });
+  watch(isDark, () => appKit?.setThemeMode(isDark.value ? 'dark' : 'light'));
 
   // ------------------------------------------- Actions -------------------------------------------
 
@@ -225,36 +224,85 @@ export default function useWalletStore() {
 
   async function connectWallet() {
     try {
-      if (isLoading.value || !onboard.value) return;
+      if (isLoading.value || !appKit) return;
 
       setLoading(true);
-      let connectedWallet;
-      if (lastWallet.value) {
-        [connectedWallet] = await onboard.value.connectWallet({
-          autoSelect: lastWallet?.value,
-        });
-      } else {
-        [connectedWallet] = await onboard.value.connectWallet();
-      }
-
-      if (!connectedWallet) {
+      const isConnected = appKit.getIsConnectedState() || (await openConnectModal(appKit));
+      if (!isConnected) {
         // if the user just decides not to complete the connection
         setLoading(false);
         return;
       }
 
-      setProvider(connectedWallet.provider);
-
-      // Add wallet name to localStorage
-      if (connectedWallet.label) setLastWallet(connectedWallet.label);
-
-      // Get ENS name, etc.
-      await configureProvider();
+      await setupConnectedWallet();
     } catch (e) {
       resetState();
       setLoading(false);
       throw e;
     }
+  }
+
+  /**
+   * @notice Opens the AppKit modal and resolves once the user connects a wallet (true) or closes the
+   * modal without connecting one (false)
+   */
+  function openConnectModal(instance: AppKit) {
+    return new Promise<boolean>((resolve, reject) => {
+      let wasOpened = false;
+      const unsubscribers: Array<() => void> = [];
+      const finish = (isConnected: boolean) => {
+        unsubscribers.forEach((unsubscribe) => unsubscribe());
+        resolve(isConnected);
+      };
+
+      unsubscribers.push(
+        instance.subscribeAccount(({ isConnected }) => {
+          if (isConnected) finish(true);
+        }, 'eip155'),
+        instance.subscribeState(({ open }) => {
+          if (open) wasOpened = true;
+          else if (wasOpened) finish(instance.getIsConnectedState());
+        })
+      );
+
+      instance.open({ view: 'Connect' }).catch((e) => {
+        unsubscribers.forEach((unsubscribe) => unsubscribe());
+        reject(e);
+      });
+    });
+  }
+
+  // Configures the app for the wallet AppKit has connected
+  async function setupConnectedWallet() {
+    const walletProvider = appKit?.getWalletProvider();
+    if (!walletProvider) {
+      setLoading(false);
+      return;
+    }
+
+    setProvider(walletProvider);
+    reloadOnWalletChange(walletProvider as ProviderEvents);
+
+    // Add wallet name to localStorage
+    const walletName = appKit?.getWalletInfo()?.name;
+    if (walletName) setLastWallet(walletName);
+
+    // Get ENS name, etc.
+    await configureProvider();
+  }
+
+  // Reload the page when the user switches accounts or networks in their wallet. See `setProvider`
+  // for why we reload instead of updating state.
+  function reloadOnWalletChange(walletProvider: ProviderEvents) {
+    removeWalletListeners?.();
+    const reload = () => window.location.reload();
+    walletProvider.on('accountsChanged', reload);
+    walletProvider.on('chainChanged', reload);
+    removeWalletListeners = () => {
+      walletProvider.removeListener('accountsChanged', reload);
+      walletProvider.removeListener('chainChanged', reload);
+      removeWalletListeners = undefined;
+    };
   }
 
   async function configureProvider() {
@@ -376,18 +424,12 @@ export default function useWalletStore() {
   }
 
   async function disconnectWallet() {
-    if (isLoading.value || !onboard.value) return;
-    const [primaryWallet] = onboard.value.state.get().wallets;
-    await onboard.value.disconnectWallet({ label: primaryWallet.label });
+    if (isLoading.value || !appKit) return;
+    // Clear state first so the AppKit account listener doesn't treat this as a wallet-side disconnect
+    removeWalletListeners?.();
     resetState();
     setLastWallet(null);
-  }
-
-  // WARNING: Only call this method at the same time as the `setLanguage` method in `settings.ts` to
-  // ensure the language settings stay in sync.
-  function setLanguage(language: string) {
-    if (!onboard.value) return;
-    onboard.value.state.actions.setLocale(language);
+    await appKit.disconnect();
   }
 
   /**
@@ -416,40 +458,18 @@ export default function useWalletStore() {
    */
   async function setNetwork(chain: Chain) {
     setLoading(true);
-    if (!provider.value) {
+    if (!provider.value || !appKit) {
       setLoading(false);
       return;
     }
 
     try {
-      await provider.value?.send('wallet_switchEthereumChain', [{ chainId: chain.chainId }]);
+      // AppKit asks the wallet to add the network if it doesn't have it yet. The page reloads once the
+      // wallet reports the new network.
+      await appKit.switchNetwork(getAppKitNetwork(Number(chain.chainId)), { throwOnFailure: true });
     } catch (switchError) {
-      const { code } = switchError as { code: number };
-
-      // This error code indicates that the chain has not been added to MetaMask.
-      if (code === 4902) {
-        try {
-          // Extract EIP-3085 incompatible fields
-          const { nativeCurrency, logoURI, iconUrls, blockExplorerUrls, rpcUrls, ...chainIdAndName } = { ...chain };
-          if (!blockExplorerUrls) {
-            throw new Error('blockExplorerUrls is missing');
-          }
-          const { address, logoURI: currencyLogoURI, ...nativeCurrencySummary } = nativeCurrency;
-          const eip3085Chain = {
-            nativeCurrency: nativeCurrencySummary,
-            blockExplorerUrls: [...blockExplorerUrls],
-            rpcUrls: [...rpcUrls],
-            ...chainIdAndName,
-          };
-          await provider.value?.send('wallet_addEthereumChain', [eip3085Chain]);
-        } catch (addError) {
-          console.log(addError);
-          setLoading(false);
-        }
-      } else {
-        console.log(switchError);
-        setLoading(false);
-      }
+      console.log(switchError);
+      setLoading(false);
     }
   }
 
@@ -575,7 +595,6 @@ export default function useWalletStore() {
     getPrivateKeys,
     getTokenBalances,
     setIsAccountSetup,
-    setLanguage,
     setProvider,
     setNetwork,
     syncStealthKeys,
