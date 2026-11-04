@@ -35,7 +35,7 @@
     "localforage": "^1.10.0",
     "quasar": "2.33.1",
     "vue": "3.5.43",
-    "vue-i18n": "^9.2.2",
+    "vue-i18n": "^11.4.14",
     "vue-router": "4.1.6"
   },
   "devDependencies": {
