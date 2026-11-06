@@ -1,6 +1,6 @@
 import { supportedChains, TokenInfo, Provider, TokenInfoExtended } from 'src/components/models';
 import { ERC20_ABI } from './constants';
-import { BigNumber, BigNumberish, Contract, hexValue, parseUnits, formatUnits, isHexString } from './ethers';
+import { BigNumber, BigNumberish, Contract, hexValue, formatUnits, isHexString } from './ethers';
 import { date } from 'quasar';
 import { copyToClipboard } from 'quasar';
 import { toAddress } from 'src/utils/address';
@@ -96,55 +96,6 @@ export const humanizeArithmeticResult = (total: BigNumberish, operands: string[]
  * @notice GETs JSON from the provided `url`
  */
 export const jsonFetch = (url: string) => fetch(url).then((res) => res.json());
-
-// Shape of data returned from the TxPrice API
-type TxPriceResponse = {
-  system: string;
-  network: string;
-  unit: string;
-  maxPrice: number;
-  currentBlockNumber: number;
-  msSinceLastBlock: number;
-  blockPrices: BlockPrice[];
-};
-
-type BlockPrice = {
-  blockNumber: number;
-  baseFeePerGas: number;
-  estimatedTransactionCount: number;
-  estimatedPrices: EstimatedPrice[];
-};
-
-type EstimatedPrice = {
-  confidence: number;
-  price: number;
-  maxPriorityFeePerGas: number;
-  maxFeePerGas: number;
-};
-
-// Valid confidence values
-type TxPriceConfidence = 99 | 95 | 90 | 80 | 70;
-
-/**
- * @notice Gets the current gas price via TxPrice API
- * @param gasPriceConfidence probability of transaction being confirmed
- */
-export const getGasPrice = async (gasPriceConfidence: TxPriceConfidence = 99): Promise<BigNumber> => {
-  try {
-    const response: TxPriceResponse = await jsonFetch('https://api.TxPrice.com/');
-    const estimatedPrice = response.blockPrices[0]?.estimatedPrices?.find(
-      (price) => price.confidence === gasPriceConfidence
-    );
-    const gasPriceInGwei = estimatedPrice?.price;
-    if (!gasPriceInGwei) throw new Error('API did not return a valid gas price');
-
-    const gasPriceInWei = parseUnits(String(gasPriceInGwei), 'gwei');
-    return BigNumber.from(gasPriceInWei);
-  } catch (e) {
-    const message = (e as { message: string }).message;
-    throw new Error(`Error fetching gas price from TxPrice API: ${message}`);
-  }
-};
 
 // Address might be an ERC-20 or ERC-721 token
 export const isToken = async (address: string, provider: Provider) => {
