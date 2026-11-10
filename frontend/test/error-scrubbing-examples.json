@@ -62,6 +62,71 @@
       "output": "<name> is undefined"
     },
     {
+      "description": "ENS name with an accented letter",
+      "input": "Failed to send to josé.eth",
+      "output": "Failed to send to <name>"
+    },
+    {
+      "description": "ENS name in a non-Latin script",
+      "input": "Failed to send to 测试.eth",
+      "output": "Failed to send to <name>"
+    },
+    {
+      "description": "ENS name with non-Latin digits",
+      "input": "Failed to send to ٠١٢.eth",
+      "output": "Failed to send to <name>"
+    },
+    {
+      "description": "ENS name that is an emoji",
+      "input": "Failed to send to 🚀.eth",
+      "output": "Failed to send to <name>"
+    },
+    {
+      "description": "ENS names that are emoji sequences: joined, skin tone, flag and keycap",
+      "input": "Failed to send to 👨‍👩‍👧.eth, 👍🏽.eth, 🇺🇸.eth and 1️⃣.eth",
+      "output": "Failed to send to <name>, <name>, <name> and <name>"
+    },
+    {
+      "description": "ENS name mixing scripts",
+      "input": "Failed to send to café-测试.eth",
+      "output": "Failed to send to <name>"
+    },
+    {
+      "description": "ENS name with a dollar sign and an apostrophe",
+      "input": "Failed to send to $o'brien.eth",
+      "output": "Failed to send to <name>"
+    },
+    {
+      "description": "ENS subdomain with an accented letter",
+      "input": "Name pay.josé.eth is not registered",
+      "output": "Name <name> is not registered"
+    },
+    {
+      "description": "quoted ENS name at the end of a sentence",
+      "input": "Could not resolve 'josé.eth'. Sent to josé.eth.",
+      "output": "Could not resolve '<name>'. Sent to <name>."
+    },
+    {
+      "description": "recipient quoted by toAddress in umbra-js",
+      "input": "Please verify the provided name or address of '🚀.eth' is correct. If providing an ENS name, ensure it is registered, and has a valid address record.",
+      "output": "Please verify the provided name or address of '<name>' is correct. If providing an ENS name, ensure it is registered, and has a valid address record."
+    },
+    {
+      "description": "recipient without a dot quoted by toAddress in umbra-js",
+      "input": "Please verify the provided name or address of 'vitalik' is correct.",
+      "output": "Please verify the provided name or address of '<name>' is correct."
+    },
+    {
+      "description": "recipient with an apostrophe quoted by toAddress in umbra-js",
+      "input": "Please verify the provided name or address of 'o'brien.eth' is correct.",
+      "output": "Please verify the provided name or address of '<name>' is correct."
+    },
+    {
+      "description": "recipient ID in a non-Latin script",
+      "input": "Could not retrieve public keys for recipient ID 测试.eth",
+      "output": "Could not retrieve public keys for recipient ID <name>"
+    },
+    {
       "description": "email address",
       "input": "Contact alice@example.com for help",
       "output": "Contact <email> for help"
@@ -70,6 +135,11 @@
       "description": "email address at an ENS name",
       "input": "Unknown sender alice@vitalik.eth",
       "output": "Unknown sender <email>"
+    },
+    {
+      "description": "email address at an ENS name with an accented letter",
+      "input": "Unknown sender alice@josé.eth",
+      "output": "Unknown sender <name>"
     },
     {
       "description": "RPC URL with a key in its path and a query string",
