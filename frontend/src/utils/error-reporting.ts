@@ -107,7 +107,7 @@ export function reportError(error: unknown, source: ErrorSource, extra: ReportEx
     const appOrigin = window.location.origin;
     const message = getErrorMessage(error);
     const frames = getStackFrames(error);
-    if (isNoise(error, message, frames, appOrigin)) return;
+    if (isNoise(error, source, message, frames, appOrigin)) return;
 
     const report = buildReport(error, source, extra, message, frames, appOrigin);
     const firstAppFrame = report.stack?.split('\n').find((frame) => frame.includes(`${appOrigin}/`)) ?? '';
@@ -145,9 +145,15 @@ function getStackFrames(error: unknown): string[] {
   return error.stack.split('\n').filter((line) => stackFrame.test(line));
 }
 
-function isNoise(error: unknown, message: string, frames: string[], appOrigin: string): boolean {
+// Sources that also see errors from browser extensions and injected wallet scripts that have nothing to do with the
+// app. Vue's error handler and catch blocks only see errors from the app's own operations, even when a wallet created
+// the error and its frames all come from the wallet
+const sourcesWithOutsideErrors: ErrorSource[] = ['error-event', 'rejection'];
+
+function isNoise(error: unknown, source: ErrorSource, message: string, frames: string[], appOrigin: string): boolean {
   if (isUserRejection(error) || isIgnoredMessage(message)) return true;
   if (message.startsWith('Script error') || message.startsWith('ResizeObserver loop')) return true;
+  if (!sourcesWithOutsideErrors.includes(source)) return false;
 
   // Errors whose frames all come from other origins come from browser extensions and injected wallet scripts
   const framesWithUrls = frames.filter((frame) => urlInText.test(frame));

@@ -1,7 +1,7 @@
 import { spawnSync } from 'child_process';
 import { join } from 'path';
 import { ErrorReport, scrubMessage, scrubStack } from '../src/utils/error-reporting';
-import { Logger } from '../src/utils/ethers';
+import { Logger, Web3Provider } from '../src/utils/ethers';
 import examples from './error-scrubbing-examples.json';
 
 const mockStorage: Record<string, unknown> = {};
@@ -258,9 +258,9 @@ describe('reportError', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it('when the user rejects a request in their wallet', () => {
-      reporter.reportError({ code: 4001, message: 'User rejected the request.' }, 'rejection');
-      reporter.reportError({ code: 'ACTION_REJECTED', message: 'user rejected transaction' }, 'rejection');
+    it.each(['rejection', 'handled'] as const)('when the user rejects a request in their wallet, from %s', (source) => {
+      reporter.reportError({ code: 4001, message: 'User rejected the request.' }, source);
+      reporter.reportError({ code: 'ACTION_REJECTED', message: 'user rejected transaction' }, source);
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
@@ -276,9 +276,51 @@ describe('reportError', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it('for errors whose frames all come from other origins', () => {
-      reporter.reportError(errorWithFrames('Failed', [extensionFrame]), 'error-event');
-      expect(fetchMock).not.toHaveBeenCalled();
+    it.each(['error-event', 'rejection'] as const)(
+      'for errors whose frames all come from other origins, from %s',
+      (source) => {
+        reporter.reportError(errorWithFrames('Failed', [extensionFrame]), source);
+        expect(fetchMock).not.toHaveBeenCalled();
+      }
+    );
+  });
+
+  it.each(['vue', 'handled'] as const)('reports errors whose frames all come from other origins, from %s', (source) => {
+    reporter.reportError(errorWithFrames('Failed', [extensionFrame]), source, { caughtIn: 'wallet.getPrivateKeys' });
+    expect(sentReports()[0]).toMatchObject({
+      source,
+      caughtIn: 'wallet.getPrivateKeys',
+      stack: '    at r (<ext>:1:12345)',
+    });
+  });
+
+  it('reports a wallet error that ethers passes on unchanged, when a catch block reports it', async () => {
+    // A wallet that rejects a signature request with an error whose frames all come from the wallet's extension
+    const walletError = {
+      code: -32603,
+      message: 'Internal JSON-RPC error.',
+      stack: `Error: Internal JSON-RPC error.\n${extensionFrame}`,
+    };
+    const provider = new Web3Provider({
+      request: ({ method }: { method: string }) =>
+        method === 'eth_chainId' ? Promise.resolve('0x1') : Promise.reject(walletError),
+    });
+
+    let caught: unknown;
+    try {
+      await provider.send('personal_sign', ['0x00', '0x1aD91ee08f21bE3dE0BA2ba6918E714dA6B45836']);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBe(walletError);
+
+    reporter.reportError(caught, 'handled', { caughtIn: 'wallet.getPrivateKeys' });
+    expect(sentReports()[0]).toMatchObject({
+      source: 'handled',
+      caughtIn: 'wallet.getPrivateKeys',
+      code: -32603,
+      message: 'Internal JSON-RPC error.',
+      stack: '    at r (<ext>:1:12345)',
     });
   });
 
