@@ -21,6 +21,36 @@ function errorWithFrames(message: string, frames: string[], name = 'Error') {
   return error;
 }
 
+const functionUrl = `${appOrigin}/api/client-error`;
+const userAgent =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
+
+type FunctionRequest = { method?: string; headers?: Record<string, string>; body?: string };
+type FunctionResult = { status: number; allow: string | null; body: string; logs: string[] };
+
+// Runs the client-error function on each request in a separate Node process, since Jest can't import ES modules
+function runFunction(requests: FunctionRequest[]): FunctionResult[] {
+  const input = requests.map(({ method = 'POST', headers = {}, body }) => ({
+    url: functionUrl,
+    method,
+    headers: { 'content-type': 'application/json', 'user-agent': userAgent, ...headers },
+    body,
+  }));
+  const result = spawnSync(process.execPath, [join(__dirname, 'run-client-error-function.mjs')], {
+    input: JSON.stringify(input),
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) throw new Error(`The function runner failed: ${result.stderr}`);
+  return JSON.parse(result.stdout) as FunctionResult[];
+}
+
+// Returns the report the function logged for a request
+const loggedReport = (result: FunctionResult) => {
+  expect(result.logs).toHaveLength(1);
+  expect(result.logs[0].startsWith('client_error ')).toBe(true);
+  return JSON.parse(result.logs[0].slice('client_error '.length)) as Record<string, unknown>;
+};
+
 describe('scrubMessage', () => {
   it.each(examples.messages)('scrubs $description', ({ input, output }) => {
     expect(scrubMessage(input)).toBe(output);
@@ -257,6 +287,29 @@ describe('reportError', () => {
     expect(sentReports()[0].stack).toBe(`    at r (<ext>:1:12345)\n${appFrame}`);
   });
 
+  it.each([
+    {
+      description: 'a recipient quoted by toAddress in umbra-js',
+      message:
+        "Please verify the provided name or address of 'josé.eth' is correct. If providing an ENS name, ensure it is registered, and has a valid address record.",
+      scrubbed:
+        "Please verify the provided name or address of '<name>' is correct. If providing an ENS name, ensure it is registered, and has a valid address record.",
+    },
+    {
+      description: 'an ENS subdomain in a non-Latin script',
+      message: 'Name pay.测试.eth is not registered',
+      scrubbed: 'Name <name> is not registered',
+    },
+  ])('removes $description from the report it sends and from the line the function logs', ({ message, scrubbed }) => {
+    reporter.reportError(errorWithFrames(message, [appFrame]), 'vue');
+    const body = (fetchMock.mock.calls[0] as [string, RequestInit])[1].body as string;
+    expect((JSON.parse(body) as ErrorReport).message).toBe(scrubbed);
+
+    const [result] = runFunction([{ body }]);
+    expect(result.status).toBe(204);
+    expect(loggedReport(result).message).toBe(scrubbed);
+  });
+
   it('sends each error at most once per page load', () => {
     reporter.reportError(errorWithFrames('Failed', [appFrame]), 'vue');
     reporter.reportError(errorWithFrames('Failed', [appFrame]), 'vue');
@@ -289,35 +342,6 @@ describe('reportError', () => {
 });
 
 describe('the client-error Netlify function', () => {
-  const url = `${appOrigin}/api/client-error`;
-  const userAgent =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
-
-  type FunctionRequest = { method?: string; headers?: Record<string, string>; body?: string };
-  type FunctionResult = { status: number; allow: string | null; body: string; logs: string[] };
-
-  // Runs the function on each request in a separate Node process, since Jest can't import ES modules
-  function runFunction(requests: FunctionRequest[]): FunctionResult[] {
-    const input = requests.map(({ method = 'POST', headers = {}, body }) => ({
-      url,
-      method,
-      headers: { 'content-type': 'application/json', 'user-agent': userAgent, ...headers },
-      body,
-    }));
-    const result = spawnSync(process.execPath, [join(__dirname, 'run-client-error-function.mjs')], {
-      input: JSON.stringify(input),
-      encoding: 'utf8',
-    });
-    if (result.status !== 0) throw new Error(`The function runner failed: ${result.stderr}`);
-    return JSON.parse(result.stdout) as FunctionResult[];
-  }
-
-  const loggedReport = (result: FunctionResult) => {
-    expect(result.logs).toHaveLength(1);
-    expect(result.logs[0].startsWith('client_error ')).toBe(true);
-    return JSON.parse(result.logs[0].slice('client_error '.length)) as Record<string, unknown>;
-  };
-
   const validReport = {
     v: 1,
     source: 'vue',

@@ -68,18 +68,30 @@ const readJsonRequest = async (request) => {
 const open = (text) => ({ text, done: false });
 const done = (text) => ({ text, done: true });
 
-const replaceInSegments = (segments, pattern, replace) =>
-  segments.flatMap((segment) => {
-    if (segment.done) return [segment];
-    const result = [];
+// Adjacent open segments are merged, so a later rule can match text that spans them
+const replaceInSegments = (segments, pattern, replace) => {
+  const result = [];
+  const push = (segment) => {
+    const last = result[result.length - 1];
+    if (!segment.done && last && !last.done) result[result.length - 1] = open(last.text + segment.text);
+    else if (segment.done || segment.text) result.push(segment);
+  };
+
+  for (const segment of segments) {
+    if (segment.done) {
+      push(segment);
+      continue;
+    }
     let lastIndex = 0;
     for (const match of segment.text.matchAll(pattern)) {
-      result.push(open(segment.text.slice(lastIndex, match.index)), ...replace(match));
+      push(open(segment.text.slice(lastIndex, match.index)));
+      replace(match).forEach(push);
       lastIndex = match.index + match[0].length;
     }
-    result.push(open(segment.text.slice(lastIndex)));
-    return result;
-  });
+    push(open(segment.text.slice(lastIndex)));
+  }
+  return result;
+};
 
 const joinSegments = (segments) => segments.map((segment) => segment.text).join('');
 
@@ -113,11 +125,39 @@ const isExtensionUrl = (url) => url.protocol.endsWith('-extension:');
 
 const MESSAGE_URL = /<url:([^<>\s]{0,253})>|\b[a-z][a-z0-9+.-]{0,30}:\/\/[^\s"'`<>()[\]{}]+/gi;
 const EMAIL = /[^\s@<>()[\]{}"'`,;:]{1,64}@(?:[a-z0-9-]{1,63}\.){1,10}[a-z]{2,63}/gi;
-const DOMAIN_NAME = /(?:[a-z0-9|-]{1,63}\.){1,10}[a-z]{1,63}/gi;
 const NUMBER = /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+|\d{6,}/g;
+
+// Some umbra-js errors quote the recipient the user entered, which might not look like a name
+const QUOTED_RECIPIENT = /(provided name or address of ')(.*?)(' is correct)|(recipient ID )(\S+)/g;
+
+// Runs of text between characters that can't be part of a name, such as spaces, quotes and brackets. ENS names can
+// contain letters and digits in any script, emoji, symbols, `$`, `'` and `-`, so names are found by their dots
+// instead of by the characters they contain
+const NAME_CANDIDATE = /[^\s<>()[\]{}"`,;:/\\]+/g;
+const NAME_EDGE_CHARACTERS = new Set(['.', "'", '’']);
+
+// Splits dots and apostrophes off the ends of a candidate, such as the quotes in `'alice.eth'`, so they're kept
+const splitNameEdges = (candidate) => {
+  let start = 0;
+  let end = candidate.length;
+  while (start < end && NAME_EDGE_CHARACTERS.has(candidate[start])) start++;
+  while (end > start && NAME_EDGE_CHARACTERS.has(candidate[end - 1])) end--;
+  return [candidate.slice(0, start), candidate.slice(start, end), candidate.slice(end)];
+};
+
+// Text with a dot is a name, unless its last label starts with a digit, as in the decimal `1.5`
+const isName = (text) => {
+  const labels = text.split('.');
+  return labels.length > 1 && !/^\d/.test(labels[labels.length - 1]);
+};
 
 const scrubMessage = (message) => {
   let segments = [open(message)];
+
+  // Recipients that umbra-js quotes, before any other rule can split them
+  segments = replaceInSegments(segments, QUOTED_RECIPIENT, (match) =>
+    match[1] !== undefined ? [open(match[1]), done('<name>'), open(match[3])] : [open(match[4]), done('<name>')]
+  );
 
   // Rule 1: URLs keep only their host, since RPC URLs can carry keys in their path and query strings can carry anything
   segments = replaceInSegments(segments, MESSAGE_URL, (match) => {
@@ -133,9 +173,12 @@ const scrubMessage = (message) => {
   // Rules 3 and 4: long hex strings, with or without a 0x prefix
   segments = replaceHex(segments);
 
-  // Rule 5: anything `utils.isDomain` in umbra-js would accept, since any of them can be an ENS name or other recipient
-  // ID. This also hides some harmless text, such as `window.ethereum`
-  segments = replaceInSegments(segments, DOMAIN_NAME, () => [done('<name>')]);
+  // Rule 5: names, in any script, since any of them can be an ENS name or other recipient ID. This also hides some
+  // harmless text, such as `window.ethereum`
+  segments = replaceInSegments(segments, NAME_CANDIDATE, (match) => {
+    const [leading, candidate, trailing] = splitNameEdges(match[0]);
+    return isName(candidate) ? [open(leading), done('<name>'), open(trailing)] : [open(match[0])];
+  });
 
   // Rule 6: decimals, numbers with thousands separators, and integers with 6 or more digits, which can be amounts.
   // Error codes such as -32603 and 4001 are kept
