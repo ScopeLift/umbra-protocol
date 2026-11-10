@@ -192,6 +192,27 @@
               </span>
             </p>
 
+            <!-- Error reporting toggle -->
+            <p>
+              <q-toggle
+                @update:modelValue="toggleErrorReporting"
+                :modelValue="errorReporting"
+                class="icon"
+                color="primary"
+                dense
+                icon="fas fa-gear"
+              />
+              <span class="dark-toggle text-caption q-ml-md"
+                >{{ $t('Base-Layout.error-reporting') }}
+                {{ errorReporting ? $t('Base-Layout.on') : $t('Base-Layout.off') }}</span
+              >
+              <span>
+                <base-tooltip class="q-ml-sm" icon="fas fa-circle-question">
+                  {{ $t('Base-Layout.error-reporting-description') }}
+                </base-tooltip>
+              </span>
+            </p>
+
             <!-- Clear local storage button -->
             <div class="q-mt-md row items-center">
               <base-button
@@ -278,6 +299,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue';
+import { LocalStorage } from 'quasar';
 import ArgentWarningModal from 'components/ArgentWarningModal.vue';
 import BaseButton from 'src/components/BaseButton.vue';
 import BaseTooltip from 'src/components/BaseTooltip.vue';
@@ -289,6 +311,7 @@ import HeaderLinks from 'src/layouts/HeaderLinks.vue';
 import NetworkDropdown from 'src/layouts/NetworkDropdown.vue';
 import { Language } from 'src/components/models';
 import { notifyUser } from 'src/utils/alerts';
+import { errorReportingSetting } from 'src/utils/error-reporting';
 
 export default defineComponent({
   name: 'BaseLayout',
@@ -296,12 +319,14 @@ export default defineComponent({
   setup() {
     const {
       advancedMode,
+      errorReporting,
       sendHistorySave,
       language,
       supportedLanguages,
       toggleAdvancedMode,
       setLanguage,
       toggleDarkMode,
+      toggleErrorReporting,
       toggleSendHistory,
     } = useSettingsStore();
     const {
@@ -326,7 +351,10 @@ export default defineComponent({
     };
 
     const clearLocalStorage = () => {
+      // Keep the error reporting setting, so that clearing local storage doesn't turn reporting back on
+      const errorReportingValue = LocalStorage.getItem(errorReportingSetting);
       localStorage.clear();
+      if (errorReportingValue !== null) LocalStorage.set(errorReportingSetting, errorReportingValue);
       notifyUser('success', 'Local storage cleared. Reloading page...');
       setTimeout(() => {
         window.location.reload();
@@ -343,6 +371,7 @@ export default defineComponent({
       commitUrl,
       currentLanguage,
       drawerRight: ref(false),
+      errorReporting,
       isLoading,
       language,
       network,
@@ -351,6 +380,7 @@ export default defineComponent({
       supportedLanguages,
       toggleAdvancedMode,
       toggleDarkMode,
+      toggleErrorReporting,
       toggleSendHistory,
       userAddress,
       userDisplayName,

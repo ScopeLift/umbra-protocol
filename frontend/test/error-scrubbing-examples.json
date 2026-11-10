@@ -1,0 +1,212 @@
+{
+  "appOrigin": "https://app.umbra.cash",
+  "messages": [
+    {
+      "description": "checksummed address",
+      "input": "Address 0x1aD91ee08f21bE3dE0BA2ba6918E714dA6B45836 has not registered stealth keys. Please ask them to setup their Umbra account",
+      "output": "Address <hex:40> has not registered stealth keys. Please ask them to setup their Umbra account"
+    },
+    {
+      "description": "lowercase address",
+      "input": "Invalid stealth address: 0xfb2dc580eed955b528407b4d36ffafe3da685401",
+      "output": "Invalid stealth address: <hex:40>"
+    },
+    {
+      "description": "private key with 0x",
+      "input": "Invalid key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+      "output": "Invalid key <hex:64>"
+    },
+    {
+      "description": "private key without 0x",
+      "input": "Invalid private key 'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'",
+      "output": "Invalid private key '<hex:64>'"
+    },
+    {
+      "description": "signature",
+      "input": "Invalid signature 0x8a7b2c1d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d1b",
+      "output": "Invalid signature <hex:130>"
+    },
+    {
+      "description": "signature without 0x, which fails the check in generatePrivateKeys",
+      "input": "Invalid signature: 8a7b2c1d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d1b",
+      "output": "Invalid signature: <hex:130>"
+    },
+    {
+      "description": "hex string of 32 characters without 0x",
+      "input": "Unexpected value abcdef0123456789abcdef0123456789",
+      "output": "Unexpected value <hex:32>"
+    },
+    {
+      "description": "ENS name",
+      "input": "Could not retrieve public keys for recipient ID vitalik.eth",
+      "output": "Could not retrieve public keys for recipient ID <name>"
+    },
+    {
+      "description": "ENS name with capital letters",
+      "input": "Could not retrieve public keys for recipient ID Vitalik.eth",
+      "output": "Could not retrieve public keys for recipient ID <name>"
+    },
+    {
+      "description": "ENS subdomain",
+      "input": "Name pay.alice.eth is not registered",
+      "output": "Name <name> is not registered"
+    },
+    {
+      "description": "DNS name",
+      "input": "Could not resolve alice.xyz",
+      "output": "Could not resolve <name>"
+    },
+    {
+      "description": "harmless text that looks like a name",
+      "input": "window.ethereum is undefined",
+      "output": "<name> is undefined"
+    },
+    {
+      "description": "email address",
+      "input": "Contact alice@example.com for help",
+      "output": "Contact <email> for help"
+    },
+    {
+      "description": "email address at an ENS name",
+      "input": "Unknown sender alice@vitalik.eth",
+      "output": "Unknown sender <email>"
+    },
+    {
+      "description": "RPC URL with a key in its path and a query string",
+      "input": "Request to https://eth-mainnet.g.alchemy.com/v2/AbCdEf123456?retry=1 failed",
+      "output": "Request to <url:eth-mainnet.g.alchemy.com> failed"
+    },
+    {
+      "description": "RPC URL with a hex key in its path",
+      "input": "missing response (url=\"https://mainnet.infura.io/v3/0123456789abcdef0123456789abcdef\")",
+      "output": "missing response (url=\"<url:mainnet.infura.io>\")"
+    },
+    {
+      "description": "URL with an IP address",
+      "input": "could not detect network (url=http://192.168.1.10:8545)",
+      "output": "could not detect network (url=<url:ip>)"
+    },
+    {
+      "description": "browser extension URL",
+      "input": "Error in chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/inpage.js",
+      "output": "Error in <url:ext>"
+    },
+    {
+      "description": "URL placeholder with a hex string as its host",
+      "input": "Request to <url:0x1aD91ee08f21bE3dE0BA2ba6918E714dA6B45836.example> failed",
+      "output": "Request to <url:redacted> failed"
+    },
+    {
+      "description": "ethers UNPREDICTABLE_GAS_LIMIT message with an embedded transaction",
+      "input": "cannot estimate gas; transaction may fail or may require manual gas limit [ See: https://links.ethers.org/v5-errors-UNPREDICTABLE_GAS_LIMIT ] (reason=\"execution reverted: Umbra: Payment amount too low\", method=\"estimateGas\", transaction={\"from\":\"0x1aD91ee08f21bE3dE0BA2ba6918E714dA6B45836\",\"to\":\"0xFb2dc580Eed955B528407b4d36FfaFe3da685401\",\"value\":{\"type\":\"BigNumber\",\"hex\":\"0x0de0b6b3a7640000\"},\"data\":\"0xbeadf3b40000000000000000000000001ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"accessList\":null}, error={\"code\":-32603,\"message\":\"execution reverted\"}, code=UNPREDICTABLE_GAS_LIMIT, version=providers/5.8.0)",
+      "output": "cannot estimate gas; transaction may fail or may require manual gas limit [ See: <url:links.ethers.org> ] (reason=\"execution reverted: Umbra: Payment amount too low\", method=\"estimateGas\", transaction={\"from\":\"<hex:40>\",\"to\":\"<hex:40>\",\"value\":{\"type\":\"BigNumber\",\"hex\":\"<hex:16>\"},\"data\":\"<hex:72>\",\"accessList\":null}, error={\"code\":-32603,\"message\":\"execution reverted\"}, code=UNPREDICTABLE_GAS_LIMIT, version=providers/<num>.0)"
+    },
+    {
+      "description": "ethers CALL_EXCEPTION message with an embedded transaction",
+      "input": "call revert exception [ See: https://links.ethers.org/v5-errors-CALL_EXCEPTION ] (method=\"balanceOf(address)\", data=\"0x\", errorArgs=null, errorName=null, errorSignature=null, reason=null, transaction={\"to\":\"0xFb2dc580Eed955B528407b4d36FfaFe3da685401\",\"data\":\"0x70a082310000000000000000000000001ad91ee08f21be3de0ba2ba6918e714da6b45836\"}, code=CALL_EXCEPTION, version=abi/5.8.0)",
+      "output": "call revert exception [ See: <url:links.ethers.org> ] (method=\"balanceOf(address)\", data=\"0x\", errorArgs=null, errorName=null, errorSignature=null, reason=null, transaction={\"to\":\"<hex:40>\",\"data\":\"<hex:72>\"}, code=CALL_EXCEPTION, version=abi/<num>.0)"
+    },
+    {
+      "description": "amounts in display units",
+      "input": "Amount 1.25 ETH exceeds balance of 0.5 ETH",
+      "output": "Amount <num> ETH exceeds balance of <num> ETH"
+    },
+    {
+      "description": "amounts with thousands separators",
+      "input": "Send 1,234.56 USDC or 1,000 DAI",
+      "output": "Send <num> USDC or <num> DAI"
+    },
+    {
+      "description": "amounts in base units",
+      "input": "insufficient funds: have 1000000000000000000 want 2500000000000000000",
+      "output": "insufficient funds: have <num> want <num>"
+    },
+    {
+      "description": "6-digit amount in base units, next to a 5-digit number that is kept",
+      "input": "Allowance 500000 is below 25000",
+      "output": "Allowance <num> is below 25000"
+    },
+    {
+      "description": "block number",
+      "input": "block 18934567 not found",
+      "output": "block <num> not found"
+    },
+    {
+      "description": "JSON-RPC error code",
+      "input": "Internal JSON-RPC error. (code -32603)",
+      "output": "Internal JSON-RPC error. (code -32603)"
+    },
+    {
+      "description": "EIP-1193 error code",
+      "input": "MetaMask Tx Signature: User denied transaction signature. (code 4001)",
+      "output": "MetaMask Tx Signature: User denied transaction signature. (code 4001)"
+    },
+    {
+      "description": "four-byte selector and small hex values",
+      "input": "execution reverted with selector 0x08c379a0 at nonce 0x1f",
+      "output": "execution reverted with selector 0x08c379a0 at nonce 0x1f"
+    },
+    {
+      "description": "message without sensitive values",
+      "input": "Cannot read properties of undefined (reading 'toLowerCase')",
+      "output": "Cannot read properties of undefined (reading 'toLowerCase')"
+    }
+  ],
+  "stacks": [
+    {
+      "description": "Chromium frames from the app's origin, without a query string",
+      "input": "    at Proxy.withdraw (https://app.umbra.cash/js/7342.4b2f1a0c.js:1:23456)\n    at https://app.umbra.cash/js/app.d5e6f7a8.js?v=2:2:345",
+      "output": "    at Proxy.withdraw (https://app.umbra.cash/js/7342.4b2f1a0c.js:1:23456)\n    at https://app.umbra.cash/js/app.d5e6f7a8.js:2:345"
+    },
+    {
+      "description": "Chromium frame from a browser extension",
+      "input": "    at r (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/inpage.js:1:12345)",
+      "output": "    at r (<ext>:1:12345)"
+    },
+    {
+      "description": "Firefox frame from a browser extension",
+      "input": "@moz-extension://2b3c4d5e-1234-5678-9abc-def012345678/content.js:10:5",
+      "output": "@<ext>:10:5"
+    },
+    {
+      "description": "Firefox frame from another origin",
+      "input": "e@https://challenges.cloudflare.com/turnstile/v0/api.js?onload=x:1:2345",
+      "output": "e@<origin:challenges.cloudflare.com>:1:2345"
+    },
+    {
+      "description": "frame from another port on the app's host",
+      "input": "    at https://app.umbra.cash:8443/js/app.js:1:2",
+      "output": "    at <origin:app.umbra.cash>:1:2"
+    },
+    {
+      "description": "frame from an IP address",
+      "input": "    at http://127.0.0.1:8545/x.js:1:2",
+      "output": "    at <origin:ip>:1:2"
+    },
+    {
+      "description": "frame from a blob URL on the app's origin",
+      "input": "    at blob:https://app.umbra.cash/4b2f1a0c-1234-5678-9abc-def012345678:1:2",
+      "output": "    at blob:https://app.umbra.cash/4b2f1a0c-1234-5678-9abc-def012345678:1:2"
+    },
+    {
+      "description": "address in a frame",
+      "input": "    at 0x1aD91ee08f21bE3dE0BA2ba6918E714dA6B45836 (https://app.umbra.cash/js/app.js:1:2)",
+      "output": "    at <hex:40> (https://app.umbra.cash/js/app.js:1:2)"
+    },
+    {
+      "description": "key in the path of a frame from the app's origin",
+      "input": "    at https://app.umbra.cash/ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80:1:2",
+      "output": "    at https://app.umbra.cash/<hex:64>:1:2"
+    },
+    {
+      "description": "Safari native frame",
+      "input": "forEach@[native code]",
+      "output": "forEach@[native code]"
+    },
+    {
+      "description": "placeholders from an earlier scrub",
+      "input": "    at r (<ext>:1:2)\n    at <origin:cdn.example.com>:3:4",
+      "output": "    at r (<ext>:1:2)\n    at <origin:cdn.example.com>:3:4"
+    }
+  ]
+}

@@ -43,7 +43,9 @@
     "built-by": "Built by {0}",
     "links": "Links",
     "send-history": "Send history",
-    "send-history-description": "Enables saving send history locally in the browser so it can be viewed on the \"send history\" page."
+    "send-history-description": "Enables saving send history locally in the browser so it can be viewed on the \"send history\" page.",
+    "error-reporting": "Error reporting",
+    "error-reporting-description": "Sends technical details about app errors to Umbra so we can fix them. Reports never include your addresses, keys, names or amounts."
   },
   "Address-Settings": {
     "advanced-mode-on": "Advanced mode is on"

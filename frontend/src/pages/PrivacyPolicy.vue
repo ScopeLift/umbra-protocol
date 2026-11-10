@@ -13,11 +13,20 @@
       Resend. The form uses Cloudflare Turnstile to check that it is being sent by a person, which shares your IP
       address and information about your browser with Cloudflare.
     </p>
+    <p>
+      When the app runs into an error, it sends us an error report containing technical details: the error message and
+      where in the app's code it happened, the app version, the page, the network, the name of the wallet you connected,
+      such as MetaMask, and your browser and operating system family. Before a report leaves your browser, the app
+      removes addresses, names, keys and amounts from it, and we remove them again when we receive it. The reports we
+      keep don't include your IP address, although our cloud hosting providers may record it as described above. You can
+      turn error reporting off in the Settings section at the bottom of every page.
+    </p>
 
     <p class="text-bold">What do we use your information for?</p>
     <p>
       We do not use your information for any purpose beyond the default logging functionality provided by our cloud
-      hosting providers and responding to messages you send us through the contact form.
+      hosting providers, responding to messages you send us through the contact form, and finding and fixing errors in
+      the app.
     </p>
 
     <p class="text-bold">How do we protect your information?</p>
@@ -30,6 +39,7 @@
     <p>We will make a good faith effort to:</p>
     <ul>
       <li>Retain server logs containing the IP address of all requests to this server no more than 90 days.</li>
+      <li>Retain error reports no more than 7 days.</li>
       <li>Retain the IP addresses associated with registered users and their posts no more than 5 years.</li>
       <li>
         Remove the IP address logging requirement altogether, and destroy any existing logs, sometime in the future.

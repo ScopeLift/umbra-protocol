@@ -29,6 +29,7 @@ import { BigNumber, Contract, ExternalProvider, Web3Provider, parseUnits } from 
 import { UmbraApi } from 'src/utils/umbra-api';
 import { getChainById } from 'src/utils/utils';
 import { notifyUser } from 'src/utils/alerts';
+import { reportError, setErrorReportingContext } from 'src/utils/error-reporting';
 import useSettingsStore from 'src/store/settings';
 import enLocal from 'src/i18n/locales/en-US.json';
 import chLocal from 'src/i18n/locales/zh-CN.json';
@@ -83,6 +84,12 @@ const avatar = ref<string | null>('');
 export let providerExport = provider.value;
 export let relayerExport = relayer.value;
 export let tokensExport: TokenInfoExtended[] = [];
+
+// Error reports include the connected network and the name of the connected wallet, such as MetaMask
+setErrorReportingContext({
+  chainId: () => network.value?.chainId,
+  walletName: () => onboard.value?.state.get().wallets[0]?.label,
+});
 
 // ========================================== Main Store ===========================================
 export default function useWalletStore() {
@@ -285,6 +292,7 @@ export default function useWalletStore() {
         _relayer = await UmbraApi.create(provider.value);
       } catch (e) {
         console.log("couldn't create relayer", e);
+        reportError(e, 'handled', { caughtIn: 'wallet.createRelayer' });
         _relayer = undefined;
       }
 
@@ -407,6 +415,8 @@ export default function useWalletStore() {
       return 'success';
     } catch (err) {
       console.error(err);
+      // Reports leave out the user declining the signature, so only other failures are sent
+      reportError(err, 'handled', { caughtIn: 'wallet.getPrivateKeys' });
       return 'denied'; // most likely user rejected the signature
     }
   }
@@ -444,10 +454,12 @@ export default function useWalletStore() {
           await provider.value?.send('wallet_addEthereumChain', [eip3085Chain]);
         } catch (addError) {
           console.log(addError);
+          reportError(addError, 'handled', { caughtIn: 'wallet.setNetwork.add' });
           setLoading(false);
         }
       } else {
         console.log(switchError);
+        reportError(switchError, 'handled', { caughtIn: 'wallet.setNetwork.switch' });
         setLoading(false);
       }
     }

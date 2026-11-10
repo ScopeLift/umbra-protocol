@@ -133,6 +133,7 @@ import { BigNumber, Web3Provider, computeAddress, isHexString } from 'src/utils/
 import useSettingsStore from 'src/store/settings';
 import useWalletStore from 'src/store/wallet';
 import useWallet from 'src/store/wallet';
+import { reportError } from 'src/utils/error-reporting';
 import { filterUserAnnouncements } from 'src/worker/worker';
 import AccountReceiveTable from 'components/AccountReceiveTable.vue';
 import ConnectWallet from 'components/ConnectWallet.vue';
@@ -526,6 +527,7 @@ function useScan() {
       return (await provider.value!.getBlock(blockNumber)).timestamp;
     } catch (error) {
       window.logger.warn(`Failed to fetch timestamp for block ${blockNumber}`, error);
+      reportError(error, 'handled', { caughtIn: 'AccountReceive.getBlockTimestamp' });
       return undefined;
     }
   }
@@ -631,6 +633,7 @@ function useScan() {
             );
           } catch (error) {
             window.logger.warn('Failed to fetch subgraph head block, preserving previous checkpoint', error);
+            reportError(error, 'handled', { caughtIn: 'AccountReceive.getSubgraphHeadBlock' });
           }
         } else {
           nextStartBlock = latestBlock;
