@@ -81,6 +81,7 @@ import { formatUnits } from 'src/utils/ethers';
 import { humanizeTokenAmount } from 'src/utils/utils';
 import useStatusesStore from 'src/store/statuses';
 import useWalletStore from 'src/store/wallet';
+import { reportError } from 'src/utils/error-reporting';
 
 export default defineComponent({
   name: 'WithdrawForm',
@@ -152,6 +153,7 @@ export default defineComponent({
           initializeWithdraw();
         } catch (error) {
           console.error('Error getting private keys:', error);
+          reportError(error, 'handled', { caughtIn: 'WithdrawForm.handleSubmit' });
         } finally {
           isSigningInProgress.value = false;
         }

@@ -1,6 +1,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { Dark, LocalStorage } from 'quasar';
 import { isHexString } from 'src/utils/ethers';
+import { errorReportingSetting, isErrorReportingEnabled } from 'src/utils/error-reporting';
 import { i18n } from '../boot/i18n';
 import { Language, UmbraApiVersion } from '../components/models';
 
@@ -11,6 +12,7 @@ const settings = {
   lastWallet: 'last-wallet',
   language: 'language',
   sendHistorySave: 'send-history-save',
+  errorReporting: errorReportingSetting,
   UmbraApiVersion: 'umbra-api-version',
   registeredBlockNumber: 'registered-block-number',
 };
@@ -19,6 +21,7 @@ const settings = {
 const isDark = ref(false); // true if user has dark mode turned on
 const advancedMode = ref(false); // true if user has advanced mode turned on
 const sendHistorySave = ref(true); // true if user send history is saved, false if it is not
+const errorReporting = ref(true); // true if errors are reported, false if the user turned reporting off
 const language = ref<Language>({ label: '', value: '' }); //language code
 const supportedLanguages = [
   { label: 'English', value: 'en-US' },
@@ -41,6 +44,7 @@ export default function useSettingsStore() {
     advancedMode.value = Boolean(LocalStorage.getItem(settings.advancedMode));
     const saveSetting = LocalStorage.getItem(settings.sendHistorySave);
     sendHistorySave.value = saveSetting || saveSetting === null ? true : false;
+    errorReporting.value = isErrorReportingEnabled();
     lastWallet.value = LocalStorage.getItem(settings.lastWallet)
       ? String(LocalStorage.getItem(settings.lastWallet))
       : undefined;
@@ -76,6 +80,11 @@ export default function useSettingsStore() {
   function toggleSendHistory() {
     sendHistorySave.value = !sendHistorySave.value;
     LocalStorage.set(settings.sendHistorySave, sendHistorySave.value);
+  }
+
+  function toggleErrorReporting() {
+    errorReporting.value = !errorReporting.value;
+    LocalStorage.set(settings.errorReporting, errorReporting.value);
   }
 
   function setLanguage(newLanguage: Language) {
@@ -117,7 +126,8 @@ export default function useSettingsStore() {
     const check1 = key === '';
     const check2 = key.length === 66 && isHexString(key);
     const isValid = check1 || check2;
-    if (!isValid) throw new Error(`Invalid private key '${key}'`);
+    // The message leaves out the key, so the key never ends up in logs or error reports
+    if (!isValid) throw new Error('Invalid private key');
     scanPrivateKey.value = key; // we save this in memory for access by components, but do not save it to LocalStorage
   }
 
@@ -166,6 +176,7 @@ export default function useSettingsStore() {
     toggleDarkMode,
     toggleAdvancedMode,
     toggleSendHistory,
+    toggleErrorReporting,
     setLanguage,
     setScanBlocks,
     setScanPrivateKey,
@@ -175,6 +186,7 @@ export default function useSettingsStore() {
     isDark: computed(() => isDark.value),
     advancedMode: computed(() => advancedMode.value),
     sendHistorySave: computed(() => sendHistorySave.value),
+    errorReporting: computed(() => errorReporting.value),
     language: computed(() => language.value),
     startBlock: computed(() => startBlock.value),
     endBlock: computed(() => endBlock.value),

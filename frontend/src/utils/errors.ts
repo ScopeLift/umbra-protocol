@@ -1,3 +1,22 @@
+// Error messages that aren't worth showing to the user or reporting
+const messagesToIgnore = [
+  'walletSelect must be called before walletCheck', // user decided not to connect wallet
+  'Navigating to current location', // e.g. user clicks "Home" in nav bar when already on home page
+  "Cannot read property 'validate' of null", // user navigates off Send page too quickly after sending, so "resetValidation()" fails
+  'Document is not focused', // happens when user unfocuses DOM while app was trying to copy something to clipboard
+  'unknown account #0', // happens when we try to connect to a locked wallet
+];
+const ignoredMessagePattern = new RegExp(messagesToIgnore.join('|'));
+
+/**
+ * @notice Returns true if the message contains one of the error messages that aren't worth showing to the user or
+ * reporting
+ * @param message Message to check
+ */
+export function isIgnoredMessage(message: string): boolean {
+  return ignoredMessagePattern.test(message);
+}
+
 /**
  * @notice Returns true if the value is a non-null object, so its properties can be read
  * @param value Value to check

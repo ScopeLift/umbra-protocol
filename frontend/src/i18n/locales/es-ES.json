@@ -43,7 +43,9 @@
     "built-by": "Creado por {0}",
     "links": "Enlaces",
     "send-history": "Historial de envíos",
-    "send-history-description": "Permite guardar el historial de envíos localmente en el navegador para poder consultarlo en la página \"Historial de envíos\"."
+    "send-history-description": "Permite guardar el historial de envíos localmente en el navegador para poder consultarlo en la página \"Historial de envíos\".",
+    "error-reporting": "Informes de errores",
+    "error-reporting-description": "Envía a Umbra detalles técnicos sobre los errores de la app para que podamos corregirlos. Los informes nunca incluyen tus direcciones, claves, nombres ni cantidades."
   },
   "Address-Settings": {
     "advanced-mode-on": "El modo avanzado está activado"

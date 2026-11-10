@@ -2,7 +2,7 @@ import { Dark } from 'quasar';
 import BNotify, { InitOptions, NotificationType } from 'bnc-notify';
 import { Provider } from 'components/models';
 import { getEtherscanUrl } from './utils';
-import { getErrorMessage, isRecord, isUserRejection } from './errors';
+import { getErrorMessage, isIgnoredMessage, isRecord, isUserRejection } from './errors';
 import { tc } from '../boot/i18n';
 
 // Instantiate Blocknative's notify.js. We don't pass a dappId so we can use in UI only mode for any
@@ -10,15 +10,6 @@ import { tc } from '../boot/i18n';
 const bNotifyOptions = { darkMode: Dark.isActive, desktopPosition: 'topRight', networkId: 1 } as InitOptions;
 const bNotify = BNotify(bNotifyOptions);
 const defaultTimeout = 5000; // 4 seconds
-
-// Some error messages we don't want to show to the user, so return in these cases
-const messagesToIgnore = [
-  'walletSelect must be called before walletCheck', // user decided not to connect wallet
-  'Navigating to current location', // e.g. user clicks "Home" in nav bar when already on home page
-  "Cannot read property 'validate' of null", // user navigates off Send page too quickly after sending, so "resetValidation()" fails
-  'Document is not focused', // happens when user unfocuses DOM while app was trying to copy something to clipboard
-  'unknown account #0', // happens when we try to connect to a locked wallet
-];
 
 /**
  * @notice Present notification alert to the user
@@ -29,8 +20,8 @@ export function notifyUser(alertType: NotificationType, message: string) {
   // Reset config in case user changed their dark mode setting
   bNotify.config({ ...bNotifyOptions, darkMode: Dark.isActive });
 
-  // If message matches any of the substrings in messagesToIgnore, we return and don't show the alert
-  if (new RegExp(messagesToIgnore.join('|')).test(message)) return;
+  // Some error messages we don't want to show to the user, so return in these cases
+  if (isIgnoredMessage(message)) return;
 
   bNotify.notification({
     autoDismiss: alertType === 'error' ? 10000 : defaultTimeout,

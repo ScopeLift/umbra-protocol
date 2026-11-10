@@ -8,7 +8,7 @@ module.exports = {
       },
     },
     {
-      files: ['**/*.js', '**/*.ts', '**/*.vue'],
+      files: ['**/*.js', '**/*.mjs', '**/*.ts', '**/*.vue'],
       options: {
         bracketSpacing: true,
         trailingComma: 'es5',
