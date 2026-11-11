@@ -19,7 +19,13 @@
       "pages/*": ["src/pages/*"],
       "assets/*": ["src/assets/*"],
       "boot/*": ["src/boot/*"],
-      "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"]
+      "@sinonjs/fake-timers": ["../node_modules/@types/sinonjs__fake-timers"],
+      // viem's types import these modules, which this TypeScript version resolves to ox's TypeScript
+      // sources instead of its declaration files, so point them at the declaration files.
+      "ox/tempo/*": [
+        "../node_modules/viem/node_modules/ox/_types/tempo/*",
+        "../node_modules/ox/_types/tempo/*"
+      ]
     }
   },
   "include": ["src", "test/*", "src/**/*.json", "test/__mocks__/*"],
