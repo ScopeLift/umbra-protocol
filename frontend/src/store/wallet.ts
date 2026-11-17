@@ -158,7 +158,9 @@ export default function useWalletStore() {
   watch(lastWallet, async () => {
     if (lastWallet.value && !userAddress.value) {
       if (lastWallet.value === 'MetaMask') {
-        const unlocked = await window.ethereum._metamask.isUnlocked();
+        // `_metamask` exists only when MetaMask is the wallet at `window.ethereum`. Without it we can't tell whether
+        // MetaMask is unlocked, so don't reconnect automatically
+        const unlocked = await window.ethereum?._metamask?.isUnlocked?.();
         if (!unlocked) {
           setLoading(false);
           return;
