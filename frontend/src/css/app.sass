@@ -307,9 +307,22 @@ p, div
 
 // Notification messages wrap even where they have no spaces, such as in long hex strings, and are cut off after a few
 // lines
-.bn-notify-custom.bn-notify-notification-info-message
+.app-notification .q-notification__message
   overflow-wrap: anywhere
   display: -webkit-box
   -webkit-box-orient: vertical
   -webkit-line-clamp: 4
   overflow: hidden
+
+// Link in a notification, such as to a transaction in a block explorer
+.notification-link
+  color: inherit
+  text-decoration: underline
+
+// Place a notification's dismiss button, its only action, in the top right corner, in the
+// notification's text color
+.app-notification .q-notification__actions
+  color: inherit
+  align-self: flex-start
+  padding: 4px 0 0 8px
+  margin-right: -12px
