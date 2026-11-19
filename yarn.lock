@@ -7972,7 +7972,6 @@ __metadata:
     "@vue/vue3-jest": "npm:27.0.0"
     babel-jest: "npm:^27.5.1"
     babel-loader: "npm:^10.1.1"
-    bnc-notify: "npm:^1.5.1"
     core-js: "npm:^3.6.5"
     eslint: "npm:^7.14.0"
     eslint-config-standard: "npm:^17.0.0"
@@ -11181,31 +11180,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bnc-notify@npm:^1.5.1":
-  version: 1.9.7
-  resolution: "bnc-notify@npm:1.9.7"
-  dependencies:
-    bignumber.js: "npm:^9.0.0"
-    bnc-sdk: "npm:4.6.3"
-    lodash.debounce: "npm:^4.0.8"
-    regenerator-runtime: "npm:^0.13.3"
-    uuid: "npm:^3.3.3"
-  checksum: 10c0/e4d9866a992cbdedbe9e4288cb69422e32247ee37d4d886477dfd7b0c46dafb2d1bf9022ac26d0e54c9b915d217d0f7eed18b59eda2fc6de53df9226e333651d
-  languageName: node
-  linkType: hard
-
-"bnc-sdk@npm:4.6.3":
-  version: 4.6.3
-  resolution: "bnc-sdk@npm:4.6.3"
-  dependencies:
-    crypto-es: "npm:^1.2.2"
-    nanoid: "npm:^3.3.1"
-    rxjs: "npm:^6.6.3"
-    sturdy-websocket: "npm:^0.1.12"
-  checksum: 10c0/47eaad8dcb981dc58cb9d88520bf1ebf2b4ea733b9cfb1973675a539d63b3703021504e0e3397373a997cc1624b819db83723ba7830f20a1f6b0506b3be19bd1
-  languageName: node
-  linkType: hard
-
 "body-parser@npm:1.20.1, body-parser@npm:^1.16.0":
   version: 1.20.1
   resolution: "body-parser@npm:1.20.1"
@@ -13533,13 +13507,6 @@ __metadata:
     randombytes: "npm:^2.0.0"
     randomfill: "npm:^1.0.3"
   checksum: 10c0/0c20198886576050a6aa5ba6ae42f2b82778bfba1753d80c5e7a090836890dc372bdc780986b2568b4fb8ed2a91c958e61db1f0b6b1cc96af4bd03ffc298ba92
-  languageName: node
-  linkType: hard
-
-"crypto-es@npm:^1.2.2":
-  version: 1.2.7
-  resolution: "crypto-es@npm:1.2.7"
-  checksum: 10c0/03b2c488e159255b6ebc8d6a41fd41bb5d54d821821f6cfba7f9b4d603403cbccca567af89a91e9da1d95049131d9d25b30427b3e1cd90df83575924af09bdf3
   languageName: node
   linkType: hard
 
@@ -24282,7 +24249,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.1, nanoid@npm:^3.3.18":
+"nanoid@npm:^3.3.18":
   version: 3.3.19
   resolution: "nanoid@npm:3.3.19"
   bin:
@@ -27899,7 +27866,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"regenerator-runtime@npm:^0.13.11, regenerator-runtime@npm:^0.13.3":
+"regenerator-runtime@npm:^0.13.11":
   version: 0.13.11
   resolution: "regenerator-runtime@npm:0.13.11"
   checksum: 10c0/12b069dc774001fbb0014f6a28f11c09ebfe3c0d984d88c9bced77fdb6fedbacbca434d24da9ae9371bfbf23f754869307fb51a4c98a8b8b18e5ef748677ca24
@@ -28668,7 +28635,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^6.4.0, rxjs@npm:^6.5.2, rxjs@npm:^6.6.2, rxjs@npm:^6.6.3":
+"rxjs@npm:^6.4.0, rxjs@npm:^6.5.2, rxjs@npm:^6.6.2":
   version: 6.6.7
   resolution: "rxjs@npm:6.6.7"
   dependencies:
@@ -30798,15 +30765,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sturdy-websocket@npm:^0.1.12":
-  version: 0.1.12
-  resolution: "sturdy-websocket@npm:0.1.12"
-  dependencies:
-    lodash.defaults: "npm:^4.2.0"
-  checksum: 10c0/8aa0a1273f4d9bf546645e4ad43d3b47c2d986260e092fc1778ec7cb2a56f0876de5eaf4f79d56880701b5a8b1ceaa017a0769103c070a502ae9758f8d075881
-  languageName: node
-  linkType: hard
-
 "stylehacks@npm:^5.1.1":
   version: 5.1.1
   resolution: "stylehacks@npm:5.1.1"
@@ -32921,7 +32879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^3.3.2, uuid@npm:^3.3.3":
+"uuid@npm:^3.3.2":
   version: 3.4.0
   resolution: "uuid@npm:3.4.0"
   bin:
