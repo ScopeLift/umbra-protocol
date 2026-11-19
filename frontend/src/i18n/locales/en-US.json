@@ -395,7 +395,9 @@
       "transaction-failed": "Your transaction has failed",
       "transaction-canceled": "Transaction canceled in your wallet",
       "signature-canceled": "Signature request canceled in your wallet",
-      "request-canceled": "Request canceled in your wallet"
+      "request-canceled": "Request canceled in your wallet",
+      "view-transaction": "View transaction",
+      "dismiss": "Dismiss"
     },
     "Address": {
       "might-be-token": "It might be a token contract, such as an ERC-20 or ERC-721",
